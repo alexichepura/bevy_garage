@@ -1,0 +1,30 @@
+#cargo-features = ["edition2021"]
+
+[package]
+name    = "bevy_rapier_3d_car_sim"
+version = "0.1.0"
+authors = [ "Alexi Chepura <a.chepura@gmail.com>" ]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[workspace]
+resolver = "2"
+
+[features]
+dev = []
+
+[dependencies]
+bevy = { version = "^0.6" }
+bevy_rapier3d = { version = "^0.12.0", features = [ "render" ] }
+rapier3d = { version = "^0.12.0-alpha.0", default-features = false, features = [ "dim3", "f32" ] }
+nalgebra = "^0.30.1"
+bevy_obj = "^0.6.0"
+# smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
+
+[profile.dev.package.bevy_rapier3d]
+opt-level = 3
+
+[profile.release]
+codegen-units = 1
+
+[dev-dependencies]
