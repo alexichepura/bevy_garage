@@ -1,6 +1,8 @@
 # 3d car simulation in rust
 
 This project is developed with intention to learn: programming on rust, computer graphics, physics simulation, geometric algebra.
+<img width="1278" alt="Screenshot 2022-01-16 at 19 53 29" src="https://user-images.githubusercontent.com/5582266/149669607-b341bce8-0b39-4988-9737-888e5588b269.png">
+
 
 Some of new concepts learned and used here:
 
