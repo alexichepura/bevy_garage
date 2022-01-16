@@ -11,11 +11,11 @@
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=sim-car",
-                    "--package=sim-car"
+                    "--bin=bevy_rapier_3d_car_sim",
+                    "--package=bevy_rapier_3d_car_sim"
                 ],
                 "filter": {
-                    "name": "sim-car",
+                    "name": "bevy_rapier_3d_car_sim",
                     "kind": "bin"
                 }
             },
@@ -28,16 +28,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'sim-car'",
+            "name": "Debug unit tests in executable 'bevy_rapier_3d_car_sim'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=sim-car",
-                    "--package=sim-car"
+                    "--bin=bevy_rapier_3d_car_sim",
+                    "--package=bevy_rapier_3d_car_sim"
                 ],
                 "filter": {
-                    "name": "sim-car",
+                    "name": "bevy_rapier_3d_car_sim",
                     "kind": "bin"
                 }
             },

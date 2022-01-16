@@ -73,7 +73,7 @@ pub fn setup_graphics(
         transform: Transform::from_xyz(-10., 40., 20.),
         point_light: PointLight {
             range: 100.,
-            intensity: 15_000.,
+            intensity: 100_000.,
             ..Default::default()
         },
         ..Default::default()
