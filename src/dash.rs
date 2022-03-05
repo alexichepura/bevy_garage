@@ -1,3 +1,4 @@
+use bevy::text::Font;
 use bevy::{
     diagnostic::Diagnostics,
     diagnostic::FrameTimeDiagnosticsPlugin,
@@ -9,10 +10,8 @@ use bevy::{
 };
 use bevy::{ecs::system::Res, prelude::Commands};
 use bevy::{prelude::Handle, text::Text};
-use bevy::{text::Font, transform::components::Transform};
 use bevy_rapier3d::prelude::{
-    MassProperties, RigidBodyForcesComponent, RigidBodyMassPropsComponent,
-    RigidBodyVelocityComponent,
+    MassProperties, RigidBodyMassPropsComponent, RigidBodyVelocityComponent,
 };
 
 use crate::car::{Car, Wheel};

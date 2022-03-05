@@ -21,15 +21,13 @@ use bevy_rapier3d::{
     physics::JointBuilderComponent,
     prelude::{
         ColliderBundle, ColliderMaterial, ColliderPositionSync, ColliderShape, Isometry,
-        MassProperties, NoUserData, Point, RapierPhysicsPlugin, Real, RevoluteJoint,
-        RigidBodyBundle, RigidBodyPosition, Vector,
+        MassProperties, NoUserData, Point, RapierPhysicsPlugin, Real, RigidBodyBundle,
+        RigidBodyPosition, Vector,
     },
     render::RapierRenderPlugin,
 };
 use dash::{dash_fps_update, dash_speed_update, setup_dash_fps, setup_dash_speed};
 use graphics::focus_camera;
-use nalgebra::Unit;
-use std::f32::consts::PI;
 
 mod car;
 mod dash;
