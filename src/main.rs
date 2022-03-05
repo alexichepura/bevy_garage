@@ -1,29 +1,14 @@
-use crate::car::{BackJoint, Car, FrontJoint, FrontLeftJoint, FrontRightJoint, Wheel};
+use crate::car::Car;
 use crate::gamepad::{gamepad_lobby_system, GamepadLobby};
 use crate::graphics::setup_graphics;
 use crate::input::{arrow_input_system, gamepad_input_system};
 use bevy::{
-    app::App,
-    app::CoreStage,
-    asset::Assets,
-    diagnostic::FrameTimeDiagnosticsPlugin,
-    ecs::system::{Commands, Res, ResMut},
-    math::{Quat, Vec3},
-    pbr::{prelude::StandardMaterial, PbrBundle},
-    prelude::{AssetServer, BuildChildren, Msaa},
-    render::{color::Color, mesh::shape, mesh::Mesh},
-    transform::components::Transform,
-    DefaultPlugins,
+    app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::Msaa, DefaultPlugins,
 };
 use bevy_obj::ObjPlugin;
-use bevy_rapier3d::prelude::{JointAxesMask, JointData};
+
 use bevy_rapier3d::{
-    physics::JointBuilderComponent,
-    prelude::{
-        ColliderBundle, ColliderMaterial, ColliderPositionSync, ColliderShape, Isometry,
-        MassProperties, NoUserData, Point, RapierPhysicsPlugin, Real, RigidBodyBundle,
-        RigidBodyPosition, Vector,
-    },
+    prelude::{NoUserData, RapierPhysicsPlugin},
     render::RapierRenderPlugin,
 };
 use car::car_system;
