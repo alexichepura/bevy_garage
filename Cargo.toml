@@ -14,8 +14,8 @@ resolver = "2"
 dev = []
 
 [dependencies]
-bevy = { version = "^0.6" }
-bevy_rapier3d = { version = "^0.12.0", features = [ "render" ] }
+bevy = { version = "0.6.1" }
+bevy_rapier3d = { version = "^0.12.1", features = [ "render" ] }
 rapier3d = { version = "^0.12.0-alpha.0", default-features = false, features = [ "dim3", "f32" ] }
 nalgebra = "^0.30.1"
 bevy_obj = "^0.6.0"
