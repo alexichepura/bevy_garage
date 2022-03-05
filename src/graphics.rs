@@ -26,7 +26,7 @@ use bevy_rapier3d::prelude::{
 };
 use core::f32::consts::PI;
 
-pub fn focus_camera(
+pub fn camera_focus_system(
     mut transforms: QuerySet<(
         QueryState<(&mut Transform, &Camera)>,
         QueryState<(&Transform, &Car)>,
@@ -50,7 +50,7 @@ pub fn focus_camera(
     }
 }
 
-pub fn setup_graphics(
+pub fn graphics_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,

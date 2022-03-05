@@ -1,6 +1,6 @@
 use crate::car::Car;
 use crate::gamepad::{gamepad_lobby_system, GamepadLobby};
-use crate::graphics::setup_graphics;
+use crate::graphics::graphics_system;
 use crate::input::{arrow_input_system, gamepad_input_system};
 use bevy::{
     app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::Msaa, DefaultPlugins,
@@ -12,8 +12,8 @@ use bevy_rapier3d::{
     render::RapierRenderPlugin,
 };
 use car::car_system;
-use dash::{dash_fps_update, dash_speed_update, setup_dash_fps, setup_dash_speed};
-use graphics::focus_camera;
+use dash::{dash_fps_system, dash_fps_update_system, dash_speed_system, dash_speed_update_system};
+use graphics::camera_focus_system;
 
 mod car;
 mod dash;
@@ -33,12 +33,12 @@ fn main() {
         .add_system(arrow_input_system)
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
-        .add_system_to_stage(CoreStage::Update, focus_camera)
-        .add_startup_system(setup_graphics)
+        .add_system_to_stage(CoreStage::Update, camera_focus_system)
+        .add_startup_system(graphics_system)
         .add_startup_system(car_system)
-        .add_startup_system(setup_dash_fps)
-        .add_startup_system(setup_dash_speed)
-        .add_system(dash_fps_update)
-        .add_system(dash_speed_update)
+        .add_startup_system(dash_fps_system)
+        .add_startup_system(dash_speed_system)
+        .add_system(dash_fps_update_system)
+        .add_system(dash_speed_update_system)
         .run();
 }
