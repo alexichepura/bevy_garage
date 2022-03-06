@@ -42,7 +42,7 @@ pub fn camera_focus_system(
     // tf.rotate(Quat::from_rotation_y(-PI / 2.0));
     // tf.rotate(Quat::from_rotation_x(PI / 16.0));
     // tf.looking_at(Vec3::ZERO, Vec3::Y);
-    tf.look_at(car_transform.translation, Vec3::Y);
+    tf.look_at(car_transform.translation + Vec3::new(0., 1., 0.), Vec3::Y);
     for (mut cam_transform, camera) in transforms.q0().iter_mut() {
         if camera.name == Some(CameraPlugin::CAMERA_3D.to_string()) {
             *cam_transform = tf;
