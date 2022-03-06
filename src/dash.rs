@@ -178,7 +178,7 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                     TextSection {
-                        value: "angvel_norm".to_string(),
+                        value: "angvel".to_string(),
                         style: TextStyle {
                             font: bold.clone(),
                             font_size: 40.0,
