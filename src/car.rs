@@ -1,18 +1,22 @@
+use std::sync::Arc;
+
 use bevy::{
     math::{Quat, Vec3},
     pbr::{PbrBundle, StandardMaterial},
     prelude::{
-        shape, AssetServer, Assets, BuildChildren, Color, Commands, Component, Mesh, Res, ResMut,
+        AssetServer, Assets, BuildChildren, Color, Commands, Component, Mesh, Res, ResMut,
         Transform,
     },
 };
 use bevy_rapier3d::{
     physics::{ColliderBundle, ColliderPositionSync, JointBuilderComponent, RigidBodyBundle},
     prelude::{
-        ColliderMaterial, ColliderShape, Isometry, JointAxesMask, JointData, MassProperties, Point,
-        Real, RigidBodyPosition, Vector,
+        ColliderMaterial, ColliderShape, Cylinder, Isometry, JointAxesMask, JointData,
+        MassProperties, Point, Real, RigidBodyPosition, SharedShape, Vector,
     },
 };
+
+use crate::mesh::bevy_mesh;
 
 #[derive(Component)]
 pub struct Wheel;
@@ -42,8 +46,8 @@ pub fn car_system(
     let car_hw: f32 = 0.45;
     let car_hh: f32 = 0.5;
     let car_hl: f32 = 0.8;
-    let wheel_r: f32 = 0.25;
-    let wheel_hw: f32 = 0.25;
+    let wheel_r: f32 = 0.3;
+    let wheel_hw: f32 = 0.125;
     let car_pos_transform = Vec3::new(0., 2.5, 0.);
     let qvec = Vec3::new(0., 0., 0.);
     let car_quat = Quat::from_axis_angle(qvec, 0.);
@@ -75,7 +79,6 @@ pub fn car_system(
             ..Default::default()
         })
         .with_children(|parent| {
-            // let mut tr: Transform = Transform::from_rotation(Quat::from_rotation_y(PI / 2.0));
             let mut tr: Transform = Transform {
                 ..Default::default()
             };
@@ -110,7 +113,7 @@ pub fn car_system(
         let data = JointData::default()
             .lock_axes(mask)
             .local_axis1(Vector::x_axis())
-            .local_axis2(Vector::x_axis())
+            .local_axis2(Vector::y_axis())
             .local_anchor1(Point::from(car_anchors[i]))
             .local_anchor2(Vec3::new(0., 0., 0.).into());
 
@@ -121,17 +124,12 @@ pub fn car_system(
         let wheel_isometry: Isometry<Real> =
             Isometry::new(wheel_transform.into(), wheel_qvec.into());
 
+        let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
+        let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
+        let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
         let wheel = commands
             .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube {
-                    size: wheel_r * 2.,
-                    ..Default::default()
-                })),
-                // mesh: meshes.add(Mesh::from(shape::Torus {
-                //     radius: wheel_r,
-                //     ring_radius: wheel_r / 2.,
-                //     ..Default::default()
-                // })),
+                mesh: meshes.add(wheel_mesh),
                 material: materials.add(Color::rgb(0.1, 0.1, 0.3).into()),
                 ..Default::default()
             })
@@ -140,8 +138,7 @@ pub fn car_system(
                 ..Default::default()
             })
             .insert_bundle(ColliderBundle {
-                // shape: ColliderShape::round_cylinder(wheel_r, wheel_r, 0.05).into(),
-                shape: ColliderShape::ball(wheel_r).into(),
+                shape: wheel_shape.into(),
                 mass_properties: MassProperties::new(
                     Vec3::new(0.0, 0.0, 0.0).into(),
                     15.0,

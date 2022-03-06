@@ -36,12 +36,12 @@ pub fn arrow_input_system(
     let torque: f32 = 1000.;
     if keyboard_input.pressed(KeyCode::Up) {
         for (mut _velocity, mut forces, transform, _mprops, _wheel) in wheels.iter_mut() {
-            forces.torque = (transform.rotation.mul_vec3(Vec3::new(torque, 0., 0.))).into();
+            forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
         }
     }
     if keyboard_input.pressed(KeyCode::Down) {
         for (mut _velocity, mut forces, transform, _mprops, _wheel) in wheels.iter_mut() {
-            forces.torque = (transform.rotation.mul_vec3(Vec3::new(-torque, 0., 0.))).into();
+            forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., -torque, 0.))).into();
         }
     }
     if keyboard_input.just_pressed(KeyCode::Left) {

@@ -20,6 +20,7 @@ mod dash;
 mod gamepad;
 mod graphics;
 mod input;
+mod mesh;
 
 fn main() {
     App::new()
