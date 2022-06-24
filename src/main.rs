@@ -6,11 +6,8 @@ use bevy::{
     app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::Msaa, DefaultPlugins,
 };
 use bevy_obj::ObjPlugin;
+use bevy_rapier3d::prelude::*;
 
-use bevy_rapier3d::{
-    prelude::{NoUserData, RapierPhysicsPlugin},
-    render::RapierRenderPlugin,
-};
 use car::car_system;
 use dash::{dash_fps_system, dash_fps_update_system, dash_speed_system, dash_speed_update_system};
 use graphics::camera_focus_system;
@@ -29,7 +26,7 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierRenderPlugin)
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .init_resource::<GamepadLobby>()
