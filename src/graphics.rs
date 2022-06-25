@@ -181,7 +181,7 @@ pub fn graphics_system(
     collider_vertices.push(vertices[4].into());
     collider_vertices.push(vertices[5].into());
 
-    mesh.set_attribute(
+    mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices.clone()),
     );
@@ -189,7 +189,7 @@ pub fn graphics_system(
     let n1: [f32; 3] = face_normal(vertices[0], vertices[2], vertices[1]);
     let n2: [f32; 3] = face_normal(vertices[2], vertices[4], vertices[3]);
     let normals: Vec<[f32; 3]> = vec![n1, n1, n1, n2, n2, n2];
-    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
 
     let uvs: Vec<[f32; 2]> = vec![
         [0.0, 0.0],
@@ -199,7 +199,7 @@ pub fn graphics_system(
         [0.0, 0.0],
         [1.0, 1.0],
     ];
-    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
 
     let rinds = vec![0, 1, 2, 2, 1, 3, 2, 3, 4, 4, 3, 5];
     let mut collider_indices: Vec<[u32; 3]> = Vec::new();
