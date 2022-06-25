@@ -1,16 +1,7 @@
-use std::sync::Arc;
-
-use bevy::{
-    math::{Quat, Vec3},
-    pbr::{PbrBundle, StandardMaterial},
-    prelude::*,
-};
+use bevy::prelude::*;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
-use rapier3d::{
-    math::Isometry,
-    prelude::{JointAxesMask, SharedShape},
-};
-// use rapier3d::prelude::*;
+use rapier3d::prelude::{Isometry, JointAxesMask, SharedShape};
+use std::sync::Arc;
 
 use crate::mesh::bevy_mesh;
 
@@ -99,14 +90,15 @@ pub fn car_system(
             | JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z;
 
-        let data = JointData::default()
-            .lock_axes(mask)
-            .local_axis1(Vector::x_axis())
-            .local_axis2(Vector::y_axis())
-            .local_anchor1(Point::from(car_anchors[i]))
+        let data = GenericJointBuilder::new(mask)
+            .local_axis1(Vec3::X)
+            .local_axis2(Vec3::Y)
+            .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::new(0., 0., 0.).into());
 
-        // joint.configure_motor_model(SpringModel::ForceBased);
+        let joint = RevoluteJointBuilder::new(Vec3::X)
+            .local_anchor1(Vec3::new(0.0, 0.0, 1.0))
+            .local_anchor2(Vec3::new(0.0, 0.0, -3.0));
 
         let wheel_transform = car_pos_transform + car_quat.mul_vec3(car_anchors[i]);
         let wheel_qvec = Vec3::new(0., 0., 0.);
@@ -116,6 +108,7 @@ pub fn car_system(
         let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+
         let wheel = commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(wheel_mesh),
@@ -125,12 +118,14 @@ pub fn car_system(
             .insert(RigidBody::Dynamic)
             // position: wheel_isometry.into(),
             .insert(Collider::from(wheel_shape))
-            // mass_properties: MassProperties::new(
+            // .insert(ColliderMassProperties::MassProperties)
+            // .insert(ColliderMassProperties::MassProperties(
+            // MassProperties::new(
             //     Vec3::new(0.0, 0.0, 0.0).into(),
             //     15.0,
             //     Vec3::new(1.0, 1.0, 1.0).into(),
             // )
-            // .into(),
+            //  ))
             // material: ColliderMaterial {
             //     friction: 1.0,
             //     restitution: 0.1,
@@ -141,21 +136,25 @@ pub fn car_system(
             .id();
         if i == 0 {
             commands
-                .spawn_bundle((JointBuilderComponent::new(data, car_entity, wheel),))
+                .spawn()
+                .insert(ImpulseJoint::new(car_entity, data))
                 .insert(FrontRightJoint)
                 .insert(FrontJoint);
         } else if i == 1 {
             commands
-                .spawn_bundle((JointBuilderComponent::new(data, car_entity, wheel),))
+                .spawn()
+                .insert(ImpulseJoint::new(car_entity, data))
                 .insert(FrontLeftJoint)
                 .insert(FrontJoint);
         } else if i == 2 {
             commands
-                .spawn_bundle((JointBuilderComponent::new(data, car_entity, wheel),))
+                .spawn()
+                .insert(ImpulseJoint::new(car_entity, data))
                 .insert(BackJoint);
         } else if i == 3 {
             commands
-                .spawn_bundle((JointBuilderComponent::new(data, car_entity, wheel),))
+                .spawn()
+                .insert(ImpulseJoint::new(car_entity, data))
                 .insert(BackJoint);
         }
     }

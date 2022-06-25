@@ -14,6 +14,7 @@ use bevy::prelude::With;
 use bevy::transform::components::Transform;
 use bevy_rapier3d::prelude::*;
 use nalgebra::Unit;
+use rapier3d::prelude::ImpulseJointSet;
 
 pub fn arrow_input_system(
     keyboard_input: Res<Input<KeyCode>>,
@@ -24,8 +25,8 @@ pub fn arrow_input_system(
         &MassProperties,
         With<Wheel>,
     )>,
-    mut front_right: Query<(&JointHandleComponent, With<FrontRightJoint>)>,
-    mut front_left: Query<(&JointHandleComponent, With<FrontLeftJoint>)>,
+    mut front_right: Query<(&RapierImpulseJointHandle, With<FrontRightJoint>)>,
+    mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     mut joints: ResMut<ImpulseJointSet>,
 ) {
     let torque: f32 = 1000.;
