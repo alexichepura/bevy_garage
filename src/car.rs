@@ -8,9 +8,6 @@ use bevy::{
         Transform,
     },
 };
-// use bevy_rapier3d::physics::{
-//     ColliderBundle, ColliderPositionSync, JointBuilderComponent, RigidBodyBundle,
-// };
 use bevy_rapier3d::prelude::*;
 use rapier3d::prelude::*;
 
@@ -90,7 +87,6 @@ pub fn car_system(
         })
         .insert(Car)
         .insert(Transform::default())
-        .insert(ColliderPositionSync::Discrete)
         .id();
 
     let shift = Vec3::new(car_hw + 0.1 + wheel_hw, -car_hh, car_hl);
@@ -153,7 +149,6 @@ pub fn car_system(
             })
             .insert(Wheel)
             .insert(Transform::default())
-            .insert(ColliderPositionSync::Discrete)
             .id();
         if i == 0 {
             commands

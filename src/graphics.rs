@@ -73,19 +73,10 @@ pub fn graphics_system(
             material: materials.add(Color::rgba(0.2, 0.6, 0.2, 0.5).into()),
             ..Default::default()
         })
-        .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(plane_half, 0.5, plane_half).into(),
-            // material: ColliderMaterial {
-            //     friction: 1.0,
-            //     restitution: 1_000_0000.0,
-            //     ..Default::default()
-            // },
-            ..Default::default()
-        });
+        .insert(RigidBody::Fixed)
+        .insert(Collider::cuboid(plane_half, 0.5, plane_half))
+        .insert(Friction::coefficient(0.7))
+        .insert(Restitution::coefficient(0.3));
     // TOY OBJECT
     commands
         .spawn_bundle(PbrBundle {
@@ -100,6 +91,7 @@ pub fn graphics_system(
             material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
             ..Default::default()
         })
+        .insert(RigidBody::Dynamic)
         .insert_bundle(RigidBodyBundle {
             position: RigidBodyPosition {
                 position: Isometry::new(
@@ -111,12 +103,8 @@ pub fn graphics_system(
             .into(),
             ..Default::default()
         })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(0.5, 0.5, 0.5).into(),
-            ..Default::default()
-        })
-        .insert(Transform::default())
-        .insert(ColliderPositionSync::Discrete);
+        .insert(Collider::cuboid(0.5, 0.5, 0.5))
+        .insert(Transform::default());
 
     // TOY OBJECT 2
     commands
@@ -132,6 +120,7 @@ pub fn graphics_system(
             material: materials.add(Color::rgb(0.5, 0.5, 0.9).into()),
             ..Default::default()
         })
+        .insert(RigidBody::Dynamic)
         .insert_bundle(RigidBodyBundle {
             position: RigidBodyPosition {
                 position: Isometry::new(
@@ -143,12 +132,8 @@ pub fn graphics_system(
             .into(),
             ..Default::default()
         })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(1.5, 1.0, 0.5).into(),
-            ..Default::default()
-        })
-        .insert(Transform::default())
-        .insert(ColliderPositionSync::Discrete);
+        .insert(Collider::cuboid(1.5, 1.0, 0.5))
+        .insert(Transform::default());
 
     let texture_handle = asset_server.load("array_texture.png");
 
@@ -171,6 +156,7 @@ pub fn graphics_system(
             }),
             ..Default::default()
         })
+        .insert(RigidBody::Dynamic)
         .insert_bundle(RigidBodyBundle {
             position: RigidBodyPosition {
                 position: Isometry::new(
@@ -182,12 +168,8 @@ pub fn graphics_system(
             .into(),
             ..Default::default()
         })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(1.5, 2.0, 0.5).into(),
-            ..Default::default()
-        })
-        .insert(Transform::default())
-        .insert(ColliderPositionSync::Discrete);
+        .insert(Collider::cuboid(1.5, 2.0, 0.5))
+        .insert(Transform::default());
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let vertices: Vec<[f32; 3]> = vec![
@@ -248,8 +230,8 @@ pub fn graphics_system(
             }),
             ..Default::default()
         })
+        .insert(RigidBody::Fixed)
         .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
             position: RigidBodyPosition {
                 position: Isometry::new(
                     Vec3::new(15.0, 0.0, 0.0).into(),
@@ -264,8 +246,7 @@ pub fn graphics_system(
             shape: ColliderShape::trimesh(collider_vertices, collider_indices).into(),
             ..Default::default()
         })
-        .insert(Transform::default())
-        .insert(ColliderPositionSync::Discrete);
+        .insert(Transform::default());
 }
 fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));
