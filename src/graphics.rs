@@ -17,6 +17,8 @@ use bevy::{math::Vec3, prelude::PerspectiveCameraBundle};
 use bevy::{pbr::prelude::StandardMaterial, render::render_resource::PrimitiveTopology};
 use bevy_rapier3d::prelude::*;
 use core::f32::consts::PI;
+use rapier3d::math::Point;
+use rapier3d::prelude::ColliderShape;
 
 #[derive(Component, Default)]
 pub struct FirstPassCamera;
@@ -92,17 +94,13 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Dynamic)
-        .insert_bundle(RigidBodyBundle {
-            position: RigidBodyPosition {
-                position: Isometry::new(
-                    Vec3::new(5.0, 1.0, 0.0).into(),
-                    Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0).into(),
-                ),
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
+        // position: RigidBodyPosition {
+        //     position: Isometry::new(
+        //         Vec3::new(5.0, 1.0, 0.0).into(),
+        //         Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0).into(),
+        //     ),
+        //     ..Default::default()
+        // }
         .insert(Collider::cuboid(0.5, 0.5, 0.5))
         .insert(Transform::default());
 
@@ -121,17 +119,13 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Dynamic)
-        .insert_bundle(RigidBodyBundle {
-            position: RigidBodyPosition {
-                position: Isometry::new(
-                    Vec3::new(10.0, 3.0, -10.0).into(),
-                    Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0).into(),
-                ),
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
+        // position: RigidBodyPosition {
+        //     position: Isometry::new(
+        //         Vec3::new(10.0, 3.0, -10.0).into(),
+        //         Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0).into(),
+        //     ),
+        //     ..Default::default()
+        // }
         .insert(Collider::cuboid(1.5, 1.0, 0.5))
         .insert(Transform::default());
 
@@ -157,17 +151,13 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Dynamic)
-        .insert_bundle(RigidBodyBundle {
-            position: RigidBodyPosition {
-                position: Isometry::new(
-                    Vec3::new(10.0, 3.0, 10.0).into(),
-                    Vec3::new(0., 0., 0.).into(),
-                ),
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
+        // position: RigidBodyPosition {
+        //     position: Isometry::new(
+        //         Vec3::new(10.0, 3.0, 10.0).into(),
+        //         Vec3::new(0., 0., 0.).into(),
+        //     ),
+        //     ..Default::default()
+        // }
         .insert(Collider::cuboid(1.5, 2.0, 0.5))
         .insert(Transform::default());
 
@@ -231,21 +221,17 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
-        .insert_bundle(RigidBodyBundle {
-            position: RigidBodyPosition {
-                position: Isometry::new(
-                    Vec3::new(15.0, 0.0, 0.0).into(),
-                    Vec3::new(0., 0., 0.).into(),
-                ),
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::trimesh(collider_vertices, collider_indices).into(),
-            ..Default::default()
-        })
+        // position: RigidBodyPosition {
+        //     position: Isometry::new(
+        //         Vec3::new(15.0, 0.0, 0.0).into(),
+        //         Vec3::new(0., 0., 0.).into(),
+        //     ),
+        //     ..Default::default()
+        // }
+        .insert(Collider::from(ColliderShape::trimesh(
+            collider_vertices,
+            collider_indices,
+        )))
         .insert(Transform::default());
 }
 fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {

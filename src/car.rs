@@ -3,13 +3,14 @@ use std::sync::Arc;
 use bevy::{
     math::{Quat, Vec3},
     pbr::{PbrBundle, StandardMaterial},
-    prelude::{
-        AssetServer, Assets, BuildChildren, Color, Commands, Component, Mesh, Res, ResMut,
-        Transform,
-    },
+    prelude::*,
 };
-use bevy_rapier3d::prelude::*;
-use rapier3d::prelude::*;
+use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
+use rapier3d::{
+    math::Isometry,
+    prelude::{JointAxesMask, SharedShape},
+};
+// use rapier3d::prelude::*;
 
 use crate::mesh::bevy_mesh;
 
@@ -49,30 +50,24 @@ pub fn car_system(
     let car_isometry: Isometry<Real> = Isometry::new(car_pos_transform.into(), qvec.into());
 
     let car_entity = commands
-        .spawn_bundle(RigidBodyBundle {
-            position: RigidBodyPosition {
-                position: car_isometry,
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(car_hl, car_hh, car_hw).into(),
-            mass_properties: MassProperties::new(
-                Vec3::new(0.0, -0.4, 0.0).into(),
-                1500.0,
-                Vec3::new(100.0, 100.0, 100.0).into(),
-            )
-            .into(),
-            material: ColliderMaterial {
-                friction: 0.001,
-                restitution: 0.1,
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
+        .spawn()
+        .insert(RigidBody::Dynamic)
+        //     position: RigidBodyPosition {
+        //         position: car_isometry,
+        //         ..Default::default()
+        //     }
+        .insert(Collider::cuboid(car_hl, car_hh, car_hw))
+        // mass_properties: MassProperties::new(
+        //     Vec3::new(0.0, -0.4, 0.0).into(),
+        //     1500.0,
+        //     Vec3::new(100.0, 100.0, 100.0).into(),
+        // )
+        // .into(),
+        // material: ColliderMaterial {
+        //     friction: 0.001,
+        //     restitution: 0.1,
+        //     ..Default::default()
+        // }
         .with_children(|parent| {
             let mut tr: Transform = Transform {
                 ..Default::default()
@@ -127,26 +122,20 @@ pub fn car_system(
                 material: materials.add(Color::rgb(0.1, 0.1, 0.3).into()),
                 ..Default::default()
             })
-            .insert_bundle(RigidBodyBundle {
-                position: wheel_isometry.into(),
-                ..Default::default()
-            })
-            .insert_bundle(ColliderBundle {
-                shape: wheel_shape.into(),
-                mass_properties: MassProperties::new(
-                    Vec3::new(0.0, 0.0, 0.0).into(),
-                    15.0,
-                    Vec3::new(1.0, 1.0, 1.0).into(),
-                )
-                .into(),
-                material: ColliderMaterial {
-                    friction: 1.0,
-                    restitution: 0.1,
-                    ..Default::default()
-                }
-                .into(),
-                ..Default::default()
-            })
+            .insert(RigidBody::Dynamic)
+            // position: wheel_isometry.into(),
+            .insert(Collider::from(wheel_shape))
+            // mass_properties: MassProperties::new(
+            //     Vec3::new(0.0, 0.0, 0.0).into(),
+            //     15.0,
+            //     Vec3::new(1.0, 1.0, 1.0).into(),
+            // )
+            // .into(),
+            // material: ColliderMaterial {
+            //     friction: 1.0,
+            //     restitution: 0.1,
+            //     ..Default::default()
+            // }
             .insert(Wheel)
             .insert(Transform::default())
             .id();
