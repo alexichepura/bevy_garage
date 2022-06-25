@@ -1,18 +1,14 @@
+use bevy::prelude::*;
 use bevy::text::Font;
 use bevy::{
     diagnostic::Diagnostics,
     diagnostic::FrameTimeDiagnosticsPlugin,
     math::Rect,
-    prelude::{AssetServer, Color, Component, QuerySet, QueryState, TextBundle},
-    prelude::{Query, With},
     text::{TextSection, TextStyle},
     ui::{AlignSelf, PositionType, Style, Val},
 };
 use bevy::{ecs::system::Res, prelude::Commands};
-use bevy::{prelude::Handle, text::Text};
-use bevy_rapier3d::prelude::{
-    MassProperties, RigidBodyMassPropsComponent, RigidBodyVelocityComponent,
-};
+use bevy_rapier3d::prelude::*;
 
 use crate::car::{Car, Wheel};
 
@@ -231,11 +227,11 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
 }
 
 pub fn dash_speed_update_system(
-    mut texts: QuerySet<(
-        QueryState<&mut Text, With<MetersPerSecondText>>,
-        QueryState<&mut Text, With<KilometersPerHourText>>,
-        QueryState<&mut Text, With<MassText>>,
-        QueryState<&mut Text, With<RotPerSecondText>>,
+    mut texts: ParamSet<(
+        Query<&mut Text, With<MetersPerSecondText>>,
+        Query<&mut Text, With<KilometersPerHourText>>,
+        Query<&mut Text, With<MassText>>,
+        Query<&mut Text, With<RotPerSecondText>>,
     )>,
     mut cars: Query<(
         &RigidBodyVelocityComponent,
@@ -246,13 +242,13 @@ pub fn dash_speed_update_system(
 ) {
     let (velocity, mass, _) = cars.single_mut();
     let mps = velocity.linvel.norm();
-    texts.q0().single_mut().sections[0].value = format!("{:.1}", mps);
+    texts.p0().single_mut().sections[0].value = format!("{:.1}", mps);
 
     let kmph = mps * 3.6;
-    texts.q1().single_mut().sections[0].value = format!("{:.1}", kmph);
+    texts.p1().single_mut().sections[0].value = format!("{:.1}", kmph);
 
     let mass_p: MassProperties = mass.local_mprops;
-    texts.q2().single_mut().sections[0].value = format!("{}", 1.0 / mass_p.inv_mass,);
+    texts.p2().single_mut().sections[0].value = format!("{}", mass_p.mass);
 
     let mut msg: String = "".to_string();
     for (v, _wheel) in wheels.iter_mut() {
@@ -260,5 +256,5 @@ pub fn dash_speed_update_system(
         msg = msg + &s;
     }
 
-    texts.q3().single_mut().sections[0].value = msg;
+    texts.p3().single_mut().sections[0].value = msg;
 }

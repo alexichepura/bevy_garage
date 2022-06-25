@@ -1,10 +1,10 @@
 use crate::Car;
 use bevy::ecs::system::Commands;
+use bevy::math::Quat;
 use bevy::pbr::PbrBundle;
 use bevy::pbr::PointLight;
 use bevy::pbr::PointLightBundle;
-use bevy::prelude::QuerySet;
-use bevy::prelude::QueryState;
+use bevy::prelude::*;
 use bevy::render::camera::Camera;
 use bevy::render::camera::CameraPlugin;
 use bevy::render::color::Color;
@@ -14,25 +14,15 @@ use bevy::render::mesh::Mesh;
 use bevy::transform::components::Transform;
 use bevy::{asset::Assets, prelude::UiCameraBundle};
 use bevy::{ecs::system::ResMut, render::mesh::VertexAttributeValues};
-use bevy::{
-    math::Quat,
-    prelude::{AssetServer, Res},
-};
 use bevy::{math::Vec3, prelude::PerspectiveCameraBundle};
 use bevy::{pbr::prelude::StandardMaterial, render::render_resource::PrimitiveTopology};
-use bevy_rapier3d::prelude::{
-    ColliderBundle, ColliderPositionSync, ColliderShape, Isometry, Point, Real, RigidBodyBundle,
-    RigidBodyPosition, RigidBodyType,
-};
+use bevy_rapier3d::prelude::*;
 use core::f32::consts::PI;
 
 pub fn camera_focus_system(
-    mut transforms: QuerySet<(
-        QueryState<(&mut Transform, &Camera)>,
-        QueryState<(&Transform, &Car)>,
-    )>,
+    mut transforms: ParamSet<(Query<(&mut Transform, &Camera)>, Query<(&Transform, &Car)>)>,
 ) {
-    let (car_transform, _car) = transforms.q1().single();
+    let (car_transform, _car) = transforms.p1().single();
     let mut tf = Transform::from_matrix(car_transform.compute_matrix());
     let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 2.5, -8.));
     tf.translation.x = tf.translation.x + shift_vec.x;
@@ -43,7 +33,7 @@ pub fn camera_focus_system(
     // tf.rotate(Quat::from_rotation_x(PI / 16.0));
     // tf.looking_at(Vec3::ZERO, Vec3::Y);
     tf.look_at(car_transform.translation + Vec3::new(0., 1., 0.), Vec3::Y);
-    for (mut cam_transform, camera) in transforms.q0().iter_mut() {
+    for (mut cam_transform, camera) in transforms.p0().iter_mut() {
         if camera.name == Some(CameraPlugin::CAMERA_3D.to_string()) {
             *cam_transform = tf;
         }

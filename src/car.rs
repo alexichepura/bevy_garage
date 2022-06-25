@@ -8,13 +8,11 @@ use bevy::{
         Transform,
     },
 };
-use bevy_rapier3d::{
-    physics::{ColliderBundle, ColliderPositionSync, JointBuilderComponent, RigidBodyBundle},
-    prelude::{
-        ColliderMaterial, ColliderShape, Cylinder, Isometry, JointAxesMask, JointData,
-        MassProperties, Point, Real, RigidBodyPosition, SharedShape, Vector,
-    },
-};
+// use bevy_rapier3d::physics::{
+//     ColliderBundle, ColliderPositionSync, JointBuilderComponent, RigidBodyBundle,
+// };
+use bevy_rapier3d::prelude::*;
+use rapier3d::prelude::*;
 
 use crate::mesh::bevy_mesh;
 

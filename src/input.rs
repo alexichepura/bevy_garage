@@ -13,11 +13,13 @@ use bevy::math::Vec3;
 use bevy::prelude::With;
 use bevy::transform::components::Transform;
 use bevy_rapier3d::physics::JointHandleComponent;
-use bevy_rapier3d::prelude::ImpulseJoint;
-use bevy_rapier3d::prelude::RigidBodyForcesComponent;
-use bevy_rapier3d::prelude::RigidBodyMassPropsComponent;
-use bevy_rapier3d::prelude::RigidBodyVelocityComponent;
-use bevy_rapier3d::prelude::{ImpulseJointSet, Real, Vector};
+// use bevy_rapier3d::prelude::ImpulseJoint;
+// use bevy_rapier3d::prelude::RigidBodyForcesComponent;
+// use bevy_rapier3d::prelude::RigidBodyMassPropsComponent;
+// use bevy_rapier3d::prelude::RigidBodyVelocityComponent;
+use bevy_rapier3d::prelude::*;
+// use rapier3d::prelude::*;
+// use bevy_rapier3d::prelude::{ImpulseJointSet, Real, Vector};
 use nalgebra::Unit;
 
 pub fn arrow_input_system(
