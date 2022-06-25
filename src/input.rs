@@ -12,23 +12,16 @@ use bevy::input::Input;
 use bevy::math::Vec3;
 use bevy::prelude::With;
 use bevy::transform::components::Transform;
-use bevy_rapier3d::physics::JointHandleComponent;
-// use bevy_rapier3d::prelude::ImpulseJoint;
-// use bevy_rapier3d::prelude::RigidBodyForcesComponent;
-// use bevy_rapier3d::prelude::RigidBodyMassPropsComponent;
-// use bevy_rapier3d::prelude::RigidBodyVelocityComponent;
 use bevy_rapier3d::prelude::*;
-// use rapier3d::prelude::*;
-// use bevy_rapier3d::prelude::{ImpulseJointSet, Real, Vector};
 use nalgebra::Unit;
 
 pub fn arrow_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut wheels: Query<(
-        &mut RigidBodyVelocityComponent,
-        &mut RigidBodyForcesComponent,
+        &mut Velocity,
+        &mut ExternalForce,
         &Transform,
-        &RigidBodyMassPropsComponent,
+        &MassProperties,
         With<Wheel>,
     )>,
     mut front_right: Query<(&JointHandleComponent, With<FrontRightJoint>)>,
@@ -101,10 +94,10 @@ pub fn gamepad_input_system(
     axes: Res<Axis<GamepadAxis>>,
     lobby: Res<GamepadLobby>,
     mut wheels: Query<(
-        &mut RigidBodyVelocityComponent,
-        &mut RigidBodyForcesComponent,
+        &mut Velocity,
+        &mut ExternalForce,
         &Transform,
-        &RigidBodyMassPropsComponent,
+        &MassProperties,
         With<Wheel>,
     )>,
     mut front_right_query: Query<(&JointHandleComponent, With<FrontRightJoint>)>,
