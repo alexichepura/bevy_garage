@@ -233,26 +233,21 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<MassText>>,
         Query<&mut Text, With<RotPerSecondText>>,
     )>,
-    mut cars: Query<(
-        &RigidBodyVelocityComponent,
-        &RigidBodyMassPropsComponent,
-        With<Car>,
-    )>,
-    mut wheels: Query<(&RigidBodyVelocityComponent, With<Wheel>)>,
+    mut cars: Query<(&Velocity, &MassProperties, With<Car>)>,
+    mut wheels: Query<(&Velocity, With<Wheel>)>,
 ) {
-    let (velocity, mass, _) = cars.single_mut();
-    let mps = velocity.linvel.norm();
+    let (velocity, massProps, _) = cars.single_mut();
+    let mps = velocity.linvel.length();
     texts.p0().single_mut().sections[0].value = format!("{:.1}", mps);
 
     let kmph = mps * 3.6;
     texts.p1().single_mut().sections[0].value = format!("{:.1}", kmph);
 
-    let mass_p: MassProperties = mass.local_mprops;
-    texts.p2().single_mut().sections[0].value = format!("{}", mass_p.mass);
+    texts.p2().single_mut().sections[0].value = format!("{}", massProps.mass);
 
     let mut msg: String = "".to_string();
     for (v, _wheel) in wheels.iter_mut() {
-        let s = format!("{:.1} ", v.angvel.norm());
+        let s = format!("{:.1} ", v.angvel.length());
         msg = msg + &s;
     }
 
