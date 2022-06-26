@@ -28,9 +28,9 @@ pub fn camera_focus_system(
         Query<(&mut Transform, &Camera, With<FirstPassCamera>)>,
         Query<(&Transform, &Car)>,
     )>,
-    // cameras: Query<&Camera, With<FirstPassCamera>>,
 ) {
-    let (car_transform, _car) = transforms.p1().single();
+    let p1 = transforms.p1();
+    let (car_transform, _car) = p1.single();
     let mut tf = Transform::from_matrix(car_transform.compute_matrix());
     let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 2.5, -8.));
     tf.translation.x = tf.translation.x + shift_vec.x;
@@ -38,8 +38,7 @@ pub fn camera_focus_system(
     tf.translation.z = tf.translation.z + shift_vec.z;
     tf.rotate(Quat::from_rotation_y(-PI));
     tf.look_at(car_transform.translation + Vec3::new(0., 1., 0.), Vec3::Y);
-    // for camera in cameras.iter_mut() {}
-    for (mut cam_transform, camera, _withCamera) in transforms.p0().iter_mut() {
+    for (mut cam_transform, _, _) in transforms.p0().iter_mut() {
         *cam_transform = tf;
     }
 }

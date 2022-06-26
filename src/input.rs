@@ -30,10 +30,10 @@ pub fn arrow_input_system(
     mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     mut joints: ResMut<ImpulseJointSet>,
 ) {
-    let (jointHandleFrontLeft, _) = front_left.get_single_mut().unwrap();
-    let (jointHandleFrontRight, _) = front_right.get_single_mut().unwrap();
-    let mut leftJoint = joints.get_mut(jointHandleFrontLeft.0).unwrap().data;
-    let mut rightJoint = joints.get_mut(jointHandleFrontRight.0).unwrap().data;
+    let (jh_front_left, _) = front_left.get_single_mut().unwrap();
+    let (jh_front_right, _) = front_right.get_single_mut().unwrap();
+    let mut joint_left = joints.get_mut(jh_front_left.0).unwrap().data;
+    let mut joint_right = joints.get_mut(jh_front_right.0).unwrap().data;
 
     let torque: f32 = 1000.;
     if keyboard_input.pressed(KeyCode::Up) {
@@ -48,23 +48,23 @@ pub fn arrow_input_system(
     }
     if keyboard_input.just_pressed(KeyCode::Left) {
         let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., -0.3).into());
-        leftJoint.set_local_axis1(wheel_axis);
-        rightJoint.set_local_axis1(wheel_axis);
+        joint_left.set_local_axis1(wheel_axis);
+        joint_right.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_pressed(KeyCode::Right) {
         let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
-        leftJoint.set_local_axis1(wheel_axis);
-        rightJoint.set_local_axis1(wheel_axis);
+        joint_left.set_local_axis1(wheel_axis);
+        joint_right.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_released(KeyCode::Left) {
         let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
-        leftJoint.set_local_axis1(wheel_axis);
-        rightJoint.set_local_axis1(wheel_axis);
+        joint_left.set_local_axis1(wheel_axis);
+        joint_right.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_released(KeyCode::Right) {
         let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
-        leftJoint.set_local_axis1(wheel_axis);
-        rightJoint.set_local_axis1(wheel_axis);
+        joint_left.set_local_axis1(wheel_axis);
+        joint_right.set_local_axis1(wheel_axis);
     }
 }
 
@@ -83,10 +83,10 @@ pub fn gamepad_input_system(
     mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     mut joints: ResMut<ImpulseJointSet>,
 ) {
-    let (jointHandleFrontLeft, _) = front_left.get_single_mut().unwrap();
-    let (jointHandleFrontRight, _) = front_right.get_single_mut().unwrap();
-    let mut leftJoint = joints.get_mut(jointHandleFrontLeft.0).unwrap().data;
-    let mut rightJoint = joints.get_mut(jointHandleFrontRight.0).unwrap().data;
+    let (jh_front_left, _) = front_left.get_single_mut().unwrap();
+    let (jh_front_right, _) = front_right.get_single_mut().unwrap();
+    let mut joint_left = joints.get_mut(jh_front_left.0).unwrap().data;
+    let mut joint_right = joints.get_mut(jh_front_right.0).unwrap().data;
 
     for gamepad in lobby.gamepads.iter().cloned() {
         let axis_lx = GamepadAxis(gamepad, GamepadAxisType::LeftStickX);
@@ -94,8 +94,8 @@ pub fn gamepad_input_system(
             let wheel_axis: Unit<Vector<Real>> =
                 Unit::new_normalize(Vec3::new(-x / 2.0, 0.0, 1.0).into());
 
-            leftJoint.set_local_axis1(wheel_axis);
-            rightJoint.set_local_axis1(wheel_axis);
+            joint_left.set_local_axis1(wheel_axis);
+            joint_right.set_local_axis1(wheel_axis);
         }
 
         let north = GamepadButton(gamepad, GamepadButtonType::North);

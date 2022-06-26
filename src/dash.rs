@@ -236,14 +236,14 @@ pub fn dash_speed_update_system(
     mut cars: Query<(&Velocity, &MassProperties, With<Car>)>,
     mut wheels: Query<(&Velocity, With<Wheel>)>,
 ) {
-    let (velocity, massProps, _) = cars.single_mut();
+    let (velocity, mass_props, _) = cars.single_mut();
     let mps = velocity.linvel.length();
     texts.p0().single_mut().sections[0].value = format!("{:.1}", mps);
 
     let kmph = mps * 3.6;
     texts.p1().single_mut().sections[0].value = format!("{:.1}", kmph);
 
-    texts.p2().single_mut().sections[0].value = format!("{}", massProps.mass);
+    texts.p2().single_mut().sections[0].value = format!("{}", mass_props.mass);
 
     let mut msg: String = "".to_string();
     for (v, _wheel) in wheels.iter_mut() {
