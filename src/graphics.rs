@@ -75,6 +75,7 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
+        .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_half, 0.5, plane_half))
         .insert(Friction::coefficient(0.7))
         .insert(Restitution::coefficient(0.3));
@@ -100,6 +101,7 @@ pub fn graphics_system(
         //     ),
         //     ..Default::default()
         // }
+        .insert(Velocity::zero())
         .insert(Collider::cuboid(0.5, 0.5, 0.5))
         .insert(Transform::default());
 
@@ -125,6 +127,7 @@ pub fn graphics_system(
         //     ),
         //     ..Default::default()
         // }
+        .insert(Velocity::zero())
         .insert(Collider::cuboid(1.5, 1.0, 0.5))
         .insert(Transform::default());
 
@@ -157,6 +160,7 @@ pub fn graphics_system(
         //     ),
         //     ..Default::default()
         // }
+        .insert(Velocity::zero())
         .insert(Collider::cuboid(1.5, 2.0, 0.5))
         .insert(Transform::default());
 

@@ -47,6 +47,7 @@ pub fn car_system(
         //         position: car_isometry,
         //         ..Default::default()
         //     }
+        .insert(Velocity::zero())
         .insert(Collider::cuboid(car_hl, car_hh, car_hw))
         // mass_properties: MassProperties::new(
         //     Vec3::new(0.0, -0.4, 0.0).into(),
@@ -109,6 +110,21 @@ pub fn car_system(
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
 
+        // let collider = ColliderBundle {
+        //     mass_properties: ColliderMassProps::Density(2.0).into(),
+        //     ..Default::default()
+        // };
+        // // Second option: by setting the mass-properties explicitly.
+        // let collider = ColliderBundle {
+        //     mass_properties: MassProperties::new(
+        //         Vec3::new(0.0, 1.0, 0.0).into(),
+        //         0.5,
+        //         Vec3::new(0.3, 0.2, 0.1).into(),
+        //     )
+        //     .into(),
+        //     ..Default::default()
+        // };
+
         let wheel = commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(wheel_mesh),
@@ -117,8 +133,8 @@ pub fn car_system(
             })
             .insert(RigidBody::Dynamic)
             // position: wheel_isometry.into(),
+            .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
-            // .insert(ColliderMassProperties::MassProperties)
             // .insert(ColliderMassProperties::MassProperties(
             // MassProperties::new(
             //     Vec3::new(0.0, 0.0, 0.0).into(),

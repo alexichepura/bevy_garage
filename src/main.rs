@@ -1,7 +1,7 @@
 use crate::car::Car;
 use crate::gamepad::{gamepad_lobby_system, GamepadLobby};
 use crate::graphics::graphics_system;
-use crate::input::{arrow_input_system, gamepad_input_system};
+use crate::input::arrow_input_system;
 use bevy::{
     app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::Msaa, DefaultPlugins,
 };
@@ -27,7 +27,7 @@ fn main() {
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
-        .add_system(gamepad_input_system)
+        // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
