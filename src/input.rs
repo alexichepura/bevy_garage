@@ -14,6 +14,7 @@ use bevy::prelude::With;
 use bevy::transform::components::Transform;
 use bevy_rapier3d::prelude::*;
 use nalgebra::Unit;
+use rapier3d::math::Vector;
 use rapier3d::prelude::ImpulseJointSet;
 
 pub fn arrow_input_system(
@@ -29,6 +30,11 @@ pub fn arrow_input_system(
     mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     mut joints: ResMut<ImpulseJointSet>,
 ) {
+    let (jointHandleFrontLeft, _) = front_left.get_single_mut().unwrap();
+    let (jointHandleFrontRight, _) = front_right.get_single_mut().unwrap();
+    let mut leftJoint = joints.get_mut(jointHandleFrontLeft.0).unwrap().data;
+    let mut rightJoint = joints.get_mut(jointHandleFrontRight.0).unwrap().data;
+
     let torque: f32 = 1000.;
     if keyboard_input.pressed(KeyCode::Up) {
         for (mut _velocity, mut forces, transform, _mprops, _wheel) in wheels.iter_mut() {
@@ -41,52 +47,24 @@ pub fn arrow_input_system(
         }
     }
     if keyboard_input.just_pressed(KeyCode::Left) {
-        let wax_rot: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., -0.3).into());
-        for (jhc, _) in front_right.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
-        for (jhc, _) in front_left.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., -0.3).into());
+        leftJoint.set_local_axis1(wheel_axis);
+        rightJoint.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_pressed(KeyCode::Right) {
-        let wax_rot: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
-        for (jhc, _) in front_right.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
-        for (jhc, _) in front_left.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
+        leftJoint.set_local_axis1(wheel_axis);
+        rightJoint.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_released(KeyCode::Left) {
-        let wax_rot: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
-        for (jhc, _) in front_right.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
-        for (jhc, _) in front_left.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
+        leftJoint.set_local_axis1(wheel_axis);
+        rightJoint.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_released(KeyCode::Right) {
-        let wax_rot: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
-        for (jhc, _) in front_right.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
-        for (jhc, _) in front_left.iter_mut() {
-            joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-        }
-    }
-}
-
-pub fn joint_wax(joint: Option<&mut ImpulseJoint>, wax: Unit<Vector<Real>>) {
-    if let Some(mut joint) = joint {
-        joint.data = joint.data.local_axis1(wax);
-        // let current_revolute_joint = joint.params.as_revolute_joint();
-        // if let Some(j) = current_revolute_joint {
-        // let joint_new =
-        //     RevoluteJoint::new(j.local_anchor1, wax, j.local_anchor2, j.local_axis2);
-        // joint.params = JointParams::RevoluteJoint(joint_new);
-        // }
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
+        leftJoint.set_local_axis1(wheel_axis);
+        rightJoint.set_local_axis1(wheel_axis);
     }
 }
 
@@ -101,21 +79,23 @@ pub fn gamepad_input_system(
         &MassProperties,
         With<Wheel>,
     )>,
-    mut front_right_query: Query<(&JointHandleComponent, With<FrontRightJoint>)>,
-    mut front_left: Query<(&JointHandleComponent, With<FrontLeftJoint>)>,
+    mut front_right: Query<(&RapierImpulseJointHandle, With<FrontRightJoint>)>,
+    mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     mut joints: ResMut<ImpulseJointSet>,
 ) {
+    let (jointHandleFrontLeft, _) = front_left.get_single_mut().unwrap();
+    let (jointHandleFrontRight, _) = front_right.get_single_mut().unwrap();
+    let mut leftJoint = joints.get_mut(jointHandleFrontLeft.0).unwrap().data;
+    let mut rightJoint = joints.get_mut(jointHandleFrontRight.0).unwrap().data;
+
     for gamepad in lobby.gamepads.iter().cloned() {
         let axis_lx = GamepadAxis(gamepad, GamepadAxisType::LeftStickX);
         if let Some(x) = axes.get(axis_lx) {
-            let wax_rot: Unit<Vector<Real>> =
+            let wheel_axis: Unit<Vector<Real>> =
                 Unit::new_normalize(Vec3::new(-x / 2.0, 0.0, 1.0).into());
-            for (jhc, _) in front_right_query.iter_mut() {
-                joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-            }
-            for (jhc, _) in front_left.iter_mut() {
-                joint_wax(joints.get_mut(jhc.handle()), wax_rot);
-            }
+
+            leftJoint.set_local_axis1(wheel_axis);
+            rightJoint.set_local_axis1(wheel_axis);
         }
 
         let north = GamepadButton(gamepad, GamepadButtonType::North);
