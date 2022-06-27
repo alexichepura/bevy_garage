@@ -22,7 +22,10 @@ pub struct MetersPerSecondText;
 pub struct KilometersPerHourText;
 
 #[derive(Component)]
-pub struct RotPerSecondText;
+pub struct WheelsWText;
+
+#[derive(Component)]
+pub struct WheelsTorqueText;
 
 #[derive(Component)]
 pub struct MassText;
@@ -120,7 +123,7 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: Rect {
-                    bottom: Val::Px(80.0),
+                    bottom: Val::Px(40.0),
                     right: Val::Px(15.0),
                     ..Default::default()
                 },
@@ -174,7 +177,7 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                     TextSection {
-                        value: "angvel".to_string(),
+                        value: "w".to_string(),
                         style: TextStyle {
                             font: bold.clone(),
                             font_size: 40.0,
@@ -186,7 +189,44 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
             },
             ..Default::default()
         })
-        .insert(RotPerSecondText);
+        .insert(WheelsWText);
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(90.0),
+                    right: Val::Px(15.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 40.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                    TextSection {
+                        value: "t".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 40.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                ],
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(WheelsTorqueText);
 
     commands
         .spawn_bundle(TextBundle {
@@ -231,11 +271,12 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<MetersPerSecondText>>,
         Query<&mut Text, With<KilometersPerHourText>>,
         Query<&mut Text, With<MassText>>,
-        Query<&mut Text, With<RotPerSecondText>>,
+        Query<&mut Text, With<WheelsWText>>,
+        Query<&mut Text, With<WheelsTorqueText>>,
     )>,
     // mut cars: Query<(&Velocity, &MassProperties, With<Car>)>,
     mut cars: Query<(&Velocity, &AdditionalMassProperties, With<Car>)>,
-    mut wheels: Query<(&Velocity, With<Wheel>)>,
+    mut wheels: Query<(&Velocity, &ExternalForce, With<Wheel>)>,
 ) {
     let (velocity, mass_props, _) = cars.single_mut();
     let mps = velocity.linvel.length();
@@ -246,11 +287,14 @@ pub fn dash_speed_update_system(
 
     texts.p2().single_mut().sections[0].value = format!("{:.1}", mass_props.0.mass);
 
-    let mut msg: String = "".to_string();
-    for (v, _wheel) in wheels.iter_mut() {
-        let s = format!("{:.1} ", v.angvel.length());
-        msg = msg + &s;
+    let mut v_msg: String = "".to_string();
+    let mut f_msg: String = "".to_string();
+    for (v, f, _wheel) in wheels.iter_mut() {
+        let v_s = format!("{:.1} ", v.angvel.length());
+        v_msg = v_msg + &v_s;
+        let f_s = format!("{:.1} ", f.torque.length());
+        f_msg = f_msg + &f_s;
     }
-
-    texts.p3().single_mut().sections[0].value = msg;
+    texts.p3().single_mut().sections[0].value = v_msg;
+    texts.p4().single_mut().sections[0].value = f_msg;
 }
