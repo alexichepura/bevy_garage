@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
-use rapier3d::prelude::{Isometry, JointAxesMask, SharedShape};
+use rapier3d::prelude::{Isometry, JointAxesMask, RigidBodyPosition, SharedShape};
 use std::sync::Arc;
 
 use crate::mesh::bevy_mesh;
@@ -38,40 +38,38 @@ pub fn car_system(
     let car_pos_transform = Vec3::new(0., 2.5, 0.);
     let qvec = Vec3::new(0., 0., 0.);
     let car_quat = Quat::from_axis_angle(qvec, 0.);
-    let car_isometry: Isometry<Real> = Isometry::new(car_pos_transform.into(), qvec.into());
-
     let car_entity = commands
         .spawn()
         .insert(RigidBody::Dynamic)
-        //     position: RigidBodyPosition {
-        //         position: car_isometry,
-        //         ..Default::default()
-        //     }
+        .insert_bundle(TransformBundle::from(
+            Transform::from_translation(car_pos_transform).with_rotation(car_quat),
+        ))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(car_hl, car_hh, car_hw))
-        // mass_properties: MassProperties::new(
-        //     Vec3::new(0.0, -0.4, 0.0).into(),
-        //     1500.0,
-        //     Vec3::new(100.0, 100.0, 100.0).into(),
-        // )
-        // .into(),
+        .insert(ColliderMassProperties::Density(1.0))
+        // .insert(MassProperties {
+        //     local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
+        //     mass: 1500.0,
+        //     principal_inertia: Vec3::new(100.0, 100.0, 100.0),
+        //     ..Default::default()
+        // })
         // material: ColliderMaterial {
         //     friction: 0.001,
         //     restitution: 0.1,
         //     ..Default::default()
         // }
-        .with_children(|parent| {
-            let mut tr: Transform = Transform {
-                ..Default::default()
-            };
-            tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-            parent.spawn_bundle(PbrBundle {
-                mesh: asset_server.load(car_graphics),
-                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                transform: tr,
-                ..Default::default()
-            });
-        })
+        // .with_children(|parent| {
+        //     let mut tr: Transform = Transform {
+        //         ..Default::default()
+        //     };
+        //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
+        //     parent.spawn_bundle(PbrBundle {
+        //         mesh: asset_server.load(car_graphics),
+        //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+        //         transform: tr,
+        //         ..Default::default()
+        //     });
+        // })
         .insert(Car)
         .insert(Transform::default())
         .id();
@@ -84,7 +82,7 @@ pub fn car_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..4 {
+    for i in 0..1 {
         let mask = JointAxesMask::X
             | JointAxesMask::Y
             | JointAxesMask::Z
@@ -97,51 +95,32 @@ pub fn car_system(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::new(0., 0., 0.).into());
 
-        let joint = RevoluteJointBuilder::new(Vec3::X)
-            .local_anchor1(Vec3::new(0.0, 0.0, 1.0))
-            .local_anchor2(Vec3::new(0.0, 0.0, -3.0));
-
         let wheel_transform = car_pos_transform + car_quat.mul_vec3(car_anchors[i]);
-        let wheel_qvec = Vec3::new(0., 0., 0.);
-        let wheel_isometry: Isometry<Real> =
-            Isometry::new(wheel_transform.into(), wheel_qvec.into());
-
         let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
 
-        // let collider = ColliderBundle {
-        //     mass_properties: ColliderMassProps::Density(2.0).into(),
-        //     ..Default::default()
-        // };
-        // // Second option: by setting the mass-properties explicitly.
-        // let collider = ColliderBundle {
-        //     mass_properties: MassProperties::new(
-        //         Vec3::new(0.0, 1.0, 0.0).into(),
-        //         0.5,
-        //         Vec3::new(0.3, 0.2, 0.1).into(),
-        //     )
-        //     .into(),
-        //     ..Default::default()
-        // };
-
         let wheel = commands
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(wheel_mesh),
-                material: materials.add(Color::rgb(0.1, 0.1, 0.3).into()),
-                ..Default::default()
-            })
+            .spawn()
+            // .spawn_bundle(PbrBundle {
+            //     mesh: meshes.add(wheel_mesh),
+            //     material: materials.add(Color::rgb(0.1, 0.1, 0.3).into()),
+            //     ..Default::default()
+            // })
             .insert(RigidBody::Dynamic)
+            .insert_bundle(TransformBundle::from(
+                Transform::from_translation(wheel_transform), // .with_rotation(wheel_qvec) // TODO
+            ))
             // position: wheel_isometry.into(),
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
-            // .insert(ColliderMassProperties::MassProperties(
-            // MassProperties::new(
-            //     Vec3::new(0.0, 0.0, 0.0).into(),
-            //     15.0,
-            //     Vec3::new(1.0, 1.0, 1.0).into(),
-            // )
-            //  ))
+            .insert(ColliderMassProperties::Density(1.0))
+            // .insert(MassProperties {
+            //     local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
+            //     mass: 15.0,
+            //     principal_inertia: Vec3::new(1.0, 1.0, 1.0),
+            //     ..Default::default()
+            // })
             // material: ColliderMaterial {
             //     friction: 1.0,
             //     restitution: 0.1,

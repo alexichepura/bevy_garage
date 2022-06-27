@@ -10,7 +10,11 @@ use bevy_rapier3d::prelude::*;
 
 use car::car_system;
 use dash::{dash_fps_system, dash_fps_update_system, dash_speed_system, dash_speed_update_system};
-use graphics::camera_focus_system;
+// use graphics::camera_focus_system;
+use smooth_bevy_cameras::{
+    controllers::unreal::{UnrealCameraBundle, UnrealCameraController, UnrealCameraPlugin},
+    LookTransformPlugin,
+};
 
 mod car;
 mod dash;
@@ -23,6 +27,8 @@ fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
+        .add_plugin(LookTransformPlugin)
+        .add_plugin(UnrealCameraPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -31,7 +37,7 @@ fn main() {
         .add_system(arrow_input_system)
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
-        .add_system_to_stage(CoreStage::Update, camera_focus_system)
+        // .add_system_to_stage(CoreStage::Update, camera_focus_system)
         .add_startup_system(graphics_system)
         .add_startup_system(car_system)
         .add_startup_system(dash_fps_system)

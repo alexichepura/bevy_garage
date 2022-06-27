@@ -37,7 +37,9 @@ pub fn arrow_input_system(
 
     let torque: f32 = 1000.;
     if keyboard_input.pressed(KeyCode::Up) {
+        println!("UP");
         for (mut forces, transform, _) in wheels.iter_mut() {
+            println!("UP: {:?}", transform.rotation);
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
         }
     }
