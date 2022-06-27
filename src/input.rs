@@ -26,6 +26,7 @@ pub fn arrow_input_system(
         With<Wheel>,
     )>,
     mut front_right2: Query<(&ImpulseJoint, With<FrontRightJoint>)>,
+    mut front_left2: Query<(&ImpulseJoint, With<FrontLeftJoint>)>,
     // mut front_right: Query<(&RapierImpulseJointHandle, With<FrontRightJoint>)>,
     // mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     // mut joints: ResMut<ImpulseJointSet>,
@@ -57,25 +58,74 @@ pub fn arrow_input_system(
             .data
             .into_rapier(1.0)
             .set_local_axis1(wheel_axis.into());
+        front_left2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
 
         // joint_left.set_local_axis1(wheel_axis);
         // joint_right.set_local_axis1(wheel_axis);
     }
-    // if keyboard_input.just_pressed(KeyCode::Right) {
-    //     let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
-    //     joint_left.set_local_axis1(wheel_axis);
-    //     joint_right.set_local_axis1(wheel_axis);
-    // }
-    // if keyboard_input.just_released(KeyCode::Left) {
-    //     let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
-    //     joint_left.set_local_axis1(wheel_axis);
-    //     joint_right.set_local_axis1(wheel_axis);
-    // }
-    // if keyboard_input.just_released(KeyCode::Right) {
-    //     let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
-    //     joint_left.set_local_axis1(wheel_axis);
-    //     joint_right.set_local_axis1(wheel_axis);
-    // }
+    if keyboard_input.just_pressed(KeyCode::Right) {
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
+        front_right2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
+        front_left2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
+        // joint_left.set_local_axis1(wheel_axis);
+        // joint_right.set_local_axis1(wheel_axis);
+    }
+    if keyboard_input.just_released(KeyCode::Left) {
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
+        front_right2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
+        front_left2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
+        // joint_left.set_local_axis1(wheel_axis);
+        // joint_right.set_local_axis1(wheel_axis);
+    }
+    if keyboard_input.just_released(KeyCode::Right) {
+        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
+        front_right2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
+        front_left2
+            .get_single_mut()
+            .unwrap()
+            .0
+            .data
+            .into_rapier(1.0)
+            .set_local_axis1(wheel_axis.into());
+        // joint_left.set_local_axis1(wheel_axis);
+        // joint_right.set_local_axis1(wheel_axis);
+    }
 }
 
 // pub fn gamepad_input_system(

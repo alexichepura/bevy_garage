@@ -57,7 +57,7 @@ pub fn graphics_system(
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert_bundle(UnrealCameraBundle::new(
             UnrealCameraController::default(),
-            Vec3::new(-20., 20., -20.),
+            Vec3::new(-30., 15., -30.),
             Vec3::new(0., 0., 0.),
         ));
     commands.spawn_bundle(UiCameraBundle::default());
@@ -130,8 +130,7 @@ pub fn graphics_system(
             ),
         ))
         .insert(Velocity::zero())
-        .insert(Collider::cuboid(1.5, 1.0, 0.5))
-        .insert(Transform::default());
+        .insert(Collider::cuboid(1.5, 1.0, 0.5));
 
     let texture_handle = asset_server.load("array_texture.png");
 
@@ -160,8 +159,7 @@ pub fn graphics_system(
                 .with_rotation(Quat::from_axis_angle(Vec3::new(0., 0., 0.), 0.)),
         ))
         .insert(Velocity::zero())
-        .insert(Collider::cuboid(1.5, 2.0, 0.5))
-        .insert(Transform::default());
+        .insert(Collider::cuboid(1.5, 2.0, 0.5));
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let vertices: Vec<[f32; 3]> = vec![
@@ -229,8 +227,7 @@ pub fn graphics_system(
         .insert(Collider::from(ColliderShape::trimesh(
             collider_vertices,
             collider_indices,
-        )))
-        .insert(Transform::default());
+        )));
 }
 fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));

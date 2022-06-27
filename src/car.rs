@@ -35,17 +35,20 @@ pub fn car_system(
     let car_hl: f32 = 0.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_pos_transform = Vec3::new(0., 2.5, 0.);
+    let car_transform = Vec3::new(0., 2.5, 0.);
     let qvec = Vec3::new(0., 0., 0.);
     let car_quat = Quat::from_axis_angle(qvec, 0.);
     let car_entity = commands
         .spawn()
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
-            Transform::from_translation(car_pos_transform).with_rotation(car_quat),
+            Transform::from_translation(car_transform).with_rotation(car_quat),
         ))
+        // .insert_bundle(TransformBundle::from(Transform::from_xyz(0., 2.5, 0.)))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(car_hl, car_hh, car_hw))
+        .insert(Friction::coefficient(0.001))
+        .insert(Restitution::coefficient(0.1))
         .insert(ColliderMassProperties::Density(1.0))
         // .insert(MassProperties {
         //     local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
@@ -53,27 +56,21 @@ pub fn car_system(
         //     principal_inertia: Vec3::new(100.0, 100.0, 100.0),
         //     ..Default::default()
         // })
-        // material: ColliderMaterial {
-        //     friction: 0.001,
-        //     restitution: 0.1,
-        //     ..Default::default()
-        // }
-        // .with_children(|parent| {
-        //     let mut tr: Transform = Transform {
-        //         ..Default::default()
-        //     };
-        //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-        //     parent.spawn_bundle(PbrBundle {
-        //         mesh: asset_server.load(car_graphics),
-        //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-        //         transform: tr,
-        //         ..Default::default()
-        //     });
-        // })
+        .with_children(|parent| {
+            let mut tr: Transform = Transform {
+                ..Default::default()
+            };
+            tr.translation = Vec3::new(0.0, -car_hh, 0.0);
+            parent.spawn_bundle(PbrBundle {
+                mesh: asset_server.load(car_graphics),
+                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+                transform: tr,
+                ..Default::default()
+            });
+        })
         .insert(Car)
         .insert(Transform::default())
         .id();
-
     let shift = Vec3::new(car_hw + 0.1 + wheel_hw, -car_hh, car_hl);
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
@@ -95,7 +92,7 @@ pub fn car_system(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::new(0., 0., 0.).into());
 
-        let wheel_transform = car_pos_transform + car_quat.mul_vec3(car_anchors[i]);
+        let wheel_transform = car_transform + car_quat.mul_vec3(car_anchors[i]);
         let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
