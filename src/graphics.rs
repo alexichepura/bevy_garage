@@ -57,7 +57,7 @@ pub fn graphics_system(
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert_bundle(UnrealCameraBundle::new(
             UnrealCameraController::default(),
-            Vec3::new(-30., 15., -30.),
+            Vec3::new(-20., 10., -20.),
             Vec3::new(0., 0., 0.),
         ));
     commands.spawn_bundle(UiCameraBundle::default());

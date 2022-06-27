@@ -1,13 +1,17 @@
 use bevy::prelude::*;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
-use rapier3d::prelude::{Isometry, JointAxesMask, RigidBodyPosition, SharedShape};
-use std::sync::Arc;
+use rapier3d::prelude::{Isometry, JointAxesMask, SharedShape};
+use std::{f32::consts::PI, sync::Arc};
 
 use crate::mesh::bevy_mesh;
 
 #[derive(Component)]
 pub struct Wheel;
-
+// #[derive(Component)]
+// struct Wheel2 {
+//     diameter: f32,
+//     widrh: f32,
+// }
 #[derive(Component)]
 pub struct FrontJoint;
 
@@ -35,10 +39,10 @@ pub fn car_system(
     let car_hl: f32 = 0.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_transform = Vec3::new(0., 2.5, 0.);
-    let qvec = Vec3::new(0., 0., 0.);
+    let car_transform = Vec3::new(0., 1.5, 0.);
+    let qvec = Vec3::new(0., 1., 0.).normalize();
     let car_quat = Quat::from_axis_angle(qvec, 0.);
-    let car_entity = commands
+    let car = commands
         .spawn()
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
@@ -69,7 +73,6 @@ pub fn car_system(
             });
         })
         .insert(Car)
-        .insert(Transform::default())
         .id();
     let shift = Vec3::new(car_hw + 0.1 + wheel_hw, -car_hh, car_hl);
     let car_anchors: [Vec3; 4] = [
@@ -79,14 +82,14 @@ pub fn car_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..1 {
-        let mask = JointAxesMask::X
+    for i in 0..4 {
+        let joint_mask = JointAxesMask::X
             | JointAxesMask::Y
             | JointAxesMask::Z
             | JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z;
 
-        let data = GenericJointBuilder::new(mask)
+        let joint_builder = GenericJointBuilder::new(joint_mask)
             .local_axis1(Vec3::X)
             .local_axis2(Vec3::Y)
             .local_anchor1(car_anchors[i])
@@ -96,14 +99,12 @@ pub fn car_system(
         let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
-
         let wheel = commands
-            .spawn()
-            // .spawn_bundle(PbrBundle {
-            //     mesh: meshes.add(wheel_mesh),
-            //     material: materials.add(Color::rgb(0.1, 0.1, 0.3).into()),
-            //     ..Default::default()
-            // })
+            .spawn_bundle(PbrBundle {
+                mesh: meshes.add(wheel_mesh),
+                material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+                ..Default::default()
+            })
             .insert(RigidBody::Dynamic)
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(wheel_transform), // .with_rotation(wheel_qvec) // TODO
@@ -112,42 +113,31 @@ pub fn car_system(
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
             .insert(ColliderMassProperties::Density(1.0))
+            .insert(Friction::coefficient(1.0))
+            .insert(Restitution::coefficient(0.1))
             // .insert(MassProperties {
             //     local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
             //     mass: 15.0,
             //     principal_inertia: Vec3::new(1.0, 1.0, 1.0),
             //     ..Default::default()
             // })
-            // material: ColliderMaterial {
-            //     friction: 1.0,
-            //     restitution: 0.1,
-            //     ..Default::default()
-            // }
             .insert(Wheel)
-            .insert(Transform::default())
+            .insert(ImpulseJoint::new(car, joint_builder))
             .id();
         if i == 0 {
             commands
-                .spawn()
-                .insert(ImpulseJoint::new(car_entity, data))
+                .entity(wheel)
                 .insert(FrontRightJoint)
                 .insert(FrontJoint);
         } else if i == 1 {
             commands
-                .spawn()
-                .insert(ImpulseJoint::new(car_entity, data))
+                .entity(wheel)
                 .insert(FrontLeftJoint)
                 .insert(FrontJoint);
         } else if i == 2 {
-            commands
-                .spawn()
-                .insert(ImpulseJoint::new(car_entity, data))
-                .insert(BackJoint);
+            commands.entity(wheel).insert(BackJoint);
         } else if i == 3 {
-            commands
-                .spawn()
-                .insert(ImpulseJoint::new(car_entity, data))
-                .insert(BackJoint);
+            commands.entity(wheel).insert(BackJoint);
         }
     }
 }
