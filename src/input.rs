@@ -19,12 +19,7 @@ use rapier3d::prelude::ImpulseJointSet;
 
 pub fn arrow_input_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut wheels: Query<(
-        &mut ExternalForce,
-        &Transform,
-        // &mut ImpulseJoint,
-        With<Wheel>,
-    )>,
+    mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
     mut front_right2: Query<(&ImpulseJoint, With<FrontRightJoint>)>,
     mut front_left2: Query<(&ImpulseJoint, With<FrontLeftJoint>)>,
     // mut front_right: Query<(&RapierImpulseJointHandle, With<FrontRightJoint>)>,
@@ -36,11 +31,9 @@ pub fn arrow_input_system(
     // let mut joint_left = joints.get_mut(jh_front_left.0).unwrap().data;
     // let mut joint_right = joints.get_mut(jh_front_right.0).unwrap().data;
 
-    let torque: f32 = 1000.;
+    let torque: f32 = 100.;
     if keyboard_input.pressed(KeyCode::Up) {
-        println!("UP");
         for (mut forces, transform, _) in wheels.iter_mut() {
-            println!("UP: {:?}", transform.rotation);
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
         }
     }

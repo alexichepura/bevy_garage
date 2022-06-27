@@ -42,24 +42,23 @@ pub fn car_system(
     let car_transform = Vec3::new(0., 1.5, 0.);
     let qvec = Vec3::new(0., 1., 0.).normalize();
     let car_quat = Quat::from_axis_angle(qvec, 0.);
+
     let car = commands
         .spawn()
         .insert(RigidBody::Dynamic)
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(car_transform).with_rotation(car_quat),
-        ))
-        // .insert_bundle(TransformBundle::from(Transform::from_xyz(0., 2.5, 0.)))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(car_hl, car_hh, car_hw))
         .insert(Friction::coefficient(0.001))
         .insert(Restitution::coefficient(0.1))
-        .insert(ColliderMassProperties::Density(1.0))
-        // .insert(MassProperties {
-        //     local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
-        //     mass: 1500.0,
-        //     principal_inertia: Vec3::new(100.0, 100.0, 100.0),
-        //     ..Default::default()
-        // })
+        .insert_bundle(TransformBundle::from(
+            Transform::from_translation(car_transform).with_rotation(car_quat),
+        ))
+        .insert(AdditionalMassProperties(MassProperties {
+            local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
+            mass: 1500.0,
+            principal_inertia: Vec3::new(100.0, 100.0, 100.0),
+            ..Default::default()
+        }))
         .with_children(|parent| {
             let mut tr: Transform = Transform {
                 ..Default::default()
@@ -112,17 +111,18 @@ pub fn car_system(
             // position: wheel_isometry.into(),
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
-            .insert(ColliderMassProperties::Density(1.0))
             .insert(Friction::coefficient(1.0))
             .insert(Restitution::coefficient(0.1))
-            // .insert(MassProperties {
-            //     local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
-            //     mass: 15.0,
-            //     principal_inertia: Vec3::new(1.0, 1.0, 1.0),
-            //     ..Default::default()
-            // })
+            .insert(ColliderMassProperties::Density(1.0))
+            .insert(AdditionalMassProperties(MassProperties {
+                local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
+                mass: 15.0,
+                principal_inertia: Vec3::new(1.0, 1.0, 1.0),
+                ..Default::default()
+            }))
             .insert(Wheel)
             .insert(ImpulseJoint::new(car, joint_builder))
+            .insert(ExternalForce::default())
             .id();
         if i == 0 {
             commands
