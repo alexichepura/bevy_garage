@@ -88,11 +88,16 @@ pub fn car_system(
             | JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z;
 
+        // let joint = RevoluteJointBuilder::new(x)
+        //     .local_anchor1(Vec3::new(0.0, 0.0, 1.0))
+        //     .local_anchor2(Vec3::new(0.0, 0.0, -3.0));
+
         let joint_builder = GenericJointBuilder::new(joint_mask)
             .local_axis1(Vec3::X)
             .local_axis2(Vec3::Y)
             .local_anchor1(car_anchors[i])
-            .local_anchor2(Vec3::new(0., 0., 0.).into());
+            .local_anchor2(Vec3::new(0., 0., 0.).into())
+            .build();
 
         let wheel_transform = car_transform + car_quat.mul_vec3(car_anchors[i]);
         let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
@@ -111,9 +116,9 @@ pub fn car_system(
             // position: wheel_isometry.into(),
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
-            .insert(Friction::coefficient(1.0))
+            .insert(Friction::coefficient(100.))
             .insert(Restitution::coefficient(0.1))
-            .insert(ColliderMassProperties::Density(1.0))
+            // .insert(ColliderMassProperties::Density(1.0))
             .insert(AdditionalMassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
                 mass: 15.0,

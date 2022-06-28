@@ -83,8 +83,8 @@ pub fn graphics_system(
         .insert_bundle(TransformBundle::identity()) //  from(Transform::identity())
         .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_half, 0.5, plane_half))
-        .insert(Friction::coefficient(0.7))
-        .insert(Restitution::coefficient(0.3));
+        .insert(Friction::coefficient(100.))
+        .insert(Restitution::coefficient(0.1));
     // TOY OBJECT
     commands
         .spawn_bundle(PbrBundle {

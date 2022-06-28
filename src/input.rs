@@ -1,6 +1,4 @@
-use crate::car::FrontLeftJoint;
-use crate::car::FrontRightJoint;
-use crate::car::Wheel;
+use crate::car::*;
 use crate::GamepadLobby;
 use bevy::ecs::system::Query;
 use bevy::ecs::system::Res;
@@ -20,10 +18,8 @@ use rapier3d::prelude::ImpulseJointSet;
 pub fn arrow_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
-    mut front_right2: Query<(&mut ImpulseJoint, With<FrontRightJoint>)>,
+    mut front: Query<(&mut ImpulseJoint, With<FrontJoint>)>,
     // mut front_left2: Query<(&mut ImpulseJoint, With<FrontLeftJoint>)>,
-    // mut front_right: Query<(&RapierImpulseJointHandle, With<FrontRightJoint>)>,
-    // mut front_left: Query<(&RapierImpulseJointHandle, With<FrontLeftJoint>)>,
     // mut joints: ResMut<ImpulseJointSet>,
 ) {
     // let (jh_front_left, _) = front_left.get_single_mut().unwrap();
@@ -31,13 +27,14 @@ pub fn arrow_input_system(
     // let mut joint_left = joints.get_mut(jh_front_left.0).unwrap().data;
     // let mut joint_right = joints.get_mut(jh_front_right.0).unwrap().data;
 
+    // TORQUE
     let torque: f32 = 100.;
-    if keyboard_input.pressed(KeyCode::Up) {
+    if keyboard_input.just_pressed(KeyCode::Up) {
         for (mut forces, transform, _) in wheels.iter_mut() {
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
         }
     }
-    if keyboard_input.pressed(KeyCode::Down) {
+    if keyboard_input.just_pressed(KeyCode::Down) {
         for (mut forces, transform, _) in wheels.iter_mut() {
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., -torque, 0.))).into();
         }
@@ -52,14 +49,15 @@ pub fn arrow_input_system(
             forces.torque = Vec3::ZERO;
         }
     }
+
+    // STEERING
     if keyboard_input.just_pressed(KeyCode::Left) {
-        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., -0.3).into());
-        front_right2
-            .get_single_mut()
-            .unwrap()
-            .0
-            .data
-            .set_local_axis1(Vec3::new(1., 0., -0.3));
+        // let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., -0.3).into());
+        let axis = Vec3::new(1., 0., 0.3).normalize();
+        for (mut joint, _) in front.iter_mut() {
+            joint.data.set_local_axis1(axis);
+        }
+
         // front_left2
         //     .get_single_mut()
         //     .unwrap()
@@ -85,14 +83,18 @@ pub fn arrow_input_system(
         // joint_right.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_pressed(KeyCode::Right) {
-        let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
-        front_right2
-            .get_single_mut()
-            .unwrap()
-            .0
-            .data
-            .into_rapier(1.0)
-            .set_local_axis1(wheel_axis.into());
+        // let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.3).into());
+        let axis = Vec3::new(1., 0., 1.).normalize();
+        for (mut joint, _) in front.iter_mut() {
+            joint.data.set_local_axis1(axis);
+        }
+        // front_right2
+        //     .get_single_mut()
+        //     .unwrap()
+        //     .0
+        //     .data
+        //     .into_rapier(1.0)
+        //     .set_local_axis1(wheel_axis.into());
         // front_left2
         //     .get_single_mut()
         //     .unwrap()
@@ -104,6 +106,10 @@ pub fn arrow_input_system(
         // joint_right.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_released(KeyCode::Left) {
+        let axis = Vec3::new(1., 0., 0.0).normalize();
+        for (mut joint, _) in front.iter_mut() {
+            joint.data.set_local_axis1(axis);
+        }
         // let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
         // front_right2
         //     .get_single_mut()
@@ -123,6 +129,10 @@ pub fn arrow_input_system(
         // joint_right.set_local_axis1(wheel_axis);
     }
     if keyboard_input.just_released(KeyCode::Right) {
+        let axis = Vec3::new(1., 0., 0.0).normalize();
+        for (mut joint, _) in front.iter_mut() {
+            joint.data.set_local_axis1(axis);
+        }
         // let wheel_axis: Unit<Vector<Real>> = Unit::new_normalize(Vec3::new(1., 0., 0.).into());
         // front_right2
         //     .get_single_mut()

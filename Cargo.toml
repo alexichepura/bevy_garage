@@ -21,6 +21,7 @@ nalgebra = "^0.31.0"
 bevy_obj = "^0.7.0"
 smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
 # smooth-bevy-cameras = "0.4.0"
+bevy-inspector-egui = "^0.11.0"
 
 [profile.dev.package.bevy_rapier3d]
 opt-level = 3
