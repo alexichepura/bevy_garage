@@ -1,10 +1,5 @@
 use crate::car::*;
-use bevy::ecs::system::Query;
-use bevy::ecs::system::Res;
-use bevy::ecs::system::ResMut;
-use bevy::math::Vec3;
 use bevy::prelude::*;
-use bevy::transform::components::Transform;
 use bevy_rapier3d::prelude::*;
 
 pub fn arrow_input_system(

@@ -1,13 +1,5 @@
 use bevy::prelude::*;
-use bevy::text::Font;
-use bevy::{
-    diagnostic::Diagnostics,
-    diagnostic::FrameTimeDiagnosticsPlugin,
-    math::Rect,
-    text::{TextSection, TextStyle},
-    ui::{AlignSelf, PositionType, Style, Val},
-};
-use bevy::{ecs::system::Res, prelude::Commands};
+use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
 
 use crate::car::{Car, Wheel};

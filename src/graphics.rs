@@ -1,21 +1,9 @@
 use crate::Car;
-use bevy::asset::Assets;
-use bevy::ecs::system::Commands;
-use bevy::math::Quat;
-use bevy::pbr::PbrBundle;
-use bevy::pbr::PointLight;
-use bevy::pbr::PointLightBundle;
 use bevy::prelude::*;
-use bevy::render::camera::Camera;
-use bevy::render::camera::Camera3d;
-use bevy::render::color::Color;
-use bevy::render::mesh::shape;
-use bevy::render::mesh::Indices;
-use bevy::render::mesh::Mesh;
-use bevy::transform::components::Transform;
-use bevy::{ecs::system::ResMut, render::mesh::VertexAttributeValues};
-use bevy::{math::Vec3, prelude::PerspectiveCameraBundle};
-use bevy::{pbr::prelude::StandardMaterial, render::render_resource::PrimitiveTopology};
+use bevy::render::{
+    mesh::{Indices, VertexAttributeValues},
+    render_resource::PrimitiveTopology,
+};
 use bevy_rapier3d::prelude::*;
 use core::f32::consts::PI;
 use rapier3d::math::Point;
