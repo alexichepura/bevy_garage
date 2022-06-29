@@ -15,8 +15,8 @@ use bevy_rapier3d::prelude::*;
 
 use car::*;
 use dash::*;
+use graphics::camera_focus_system;
 use input::*;
-// use graphics::camera_focus_system;
 use smooth_bevy_cameras::{controllers::unreal::UnrealCameraPlugin, LookTransformPlugin};
 
 fn main() {
