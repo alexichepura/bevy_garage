@@ -45,7 +45,7 @@ pub fn graphics_system(
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert_bundle(UnrealCameraBundle::new(
             UnrealCameraController::default(),
-            Vec3::new(-10., 5., -10.),
+            Vec3::new(0., 5., 10.),
             Vec3::new(0., 0., 0.),
         ));
     commands.spawn_bundle(UiCameraBundle::default());
@@ -94,8 +94,7 @@ pub fn graphics_system(
             ),
         ))
         .insert(Velocity::zero())
-        .insert(Collider::cuboid(0.5, 0.5, 0.5))
-        .insert(Transform::default());
+        .insert(Collider::cuboid(0.5, 0.5, 0.5));
 
     // TOY OBJECT 2
     commands
@@ -209,9 +208,10 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
-        .insert_bundle(TransformBundle::from(Transform::from_translation(
-            Vec3::new(15.0, 0.0, 0.0),
-        )))
+        .insert_bundle(TransformBundle::from(
+            Transform::from_translation(Vec3::new(-5.0, 0.0, -5.0))
+                .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.), PI)),
+        ))
         .insert(Collider::from(ColliderShape::trimesh(
             collider_vertices,
             collider_indices,

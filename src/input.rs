@@ -32,13 +32,13 @@ pub fn arrow_input_system(
 
     // STEERING
     if keyboard_input.just_pressed(KeyCode::Left) {
-        let axis = Vec3::new(1., 0., -0.3).normalize();
+        let axis = Vec3::new(1., 0., -0.3);
         for (mut joint, _) in front.iter_mut() {
             joint.data.set_local_axis1(axis);
         }
     }
     if keyboard_input.just_pressed(KeyCode::Right) {
-        let axis = Vec3::new(1., 0., 0.3).normalize();
+        let axis = Vec3::new(1., 0., 0.3);
         for (mut joint, _) in front.iter_mut() {
             joint.data.set_local_axis1(axis);
         }

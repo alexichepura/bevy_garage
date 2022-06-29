@@ -8,8 +8,8 @@ mod mesh;
 use crate::gamepad::{gamepad_lobby_system, GamepadLobby};
 use crate::graphics::graphics_system;
 use bevy::{app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
-use bevy_inspector_egui::InspectorPlugin;
+// use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
+// use bevy_inspector_egui::InspectorPlugin;
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::prelude::*;
 
@@ -23,8 +23,8 @@ fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
-        .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
-        .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
+        // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
+        // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         .add_plugin(LookTransformPlugin)
         .add_plugin(UnrealCameraPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())

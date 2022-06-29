@@ -36,7 +36,7 @@ pub fn car_system(
     let car_graphics = "hatchbackSports.obj";
     let car_hw: f32 = 0.45;
     let car_hh: f32 = 0.5;
-    let car_hl: f32 = 0.8;
+    let car_hl: f32 = 1.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
     let car_transform = Vec3::new(0., 1.5, 0.);
@@ -59,18 +59,18 @@ pub fn car_system(
             principal_inertia: Vec3::new(100.0, 100.0, 100.0),
             ..Default::default()
         }))
-        .with_children(|parent| {
-            let mut tr: Transform = Transform {
-                ..Default::default()
-            };
-            tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-            parent.spawn_bundle(PbrBundle {
-                mesh: asset_server.load(car_graphics),
-                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                transform: tr,
-                ..Default::default()
-            });
-        })
+        // .with_children(|parent| {
+        //     let mut tr: Transform = Transform {
+        //         ..Default::default()
+        //     };
+        //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
+        //     parent.spawn_bundle(PbrBundle {
+        //         mesh: asset_server.load(car_graphics),
+        //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+        //         transform: tr,
+        //         ..Default::default()
+        //     });
+        // })
         .insert(Car)
         .id();
     let shift = Vec3::new(car_hw + 0.1 + wheel_hw, -car_hh, car_hl);
@@ -104,11 +104,12 @@ pub fn car_system(
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
         let wheel = commands
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(wheel_mesh),
-                material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
-                ..Default::default()
-            })
+            .spawn()
+            // .spawn_bundle(PbrBundle {
+            //     mesh: meshes.add(wheel_mesh),
+            //     material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+            //     ..Default::default()
+            // })
             .insert(RigidBody::Dynamic)
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(wheel_transform)
