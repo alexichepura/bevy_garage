@@ -36,18 +36,19 @@ pub fn car_system(
     let car_graphics = "hatchbackSports.obj";
     let car_hw: f32 = 0.45;
     let car_hh: f32 = 0.5;
-    let car_hl: f32 = 1.8;
+    let car_hl: f32 = 1.2;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
     let car_transform = Vec3::new(0., 1.5, 0.);
-    let qvec = Vec3::new(0., 1., 0.).normalize();
-    let car_quat = Quat::from_axis_angle(qvec, 0.);
+    // let qvec = Vec3::new(0., 0., 0.).normalize();
+    // let car_quat = Quat::from_axis_angle(Vec3::new(0., 0., 0.), 0.);
+    let car_quat = Quat::IDENTITY;
 
     let car = commands
         .spawn()
         .insert(RigidBody::Dynamic)
         .insert(Velocity::zero())
-        .insert(Collider::cuboid(car_hl, car_hh, car_hw))
+        .insert(Collider::cuboid(car_hw, car_hh, car_hl))
         .insert(Friction::coefficient(0.001))
         .insert(Restitution::coefficient(0.1))
         .insert_bundle(TransformBundle::from(
@@ -73,7 +74,7 @@ pub fn car_system(
         // })
         .insert(Car)
         .id();
-    let shift = Vec3::new(car_hw + 0.1 + wheel_hw, -car_hh, car_hl);
+    let shift = Vec3::new(car_hw + 0.25 + wheel_hw, -car_hh, car_hl);
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
         Vec3::new(-shift.x, shift.y, shift.z),
@@ -88,11 +89,13 @@ pub fn car_system(
             | JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z;
 
-        // let joint = RevoluteJointBuilder::new(x)
-        //     .local_anchor1(Vec3::new(0.0, 0.0, 1.0))
-        //     .local_anchor2(Vec3::new(0.0, 0.0, -3.0));
+        // let joint = RevoluteJointBuilder::new(Vec3::X)
+        //     // .local_axis1(Vec3::X)
+        //     .local_axis2(Vec3::Y)
+        //     .local_anchor1(car_anchors[i])
+        //     .local_anchor2(Vec3::new(0., 0., 0.).into());
 
-        let joint_builder = GenericJointBuilder::new(joint_mask)
+        let joint = GenericJointBuilder::new(joint_mask)
             .local_axis1(Vec3::X)
             .local_axis2(Vec3::Y)
             .local_anchor1(car_anchors[i])
@@ -113,7 +116,7 @@ pub fn car_system(
             .insert(RigidBody::Dynamic)
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(wheel_transform)
-                    .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), 0.)),
+                    .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI)),
             ))
             // position: wheel_isometry.into(),
             .insert(Velocity::zero())
@@ -128,7 +131,7 @@ pub fn car_system(
                 ..Default::default()
             }))
             .insert(Wheel)
-            .insert(ImpulseJoint::new(car, joint_builder))
+            .insert(ImpulseJoint::new(car, joint))
             .insert(ExternalForce::default())
             .id();
         if i == 0 {

@@ -75,22 +75,23 @@ pub fn graphics_system(
         .insert(Restitution::coefficient(0.1));
     // TOY OBJECT
     commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box {
-                max_x: 0.5,
-                min_x: -0.5,
-                max_y: 0.5,
-                min_y: -0.5,
-                max_z: 0.5,
-                min_z: -0.5,
-            })),
-            material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
-            ..Default::default()
-        })
+        // .spawn_bundle(PbrBundle {
+        //     mesh: meshes.add(Mesh::from(shape::Box {
+        //         max_x: 0.5,
+        //         min_x: -0.5,
+        //         max_y: 0.5,
+        //         min_y: -0.5,
+        //         max_z: 0.5,
+        //         min_z: -0.5,
+        //     })),
+        //     material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
+        //     ..Default::default()
+        // })
+        .spawn()
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(5.0, 1.0, 0.0)).with_rotation(
-                Quat::from_axis_angle(Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0), 0.),
+            Transform::from_translation(Vec3::new(1., 1., 4.0)).with_rotation(
+                Quat::from_axis_angle(Vec3::new(PI / 4., PI / 4., PI / 4.), 0.),
             ),
         ))
         .insert(Velocity::zero())

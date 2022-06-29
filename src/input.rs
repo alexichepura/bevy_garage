@@ -8,7 +8,7 @@ pub fn arrow_input_system(
     mut front: Query<(&mut ImpulseJoint, With<FrontJoint>)>,
 ) {
     // TORQUE
-    let torque: f32 = 100.;
+    let torque: f32 = 400.;
     if keyboard_input.just_pressed(KeyCode::Up) {
         for (mut forces, transform, _) in wheels.iter_mut() {
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
