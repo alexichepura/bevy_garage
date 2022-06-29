@@ -9,12 +9,12 @@ pub fn arrow_input_system(
 ) {
     // TORQUE
     let torque: f32 = 500.;
-    if keyboard_input.just_pressed(KeyCode::Up) {
+    if keyboard_input.pressed(KeyCode::Up) {
         for (mut forces, transform, _) in wheels.iter_mut() {
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
         }
     }
-    if keyboard_input.just_pressed(KeyCode::Down) {
+    if keyboard_input.pressed(KeyCode::Down) {
         for (mut forces, transform, _) in wheels.iter_mut() {
             forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., -torque, 0.))).into();
         }
