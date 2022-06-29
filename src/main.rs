@@ -35,7 +35,7 @@ fn main() {
         .add_system(arrow_input_system)
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_system)
         .add_startup_system(graphics_system)
         .add_startup_system(car_system)
         .add_startup_system(dash_fps_system)

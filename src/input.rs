@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::*;
 pub fn arrow_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
-    mut front: Query<(&mut ImpulseJoint, With<FrontJoint>)>,
+    mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
 ) {
     // TORQUE
     let torque: f32 = 500.;

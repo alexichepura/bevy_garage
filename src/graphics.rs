@@ -37,18 +37,18 @@ pub fn graphics_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    // commands.spawn_bundle(PerspectiveCameraBundle {
-    //     transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
-    //         .looking_at(Vec3::ZERO, Vec3::Y),
-    //     ..Default::default()
-    // });
-    commands
-        .spawn_bundle(PerspectiveCameraBundle::default())
-        .insert_bundle(UnrealCameraBundle::new(
-            UnrealCameraController::default(),
-            Vec3::new(0., 5., 10.),
-            Vec3::new(0., 0., 0.),
-        ));
+    commands.spawn_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
+            .looking_at(Vec3::ZERO, Vec3::Y),
+        ..Default::default()
+    });
+    // commands
+    //     .spawn_bundle(PerspectiveCameraBundle::default())
+    //     .insert_bundle(UnrealCameraBundle::new(
+    //         UnrealCameraController::default(),
+    //         Vec3::new(0., 5., 10.),
+    //         Vec3::new(0., 0., 0.),
+    //     ));
     commands.spawn_bundle(UiCameraBundle::default());
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(-10., 40., 20.),

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
-use rapier3d::prelude::{Isometry, JointAxesMask, SharedShape};
+use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, sync::Arc};
 
 use crate::mesh::bevy_mesh;
@@ -118,7 +118,6 @@ pub fn car_system(
                 Transform::from_translation(wheel_transform)
                     .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI)),
             ))
-            // position: wheel_isometry.into(),
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
             .insert(Friction::coefficient(100.))
@@ -131,7 +130,7 @@ pub fn car_system(
                 ..Default::default()
             }))
             .insert(Wheel)
-            .insert(ImpulseJoint::new(car, joint))
+            .insert(MultibodyJoint::new(car, joint))
             .insert(ExternalForce::default())
             .id();
         if i == 0 {
