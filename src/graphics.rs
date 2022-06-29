@@ -37,18 +37,18 @@ pub fn graphics_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
-            .looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    });
-    // commands
-    //     .spawn_bundle(PerspectiveCameraBundle::default())
-    //     .insert_bundle(UnrealCameraBundle::new(
-    //         UnrealCameraController::default(),
-    //         Vec3::new(0., 5., 10.),
-    //         Vec3::new(0., 0., 0.),
-    //     ));
+    // commands.spawn_bundle(PerspectiveCameraBundle {
+    //     transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
+    //         .looking_at(Vec3::ZERO, Vec3::Y),
+    //     ..Default::default()
+    // });
+    commands
+        .spawn_bundle(PerspectiveCameraBundle::default())
+        .insert_bundle(UnrealCameraBundle::new(
+            UnrealCameraController::default(),
+            Vec3::new(0., 5., 10.),
+            Vec3::new(0., 0., 0.),
+        ));
     commands.spawn_bundle(UiCameraBundle::default());
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(-10., 40., 20.),
@@ -69,26 +69,25 @@ pub fn graphics_system(
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
-        .insert_bundle(TransformBundle::identity()) //  from(Transform::identity())
+        .insert_bundle(TransformBundle::identity())
         .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_half, 0.5, plane_half))
         .insert(Friction::coefficient(100.))
         .insert(Restitution::coefficient(0.1));
     // TOY OBJECT
     commands
-        // .spawn_bundle(PbrBundle {
-        //     mesh: meshes.add(Mesh::from(shape::Box {
-        //         max_x: 0.5,
-        //         min_x: -0.5,
-        //         max_y: 0.5,
-        //         min_y: -0.5,
-        //         max_z: 0.5,
-        //         min_z: -0.5,
-        //     })),
-        //     material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
-        //     ..Default::default()
-        // })
-        .spawn()
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box {
+                max_x: 0.5,
+                min_x: -0.5,
+                max_y: 0.5,
+                min_y: -0.5,
+                max_z: 0.5,
+                min_z: -0.5,
+            })),
+            material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
+            ..Default::default()
+        })
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(Vec3::new(1., 1., 4.0)).with_rotation(
