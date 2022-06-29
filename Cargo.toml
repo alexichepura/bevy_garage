@@ -15,7 +15,8 @@ dev = []
 
 [dependencies]
 bevy = { version = "0.7.0" }
-bevy_rapier3d = { version = "0.14.1", features = [ "debug-render" ] }
+bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "2bec1e638ccd609e52b43266bc07a74490682b1a", features = [ "debug-render" ] }
+# bevy_rapier3d = { version = "0.14.1", features = [ "debug-render" ] }
 rapier3d = { version = "^0.13.0", default-features = false, features = [ "dim3", "f32" ] }
 nalgebra = "^0.31.0"
 bevy_obj = "^0.7.0"

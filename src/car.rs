@@ -111,7 +111,8 @@ pub fn car_system(
             })
             .insert(RigidBody::Dynamic)
             .insert_bundle(TransformBundle::from(
-                Transform::from_translation(wheel_transform), // .with_rotation(wheel_qvec) // TODO
+                Transform::from_translation(wheel_transform)
+                    .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), 0.)),
             ))
             // position: wheel_isometry.into(),
             .insert(Velocity::zero())

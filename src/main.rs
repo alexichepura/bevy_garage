@@ -1,6 +1,12 @@
+mod car;
+mod dash;
+mod gamepad;
+mod graphics;
+mod input;
+mod mesh;
+
 use crate::gamepad::{gamepad_lobby_system, GamepadLobby};
 use crate::graphics::graphics_system;
-use crate::input::arrow_input_system;
 use bevy::{app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
 use bevy_inspector_egui::InspectorPlugin;
@@ -9,15 +15,9 @@ use bevy_rapier3d::prelude::*;
 
 use car::*;
 use dash::*;
+use input::*;
 // use graphics::camera_focus_system;
 use smooth_bevy_cameras::{controllers::unreal::UnrealCameraPlugin, LookTransformPlugin};
-
-mod car;
-mod dash;
-mod gamepad;
-mod graphics;
-mod input;
-mod mesh;
 
 fn main() {
     App::new()
@@ -42,19 +42,5 @@ fn main() {
         .add_startup_system(dash_speed_system)
         .add_system(dash_fps_update_system)
         .add_system(dash_speed_update_system)
-        .add_system(log_joint_changes)
         .run();
-}
-
-// https://github.com/dimforge/bevy_rapier/blob/master/src/plugin/systems.rs#L373
-pub fn log_joint_changes(
-    mut context: ResMut<RapierContext>,
-    changed_impulse_joints: Query<&ImpulseJoint, Changed<ImpulseJoint>>,
-) {
-    for changed_joint in changed_impulse_joints.iter() {
-        println!("changed_joint {:?}", changed_joint.data.local_axis1())
-        // if let Some(joint) = context.impulse_joints.get_mut(handle.0) {
-        //     joint.data = changed_joint.data.into_rapier(1);
-        // }
-    }
 }
