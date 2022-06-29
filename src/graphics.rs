@@ -1,33 +1,52 @@
 use crate::Car;
-use bevy::prelude::*;
-use bevy::render::{
-    camera::Camera3d,
-    mesh::{Indices, VertexAttributeValues},
-    render_resource::PrimitiveTopology,
+use bevy::ecs::system::Commands;
+use bevy::pbr::PbrBundle;
+use bevy::pbr::PointLight;
+use bevy::pbr::PointLightBundle;
+use bevy::prelude::QuerySet;
+use bevy::prelude::QueryState;
+use bevy::render::camera::Camera;
+use bevy::render::camera::CameraPlugin;
+use bevy::render::color::Color;
+use bevy::render::mesh::shape;
+use bevy::render::mesh::Indices;
+use bevy::render::mesh::Mesh;
+use bevy::transform::components::Transform;
+use bevy::{asset::Assets, prelude::UiCameraBundle};
+use bevy::{ecs::system::ResMut, render::mesh::VertexAttributeValues};
+use bevy::{
+    math::Quat,
+    prelude::{AssetServer, Res},
 };
-use bevy_rapier3d::prelude::*;
+use bevy::{math::Vec3, prelude::PerspectiveCameraBundle};
+use bevy::{pbr::prelude::StandardMaterial, render::render_resource::PrimitiveTopology};
+use bevy_rapier3d::prelude::{
+    ColliderBundle, ColliderPositionSync, ColliderShape, Isometry, Point, Real, RigidBodyBundle,
+    RigidBodyPosition, RigidBodyType,
+};
 use core::f32::consts::PI;
-use rapier3d::math::Point;
-use rapier3d::prelude::ColliderShape;
-use smooth_bevy_cameras::controllers::unreal::{UnrealCameraBundle, UnrealCameraController};
 
 pub fn camera_focus_system(
-    mut transforms: ParamSet<(
-        Query<(&mut Transform, &Camera, With<Camera3d>)>,
-        Query<(&Transform, &Car)>,
+    mut transforms: QuerySet<(
+        QueryState<(&mut Transform, &Camera)>,
+        QueryState<(&Transform, &Car)>,
     )>,
 ) {
-    let p1 = transforms.p1();
-    let (car_transform, _car) = p1.single();
+    let (car_transform, _car) = transforms.q1().single();
     let mut tf = Transform::from_matrix(car_transform.compute_matrix());
     let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 2.5, -8.));
     tf.translation.x = tf.translation.x + shift_vec.x;
     tf.translation.y = tf.translation.y + shift_vec.y;
     tf.translation.z = tf.translation.z + shift_vec.z;
     tf.rotate(Quat::from_rotation_y(-PI));
+    // tf.rotate(Quat::from_rotation_y(-PI / 2.0));
+    // tf.rotate(Quat::from_rotation_x(PI / 16.0));
+    // tf.looking_at(Vec3::ZERO, Vec3::Y);
     tf.look_at(car_transform.translation + Vec3::new(0., 1., 0.), Vec3::Y);
-    for (mut cam_transform, _, _) in transforms.p0().iter_mut() {
-        *cam_transform = tf;
+    for (mut cam_transform, camera) in transforms.q0().iter_mut() {
+        if camera.name == Some(CameraPlugin::CAMERA_3D.to_string()) {
+            *cam_transform = tf;
+        }
     }
 }
 
@@ -37,18 +56,18 @@ pub fn graphics_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    // commands.spawn_bundle(PerspectiveCameraBundle {
-    //     transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
-    //         .looking_at(Vec3::ZERO, Vec3::Y),
-    //     ..Default::default()
-    // });
-    commands
-        .spawn_bundle(PerspectiveCameraBundle::default())
-        .insert_bundle(UnrealCameraBundle::new(
-            UnrealCameraController::default(),
-            Vec3::new(0., 5., 10.),
-            Vec3::new(0., 0., 0.),
-        ));
+    // commands.spawn_bundle(FpsCameraBundle::new(
+    //     FpsCameraController::default(),
+    //     PerspectiveCameraBundle::default(),
+    //     Vec3::new(-10.0, 10.0, 0.0),
+    //     // Vec3::new(-2.0, 5.0, 5.0),
+    //     Vec3::new(0., 0., 0.),
+    // ));
+    commands.spawn_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_translation(Vec3::new(0., 2.5, 0.))
+            .looking_at(Vec3::ZERO, Vec3::Y),
+        ..Default::default()
+    });
     commands.spawn_bundle(UiCameraBundle::default());
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(-10., 40., 20.),
@@ -68,12 +87,19 @@ pub fn graphics_system(
             material: materials.add(Color::rgba(0.2, 0.6, 0.2, 0.5).into()),
             ..Default::default()
         })
-        .insert(RigidBody::Fixed)
-        .insert_bundle(TransformBundle::identity())
-        .insert(Velocity::zero())
-        .insert(Collider::cuboid(plane_half, 0.5, plane_half))
-        .insert(Friction::coefficient(100.))
-        .insert(Restitution::coefficient(0.1));
+        .insert_bundle(RigidBodyBundle {
+            body_type: RigidBodyType::Static.into(),
+            ..Default::default()
+        })
+        .insert_bundle(ColliderBundle {
+            shape: ColliderShape::cuboid(plane_half, 0.5, plane_half).into(),
+            // material: ColliderMaterial {
+            //     friction: 1.0,
+            //     restitution: 1_000_0000.0,
+            //     ..Default::default()
+            // },
+            ..Default::default()
+        });
     // TOY OBJECT
     commands
         .spawn_bundle(PbrBundle {
@@ -88,14 +114,23 @@ pub fn graphics_system(
             material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
             ..Default::default()
         })
-        .insert(RigidBody::Dynamic)
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(1., 1., 4.0)).with_rotation(
-                Quat::from_axis_angle(Vec3::new(PI / 4., PI / 4., PI / 4.), 0.),
-            ),
-        ))
-        .insert(Velocity::zero())
-        .insert(Collider::cuboid(0.5, 0.5, 0.5));
+        .insert_bundle(RigidBodyBundle {
+            position: RigidBodyPosition {
+                position: Isometry::new(
+                    Vec3::new(5.0, 1.0, 0.0).into(),
+                    Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0).into(),
+                ),
+                ..Default::default()
+            }
+            .into(),
+            ..Default::default()
+        })
+        .insert_bundle(ColliderBundle {
+            shape: ColliderShape::cuboid(0.5, 0.5, 0.5).into(),
+            ..Default::default()
+        })
+        .insert(Transform::default())
+        .insert(ColliderPositionSync::Discrete);
 
     // TOY OBJECT 2
     commands
@@ -111,14 +146,23 @@ pub fn graphics_system(
             material: materials.add(Color::rgb(0.5, 0.5, 0.9).into()),
             ..Default::default()
         })
-        .insert(RigidBody::Dynamic)
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(10.0, 3.0, -10.0)).with_rotation(
-                Quat::from_axis_angle(Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0), 0.),
-            ),
-        ))
-        .insert(Velocity::zero())
-        .insert(Collider::cuboid(1.5, 1.0, 0.5));
+        .insert_bundle(RigidBodyBundle {
+            position: RigidBodyPosition {
+                position: Isometry::new(
+                    Vec3::new(10.0, 3.0, -10.0).into(),
+                    Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0).into(),
+                ),
+                ..Default::default()
+            }
+            .into(),
+            ..Default::default()
+        })
+        .insert_bundle(ColliderBundle {
+            shape: ColliderShape::cuboid(1.5, 1.0, 0.5).into(),
+            ..Default::default()
+        })
+        .insert(Transform::default())
+        .insert(ColliderPositionSync::Discrete);
 
     let texture_handle = asset_server.load("array_texture.png");
 
@@ -141,13 +185,23 @@ pub fn graphics_system(
             }),
             ..Default::default()
         })
-        .insert(RigidBody::Dynamic)
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(10.0, 3.0, 10.0))
-                .with_rotation(Quat::from_axis_angle(Vec3::new(0., 0., 0.), 0.)),
-        ))
-        .insert(Velocity::zero())
-        .insert(Collider::cuboid(1.5, 2.0, 0.5));
+        .insert_bundle(RigidBodyBundle {
+            position: RigidBodyPosition {
+                position: Isometry::new(
+                    Vec3::new(10.0, 3.0, 10.0).into(),
+                    Vec3::new(0., 0., 0.).into(),
+                ),
+                ..Default::default()
+            }
+            .into(),
+            ..Default::default()
+        })
+        .insert_bundle(ColliderBundle {
+            shape: ColliderShape::cuboid(1.5, 2.0, 0.5).into(),
+            ..Default::default()
+        })
+        .insert(Transform::default())
+        .insert(ColliderPositionSync::Discrete);
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let vertices: Vec<[f32; 3]> = vec![
@@ -169,7 +223,7 @@ pub fn graphics_system(
     collider_vertices.push(vertices[4].into());
     collider_vertices.push(vertices[5].into());
 
-    mesh.insert_attribute(
+    mesh.set_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices.clone()),
     );
@@ -177,7 +231,7 @@ pub fn graphics_system(
     let n1: [f32; 3] = face_normal(vertices[0], vertices[2], vertices[1]);
     let n2: [f32; 3] = face_normal(vertices[2], vertices[4], vertices[3]);
     let normals: Vec<[f32; 3]> = vec![n1, n1, n1, n2, n2, n2];
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
 
     let uvs: Vec<[f32; 2]> = vec![
         [0.0, 0.0],
@@ -187,7 +241,7 @@ pub fn graphics_system(
         [0.0, 0.0],
         [1.0, 1.0],
     ];
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
+    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
 
     let rinds = vec![0, 1, 2, 2, 1, 3, 2, 3, 4, 4, 3, 5];
     let mut collider_indices: Vec<[u32; 3]> = Vec::new();
@@ -208,15 +262,24 @@ pub fn graphics_system(
             }),
             ..Default::default()
         })
-        .insert(RigidBody::Fixed)
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(-5.0, 0.0, -5.0))
-                .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.), PI)),
-        ))
-        .insert(Collider::from(ColliderShape::trimesh(
-            collider_vertices,
-            collider_indices,
-        )));
+        .insert_bundle(RigidBodyBundle {
+            body_type: RigidBodyType::Static.into(),
+            position: RigidBodyPosition {
+                position: Isometry::new(
+                    Vec3::new(15.0, 0.0, 0.0).into(),
+                    Vec3::new(0., 0., 0.).into(),
+                ),
+                ..Default::default()
+            }
+            .into(),
+            ..Default::default()
+        })
+        .insert_bundle(ColliderBundle {
+            shape: ColliderShape::trimesh(collider_vertices, collider_indices).into(),
+            ..Default::default()
+        })
+        .insert(Transform::default())
+        .insert(ColliderPositionSync::Discrete);
 }
 fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));
