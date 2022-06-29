@@ -4,7 +4,6 @@ This project is developed with intention to learn: programming on rust, computer
 
 <img width="1279" alt="Screenshot" src="https://user-images.githubusercontent.com/5582266/156928753-bc04bc5b-af19-4d72-abe9-a7dbb97dbef6.png">
 
-
 Some of new concepts learned and used here:
 
 - physically based rendering (PBR)
@@ -19,8 +18,8 @@ Some of new concepts learned and used here:
 Standing on the shoulders of giants:
 
 - [Rust](https://www.rust-lang.org)
-- [Bevy v0.6](https://bevyengine.org)
-- [Rapier3d v0.12](https://rapier.rs)
+- [Bevy](https://bevyengine.org)
+- [Rapier3d](https://rapier.rs)
 - [Nalgebra](https://nalgebra.org)
 
 Car 3d models are from https://www.kenney.nl/assets/car-kit
