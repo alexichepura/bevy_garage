@@ -1,6 +1,4 @@
-use bevy::app::EventReader;
-use bevy::ecs::system::ResMut;
-use bevy::input::gamepad::{Gamepad, GamepadEvent, GamepadEventType};
+use bevy::prelude::*;
 use bevy::utils::HashSet;
 
 #[derive(Default)]

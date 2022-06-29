@@ -1,18 +1,6 @@
-use bevy::text::Font;
-use bevy::{
-    diagnostic::Diagnostics,
-    diagnostic::FrameTimeDiagnosticsPlugin,
-    math::Rect,
-    prelude::{AssetServer, Color, Component, QuerySet, QueryState, TextBundle},
-    prelude::{Query, With},
-    text::{TextSection, TextStyle},
-    ui::{AlignSelf, PositionType, Style, Val},
-};
-use bevy::{ecs::system::Res, prelude::Commands};
-use bevy::{prelude::Handle, text::Text};
-use bevy_rapier3d::prelude::{
-    MassProperties, RigidBodyMassPropsComponent, RigidBodyVelocityComponent,
-};
+use bevy::prelude::*;
+use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
+use bevy_rapier3d::prelude::*;
 
 use crate::car::{Car, Wheel};
 
@@ -26,7 +14,10 @@ pub struct MetersPerSecondText;
 pub struct KilometersPerHourText;
 
 #[derive(Component)]
-pub struct RotPerSecondText;
+pub struct WheelsWText;
+
+#[derive(Component)]
+pub struct WheelsTorqueText;
 
 #[derive(Component)]
 pub struct MassText;
@@ -124,7 +115,7 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: Rect {
-                    bottom: Val::Px(80.0),
+                    bottom: Val::Px(40.0),
                     right: Val::Px(15.0),
                     ..Default::default()
                 },
@@ -178,7 +169,7 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                     TextSection {
-                        value: "angvel".to_string(),
+                        value: "w".to_string(),
                         style: TextStyle {
                             font: bold.clone(),
                             font_size: 40.0,
@@ -190,7 +181,44 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
             },
             ..Default::default()
         })
-        .insert(RotPerSecondText);
+        .insert(WheelsWText);
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(90.0),
+                    right: Val::Px(15.0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 40.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                    TextSection {
+                        value: "t".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 40.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                ],
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(WheelsTorqueText);
 
     commands
         .spawn_bundle(TextBundle {
@@ -231,34 +259,34 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
 }
 
 pub fn dash_speed_update_system(
-    mut texts: QuerySet<(
-        QueryState<&mut Text, With<MetersPerSecondText>>,
-        QueryState<&mut Text, With<KilometersPerHourText>>,
-        QueryState<&mut Text, With<MassText>>,
-        QueryState<&mut Text, With<RotPerSecondText>>,
+    mut texts: ParamSet<(
+        Query<&mut Text, With<MetersPerSecondText>>,
+        Query<&mut Text, With<KilometersPerHourText>>,
+        Query<&mut Text, With<MassText>>,
+        Query<&mut Text, With<WheelsWText>>,
+        Query<&mut Text, With<WheelsTorqueText>>,
     )>,
-    mut cars: Query<(
-        &RigidBodyVelocityComponent,
-        &RigidBodyMassPropsComponent,
-        With<Car>,
-    )>,
-    mut wheels: Query<(&RigidBodyVelocityComponent, With<Wheel>)>,
+    // mut cars: Query<(&Velocity, &MassProperties, With<Car>)>,
+    mut cars: Query<(&Velocity, &AdditionalMassProperties, With<Car>)>,
+    mut wheels: Query<(&Velocity, &ExternalForce, With<Wheel>)>,
 ) {
-    let (velocity, mass, _) = cars.single_mut();
-    let mps = velocity.linvel.norm();
-    texts.q0().single_mut().sections[0].value = format!("{:.1}", mps);
+    let (velocity, mass_props, _) = cars.single_mut();
+    let mps = velocity.linvel.length();
+    texts.p0().single_mut().sections[0].value = format!("{:.1}", mps);
 
     let kmph = mps * 3.6;
-    texts.q1().single_mut().sections[0].value = format!("{:.1}", kmph);
+    texts.p1().single_mut().sections[0].value = format!("{:.1}", kmph);
 
-    let mass_p: MassProperties = mass.local_mprops;
-    texts.q2().single_mut().sections[0].value = format!("{}", 1.0 / mass_p.inv_mass,);
+    texts.p2().single_mut().sections[0].value = format!("{:.1}", mass_props.0.mass);
 
-    let mut msg: String = "".to_string();
-    for (v, _wheel) in wheels.iter_mut() {
-        let s = format!("{:.1} ", v.angvel.norm());
-        msg = msg + &s;
+    let mut v_msg: String = "".to_string();
+    let mut f_msg: String = "".to_string();
+    for (v, f, _wheel) in wheels.iter_mut() {
+        let v_s = format!("{:.1} ", v.angvel.length());
+        v_msg = v_msg + &v_s;
+        let f_s = format!("{:.1} ", f.torque.length());
+        f_msg = f_msg + &f_s;
     }
-
-    texts.q3().single_mut().sections[0].value = msg;
+    texts.p3().single_mut().sections[0].value = v_msg;
+    texts.p4().single_mut().sections[0].value = f_msg;
 }
