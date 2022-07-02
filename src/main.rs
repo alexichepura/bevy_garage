@@ -1,3 +1,4 @@
+mod camera;
 mod car;
 mod dash;
 mod gamepad;
@@ -5,17 +6,17 @@ mod graphics;
 mod input;
 mod mesh;
 
-use crate::gamepad::{gamepad_lobby_system, GamepadLobby};
-use crate::graphics::graphics_system;
-use bevy::{app::App, app::CoreStage, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
 // use bevy_inspector_egui::InspectorPlugin;
 use bevy_obj::ObjPlugin;
 use bevy_rapier3d::prelude::*;
 
+use camera::*;
 use car::*;
 use dash::*;
-use graphics::camera_focus_system;
+use gamepad::*;
+use graphics::*;
 use input::*;
 use smooth_bevy_cameras::{controllers::unreal::UnrealCameraPlugin, LookTransformPlugin};
 
@@ -36,6 +37,7 @@ fn main() {
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
         // .add_system_to_stage(CoreStage::Update, camera_focus_system)
+        .add_startup_system(camera_system)
         .add_startup_system(graphics_system)
         .add_startup_system(car_system)
         .add_startup_system(dash_fps_system)
