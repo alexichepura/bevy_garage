@@ -1,3 +1,4 @@
+mod brain;
 mod camera;
 mod car;
 mod dash;
@@ -14,6 +15,7 @@ use bevy_obj::ObjPlugin;
 use bevy_rapier3d::prelude::*;
 use smooth_bevy_cameras::{controllers::unreal::UnrealCameraPlugin, LookTransformPlugin};
 
+use brain::*;
 use camera::*;
 use car::*;
 use dash::*;
@@ -42,6 +44,7 @@ fn main() {
         .add_startup_system(camera_system)
         .add_startup_system(graphics_system)
         .add_startup_system(car_system)
+        .add_startup_system(brain_system)
         .add_startup_system(dash_fps_system)
         .add_startup_system(dash_speed_system)
         .add_system(dash_fps_update_system)
