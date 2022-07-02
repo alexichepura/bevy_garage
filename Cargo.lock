@@ -243,6 +243,7 @@ dependencies = [
  "bevy-inspector-egui-derive",
  "bevy_egui",
  "image",
+ "nalgebra",
  "pretty-type-name",
 ]
 
@@ -255,6 +256,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "bevy-inspector-egui-rapier"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28252b5958ec6d31b7308cc1a70c0b3999fbe6f7a66dece2afc17c0dfcb0e69a"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_rapier3d 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -617,6 +629,19 @@ dependencies = [
 [[package]]
 name = "bevy_rapier3d"
 version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb6a83c09dfeb6c614168388bd2944202b08ad86324554e684337035f787d982"
+dependencies = [
+ "bevy",
+ "bitflags",
+ "log",
+ "nalgebra",
+ "rapier3d",
+]
+
+[[package]]
+name = "bevy_rapier3d"
+version = "0.14.1"
 source = "git+https://github.com/dimforge/bevy_rapier?rev=2bec1e638ccd609e52b43266bc07a74490682b1a#2bec1e638ccd609e52b43266bc07a74490682b1a"
 dependencies = [
  "bevy",
@@ -632,8 +657,9 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy-inspector-egui-rapier",
  "bevy_obj",
- "bevy_rapier3d",
+ "bevy_rapier3d 0.14.1 (git+https://github.com/dimforge/bevy_rapier?rev=2bec1e638ccd609e52b43266bc07a74490682b1a)",
  "nalgebra",
  "rapier3d",
  "smooth-bevy-cameras",

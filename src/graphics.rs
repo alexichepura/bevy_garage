@@ -32,6 +32,7 @@ pub fn graphics_system(
             material: materials.add(Color::rgba(0.2, 0.6, 0.2, 0.5).into()),
             ..Default::default()
         })
+        .insert(Name::new("Plane"))
         .insert(RigidBody::Fixed)
         .insert_bundle(TransformBundle::identity())
         .insert(Velocity::zero())
@@ -52,6 +53,7 @@ pub fn graphics_system(
             material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
             ..Default::default()
         })
+        .insert(Name::new("Red box"))
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(Vec3::new(1., 1., 4.0)).with_rotation(
@@ -75,6 +77,7 @@ pub fn graphics_system(
             material: materials.add(Color::rgb(0.5, 0.5, 0.9).into()),
             ..Default::default()
         })
+        .insert(Name::new("Blue box"))
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(Vec3::new(10.0, 3.0, -10.0)).with_rotation(
@@ -105,6 +108,7 @@ pub fn graphics_system(
             }),
             ..Default::default()
         })
+        .insert(Name::new("Texture box"))
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(Vec3::new(10.0, 3.0, 10.0))
@@ -172,6 +176,7 @@ pub fn graphics_system(
             }),
             ..Default::default()
         })
+        .insert(Name::new("Mesh object"))
         .insert(RigidBody::Fixed)
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(Vec3::new(-5.0, 0.0, -5.0))
