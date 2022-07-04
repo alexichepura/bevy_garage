@@ -22,13 +22,13 @@ struct Level {
 }
 
 impl Level {
-    pub fn new(n_inputs: usize, n_outputs: usize) -> Level {
-        let inputs: Vec<f64> = vec![0.; n_inputs];
-        let outputs: Vec<f64> = vec![0.; n_outputs];
-        let weights: Vec<Vec<f64>> = (0..n_inputs)
-            .map(|_| thread_rng().sample_iter(Standard).take(n_outputs).collect())
+    pub fn new(n_in: usize, n_out: usize) -> Level {
+        let inputs: Vec<f64> = vec![0.; n_in];
+        let outputs: Vec<f64> = vec![0.; n_out];
+        let weights: Vec<Vec<f64>> = (0..n_in)
+            .map(|_| thread_rng().sample_iter(Standard).take(n_out).collect())
             .collect();
-        let biases: Vec<f64> = thread_rng().sample_iter(Standard).take(n_outputs).collect();
+        let biases: Vec<f64> = thread_rng().sample_iter(Standard).take(n_out).collect();
 
         Level {
             weights,
