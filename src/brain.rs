@@ -2,13 +2,13 @@
 use rand::thread_rng;
 use rand::{distributions::Standard, Rng};
 
-struct Net {
+struct CarBrain {
     levels: Vec<Level>,
 }
-impl Net {
-    pub fn new() -> Net {
+impl CarBrain {
+    pub fn new() -> CarBrain {
         // let levels: Vec<Level> = [(); 3].map(|_| Level::new(10)).to_vec();
-        Net {
+        CarBrain {
             levels: [Level::new(5, 6), Level::new(6, 4), Level::new(4, 0)].to_vec(),
         }
     }
@@ -23,10 +23,12 @@ struct Level {
 
 impl Level {
     pub fn new(n_inputs: usize, n_outputs: usize) -> Level {
-        let weights: Vec<f64> = thread_rng().sample_iter(Standard).take(n_inputs).collect();
-        let biases: Vec<f64> = thread_rng().sample_iter(Standard).take(n_inputs).collect();
         let inputs: Vec<f64> = vec![0.; n_inputs];
         let outputs: Vec<f64> = vec![0.; n_outputs];
+        let weights: Vec<Vec<f64>> = (0..n_inputs)
+            .map(|_| thread_rng().sample_iter(Standard).take(n_outputs).collect())
+            .collect();
+        let biases: Vec<f64> = thread_rng().sample_iter(Standard).take(n_outputs).collect();
 
         Level {
             weights,
@@ -37,9 +39,5 @@ impl Level {
     }
 }
 pub fn brain_system() {
-    let mut net = Net::new(20);
-    // net.train(&training_data, 100000, 100, 0.000001);
-    // brain=new NeuralNetwork(
-    //     [this.sensor.rayCount,6,4]
-    // )
+    let mut net = CarBrain::new();
 }
