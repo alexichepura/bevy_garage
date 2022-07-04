@@ -24,6 +24,7 @@ nalgebra = "^0.31.0"
 rapier3d = { version = "^0.13.0", default-features = false, features = [ "dim3", "f32" ] }
 smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
 # smooth-bevy-cameras = "0.4.0"
+rand = "0.8"
 
 [profile.dev.package.bevy_rapier3d]
 opt-level = 3

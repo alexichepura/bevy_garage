@@ -661,6 +661,7 @@ dependencies = [
  "bevy_obj",
  "bevy_rapier3d 0.14.1 (git+https://github.com/dimforge/bevy_rapier?rev=2bec1e638ccd609e52b43266bc07a74490682b1a)",
  "nalgebra",
+ "rand",
  "rapier3d",
  "smooth-bevy-cameras",
 ]
