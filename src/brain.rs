@@ -42,7 +42,17 @@ impl Level {
         for (index, input) in self.inputs.iter_mut().enumerate() {
             *input = new_inputs[index];
         }
-        for (index, output) in self.outputs.iter_mut().enumerate() {}
+        for (index_out, output) in self.outputs.iter_mut().enumerate() {
+            let mut sum: f64 = 0.;
+            for (index_in, input) in self.inputs.iter_mut().enumerate() {
+                sum = sum + *input * self.weights[index_in][index_out];
+            }
+            if sum > self.biases[index_out] {
+                *output = 1.;
+            } else {
+                *output = 0.;
+            }
+        }
     }
 }
 pub fn brain_system() {
