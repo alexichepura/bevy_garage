@@ -8,9 +8,18 @@ struct CarBrain {
 }
 impl CarBrain {
     pub fn new() -> CarBrain {
-        // let levels: Vec<Level> = [(); 3].map(|_| Level::new(10)).to_vec();
+        let ins = Level::new(5, 6);
+        let hidden = Level::new(6, 4);
+        let outs = Level::new(4, 0);
         CarBrain {
-            levels: [Level::new(5, 6), Level::new(6, 4), Level::new(4, 0)].to_vec(),
+            levels: [ins, hidden, outs].to_vec(),
+        }
+    }
+    pub fn feed_forward(&mut self, new_inputs: Vec<f64>) {
+        let mut outputs: Vec<f64> = new_inputs.clone();
+        for level in self.levels.iter_mut() {
+            level.feed_forward(outputs.clone());
+            outputs = level.outputs.clone();
         }
     }
 }
@@ -38,7 +47,7 @@ impl Level {
             outputs,
         }
     }
-    pub fn feed_forward(mut self, new_inputs: Vec<f64>) {
+    pub fn feed_forward(&mut self, new_inputs: Vec<f64>) {
         for (index, input) in self.inputs.iter_mut().enumerate() {
             *input = new_inputs[index];
         }
@@ -55,7 +64,8 @@ impl Level {
         }
     }
 }
-pub fn brain_system() {
-    let net = CarBrain::new();
-    println!("{:?}", net);
+pub fn car_brain_system() {
+    let mut car_brain = CarBrain::new();
+    car_brain.feed_forward(vec![]);
+    println!("{:?}", car_brain);
 }
