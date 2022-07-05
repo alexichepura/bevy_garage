@@ -2,6 +2,7 @@
 use rand::thread_rng;
 use rand::{distributions::Standard, Rng};
 
+#[derive(Debug)]
 struct CarBrain {
     levels: Vec<Level>,
 }
@@ -13,7 +14,7 @@ impl CarBrain {
         }
     }
 }
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct Level {
     inputs: Vec<f64>,
     outputs: Vec<f64>,
@@ -37,7 +38,14 @@ impl Level {
             outputs,
         }
     }
+    pub fn feed_forward(mut self, new_inputs: Vec<f64>) {
+        for (index, input) in self.inputs.iter_mut().enumerate() {
+            *input = new_inputs[index];
+        }
+        for (index, output) in self.outputs.iter_mut().enumerate() {}
+    }
 }
 pub fn brain_system() {
-    let mut net = CarBrain::new();
+    let net = CarBrain::new();
+    println!("{:?}", net);
 }
