@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::thread_rng;
 use rand::{distributions::Standard, Rng};
@@ -67,9 +68,38 @@ impl Level {
         }
     }
 }
+#[derive(Component)]
+pub struct CarSensor;
+
+pub fn car_brain_start_system(
+    mut commands: Commands,
+    mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
+    mut polylines: ResMut<Assets<Polyline>>,
+) {
+    for _ in 0..5 {
+        commands
+            .spawn_bundle(PolylineBundle {
+                polyline: polylines.add(Polyline {
+                    vertices: vec![-Vec3::ONE, Vec3::ONE],
+                    ..Default::default()
+                }),
+                material: polyline_materials.add(PolylineMaterial {
+                    width: 10.0,
+                    color: Color::RED,
+                    perspective: false,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            })
+            .insert(CarSensor);
+    }
+}
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     mut cars: Query<(&mut Car, &Transform, With<Car>)>,
+    mut polylines: ResMut<Assets<Polyline>>,
+    // mut sensors: Query<(&mut Polyline, With<CarSensor>)>,
+    sensors: Query<&Handle<Polyline>>,
     // mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
 ) {
     let (mut car, transform, _car) = cars.single_mut();
@@ -77,12 +107,15 @@ pub fn car_brain_system(
     let ray_origin: Vect =
         transform.translation + transform.rotation.mul_vec3(Vec3::new(0., 0., 2.));
     let ray_dir: Vect = transform.rotation.mul_vec3(Vec3::new(0., 0., 1.));
-    // println!("ray {:?} {:?}", transform.translation, transform.rotation);
-    // println!("ray {:?}", ray_dir);
+
+    for polyline in sensors.iter() {
+        polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
+    }
+
     let hit = rapier_context.cast_ray(
         ray_origin,
         ray_dir,
-        f32::MAX,
+        20., //f32::MAX,
         false,
         InteractionGroups::default(),
         None,
