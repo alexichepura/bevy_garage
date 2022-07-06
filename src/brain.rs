@@ -1,9 +1,13 @@
-// use bevy::prelude::*;
+use bevy::ecs::system::QuerySingleError;
+use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 use rand::thread_rng;
 use rand::{distributions::Standard, Rng};
 
+use crate::car::*;
+
 #[derive(Debug)]
-struct CarBrain {
+pub struct CarBrain {
     levels: Vec<Level>,
 }
 impl CarBrain {
@@ -64,8 +68,16 @@ impl Level {
         }
     }
 }
-pub fn car_brain_system() {
-    let mut car_brain = CarBrain::new();
-    car_brain.feed_forward(vec![]);
-    println!("{:?}", car_brain);
+pub fn car_brain_system(
+    mut cars: Query<&mut Car>,
+    // mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
+) {
+    let mut car = cars.single_mut();
+    car.brain.feed_forward(vec![0., 0., 0., 0., 0.]);
+
+    // println!("{:?}", car.brain);
+    // let torque: f32 = 200.;
+    // for (mut forces, transform, _) in wheels.iter_mut() {
+    //     forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
+    // }
 }

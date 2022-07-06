@@ -3,7 +3,7 @@ use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, sync::Arc};
 
-use crate::mesh::bevy_mesh;
+use crate::{brain::CarBrain, mesh::bevy_mesh};
 
 #[derive(Component)]
 pub struct Wheel;
@@ -25,7 +25,9 @@ pub struct FrontRightJoint;
 pub struct BackJoint;
 
 #[derive(Component)]
-pub struct Car;
+pub struct Car {
+    pub brain: CarBrain,
+}
 
 pub fn car_system(
     mut commands: Commands,
@@ -72,7 +74,9 @@ pub fn car_system(
                 ..Default::default()
             });
         })
-        .insert(Car)
+        .insert(Car {
+            brain: CarBrain::new(),
+        })
         .id();
     let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
     let car_anchors: [Vec3; 4] = [

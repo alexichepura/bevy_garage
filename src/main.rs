@@ -44,10 +44,10 @@ fn main() {
         .add_startup_system(camera_system)
         .add_startup_system(graphics_system)
         .add_startup_system(car_system)
-        .add_startup_system(car_brain_system)
         .add_startup_system(dash_fps_system)
         .add_startup_system(dash_speed_system)
         .add_system(dash_fps_update_system)
+        .add_system(car_brain_system)
         .add_system(dash_speed_update_system)
         .run();
 }
