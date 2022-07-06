@@ -41,7 +41,7 @@ pub fn car_system(
     let car_hl: f32 = 1.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_transform = Vec3::new(0., 1.5, 0.);
+    let car_transform = Vec3::new(0., 1.3, 0.);
     // let qvec = Vec3::new(0., 0., 0.).normalize();
     // let car_quat = Quat::from_axis_angle(Vec3::new(0., 0., 0.), 0.);
     let car_quat = Quat::IDENTITY;

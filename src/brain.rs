@@ -1,4 +1,3 @@
-use bevy::ecs::system::QuerySingleError;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::thread_rng;
@@ -69,10 +68,40 @@ impl Level {
     }
 }
 pub fn car_brain_system(
-    mut cars: Query<&mut Car>,
+    mut commands: Commands,
+    rapier_context: Res<RapierContext>,
+    mut cars: Query<(&mut Car, &Transform, With<Car>)>,
+    bodies: Query<&RigidBody>,
     // mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
 ) {
-    let mut car = cars.single_mut();
+    let (mut car, transform, _car) = cars.single_mut();
+
+    let ray_origin: Vect = transform.translation;
+    let ray_dir: Vect = transform.rotation.mul_vec3(Vec3::new(0., 0., 1.));
+    // println!("ray {:?} {:?}", transform.translation, transform.rotation);
+    // println!("ray {:?}", ray_dir);
+    let hit = rapier_context.cast_ray(
+        ray_origin,
+        ray_dir,
+        f32::MAX,
+        false,
+        InteractionGroups::default(),
+        None,
+    );
+    if let Some((entity, _toi)) = hit {
+        // let e = commands.entity(entity);
+        if let Ok(rb) = bodies.get(entity) {
+            // bodies.get_component(entity)
+            println!(
+                "HIT {} {} {} {}",
+                ray_origin.round(),
+                ray_dir.round(),
+                (_toi * 10.).round() / 10.,
+                transform.rotation
+            )
+        }
+    }
+
     car.brain.feed_forward(vec![0., 0., 0., 0., 0.]);
 
     // println!("{:?}", car.brain);

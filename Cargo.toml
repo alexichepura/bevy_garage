@@ -15,16 +15,20 @@ dev = []
 
 [dependencies]
 bevy = { version = "0.7.0" }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "2bec1e638ccd609e52b43266bc07a74490682b1a", features = [ "debug-render" ] }
-# bevy_rapier3d = { version = "0.14.1", features = [ "debug-render" ] }
 bevy_obj = "^0.7.0"
-bevy-inspector-egui = "^0.11.0"
-bevy-inspector-egui-rapier = { version = "0.4", features = ["rapier3d"] }
 nalgebra = "^0.31.0"
-rapier3d = { version = "^0.13.0", default-features = false, features = [ "dim3", "f32" ] }
-smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
-# smooth-bevy-cameras = "0.4.0"
 rand = "0.8"
+smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
+
+bevy_rapier3d = { version = "0.14.1", features = [ "debug-render" ] }
+# bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "69ea60c", features = [ "debug-render" ] }
+
+rapier3d = { version = "^0.13.0", default-features = false, features = [ "dim3", "f32" ] }
+# rapier3d = { git = "https://github.com/dimforge/rapier", rev = "06ec9a0", default-features = false, features = [ "dim3", "f32" ] }
+
+# bevy-inspector-egui = "^0.11.0"
+# bevy-inspector-egui-rapier = { version = "0.4", features = ["rapier3d"] }
+# smooth-bevy-cameras = "0.4.0"
 
 [profile.dev.package.bevy_rapier3d]
 opt-level = 3
