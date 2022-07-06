@@ -68,10 +68,8 @@ impl Level {
     }
 }
 pub fn car_brain_system(
-    mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut cars: Query<(&mut Car, &Transform, With<Car>)>,
-    bodies: Query<&RigidBody>,
     // mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
 ) {
     let (mut car, transform, _car) = cars.single_mut();
@@ -89,23 +87,8 @@ pub fn car_brain_system(
         InteractionGroups::default(),
         None,
     );
-    if let Some((entity, _toi)) = hit {
-        // let e = commands.entity(entity);
-        if let Ok(rb) = bodies.get(entity) {
-            if *rb == RigidBody::Dynamic {
-                let color = Color::BLUE; // Color in blue.
-                commands.entity(entity).insert(ColliderDebugColor(color));
-            }
-            // let name = bodies.get_component(Name);
-            println!(
-                "HIT {} {} {}",
-                (ray_origin * 10.).round() / 10.,
-                (ray_dir * 10.).round() / 10.,
-                (_toi * 10.).round() / 10.,
-                // ((transform.rotation.xyz() * 10.).round() / 10.)
-                //     .extend((transform.rotation.w * 10.).round() / 10.)
-            )
-        }
+    if let Some((_entity, toi)) = hit {
+        println!("HIT toi: {}", (toi * 10.).round() / 10.,)
     }
 
     car.brain.feed_forward(vec![0., 0., 0., 0., 0.]);
