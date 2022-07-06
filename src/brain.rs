@@ -19,8 +19,8 @@ impl CarBrain {
             levels: [ins, hidden, outs].to_vec(),
         }
     }
-    pub fn feed_forward(&mut self, new_inputs: Vec<f64>) {
-        let mut outputs: Vec<f64> = new_inputs.clone();
+    pub fn feed_forward(&mut self, new_inputs: Vec<f32>) {
+        let mut outputs: Vec<f32> = new_inputs.clone();
         for level in self.levels.iter_mut() {
             level.feed_forward(outputs.clone());
             outputs = level.outputs.clone();
@@ -29,20 +29,20 @@ impl CarBrain {
 }
 #[derive(Debug, Clone)]
 struct Level {
-    inputs: Vec<f64>,
-    outputs: Vec<f64>,
-    weights: Vec<Vec<f64>>,
-    biases: Vec<f64>,
+    inputs: Vec<f32>,
+    outputs: Vec<f32>,
+    weights: Vec<Vec<f32>>,
+    biases: Vec<f32>,
 }
 
 impl Level {
     pub fn new(n_in: usize, n_out: usize) -> Level {
-        let inputs: Vec<f64> = vec![0.; n_in];
-        let outputs: Vec<f64> = vec![0.; n_out];
-        let weights: Vec<Vec<f64>> = (0..n_in)
+        let inputs: Vec<f32> = vec![0.; n_in];
+        let outputs: Vec<f32> = vec![0.; n_out];
+        let weights: Vec<Vec<f32>> = (0..n_in)
             .map(|_| thread_rng().sample_iter(Standard).take(n_out).collect())
             .collect();
-        let biases: Vec<f64> = thread_rng().sample_iter(Standard).take(n_out).collect();
+        let biases: Vec<f32> = thread_rng().sample_iter(Standard).take(n_out).collect();
 
         Level {
             weights,
@@ -51,12 +51,12 @@ impl Level {
             outputs,
         }
     }
-    pub fn feed_forward(&mut self, new_inputs: Vec<f64>) {
+    pub fn feed_forward(&mut self, new_inputs: Vec<f32>) {
         for (index, input) in self.inputs.iter_mut().enumerate() {
             *input = new_inputs[index];
         }
         for (index_out, output) in self.outputs.iter_mut().enumerate() {
-            let mut sum: f64 = 0.;
+            let mut sum: f32 = 0.;
             for (index_in, input) in self.inputs.iter_mut().enumerate() {
                 sum = sum + *input * self.weights[index_in][index_out];
             }
@@ -84,7 +84,7 @@ pub fn car_brain_start_system(
                     ..Default::default()
                 }),
                 material: polyline_materials.add(PolylineMaterial {
-                    width: 10.0,
+                    width: 2.0,
                     color: Color::RED,
                     perspective: false,
                     ..Default::default()
@@ -99,31 +99,31 @@ pub fn car_brain_system(
     mut cars: Query<(&mut Car, &Transform, With<Car>)>,
     mut polylines: ResMut<Assets<Polyline>>,
     // mut sensors: Query<(&mut Polyline, With<CarSensor>)>,
-    sensors: Query<&Handle<Polyline>>,
-    // mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
+    sensors: Query<(Entity, &Handle<Polyline>)>,
 ) {
-    let (mut car, transform, _car) = cars.single_mut();
-
-    let ray_origin: Vect =
-        transform.translation + transform.rotation.mul_vec3(Vec3::new(0., 0., 2.));
-    let ray_dir: Vect = transform.rotation.mul_vec3(Vec3::new(0., 0., 1.));
-
-    for polyline in sensors.iter() {
+    let (mut car, tf, _car) = cars.single_mut();
+    let mut meters: Vec<f32> = Vec::new();
+    let sensor_meters: f32 = 20.;
+    sensors.for_each(|(_, polyline)| {
+        let ray_origin: Vect = tf.translation + tf.rotation.mul_vec3(Vec3::new(0., 0., 2.));
+        let ray_dir: Vect = tf.rotation.mul_vec3(Vec3::new(0., 0., sensor_meters));
         polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
-    }
 
-    let hit = rapier_context.cast_ray(
-        ray_origin,
-        ray_dir,
-        20., //f32::MAX,
-        false,
-        InteractionGroups::default(),
-        None,
-    );
-    if let Some((_entity, toi)) = hit {
-        println!("HIT toi: {}", (toi * 10.).round() / 10.,)
-    }
-
+        let hit = rapier_context.cast_ray(
+            ray_origin,
+            ray_dir,
+            sensor_meters,
+            false,
+            InteractionGroups::default(),
+            None,
+        );
+        match hit {
+            Some((_entiry, sensor_units)) => meters.push(sensor_units * sensor_meters),
+            None => (),
+        }
+    });
+    println!("Meters {:?}", meters);
+    // car.brain.feed_forward(meters);
     car.brain.feed_forward(vec![0., 0., 0., 0., 0.]);
 
     // println!("{:?}", car.brain);
