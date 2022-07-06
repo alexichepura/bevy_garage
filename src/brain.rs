@@ -76,7 +76,8 @@ pub fn car_brain_system(
 ) {
     let (mut car, transform, _car) = cars.single_mut();
 
-    let ray_origin: Vect = transform.translation;
+    let ray_origin: Vect =
+        transform.translation + transform.rotation.mul_vec3(Vec3::new(0., 0., 2.));
     let ray_dir: Vect = transform.rotation.mul_vec3(Vec3::new(0., 0., 1.));
     // println!("ray {:?} {:?}", transform.translation, transform.rotation);
     // println!("ray {:?}", ray_dir);
@@ -91,13 +92,18 @@ pub fn car_brain_system(
     if let Some((entity, _toi)) = hit {
         // let e = commands.entity(entity);
         if let Ok(rb) = bodies.get(entity) {
-            // bodies.get_component(entity)
+            if *rb == RigidBody::Dynamic {
+                let color = Color::BLUE; // Color in blue.
+                commands.entity(entity).insert(ColliderDebugColor(color));
+            }
+            // let name = bodies.get_component(Name);
             println!(
-                "HIT {} {} {} {}",
-                ray_origin.round(),
-                ray_dir.round(),
+                "HIT {} {} {}",
+                (ray_origin * 10.).round() / 10.,
+                (ray_dir * 10.).round() / 10.,
                 (_toi * 10.).round() / 10.,
-                transform.rotation
+                // ((transform.rotation.xyz() * 10.).round() / 10.)
+                //     .extend((transform.rotation.w * 10.).round() / 10.)
             )
         }
     }
