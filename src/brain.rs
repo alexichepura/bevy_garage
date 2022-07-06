@@ -103,28 +103,36 @@ pub fn car_brain_system(
 ) {
     let (mut car, tf, _car) = cars.single_mut();
     let mut meters: Vec<f32> = Vec::new();
-    let sensor_meters: f32 = 20.;
+    let max_toi: f32 = 10.;
     sensors.for_each(|(_, polyline)| {
         let ray_origin: Vect = tf.translation + tf.rotation.mul_vec3(Vec3::new(0., 0., 2.));
-        let ray_dir: Vect = tf.rotation.mul_vec3(Vec3::new(0., 0., sensor_meters));
+        let ray_dir: Vect = tf.rotation.mul_vec3(Vec3::new(0., 0., max_toi));
         polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 
         let hit = rapier_context.cast_ray(
             ray_origin,
             ray_dir,
-            sensor_meters,
+            max_toi,
             false,
             InteractionGroups::default(),
             None,
         );
         match hit {
-            Some((_entiry, sensor_units)) => meters.push(sensor_units * sensor_meters),
+            Some((_, sensor_units)) => {
+                if sensor_units > 1. {
+                    meters.push(0.);
+                    return;
+                }
+                meters.push(sensor_units * max_toi);
+            }
             None => (),
         }
     });
-    println!("Meters {:?}", meters);
-    // car.brain.feed_forward(meters);
-    car.brain.feed_forward(vec![0., 0., 0., 0., 0.]);
+    if meters.len() == 0 {
+        meters = vec![0., 0., 0., 0., 0.];
+    }
+    // println!("Meters {:?}", meters);
+    car.brain.feed_forward(meters);
 
     // println!("{:?}", car.brain);
     // let torque: f32 = 200.;
