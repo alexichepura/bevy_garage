@@ -2,7 +2,7 @@
 
 This project is developed with intention to learn: programming on rust, computer graphics, physics simulation, geometric algebra.
 
-<img width="1279" alt="Screenshot" src="https://user-images.githubusercontent.com/5582266/177724243-e775d1cd-b4f0-4091-bb23-a4018d0e6494.jpg">
+<img width="1279" alt="Screenshot" src="https://user-images.githubusercontent.com/5582266/177758958-3ac7a6da-b178-45bf-a9f4-edb25de3008e.jpg">
 
 Some of new concepts learned and used here:
 
