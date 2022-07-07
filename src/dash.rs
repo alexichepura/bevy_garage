@@ -29,7 +29,7 @@ pub fn dash_fps_system(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn_bundle(TextBundle {
             style: Style {
                 align_self: AlignSelf::FlexEnd,
-                ..Default::default()
+                ..default()
             },
             text: Text {
                 sections: vec![
@@ -50,9 +50,9 @@ pub fn dash_fps_system(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     },
                 ],
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         })
         .insert(FpsText);
 }
@@ -81,9 +81,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 position: Rect {
                     bottom: Val::Px(5.0),
                     right: Val::Px(15.0),
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             text: Text {
                 sections: vec![
@@ -104,9 +104,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                 ],
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         })
         .insert(MetersPerSecondText);
     commands
@@ -117,9 +117,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 position: Rect {
                     bottom: Val::Px(40.0),
                     right: Val::Px(15.0),
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             text: Text {
                 sections: vec![
@@ -140,9 +140,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                 ],
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         })
         .insert(KilometersPerHourText);
 
@@ -154,9 +154,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 position: Rect {
                     bottom: Val::Px(120.0),
                     right: Val::Px(15.0),
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             text: Text {
                 sections: vec![
@@ -177,9 +177,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                 ],
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         })
         .insert(WheelsWText);
 
@@ -191,9 +191,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 position: Rect {
                     bottom: Val::Px(90.0),
                     right: Val::Px(15.0),
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             text: Text {
                 sections: vec![
@@ -214,9 +214,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                 ],
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         })
         .insert(WheelsTorqueText);
 
@@ -228,9 +228,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                 position: Rect {
                     bottom: Val::Px(160.0),
                     right: Val::Px(15.0),
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             text: Text {
                 sections: vec![
@@ -251,9 +251,9 @@ pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                     },
                 ],
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
+            ..default()
         })
         .insert(MassText);
 }

@@ -59,18 +59,16 @@ pub fn car_system(
             local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
             mass: 1500.0,
             principal_inertia: Vec3::new(100.0, 100.0, 100.0),
-            ..Default::default()
+            ..default()
         }))
         .with_children(|parent| {
-            let mut tr: Transform = Transform {
-                ..Default::default()
-            };
+            let mut tr: Transform = Transform { ..default() };
             tr.translation = Vec3::new(0.0, -car_hh, 0.0);
             parent.spawn_bundle(PbrBundle {
                 mesh: asset_server.load(car_graphics),
                 material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
                 transform: tr,
-                ..Default::default()
+                ..default()
             });
         })
         .insert(Car {
@@ -114,7 +112,7 @@ pub fn car_system(
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(wheel_mesh),
                 material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
-                ..Default::default()
+                ..default()
             })
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
@@ -131,7 +129,7 @@ pub fn car_system(
                 local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
                 mass: 15.0,
                 principal_inertia: Vec3::new(1.0, 1.0, 1.0),
-                ..Default::default()
+                ..default()
             }))
             .insert(Wheel)
             .insert(MultibodyJoint::new(car, joint))

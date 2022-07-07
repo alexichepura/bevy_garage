@@ -84,15 +84,15 @@ pub fn car_brain_start_system(
             .spawn_bundle(PolylineBundle {
                 polyline: polylines.add(Polyline {
                     vertices: vec![-Vec3::ONE, Vec3::ONE],
-                    ..Default::default()
+                    ..default()
                 }),
                 material: polyline_materials.add(PolylineMaterial {
                     width: 2.0,
                     color: Color::RED,
                     perspective: false,
-                    ..Default::default()
+                    ..default()
                 }),
-                ..Default::default()
+                ..default()
             })
             .insert(CarSensor);
     }

@@ -30,7 +30,7 @@ pub fn camera_system(mut commands: Commands) {
     // commands.spawn_bundle(PerspectiveCameraBundle {
     //     transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
     //         .looking_at(Vec3::ZERO, Vec3::Y),
-    //     ..Default::default()
+    //     ..default()
     // });
     commands
         .spawn_bundle(PerspectiveCameraBundle::default())
