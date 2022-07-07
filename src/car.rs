@@ -3,7 +3,7 @@ use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, sync::Arc};
 
-use crate::mesh::bevy_mesh;
+use crate::{brain::CarBrain, mesh::bevy_mesh};
 
 #[derive(Component)]
 pub struct Wheel;
@@ -25,7 +25,9 @@ pub struct FrontRightJoint;
 pub struct BackJoint;
 
 #[derive(Component)]
-pub struct Car;
+pub struct Car {
+    pub brain: CarBrain,
+}
 
 pub fn car_system(
     mut commands: Commands,
@@ -39,7 +41,7 @@ pub fn car_system(
     let car_hl: f32 = 1.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_transform = Vec3::new(0., 1.5, 0.);
+    let car_transform = Vec3::new(0., 1.3, 0.);
     // let qvec = Vec3::new(0., 0., 0.).normalize();
     // let car_quat = Quat::from_axis_angle(Vec3::new(0., 0., 0.), 0.);
     let car_quat = Quat::IDENTITY;
@@ -47,6 +49,7 @@ pub fn car_system(
     let car = commands
         .spawn()
         .insert(RigidBody::Dynamic)
+        .insert(Ccd::enabled())
         .insert(Velocity::zero())
         .insert(Collider::cuboid(car_hw, car_hh, car_hl))
         .insert(Friction::coefficient(0.001))
@@ -72,7 +75,9 @@ pub fn car_system(
                 ..Default::default()
             });
         })
-        .insert(Car)
+        .insert(Car {
+            brain: CarBrain::new(),
+        })
         .id();
     let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
     let car_anchors: [Vec3; 4] = [
@@ -114,6 +119,7 @@ pub fn car_system(
                 ..Default::default()
             })
             .insert(RigidBody::Dynamic)
+            .insert(Ccd::enabled())
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(wheel_transform)
                     .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI)),
