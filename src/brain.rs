@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -101,12 +103,21 @@ pub fn car_brain_system(
     // mut sensors: Query<(&mut Polyline, With<CarSensor>)>,
     sensors: Query<(Entity, &Handle<Polyline>)>,
 ) {
-    let (mut car, tf, _car) = cars.single_mut();
+    let (mut car, transform, _car) = cars.single_mut();
     let mut meters: Vec<f32> = Vec::new();
     let max_toi: f32 = 10.;
+    let mut i: i8 = 0;
     sensors.for_each(|(_, polyline)| {
-        let ray_origin: Vect = tf.translation + tf.rotation.mul_vec3(Vec3::new(0., 0., 2.));
-        let ray_dir: Vect = tf.rotation.mul_vec3(Vec3::new(0., 0., max_toi));
+        let mut line_tf = transform.clone();
+        let angle = PI / 8.;
+        let start_angle = -2. * angle;
+        line_tf.rotate(Quat::from_rotation_y(start_angle + i as f32 * angle));
+        i += 1;
+
+        let ray_origin: Vect =
+            line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., 0., 2.));
+        let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., 0., max_toi));
+
         polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 
         let hit = rapier_context.cast_ray(
@@ -120,19 +131,21 @@ pub fn car_brain_system(
         match hit {
             Some((_, sensor_units)) => {
                 if sensor_units > 1. {
-                    meters.push(0.);
+                    meters.push(-1.);
                     return;
                 }
                 meters.push(sensor_units * max_toi);
             }
-            None => (),
+            None => meters.push(-1.),
         }
     });
-    if meters.len() == 0 {
+    if meters.len() != 5 {
+        println!("Meters 5!={:?}", meters);
         meters = vec![0., 0., 0., 0., 0.];
     }
-    // println!("Meters {:?}", meters);
+    println!("Meters {:?}", meters);
     car.brain.feed_forward(meters);
+    // println!("Outputs {:?}", car.brain.levels.last().unwrap().outputs);
 
     // println!("{:?}", car.brain);
     // let torque: f32 = 200.;
