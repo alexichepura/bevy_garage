@@ -77,6 +77,7 @@ pub fn car_brain_start_system(
     mut commands: Commands,
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
+    // cars: Query<(&Transform, With<Car>)>,
 ) {
     for _ in 0..5 {
         commands
@@ -95,6 +96,7 @@ pub fn car_brain_start_system(
             })
             .insert(CarSensor);
     }
+    // let (transform, _car) = cars.single();
 }
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,

@@ -49,6 +49,7 @@ pub fn car_system(
     let car = commands
         .spawn()
         .insert(RigidBody::Dynamic)
+        .insert(Ccd::enabled())
         .insert(Velocity::zero())
         .insert(Collider::cuboid(car_hw, car_hh, car_hl))
         .insert(Friction::coefficient(0.001))
@@ -118,6 +119,7 @@ pub fn car_system(
                 ..Default::default()
             })
             .insert(RigidBody::Dynamic)
+            .insert(Ccd::enabled())
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(wheel_transform)
                     .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI)),
