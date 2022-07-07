@@ -36,7 +36,7 @@ pub fn camera_system(mut commands: Commands) {
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert_bundle(UnrealCameraBundle::new(
             UnrealCameraController::default(),
-            Vec3::new(-8., 4., 0.),
+            Vec3::new(-15., 4., 0.),
             Vec3::new(0., 2., 0.),
         ));
     commands.spawn_bundle(UiCameraBundle::default());

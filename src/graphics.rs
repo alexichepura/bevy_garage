@@ -18,23 +18,34 @@ pub fn graphics_system(
         transform: Transform::from_xyz(-10., 40., 20.),
         point_light: PointLight {
             range: 100.,
-            intensity: 100_000.,
-            ..Default::default()
+            intensity: 200_000.,
+            shadows_enabled: true,
+            // shadow_depth_bias: 0.02,
+            // shadow_normal_bias: 1.,
+            ..default()
         },
-        ..Default::default()
+        ..default()
     });
-    let plane_half = 100.0;
+    let plane_half = 50.0;
     commands
         .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: plane_half * 2.0,
+            mesh: meshes.add(Mesh::from(shape::Box {
+                max_x: plane_half,
+                min_x: -plane_half,
+                max_y: 0.5,
+                min_y: -0.5,
+                max_z: plane_half,
+                min_z: -plane_half,
             })),
             material: materials.add(Color::rgba(0.2, 0.6, 0.2, 0.5).into()),
-            ..Default::default()
+            ..default()
         })
         .insert(Name::new("Plane"))
         .insert(RigidBody::Fixed)
-        .insert_bundle(TransformBundle::identity())
+        // .insert_bundle(TransformBundle::identity())
+        .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
+            0., -0.5, 0.,
+        )))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_half, 0.5, plane_half))
         .insert(Friction::coefficient(100.))
@@ -51,7 +62,7 @@ pub fn graphics_system(
                 min_z: -0.5,
             })),
             material: materials.add(Color::rgb(0.9, 0.5, 0.5).into()),
-            ..Default::default()
+            ..default()
         })
         .insert(Name::new("Red box"))
         .insert(RigidBody::Dynamic)
@@ -75,7 +86,7 @@ pub fn graphics_system(
                 min_z: -0.5,
             })),
             material: materials.add(Color::rgb(0.5, 0.5, 0.9).into()),
-            ..Default::default()
+            ..default()
         })
         .insert(Name::new("Blue box"))
         .insert(RigidBody::Dynamic)
@@ -104,9 +115,9 @@ pub fn graphics_system(
             material: materials.add(StandardMaterial {
                 base_color_texture: Some(texture_handle.clone()),
                 // roughness: 0.2,
-                ..Default::default()
+                ..default()
             }),
-            ..Default::default()
+            ..default()
         })
         .insert(Name::new("Texture box"))
         .insert(RigidBody::Dynamic)
@@ -171,9 +182,9 @@ pub fn graphics_system(
                 base_color_texture: Some(texture_handle.clone()),
                 // roughness: 0.5,
                 // metallic: 0.9,
-                ..Default::default()
+                ..default()
             }),
-            ..Default::default()
+            ..default()
         })
         .insert(Name::new("Mesh object"))
         .insert(RigidBody::Fixed)
