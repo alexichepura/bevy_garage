@@ -14,18 +14,6 @@ pub fn graphics_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(-10., 40., 20.),
-        point_light: PointLight {
-            range: 100.,
-            intensity: 200_000.,
-            shadows_enabled: true,
-            // shadow_depth_bias: 0.02,
-            // shadow_normal_bias: 1.,
-            ..default()
-        },
-        ..default()
-    });
     let plane_half = 50.0;
     commands
         .spawn_bundle(PbrBundle {

@@ -5,6 +5,7 @@ mod dash;
 mod gamepad;
 mod graphics;
 mod input;
+mod light;
 mod mesh;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
@@ -23,6 +24,7 @@ use dash::*;
 use gamepad::*;
 use graphics::*;
 use input::*;
+use light::*;
 
 fn main() {
     App::new()
@@ -49,6 +51,7 @@ fn main() {
         .add_startup_system(dash_fps_system)
         .add_startup_system(dash_speed_system)
         .add_startup_system(car_brain_start_system)
+        .add_startup_system(light_start_system)
         .add_system(dash_fps_update_system)
         .add_system(car_brain_system)
         .add_system(dash_speed_update_system)
