@@ -80,8 +80,8 @@ pub fn graphics_system(
         .insert(Name::new("Blue box"))
         .insert(RigidBody::Dynamic)
         .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(10.0, 3.0, -10.0)).with_rotation(
-                Quat::from_axis_angle(Vec3::new(PI / 4.0, PI / 4.0, PI / 4.0), 0.),
+            Transform::from_translation(Vec3::new(5., 3., 5.)).with_rotation(
+                Quat::from_axis_angle(Vec3::new(PI / 4., PI / 4., PI / 4.), 0.),
             ),
         ))
         .insert(Velocity::zero())
@@ -110,10 +110,9 @@ pub fn graphics_system(
         })
         .insert(Name::new("Texture box"))
         .insert(RigidBody::Dynamic)
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(10.0, 3.0, 10.0))
-                .with_rotation(Quat::from_axis_angle(Vec3::new(0., 0., 0.), 0.)),
-        ))
+        .insert_bundle(TransformBundle::from(Transform::from_translation(
+            Vec3::new(5., 3., -5.),
+        )))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(1.5, 2.0, 0.5));
 
@@ -179,8 +178,8 @@ pub fn graphics_system(
         .insert(Name::new("Mesh object"))
         .insert(RigidBody::Fixed)
         .insert_bundle(TransformBundle::from(
-            Transform::from_translation(Vec3::new(-5.0, 0.0, -5.0))
-                .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.), PI)),
+            Transform::from_translation(Vec3::new(10., 0., -3.)).with_rotation(Quat::IDENTITY),
+            // .with_rotation(Quat::from_rotation_y(PI / 2.)),
         ))
         .insert(Collider::from(ColliderShape::trimesh(
             collider_vertices,
