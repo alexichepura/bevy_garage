@@ -145,7 +145,7 @@ pub fn car_brain_system(
         println!("Meters 5!={:?}", meters);
         meters = vec![0., 0., 0., 0., 0.];
     }
-    println!("Meters {:?}", meters);
+    // println!("Meters {:?}", meters);
     car.brain.feed_forward(meters);
     // println!("Outputs {:?}", car.brain.levels.last().unwrap().outputs);
 

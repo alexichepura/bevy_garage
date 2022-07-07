@@ -5,6 +5,7 @@ use smooth_bevy_cameras::controllers::unreal::{UnrealCameraBundle, UnrealCameraC
 
 use bevy::render::camera::Camera3d;
 
+#[allow(dead_code)]
 pub fn camera_focus_system(
     mut transforms: ParamSet<(
         Query<(&mut Transform, &Camera, With<Camera3d>)>,
