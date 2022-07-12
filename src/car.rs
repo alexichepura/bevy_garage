@@ -24,9 +24,11 @@ pub struct FrontRightJoint;
 #[derive(Component)]
 pub struct BackJoint;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Car {
-    pub brain: CarBrain,
+    pub gas: f32,
+    pub brake: f32,
+    pub steering: f32,
 }
 
 pub fn car_system(
@@ -71,8 +73,12 @@ pub fn car_system(
                 ..default()
             });
         })
+        .insert(CarBrain::new())
         .insert(Car {
-            brain: CarBrain::new(),
+            // brain: CarBrain::new(),
+            gas: 0.,
+            brake: 0.,
+            steering: 0.,
         })
         .id();
     let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
