@@ -17,10 +17,10 @@ nalgebra = "^0.31.0"
 rand = "0.8"
 smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
 bevy_polyline = "0.2"
-bevy_rapier3d = { version = "0.14.1", features = [ "debug-render" ] }
+bevy_rapier3d = { version = "0.15.0", features = [ "debug-render" ] }
 # bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "69ea60c", features = [ "debug-render" ] }
 
-rapier3d = { version = "^0.13.0", default-features = false, features = [ "dim3", "f32" ] }
+rapier3d = { version = "^0.14.0", default-features = false, features = [ "dim3", "f32" ] }
 # rapier3d = { git = "https://github.com/dimforge/rapier", rev = "06ec9a0", default-features = false, features = [ "dim3", "f32" ] }
 
 # bevy-inspector-egui = "^0.11.0"

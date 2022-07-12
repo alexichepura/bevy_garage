@@ -54,10 +54,11 @@ pub fn car_system(
         .insert(Collider::cuboid(car_hw, car_hh, car_hl))
         .insert(Friction::coefficient(0.001))
         .insert(Restitution::coefficient(0.1))
+        .insert(ReadMassProperties::default())
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(car_transform).with_rotation(car_quat),
         ))
-        .insert(AdditionalMassProperties(MassProperties {
+        .insert(ColliderMassProperties::MassProperties(MassProperties {
             local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
             mass: 1500.0,
             principal_inertia: Vec3::new(100.0, 100.0, 100.0),
@@ -130,8 +131,7 @@ pub fn car_system(
             .insert(Collider::from(wheel_shape))
             .insert(Friction::coefficient(100.))
             .insert(Restitution::coefficient(0.1))
-            // .insert(ColliderMassProperties::Density(1.0))
-            .insert(AdditionalMassProperties(MassProperties {
+            .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
                 mass: 15.0,
                 principal_inertia: Vec3::new(1.0, 1.0, 1.0),

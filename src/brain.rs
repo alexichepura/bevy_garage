@@ -122,14 +122,7 @@ pub fn car_brain_system(
 
         polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 
-        let hit = rapier_context.cast_ray(
-            ray_origin,
-            ray_dir,
-            max_toi,
-            false,
-            InteractionGroups::default(),
-            None,
-        );
+        let hit = rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
         match hit {
             Some((_, sensor_units)) => {
                 if sensor_units > 1. {

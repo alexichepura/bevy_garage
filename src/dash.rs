@@ -266,8 +266,7 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<WheelsWText>>,
         Query<&mut Text, With<WheelsTorqueText>>,
     )>,
-    // mut cars: Query<(&Velocity, &MassProperties, With<Car>)>,
-    mut cars: Query<(&Velocity, &AdditionalMassProperties, With<Car>)>,
+    mut cars: Query<(&Velocity, &ReadMassProperties, With<Car>)>,
     mut wheels: Query<(&Velocity, &ExternalForce, With<Wheel>)>,
 ) {
     let (velocity, mass_props, _) = cars.single_mut();
