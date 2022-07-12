@@ -8,7 +8,7 @@ use rand::{distributions::Standard, Rng};
 
 use crate::car::*;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct CarBrain {
     levels: Vec<Level>,
 }
@@ -100,10 +100,12 @@ pub fn car_brain_start_system(
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     mut cars: Query<(&mut Car, &Transform, With<Car>)>,
+    mut brains: Query<(&mut CarBrain, With<CarBrain>)>,
     mut polylines: ResMut<Assets<Polyline>>,
     sensors: Query<(Entity, &Handle<Polyline>)>,
 ) {
     let (mut car, transform, _car) = cars.single_mut();
+    let (mut brain, _brain) = brains.single_mut();
     let mut inputs: Vec<f32> = Vec::new();
     let max_toi: f32 = 10.;
     let mut i: i8 = 0;
@@ -120,14 +122,7 @@ pub fn car_brain_system(
 
         polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 
-        let hit = rapier_context.cast_ray(
-            ray_origin,
-            ray_dir,
-            max_toi,
-            false,
-            InteractionGroups::default(),
-            None,
-        );
+        let hit = rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
         match hit {
             Some((_, sensor_units)) => {
                 if sensor_units > 1. {
@@ -143,11 +138,16 @@ pub fn car_brain_system(
         println!("inputs 5!={:?}", inputs);
         inputs = vec![0., 0., 0., 0., 0.];
     }
-    car.brain.feed_forward(inputs.clone());
-    let outputs: &Vec<f32> = &car.brain.levels.last().unwrap().outputs;
-    if outputs.iter().any(|v| v > &0.) {
-        println!("brain {:?}", outputs);
-    }
+    brain.feed_forward(inputs.clone());
+    let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
+    // if outputs.iter().any(|v| v > &0.) {
+    //     println!("outputs {:?}", outputs);
+    // }
+
+    let _gas = outputs[0];
+    let _brake = outputs[1];
+    let _left = outputs[2];
+    let _right = outputs[3];
 
     // println!("{:?}", car.brain);
     // let torque: f32 = 200.;

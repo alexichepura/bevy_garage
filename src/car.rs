@@ -24,9 +24,11 @@ pub struct FrontRightJoint;
 #[derive(Component)]
 pub struct BackJoint;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Car {
-    pub brain: CarBrain,
+    pub gas: f32,
+    pub brake: f32,
+    pub steering: f32,
 }
 
 pub fn car_system(
@@ -52,10 +54,11 @@ pub fn car_system(
         .insert(Collider::cuboid(car_hw, car_hh, car_hl))
         .insert(Friction::coefficient(0.001))
         .insert(Restitution::coefficient(0.1))
+        .insert(ReadMassProperties::default())
         .insert_bundle(TransformBundle::from(
             Transform::from_translation(car_transform).with_rotation(car_quat),
         ))
-        .insert(AdditionalMassProperties(MassProperties {
+        .insert(ColliderMassProperties::MassProperties(MassProperties {
             local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
             mass: 1500.0,
             principal_inertia: Vec3::new(100.0, 100.0, 100.0),
@@ -71,8 +74,12 @@ pub fn car_system(
                 ..default()
             });
         })
+        .insert(CarBrain::new())
         .insert(Car {
-            brain: CarBrain::new(),
+            // brain: CarBrain::new(),
+            gas: 0.,
+            brake: 0.,
+            steering: 0.,
         })
         .id();
     let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
@@ -124,8 +131,7 @@ pub fn car_system(
             .insert(Collider::from(wheel_shape))
             .insert(Friction::coefficient(100.))
             .insert(Restitution::coefficient(0.1))
-            // .insert(ColliderMassProperties::Density(1.0))
-            .insert(AdditionalMassProperties(MassProperties {
+            .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
                 mass: 15.0,
                 principal_inertia: Vec3::new(1.0, 1.0, 1.0),
@@ -149,6 +155,49 @@ pub fn car_system(
             commands.entity(wheel).insert(BackJoint);
         } else if i == 3 {
             commands.entity(wheel).insert(BackJoint);
+        }
+    }
+}
+
+pub fn car_change_detection(
+    query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
+    mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
+    mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
+) {
+    for (_entity, car, velocity, transform) in query.iter() {
+        let torque: f32;
+
+        let car_vector = transform.rotation.mul_vec3(Vec3::Z);
+        let delta = velocity.linvel.normalize() - car_vector.normalize();
+        let car_angle_slip_rad = Vec3::new(delta.x, 0., delta.z).length();
+        let mut forward: bool = true;
+        if car_angle_slip_rad > 1. {
+            forward = false;
+        }
+
+        let gas_max_torque = 500.;
+        let break_max_torque = 2000.;
+        if forward {
+            if car.brake > 0. {
+                torque = -car.brake * break_max_torque;
+            } else {
+                torque = car.gas * gas_max_torque;
+            }
+        } else {
+            if car.brake > 0. {
+                torque = -car.brake * gas_max_torque;
+            } else {
+                torque = car.gas * break_max_torque;
+            }
+        }
+
+        for (mut forces, transform, _) in wheels.iter_mut() {
+            forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
+        }
+
+        let axis = Vec3::new(1., 0., car.steering * 0.3);
+        for (mut joint, _) in front.iter_mut() {
+            joint.data.set_local_axis1(axis);
         }
     }
 }
