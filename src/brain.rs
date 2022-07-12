@@ -138,6 +138,11 @@ pub fn car_brain_system(
         println!("inputs 5!={:?}", inputs);
         inputs = vec![0., 0., 0., 0., 0.];
     }
+
+    if !car.use_brain {
+        return;
+    }
+
     brain.feed_forward(inputs.clone());
 
     let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;

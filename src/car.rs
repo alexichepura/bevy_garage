@@ -29,6 +29,18 @@ pub struct Car {
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
+    pub use_brain: bool,
+}
+
+impl Car {
+    pub fn new() -> Self {
+        Self {
+            gas: 0.,
+            brake: 0.,
+            steering: 0.,
+            use_brain: false,
+        }
+    }
 }
 
 pub fn car_system(
@@ -75,12 +87,7 @@ pub fn car_system(
             });
         })
         .insert(CarBrain::new())
-        .insert(Car {
-            // brain: CarBrain::new(),
-            gas: 0.,
-            brake: 0.,
-            steering: 0.,
-        })
+        .insert(Car::new())
         .id();
     let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
     let car_anchors: [Vec3; 4] = [
