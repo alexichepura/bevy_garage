@@ -10,9 +10,6 @@ license = "MIT OR Apache-2.0"
 [workspace]
 resolver = "2"
 
-[features]
-dev = ["bevy/dynamic"]
-
 [dependencies]
 bevy = { version = "0.7.0" }
 bevy_obj = "^0.7.0"

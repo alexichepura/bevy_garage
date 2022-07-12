@@ -16,9 +16,8 @@ impl CarBrain {
     pub fn new() -> CarBrain {
         let ins = Level::new(5, 6);
         let hidden = Level::new(6, 4);
-        let outs = Level::new(4, 0);
         CarBrain {
-            levels: [ins, hidden, outs].to_vec(),
+            levels: [ins, hidden].to_vec(),
         }
     }
     pub fn feed_forward(&mut self, new_inputs: Vec<f32>) {
@@ -102,11 +101,10 @@ pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     mut cars: Query<(&mut Car, &Transform, With<Car>)>,
     mut polylines: ResMut<Assets<Polyline>>,
-    // mut sensors: Query<(&mut Polyline, With<CarSensor>)>,
     sensors: Query<(Entity, &Handle<Polyline>)>,
 ) {
     let (mut car, transform, _car) = cars.single_mut();
-    let mut meters: Vec<f32> = Vec::new();
+    let mut inputs: Vec<f32> = Vec::new();
     let max_toi: f32 = 10.;
     let mut i: i8 = 0;
     sensors.for_each(|(_, polyline)| {
@@ -133,21 +131,23 @@ pub fn car_brain_system(
         match hit {
             Some((_, sensor_units)) => {
                 if sensor_units > 1. {
-                    meters.push(-1.);
+                    inputs.push(0.);
                     return;
                 }
-                meters.push(sensor_units * max_toi);
+                inputs.push(sensor_units);
             }
-            None => meters.push(-1.),
+            None => inputs.push(-1.),
         }
     });
-    if meters.len() != 5 {
-        println!("Meters 5!={:?}", meters);
-        meters = vec![0., 0., 0., 0., 0.];
+    if inputs.len() != 5 {
+        println!("inputs 5!={:?}", inputs);
+        inputs = vec![0., 0., 0., 0., 0.];
     }
-    // println!("Meters {:?}", meters);
-    car.brain.feed_forward(meters);
-    // println!("Outputs {:?}", car.brain.levels.last().unwrap().outputs);
+    car.brain.feed_forward(inputs.clone());
+    let outputs: &Vec<f32> = &car.brain.levels.last().unwrap().outputs;
+    if outputs.iter().any(|v| v > &0.) {
+        println!("brain {:?}", outputs);
+    }
 
     // println!("{:?}", car.brain);
     // let torque: f32 = 200.;
