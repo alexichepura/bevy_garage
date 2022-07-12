@@ -144,10 +144,10 @@ pub fn car_brain_system(
     //     println!("outputs {:?}", outputs);
     // }
 
-    let gas = outputs[0];
-    let brake = outputs[1];
-    let left = outputs[2];
-    let right = outputs[3];
+    let _gas = outputs[0];
+    let _brake = outputs[1];
+    let _left = outputs[2];
+    let _right = outputs[3];
 
     // println!("{:?}", car.brain);
     // let torque: f32 = 200.;

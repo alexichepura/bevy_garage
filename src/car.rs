@@ -158,3 +158,46 @@ pub fn car_system(
         }
     }
 }
+
+pub fn car_change_detection(
+    query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
+    mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
+    mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
+) {
+    for (_entity, car, velocity, transform) in query.iter() {
+        let torque: f32;
+
+        let car_vector = transform.rotation.mul_vec3(Vec3::Z);
+        let delta = velocity.linvel.normalize() - car_vector.normalize();
+        let car_angle_slip_rad = Vec3::new(delta.x, 0., delta.z).length();
+        let mut forward: bool = true;
+        if car_angle_slip_rad > 1. {
+            forward = false;
+        }
+
+        let gas_max_torque = 500.;
+        let break_max_torque = 2000.;
+        if forward {
+            if car.brake > 0. {
+                torque = -car.brake * break_max_torque;
+            } else {
+                torque = car.gas * gas_max_torque;
+            }
+        } else {
+            if car.brake > 0. {
+                torque = -car.brake * gas_max_torque;
+            } else {
+                torque = car.gas * break_max_torque;
+            }
+        }
+
+        for (mut forces, transform, _) in wheels.iter_mut() {
+            forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
+        }
+
+        let axis = Vec3::new(1., 0., car.steering * 0.3);
+        for (mut joint, _) in front.iter_mut() {
+            joint.data.set_local_axis1(axis);
+        }
+    }
+}
