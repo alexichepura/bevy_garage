@@ -139,19 +139,15 @@ pub fn car_brain_system(
         inputs = vec![0., 0., 0., 0., 0.];
     }
     brain.feed_forward(inputs.clone());
+
     let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
-    // if outputs.iter().any(|v| v > &0.) {
-    //     println!("outputs {:?}", outputs);
-    // }
 
-    let _gas = outputs[0];
-    let _brake = outputs[1];
-    let _left = outputs[2];
-    let _right = outputs[3];
+    let gas = outputs[0];
+    let brake = outputs[1];
+    let left = outputs[2];
+    let right = outputs[3];
 
-    // println!("{:?}", car.brain);
-    // let torque: f32 = 200.;
-    // for (mut forces, transform, _) in wheels.iter_mut() {
-    //     forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
-    // }
+    car.gas = gas;
+    car.brake = brake;
+    car.steering = -left + right;
 }
