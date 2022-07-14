@@ -13,14 +13,14 @@ pub fn track_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let deltas = Isometry::identity();
     let input = BufReader::new(File::open("assets/nurburgring-gp-track.obj").unwrap());
+    let scale = 1.;
 
     if let Ok(model) = obj::raw::parse_obj(input) {
-        let mut vertices: Vec<_> = model
+        let vertices: Vec<_> = model
             .positions
             .iter()
-            .map(|v| point![v.0, v.1, v.2])
+            .map(|v| point![v.0 * scale, v.1 * scale, v.2 * scale])
             .collect();
         let indices: Vec<_> = model
             .polygons
@@ -32,14 +32,6 @@ pub fn track_system(
                 Polygon::PTN(idx) => Vec::from_iter(idx.into_iter().map(|i| i.0)).into_iter(),
             })
             .collect();
-
-        let aabb = bounding_volume::details::point_cloud_aabb(&deltas, &vertices);
-        let center = aabb.center();
-        let diag = (aabb.maxs - aabb.mins).norm();
-
-        vertices
-            .iter_mut()
-            .for_each(|p| *p = (*p - center.coords) * 6.0 / diag);
 
         let indices: Vec<_> = indices
             .chunks(3)
@@ -65,7 +57,7 @@ pub fn track_system(
             .insert(Restitution::coefficient(0.1))
             // .insert_bundle(TransformBundle::identity())
             .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
-                0., 0.5, 0.,
+                0., 0.1, 0.,
             )));
     }
 }
