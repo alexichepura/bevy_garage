@@ -15,7 +15,7 @@ pub fn camera_focus_system(
     let p1 = transforms.p1();
     let (car_transform, _car) = p1.single();
     let mut tf = Transform::from_matrix(car_transform.compute_matrix());
-    let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 2.5, -8.));
+    let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 2.5, -15.));
     tf.translation.x = tf.translation.x + shift_vec.x;
     tf.translation.y = tf.translation.y + shift_vec.y;
     tf.translation.z = tf.translation.z + shift_vec.z;

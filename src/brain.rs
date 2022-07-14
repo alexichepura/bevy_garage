@@ -117,8 +117,8 @@ pub fn car_brain_system(
         i += 1;
 
         let ray_origin: Vect =
-            line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., 0., 2.));
-        let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., 0., max_toi));
+            line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
+        let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
 
         polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 
