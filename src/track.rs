@@ -1,8 +1,7 @@
 use crate::mesh::*;
 use bevy::prelude::*;
-use bevy_rapier3d::parry::bounding_volume;
 use bevy_rapier3d::prelude::*;
-use nalgebra::{point, Isometry};
+use nalgebra::point;
 use obj::raw::object::Polygon;
 use rapier3d::prelude::SharedShape;
 use std::fs::File;
@@ -57,7 +56,7 @@ pub fn track_system(
             .insert(Restitution::coefficient(0.1))
             // .insert_bundle(TransformBundle::identity())
             .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
-                0., 0.1, 0.,
+                0., 0.02, 0.,
             )));
     }
 }

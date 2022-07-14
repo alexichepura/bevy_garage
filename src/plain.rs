@@ -6,7 +6,7 @@ pub fn plain_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let plane_half = 50.0;
+    let plane_half = 200.0;
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box {

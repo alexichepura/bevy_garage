@@ -46,7 +46,7 @@ fn main() {
         .add_plugin(PolylinePlugin)
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_system)
         .add_startup_system(camera_system)
         // .add_startup_system(graphics_system)
         .add_startup_system(plain_start_system)
