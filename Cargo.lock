@@ -579,6 +579,7 @@ dependencies = [
  "bevy_polyline",
  "bevy_rapier3d",
  "nalgebra",
+ "obj-rs",
  "rand",
  "rapier3d",
  "smooth-bevy-cameras",

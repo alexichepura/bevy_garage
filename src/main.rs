@@ -7,6 +7,7 @@ mod graphics;
 mod input;
 mod light;
 mod mesh;
+mod track;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
@@ -25,6 +26,7 @@ use gamepad::*;
 use graphics::*;
 use input::*;
 use light::*;
+use track::*;
 
 fn main() {
     App::new()
@@ -45,6 +47,7 @@ fn main() {
         // .add_system_to_stage(CoreStage::Update, camera_focus_system)
         .add_startup_system(camera_system)
         .add_startup_system(graphics_system)
+        .add_startup_system(track_system)
         .add_startup_system(light_start_system)
         .add_startup_system(car_system)
         .add_startup_system(car_brain_start_system)
