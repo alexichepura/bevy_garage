@@ -7,6 +7,7 @@ mod graphics;
 mod input;
 mod light;
 mod mesh;
+mod obj;
 mod plain;
 mod track;
 
@@ -37,8 +38,8 @@ fn main() {
         // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
-        // .add_plugin(LookTransformPlugin)
-        // .add_plugin(UnrealCameraPlugin::default())
+        .add_plugin(LookTransformPlugin)
+        .add_plugin(UnrealCameraPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -46,7 +47,7 @@ fn main() {
         .add_plugin(PolylinePlugin)
         .init_resource::<GamepadLobby>()
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
-        .add_system_to_stage(CoreStage::Update, camera_focus_system)
+        // .add_system_to_stage(CoreStage::Update, camera_focus_system)
         .add_startup_system(camera_system)
         // .add_startup_system(graphics_system)
         .add_startup_system(plain_start_system)
