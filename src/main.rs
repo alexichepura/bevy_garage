@@ -7,7 +7,6 @@ mod graphics;
 mod input;
 mod light;
 mod mesh;
-mod obj;
 mod plain;
 mod track;
 
