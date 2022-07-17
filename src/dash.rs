@@ -71,6 +71,7 @@ pub fn dash_fps_update_system(
 }
 
 pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(UiCameraBundle::default());
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     commands

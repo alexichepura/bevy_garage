@@ -43,9 +43,8 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(PolylinePlugin)
         .init_resource::<GamepadLobby>()
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_system)
         .add_startup_system(camera_start_system)
+        // .add_startup_system(unreal_camera_start_system)
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)
@@ -59,5 +58,7 @@ fn main() {
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         .run();
 }

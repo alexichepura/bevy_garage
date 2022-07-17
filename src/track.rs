@@ -56,8 +56,8 @@ pub fn track_start_system(
             .insert(collider)
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
-            .insert(Friction::coefficient(100.))
-            .insert(Restitution::coefficient(0.1))
+            .insert(Friction::coefficient(1000.))
+            .insert(Restitution::coefficient(0.01))
             .insert_bundle(TransformBundle::identity());
     }
 }

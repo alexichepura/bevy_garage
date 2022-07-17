@@ -130,8 +130,8 @@ pub fn car_start_system(
             ))
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
-            .insert(Friction::coefficient(100.))
-            .insert(Restitution::coefficient(0.1))
+            .insert(Friction::coefficient(1000.))
+            .insert(Restitution::coefficient(0.01))
             .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
                 mass: 15.0,
