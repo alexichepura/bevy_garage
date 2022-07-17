@@ -55,8 +55,8 @@ pub fn car_start_system(
     let car_hl: f32 = 1.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_transform = Vec3::new(0., 1.3 + 0.5, 43.);
-    let car_quat = Quat::from_rotation_y(PI / 2.);
+    let car_transform = Vec3::new(0., 1.3 + 0.5, 0.);
+    let car_quat = Quat::from_rotation_y(-PI / 4.);
 
     let car = commands
         .spawn()
