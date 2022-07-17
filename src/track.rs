@@ -6,6 +6,8 @@ use rapier3d::prelude::ColliderShape;
 use std::fs::File;
 use std::io::BufReader;
 
+pub const STATIC_GROUP: u32 = 0b010;
+
 pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -54,6 +56,7 @@ pub fn track_start_system(
             .insert_bundle(pbr)
             .insert(Name::new("Track"))
             .insert(collider)
+            .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
             .insert(Friction::coefficient(1000.))

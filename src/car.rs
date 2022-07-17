@@ -1,9 +1,8 @@
+use crate::{brain::*, mesh::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, sync::Arc};
-
-use crate::{brain::CarBrain, mesh::bevy_mesh};
 
 #[derive(Component)]
 pub struct Wheel;
@@ -46,6 +45,8 @@ impl Car {
     }
 }
 
+pub const CAR_TRAINING_GROUP: u32 = 0b001;
+
 pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -74,6 +75,7 @@ pub fn car_start_system(
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(car_transform).with_rotation(car_quat),
             ))
+            .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
             .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
                 mass: 1500.0,
@@ -135,6 +137,7 @@ pub fn car_start_system(
                 ))
                 .insert(Velocity::zero())
                 .insert(Collider::from(wheel_shape))
+                .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction::coefficient(1000.))
                 .insert(Restitution::coefficient(0.01))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
