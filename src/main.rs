@@ -42,9 +42,10 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin {
             mode: DebugRenderMode::COLLIDER_SHAPES
+                | DebugRenderMode::RIGID_BODY_AXES
                 | DebugRenderMode::JOINTS
                 | DebugRenderMode::CONTACTS
-                | DebugRenderMode::RIGID_BODY_AXES,
+                | DebugRenderMode::SOLVER_CONTACTS,
             ..default()
         })
         .add_plugin(PolylinePlugin)

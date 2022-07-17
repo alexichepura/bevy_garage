@@ -76,16 +76,16 @@ pub fn car_start_system(
             principal_inertia: Vec3::new(100.0, 100.0, 100.0),
             ..default()
         }))
-        .with_children(|parent| {
-            let mut tr: Transform = Transform { ..default() };
-            tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-            parent.spawn_bundle(PbrBundle {
-                mesh: asset_server.load(car_graphics),
-                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                transform: tr,
-                ..default()
-            });
-        })
+        // .with_children(|parent| {
+        //     let mut tr: Transform = Transform { ..default() };
+        //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
+        //     parent.spawn_bundle(PbrBundle {
+        //         mesh: asset_server.load(car_graphics),
+        //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+        //         transform: tr,
+        //         ..default()
+        //     });
+        // })
         .insert(CarBrain::new())
         .insert(Car::new())
         .id();
@@ -116,12 +116,12 @@ pub fn car_start_system(
         let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
         let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
         let wheel = commands
-            // .spawn()
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(wheel_mesh),
-                material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
-                ..default()
-            })
+            .spawn()
+            // .insert_bundle(PbrBundle {
+            //     mesh: meshes.add(wheel_mesh),
+            //     material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+            //     ..default()
+            // })
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
             .insert_bundle(TransformBundle::from(
