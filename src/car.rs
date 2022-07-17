@@ -43,7 +43,7 @@ impl Car {
     }
 }
 
-pub fn car_system(
+pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -160,7 +160,7 @@ pub fn car_system(
     }
 }
 
-pub fn car_change_detection(
+pub fn car_change_detection_system(
     query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
     mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
     mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,

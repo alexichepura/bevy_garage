@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_rapier3d::prelude::*;
 use nalgebra::point;
-use rapier3d::prelude::SharedShape;
+use rapier3d::prelude::ColliderShape;
 use std::fs::File;
 use std::io::BufReader;
 
-pub fn track_system(
+pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -41,24 +41,7 @@ pub fn track_system(
             .map(|idx| [idx[0] as u32, idx[1] as u32, idx[2] as u32])
             .collect();
 
-        let decomposed_shape = SharedShape::convex_decomposition_with_params(
-            &vertices,
-            &indices,
-            &VHACDParameters {
-                // alpha: 0.01,
-                // beta: 0.01,
-                resolution: 1400,
-                // concavity: 0.0011,
-                // max_convex_hulls: 2048,
-                // plane_downsampling: 2,
-                // convex_hull_downsampling: 2,
-                // fill_mode: FillMode::FloodFill {
-                //     detect_cavities: true,
-                // },
-                ..VHACDParameters::default()
-            },
-        );
-        // let decomposed_shape = SharedShape::convex_decomposition(&vertices, &indices);
+        let collider = Collider::from(ColliderShape::trimesh(vertices, indices));
 
         let pbr = PbrBundle {
             mesh: meshes.add(mesh),
@@ -70,7 +53,7 @@ pub fn track_system(
             .spawn()
             .insert_bundle(pbr)
             .insert(Name::new("Track"))
-            .insert(Collider::from(decomposed_shape))
+            .insert(collider)
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
             .insert(Friction::coefficient(100.))
@@ -80,9 +63,5 @@ pub fn track_system(
 }
 
 fn models() -> Vec<String> {
-    vec![
-        "assets/track.obj".to_string(),
-        // "assets/border-left.obj".to_string(),
-        // "assets/border-right.obj".to_string(),
-    ]
+    vec!["assets/track.obj".to_string()]
 }

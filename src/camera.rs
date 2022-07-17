@@ -26,7 +26,7 @@ pub fn camera_focus_system(
     }
 }
 
-pub fn camera_system(mut commands: Commands) {
+pub fn camera_start_system(mut commands: Commands) {
     // commands.spawn_bundle(PerspectiveCameraBundle {
     //     transform: Transform::from_translation(Vec3::new(10., 2.5, 10.))
     //         .looking_at(Vec3::ZERO, Vec3::Y),

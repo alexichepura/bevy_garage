@@ -22,7 +22,7 @@ pub struct WheelsTorqueText;
 #[derive(Component)]
 pub struct MassText;
 
-pub fn dash_fps_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     commands
@@ -70,7 +70,7 @@ pub fn dash_fps_update_system(
     }
 }
 
-pub fn dash_speed_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     commands

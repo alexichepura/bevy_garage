@@ -6,7 +6,7 @@ pub struct GamepadLobby {
     pub gamepads: HashSet<Gamepad>,
 }
 
-pub fn gamepad_lobby_system(
+pub fn gamepad_stage_preupdate_system(
     mut lobby: ResMut<GamepadLobby>,
     mut gamepad_event: EventReader<GamepadEvent>,
 ) {
