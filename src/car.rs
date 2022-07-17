@@ -38,7 +38,7 @@ impl Car {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: false,
+            use_brain: true,
         }
     }
 }

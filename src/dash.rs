@@ -29,6 +29,12 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .spawn_bundle(TextBundle {
             style: Style {
                 align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(2.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
                 ..default()
             },
             text: Text {
@@ -37,7 +43,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                         value: "FPS: ".to_string(),
                         style: TextStyle {
                             font: bold.clone(),
-                            font_size: 60.0,
+                            font_size: 16.0,
                             color: Color::WHITE,
                         },
                     },
@@ -45,7 +51,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                         value: "".to_string(),
                         style: TextStyle {
                             font: medium.clone(),
-                            font_size: 60.0,
+                            font_size: 16.0,
                             color: Color::GOLD,
                         },
                     },
