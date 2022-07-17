@@ -1,12 +1,18 @@
-use std::f32::consts::PI;
-
 use bevy::prelude::*;
 use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
+use rand::prelude::*;
 use rand::thread_rng;
 use rand::{distributions::Standard, Rng};
+use std::f32::consts::PI;
 
 use crate::car::*;
+
+fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
+    let b = random_0_to_1 * 2. - 1.;
+    let t = 0.1;
+    a + (b - a) * t
+}
 
 #[derive(Debug, Component)]
 pub struct CarBrain {
@@ -27,7 +33,21 @@ impl CarBrain {
             outputs = level.outputs.clone();
         }
     }
+    pub fn mutate(&mut self) {
+        let mut rng = rand::thread_rng();
+        for level in self.levels.iter_mut() {
+            for bias in level.biases.iter_mut() {
+                *bias = car_lerp(*bias, rng.gen::<f32>());
+            }
+            for weighti in level.weights.iter_mut() {
+                for weight in weighti.iter_mut() {
+                    *weight = car_lerp(*weight, rng.gen::<f32>());
+                }
+            }
+        }
+    }
 }
+
 #[derive(Debug, Clone)]
 struct Level {
     inputs: Vec<f32>,
