@@ -14,10 +14,10 @@ pub fn light_start_system(mut commands: Commands) {
     //     ..default()
     // });
 
-    const HSIZE: f32 = 200.;
+    const HSIZE: f32 = 400.;
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 32_000.,
+            illuminance: 80_000.,
             shadow_projection: OrthographicProjection {
                 left: -HSIZE,
                 right: HSIZE,
