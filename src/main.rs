@@ -3,10 +3,11 @@ mod camera;
 mod car;
 mod dash;
 mod gamepad;
-mod graphics;
 mod input;
 mod light;
 mod mesh;
+mod plain;
+mod track;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
@@ -22,9 +23,10 @@ use camera::*;
 use car::*;
 use dash::*;
 use gamepad::*;
-use graphics::*;
 use input::*;
 use light::*;
+use plain::*;
+use track::*;
 
 fn main() {
     App::new()
@@ -41,20 +43,22 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(PolylinePlugin)
         .init_resource::<GamepadLobby>()
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_lobby_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_system)
-        .add_startup_system(camera_system)
-        .add_startup_system(graphics_system)
+        .add_startup_system(camera_start_system)
+        // .add_startup_system(unreal_camera_start_system)
+        .add_startup_system(plain_start_system)
+        .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)
-        .add_startup_system(car_system)
+        .add_startup_system(car_start_system)
         .add_startup_system(car_brain_start_system)
-        .add_startup_system(dash_speed_system)
-        .add_startup_system(dash_fps_system)
-        .add_system(car_change_detection)
+        .add_startup_system(dash_speed_start_system)
+        .add_startup_system(dash_fps_start_system)
+        .add_system(car_change_detection_system)
         .add_system(car_brain_system)
         .add_system(dash_fps_update_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         .run();
 }

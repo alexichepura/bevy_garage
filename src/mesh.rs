@@ -6,11 +6,10 @@ use bevy::{
     },
 };
 use bevy_rapier3d::prelude::Real;
-use nalgebra::{Point3, Vector3};
+use nalgebra::Point3;
 
 pub fn bevy_mesh(buffers: (Vec<Point3<Real>>, Vec<[u32; 3]>)) -> Mesh {
     let (vtx, idx) = buffers;
-    let mut normals: Vec<[f32; 3]> = vec![];
     let mut vertices: Vec<[f32; 3]> = vec![];
 
     for idx in idx {
@@ -23,29 +22,15 @@ pub fn bevy_mesh(buffers: (Vec<Point3<Real>>, Vec<[u32; 3]>)) -> Mesh {
         vertices.push(c.cast::<f32>().into());
     }
 
-    for vtx in vertices.chunks(3) {
-        let a = Point3::from(vtx[0]);
-        let b = Point3::from(vtx[1]);
-        let c = Point3::from(vtx[2]);
-        let n = (b - a).cross(&(c - a)).normalize();
-        normals.push(n.cast::<f32>().into());
-        normals.push(n.cast::<f32>().into());
-        normals.push(n.cast::<f32>().into());
-    }
-
-    normals
-        .iter_mut()
-        .for_each(|n| *n = Vector3::from(*n).normalize().into());
     let indices: Vec<_> = (0..vertices.len() as u32).collect();
     let uvs: Vec<_> = (0..vertices.len()).map(|_| [0.0, 0.0]).collect();
 
-    // Generate the mesh
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices),
     );
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+    mesh.compute_flat_normals();
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(indices)));
     mesh

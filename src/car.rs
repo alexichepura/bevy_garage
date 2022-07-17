@@ -43,7 +43,7 @@ impl Car {
     }
 }
 
-pub fn car_system(
+pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -55,8 +55,8 @@ pub fn car_system(
     let car_hl: f32 = 1.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_transform = Vec3::new(0., 1.3 + 0.5, -2.);
-    let car_quat = Quat::from_rotation_y(PI / 2.);
+    let car_transform = Vec3::new(0., 1.3 + 0.5, 0.);
+    let car_quat = Quat::from_rotation_y(-PI / 4.);
 
     let car = commands
         .spawn()
@@ -104,12 +104,6 @@ pub fn car_system(
             | JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z;
 
-        // let joint = RevoluteJointBuilder::new(Vec3::X)
-        //     // .local_axis1(Vec3::X)
-        //     .local_axis2(Vec3::Y)
-        //     .local_anchor1(car_anchors[i])
-        //     .local_anchor2(Vec3::new(0., 0., 0.).into());
-
         let joint = GenericJointBuilder::new(joint_mask)
             .local_axis1(Vec3::X)
             .local_axis2(Vec3::Y)
@@ -136,8 +130,8 @@ pub fn car_system(
             ))
             .insert(Velocity::zero())
             .insert(Collider::from(wheel_shape))
-            .insert(Friction::coefficient(100.))
-            .insert(Restitution::coefficient(0.1))
+            .insert(Friction::coefficient(1000.))
+            .insert(Restitution::coefficient(0.01))
             .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
                 mass: 15.0,
@@ -166,7 +160,7 @@ pub fn car_system(
     }
 }
 
-pub fn car_change_detection(
+pub fn car_change_detection_system(
     query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
     mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
     mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
