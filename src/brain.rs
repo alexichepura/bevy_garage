@@ -119,60 +119,62 @@ pub fn car_brain_start_system(
 }
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    mut cars: Query<(&mut Car, &Transform, With<Car>)>,
-    mut brains: Query<(&mut CarBrain, With<CarBrain>)>,
+    mut cars: Query<(&mut Car, &Transform, &mut CarBrain, With<CarBrain>)>,
     mut polylines: ResMut<Assets<Polyline>>,
     sensors: Query<(Entity, &Handle<Polyline>)>,
 ) {
-    let (mut car, transform, _car) = cars.single_mut();
-    let (mut brain, _brain) = brains.single_mut();
-    let mut inputs: Vec<f32> = Vec::new();
-    let max_toi: f32 = 10.;
-    let mut i: i8 = 0;
-    sensors.for_each(|(_, polyline)| {
-        let mut line_tf = transform.clone();
-        let angle = PI / 8.;
-        let start_angle = -2. * angle;
-        line_tf.rotate(Quat::from_rotation_y(start_angle + i as f32 * angle));
-        i += 1;
+    for (mut car, transform, mut brain, _) in cars.iter_mut() {
+        // let (mut car, transform, _car) = cars.single_mut();
+        // let (mut brain, _brain) = brains.single_mut();
+        let mut inputs: Vec<f32> = Vec::new();
+        let max_toi: f32 = 10.;
+        let mut i: i8 = 0;
+        sensors.for_each(|(_, polyline)| {
+            let mut line_tf = transform.clone();
+            let angle = PI / 8.;
+            let start_angle = -2. * angle;
+            line_tf.rotate(Quat::from_rotation_y(start_angle + i as f32 * angle));
+            i += 1;
 
-        let ray_origin: Vect =
-            line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
-        let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
+            let ray_origin: Vect =
+                line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
+            let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
 
-        polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
+            polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 
-        let hit = rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
-        match hit {
-            Some((_, sensor_units)) => {
-                if sensor_units > 1. {
-                    inputs.push(0.);
-                    return;
+            let hit =
+                rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
+            match hit {
+                Some((_, sensor_units)) => {
+                    if sensor_units > 1. {
+                        inputs.push(0.);
+                        return;
+                    }
+                    inputs.push(sensor_units);
                 }
-                inputs.push(sensor_units);
+                None => inputs.push(-1.),
             }
-            None => inputs.push(-1.),
+        });
+        if inputs.len() != 5 {
+            println!("inputs 5!={:?}", inputs);
+            inputs = vec![0., 0., 0., 0., 0.];
         }
-    });
-    if inputs.len() != 5 {
-        println!("inputs 5!={:?}", inputs);
-        inputs = vec![0., 0., 0., 0., 0.];
+
+        if !car.use_brain {
+            return;
+        }
+
+        brain.feed_forward(inputs.clone());
+
+        let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
+
+        let gas = outputs[0];
+        let brake = outputs[1];
+        let left = outputs[2];
+        let right = outputs[3];
+
+        car.gas = gas;
+        car.brake = brake;
+        car.steering = -left + right;
     }
-
-    if !car.use_brain {
-        return;
-    }
-
-    brain.feed_forward(inputs.clone());
-
-    let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
-
-    let gas = outputs[0];
-    let brake = outputs[1];
-    let left = outputs[2];
-    let right = outputs[3];
-
-    car.gas = gas;
-    car.brake = brake;
-    car.steering = -left + right;
 }

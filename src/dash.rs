@@ -1,8 +1,7 @@
+use crate::car::*;
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
-
-use crate::car::{Car, Wheel};
 
 #[derive(Component)]
 pub struct FpsText;
@@ -273,7 +272,7 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<WheelsWText>>,
         Query<&mut Text, With<WheelsTorqueText>>,
     )>,
-    mut cars: Query<(&Velocity, &ReadMassProperties, With<Car>)>,
+    mut cars: Query<(&Velocity, &ReadMassProperties, With<HID>)>,
     mut wheels: Query<(&Velocity, &ExternalForce, With<Wheel>)>,
 ) {
     let (velocity, mass_props, _) = cars.single_mut();
