@@ -40,13 +40,13 @@ pub struct Car {
 }
 
 impl Car {
-    pub fn new(wheels: Vec<Entity>) -> Self {
+    pub fn new(wheels: &Vec<Entity>) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
             steering: 0.,
             use_brain: true,
-            wheels,
+            wheels: wheels.clone(),
             wheel_max_torque: 200.,
         }
     }
@@ -64,23 +64,24 @@ pub fn car_start_system(
     mut polylines: ResMut<Assets<Polyline>>,
     car_init: Res<CarInit>,
 ) {
-    let mut saved_brain: Option<CarBrain> = None;
+    let saved_brain: Option<CarBrain>;
     let json_file = File::open(Path::new("brain.json"));
     if json_file.is_ok() {
         println!("brain.json found");
         saved_brain = serde_json::from_reader(json_file.unwrap()).unwrap();
+    } else {
+        saved_brain = None;
     }
 
     for i in 0..10 {
-        let brain: CarBrain = CarBrain::new(saved_brain.clone());
         let car_hw: f32 = 0.45;
-        let car_hh: f32 = 0.5;
+        let car_hh: f32 = 0.4;
         let car_hl: f32 = 1.8;
         let wheel_r: f32 = 0.3;
         let wheel_hw: f32 = 0.125;
 
         // WHEELS
-        let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
+        let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh + 0.1, car_hl);
         let car_anchors: [Vec3; 4] = [
             Vec3::new(shift.x, shift.y, shift.z),
             Vec3::new(-shift.x, shift.y, shift.z),
@@ -129,9 +130,9 @@ pub fn car_start_system(
                 .insert(Friction::coefficient(1000.))
                 .insert(Restitution::coefficient(0.01))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
-                    mass: 15.0,
-                    principal_inertia: Vec3::new(1.0, 1.0, 1.0),
+                    local_center_of_mass: Vec3::ZERO,
+                    mass: 15.,
+                    principal_inertia: Vec3::new(0.3, 0.3, 0.3),
                     ..default()
                 }))
                 .insert(Wheel)
@@ -170,9 +171,9 @@ pub fn car_start_system(
             .insert(ReadMassProperties::default())
             .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
             .insert(ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
+                local_center_of_mass: Vec3::new(0., -0.2, 0.),
                 mass: 1500.0,
-                principal_inertia: Vec3::new(100.0, 100.0, 100.0),
+                principal_inertia: Vec3::new(10., 10., 10.),
                 ..default()
             }))
             // .insert_bundle(TransformBundle::from(car_transform))
@@ -206,14 +207,19 @@ pub fn car_start_system(
                         .insert(CarSensor);
                 }
             })
-            .insert(brain.clone())
-            .insert(Car::new(wheels.clone()))
+            .insert(Car::new(&wheels))
             .id();
 
         for (i, wheel_id) in wheels.iter().enumerate() {
             commands
                 .entity(*wheel_id)
                 .insert(MultibodyJoint::new(car, joints[i]));
+        }
+
+        if let Some(saved_brain) = &saved_brain {
+            commands.entity(car).insert(saved_brain.clone());
+        } else {
+            commands.entity(car).insert(CarBrain::new());
         }
 
         if i == 0 {

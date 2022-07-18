@@ -1,7 +1,7 @@
-use std::f32::consts::PI;
 use std::fs;
 
 use crate::car::*;
+use crate::track::STATIC_GROUP;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 use bevy_polyline::prelude::*;
@@ -21,20 +21,11 @@ pub struct CarBrain {
     levels: Vec<Level>,
 }
 impl CarBrain {
-    pub fn new(saved_brain: Option<CarBrain>) -> CarBrain {
-        match saved_brain {
-            Some(b) => {
-                let mut brain_random = b.clone();
-                brain_random.mutate_random();
-                brain_random
-            }
-            None => {
-                let ins = Level::new(5, 6);
-                let hidden = Level::new(6, 4);
-                CarBrain {
-                    levels: [ins, hidden].to_vec(),
-                }
-            }
+    pub fn new() -> CarBrain {
+        let ins = Level::new(5, 6);
+        let hidden = Level::new(6, 4);
+        CarBrain {
+            levels: [ins, hidden].to_vec(),
         }
     }
     pub fn feed_forward(&mut self, new_inputs: Vec<f32>) {
@@ -130,8 +121,24 @@ pub fn car_brain_system(
                 ray_dir = transform.rotation.mul_vec3(vertices[1]);
             }
 
-            let hit =
-                rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
+            let hit = rapier_context.cast_ray(
+                ray_origin,
+                ray_dir,
+                max_toi,
+                false,
+                QueryFilter {
+                    // CollisionGroups::new(STATIC_GROUP, u32::MAX)
+                    // groups: Some(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
+                    // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
+                    // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
+                    ..default()
+                },
+                // QueryFilter::new(),
+                // QueryFilter::exclude_dynamic(),
+                // QueryFilter::only_fixed(),
+                // QueryFilter::from(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
+                // QueryFilter::from(InteractionGroups::new(STATIC_GROUP, STATIC_GROUP)),
+            );
             match hit {
                 Some((_, sensor_units)) => {
                     if sensor_units > 1. {
