@@ -22,9 +22,11 @@ impl CarBrain {
     pub fn new() -> CarBrain {
         let ins = Level::new(5, 6);
         let hidden = Level::new(6, 4);
-        CarBrain {
+        let mut brain = CarBrain {
             levels: [ins, hidden].to_vec(),
-        }
+        };
+        // brain.mutate();
+        brain
     }
     pub fn feed_forward(&mut self, new_inputs: Vec<f32>) {
         let mut outputs: Vec<f32> = new_inputs.clone();
@@ -98,25 +100,27 @@ pub fn car_brain_start_system(
     mut polylines: ResMut<Assets<Polyline>>,
     // cars: Query<(&Transform, With<Car>)>,
 ) {
-    for _ in 0..5 {
-        commands
-            .spawn_bundle(PolylineBundle {
-                polyline: polylines.add(Polyline {
-                    vertices: vec![-Vec3::ONE, Vec3::ONE],
-                    ..default()
-                }),
-                material: polyline_materials.add(PolylineMaterial {
-                    width: 2.0,
-                    color: Color::RED,
-                    perspective: false,
-                    ..default()
-                }),
-                ..default()
-            })
-            .insert(CarSensor);
-    }
+    // for _ in 0..5 {
+    //     commands
+    //         .spawn_bundle(PolylineBundle {
+    //             polyline: polylines.add(Polyline {
+    //                 vertices: vec![-Vec3::ONE, Vec3::ONE],
+    //                 ..default()
+    //             }),
+    //             material: polyline_materials.add(PolylineMaterial {
+    //                 width: 2.0,
+    //                 color: Color::RED,
+    //                 perspective: false,
+    //                 ..default()
+    //             }),
+    //             ..default()
+    //         })
+    //         .insert(CarSensor);
+    // }
     // let (transform, _car) = cars.single();
 }
+
+#[allow(dead_code)]
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     mut cars: Query<(&mut Car, &Transform, &mut CarBrain, With<CarBrain>)>,
@@ -128,17 +132,10 @@ pub fn car_brain_system(
         // let (mut brain, _brain) = brains.single_mut();
         let mut inputs: Vec<f32> = Vec::new();
         let max_toi: f32 = 10.;
-        let mut i: i8 = 0;
         sensors.for_each(|(_, polyline)| {
-            let mut line_tf = transform.clone();
-            let angle = PI / 8.;
-            let start_angle = -2. * angle;
-            line_tf.rotate(Quat::from_rotation_y(start_angle + i as f32 * angle));
-            i += 1;
-
             let ray_origin: Vect =
-                line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
-            let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
+                transform.translation + transform.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
+            let ray_dir: Vect = transform.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
 
             polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
 

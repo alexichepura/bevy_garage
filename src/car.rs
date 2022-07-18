@@ -1,5 +1,6 @@
 use crate::{brain::*, mesh::*, track::*};
 use bevy::prelude::*;
+use bevy_polyline::prelude::{Polyline, PolylineBundle, PolylineMaterial};
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, sync::Arc};
@@ -52,8 +53,10 @@ pub fn car_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
+    mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
+    mut polylines: ResMut<Assets<Polyline>>,
 ) {
-    for i in 0..2 {
+    for i in 0..1 {
         let car_graphics = "hatchbackSports.obj";
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.5;
@@ -82,19 +85,45 @@ pub fn car_start_system(
                 principal_inertia: Vec3::new(100.0, 100.0, 100.0),
                 ..default()
             }))
-            // .with_children(|parent| {
-            //     let mut tr: Transform = Transform { ..default() };
-            //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-            //     parent.spawn_bundle(PbrBundle {
-            //         mesh: asset_server.load(car_graphics),
-            //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-            //         transform: tr,
-            //         ..default()
-            //     });
-            // })
+            .with_children(|parent| {
+                //     let mut tr: Transform = Transform { ..default() };
+                //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
+                //     parent.spawn_bundle(PbrBundle {
+                //         mesh: asset_server.load(car_graphics),
+                //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+                //         transform: tr,
+                //         ..default()
+                //     });
+                for a in -2..3 {
+                    parent
+                        .spawn_bundle(PolylineBundle {
+                            polyline: polylines.add(Polyline {
+                                vertices: vec![Vec3::ZERO, Vec3::Z * 10.],
+                                ..default()
+                            }),
+                            material: polyline_materials.add(PolylineMaterial {
+                                width: 2.0,
+                                color: Color::RED,
+                                perspective: false,
+                                ..default()
+                            }),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(
+                            Transform::from_translation(Vec3::new(0., 0., car_hl))
+                                .with_rotation(Quat::from_rotation_y(a as f32 * PI / 8.)),
+                        ))
+                        .insert(CarSensor);
+                }
+            })
             .insert(CarBrain::new())
             .insert(Car::new())
             .id();
+
+        if i == 0 {
+            commands.entity(car).insert(HID); // allow human inputs for first car
+        }
+
         let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
         let car_anchors: [Vec3; 4] = [
             Vec3::new(shift.x, shift.y, shift.z),
