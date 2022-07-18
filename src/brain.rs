@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::fs;
 
 use crate::car::*;
 use bevy::prelude::*;
@@ -7,6 +8,7 @@ use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
+use serde::{Deserialize, Serialize};
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
@@ -14,16 +16,25 @@ fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     a + (b - a) * t
 }
 
-#[derive(Debug, Component, Clone)]
+#[derive(Debug, Component, Clone, Serialize, Deserialize)]
 pub struct CarBrain {
     levels: Vec<Level>,
 }
 impl CarBrain {
-    pub fn new() -> CarBrain {
-        let ins = Level::new(5, 6);
-        let hidden = Level::new(6, 4);
-        CarBrain {
-            levels: [ins, hidden].to_vec(),
+    pub fn new(saved_brain: Option<CarBrain>) -> CarBrain {
+        match saved_brain {
+            Some(b) => {
+                let mut brain_random = b.clone();
+                brain_random.mutate_random();
+                brain_random
+            }
+            None => {
+                let ins = Level::new(5, 6);
+                let hidden = Level::new(6, 4);
+                CarBrain {
+                    levels: [ins, hidden].to_vec(),
+                }
+            }
         }
     }
     pub fn feed_forward(&mut self, new_inputs: Vec<f32>) {
@@ -34,7 +45,7 @@ impl CarBrain {
         }
     }
 
-    pub fn mutate(&mut self) {
+    pub fn mutate_random(&mut self) {
         let mut rng = rand::thread_rng();
         for level in self.levels.iter_mut() {
             for bias in level.biases.iter_mut() {
@@ -49,7 +60,7 @@ impl CarBrain {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Level {
     inputs: Vec<f32>,
     outputs: Vec<f32>,
@@ -174,7 +185,9 @@ pub fn cars_pick_brain_mutate_restart(
     if let Some(selected_brain) = selected_brain {
         for (mut brain, mut transform, _) in cars.iter_mut() {
             let mut new_brain = selected_brain.clone();
-            new_brain.mutate();
+            let serialized = serde_json::to_string(&new_brain).unwrap();
+            fs::write("brain.json", serialized).expect("Unable to write brain.json");
+            new_brain.mutate_random();
             *brain = new_brain;
             *transform =
                 Transform::from_translation(car_init.translation).with_rotation(car_init.quat);

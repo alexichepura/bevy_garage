@@ -4,7 +4,7 @@ use bevy_mod_picking::PickableBundle;
 use bevy_polyline::prelude::{Polyline, PolylineBundle, PolylineMaterial};
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
-use std::{f32::consts::PI, sync::Arc};
+use std::{f32::consts::PI, fs::File, path::Path, sync::Arc};
 
 pub struct CarInit {
     pub translation: Vec3,
@@ -64,7 +64,15 @@ pub fn car_start_system(
     mut polylines: ResMut<Assets<Polyline>>,
     car_init: Res<CarInit>,
 ) {
+    let mut saved_brain: Option<CarBrain> = None;
+    let json_file = File::open(Path::new("brain.json"));
+    if json_file.is_ok() {
+        println!("brain.json found");
+        saved_brain = serde_json::from_reader(json_file.unwrap()).unwrap();
+    }
+
     for i in 0..10 {
+        let brain: CarBrain = CarBrain::new(saved_brain.clone());
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.5;
         let car_hl: f32 = 1.8;
@@ -198,7 +206,7 @@ pub fn car_start_system(
                         .insert(CarSensor);
                 }
             })
-            .insert(CarBrain::new())
+            .insert(brain.clone())
             .insert(Car::new(wheels.clone()))
             .id();
 
@@ -230,7 +238,7 @@ pub fn car_change_detection_system(
             forward = false;
         }
 
-        let break_max_torque = car.wheel_max_torque * 2.;
+        let break_max_torque = car.wheel_max_torque * 1.;
         if forward {
             if car.brake > 0. {
                 torque = -car.brake * break_max_torque;

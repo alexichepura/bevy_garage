@@ -603,6 +603,8 @@ dependencies = [
  "obj-rs",
  "rand",
  "rapier3d",
+ "serde",
+ "serde_json",
  "smooth-bevy-cameras",
 ]
 
