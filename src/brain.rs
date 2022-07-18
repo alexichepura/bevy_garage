@@ -183,10 +183,12 @@ pub fn cars_pick_brain_mutate_restart(
         }
     }
     if let Some(selected_brain) = selected_brain {
+        let serialized = serde_json::to_string(&selected_brain).unwrap();
+        println!("saving brain.json");
+        fs::write("brain.json", serialized).expect("Unable to write brain.json");
+
         for (mut brain, mut transform, _) in cars.iter_mut() {
             let mut new_brain = selected_brain.clone();
-            let serialized = serde_json::to_string(&new_brain).unwrap();
-            fs::write("brain.json", serialized).expect("Unable to write brain.json");
             new_brain.mutate_random();
             *brain = new_brain;
             *transform =
