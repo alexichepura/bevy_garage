@@ -68,7 +68,8 @@ pub fn car_start_system(
     let json_file = File::open(Path::new("brain.json"));
     if json_file.is_ok() {
         println!("brain.json found");
-        saved_brain = serde_json::from_reader(json_file.unwrap()).unwrap();
+        saved_brain =
+            CarBrain::clone_randomised(serde_json::from_reader(json_file.unwrap()).unwrap());
     } else {
         saved_brain = None;
     }
@@ -184,9 +185,18 @@ pub fn car_start_system(
                 ..default()
             })
             .insert_bundle(PickableBundle::default())
-            .with_children(|parent| {
+            // .with_children(|children| {
+            //     children
+            //         .spawn()
+            //         .insert(Collider::cuboid(car_hw + 1., 0.5, 10.))
+            //         .insert_bundle(TransformBundle::from(Transform::from_translation(
+            //             Vec3::new(0., 0., car_hl),
+            //         )))
+            //         .insert(Sensor(true));
+            // })
+            .with_children(|children| {
                 for a in -2..3 {
-                    parent
+                    children
                         .spawn_bundle(PolylineBundle {
                             polyline: polylines.add(Polyline {
                                 vertices: vec![Vec3::ZERO, Vec3::Z * 10.],
