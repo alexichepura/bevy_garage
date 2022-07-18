@@ -35,6 +35,8 @@ impl CarBrain {
             outputs = level.outputs.clone();
         }
     }
+
+    #[allow(dead_code)]
     pub fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
         for level in self.levels.iter_mut() {
@@ -120,24 +122,31 @@ pub fn car_brain_start_system(
     // let (transform, _car) = cars.single();
 }
 
-#[allow(dead_code)]
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    mut cars: Query<(&mut Car, &Transform, &mut CarBrain, With<CarBrain>)>,
-    mut polylines: ResMut<Assets<Polyline>>,
-    sensors: Query<(Entity, &Handle<Polyline>)>,
+    mut cars: Query<(
+        &mut Car,
+        &Transform,
+        &mut CarBrain,
+        &Children,
+        With<CarBrain>,
+    )>,
+    polylines: ResMut<Assets<Polyline>>,
+    rays: Query<(Entity, &Handle<Polyline>)>,
 ) {
-    for (mut car, transform, mut brain, _) in cars.iter_mut() {
-        // let (mut car, transform, _car) = cars.single_mut();
-        // let (mut brain, _brain) = brains.single_mut();
+    for (mut car, transform, mut brain, children, _) in cars.iter_mut() {
         let mut inputs: Vec<f32> = Vec::new();
         let max_toi: f32 = 10.;
-        sensors.for_each(|(_, polyline)| {
-            let ray_origin: Vect =
-                transform.translation + transform.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
-            let ray_dir: Vect = transform.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
 
-            polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
+        for &child in children.iter() {
+            let mut ray_origin: Vec3 = Vec3::ZERO;
+            let mut ray_dir: Vec3 = Vec3::ZERO;
+
+            if let Ok((_, polyline)) = rays.get(child) {
+                let vertices = &polylines.get(polyline).unwrap().vertices;
+                ray_origin = transform.translation + transform.rotation.mul_vec3(vertices[0]);
+                ray_dir = transform.rotation.mul_vec3(vertices[1]);
+            }
 
             let hit =
                 rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
@@ -151,7 +160,7 @@ pub fn car_brain_system(
                 }
                 None => inputs.push(-1.),
             }
-        });
+        }
         if inputs.len() != 5 {
             println!("inputs 5!={:?}", inputs);
             inputs = vec![0., 0., 0., 0., 0.];

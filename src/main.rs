@@ -60,7 +60,7 @@ fn main() {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_system(car_change_detection_system)
-        // .add_system(car_brain_system)
+        .add_system(car_brain_system)
         .add_system(dash_fps_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)

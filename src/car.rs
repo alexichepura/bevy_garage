@@ -58,7 +58,7 @@ pub fn car_start_system(
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
 ) {
-    for i in 0..2 {
+    for i in 0..10 {
         let car_graphics = "hatchbackSports.obj";
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.5;
