@@ -9,6 +9,8 @@ mod mesh;
 mod plain;
 mod track;
 
+use std::f32::consts::PI;
+
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
 // use bevy_inspector_egui::InspectorPlugin;
@@ -54,6 +56,10 @@ fn main() {
         .add_plugin(DebugCursorPickingPlugin)
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
         .init_resource::<GamepadLobby>()
+        .insert_resource(CarInit {
+            translation: Vec3::new(0., 0.8, 0.),
+            quat: Quat::from_rotation_y(-PI / 4.),
+        })
         // .add_startup_system(camera_start_system)
         .add_startup_system(unreal_camera_start_system)
         .add_startup_system(plain_start_system)

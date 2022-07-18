@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use crate::car::*;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
@@ -156,25 +158,26 @@ pub fn car_brain_system(
 
 pub fn cars_pick_brain_mutate_restart(
     mut events: EventReader<PickingEvent>,
-    mut cars: Query<(&mut CarBrain, With<CarBrain>)>,
+    mut cars: Query<(&mut CarBrain, &mut Transform, With<CarBrain>)>,
+    car_init: Res<CarInit>,
 ) {
     let mut selected_brain: Option<CarBrain> = None;
     for event in events.iter() {
         match event {
-            PickingEvent::Selection(e) => info!("selection {:?}", e),
-            PickingEvent::Hover(e) => info!("hover {:?}", e),
             PickingEvent::Clicked(e) => {
-                info!("click {:?}", e);
-                let (brain, _) = cars.get(*e).unwrap();
+                let (brain, _, _) = cars.get(*e).unwrap();
                 selected_brain = Some(brain.clone());
             }
+            _ => (),
         }
     }
     if let Some(selected_brain) = selected_brain {
-        for (mut brain, _) in cars.iter_mut() {
+        for (mut brain, mut transform, _) in cars.iter_mut() {
             let mut new_brain = selected_brain.clone();
             new_brain.mutate();
             *brain = new_brain;
+            *transform =
+                Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
         }
     }
 }

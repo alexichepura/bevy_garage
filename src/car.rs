@@ -6,13 +6,14 @@ use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, sync::Arc};
 
+pub struct CarInit {
+    pub translation: Vec3,
+    pub quat: Quat,
+}
+
 #[derive(Component)]
 pub struct Wheel;
-// #[derive(Component)]
-// struct Wheel2 {
-//     diameter: f32,
-//     widrh: f32,
-// }
+
 #[derive(Component)]
 pub struct FrontJoint;
 
@@ -61,6 +62,7 @@ pub fn car_start_system(
     asset_server: Res<AssetServer>,
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
+    car_init: Res<CarInit>,
 ) {
     for i in 0..10 {
         let car_hw: f32 = 0.45;
@@ -68,8 +70,6 @@ pub fn car_start_system(
         let car_hl: f32 = 1.8;
         let wheel_r: f32 = 0.3;
         let wheel_hw: f32 = 0.125;
-        let car_transform = Vec3::new(0., 1.3 + 0.5, 0.);
-        let car_quat = Quat::from_rotation_y(-PI / 4.);
 
         // WHEELS
         let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
@@ -98,7 +98,7 @@ pub fn car_start_system(
                 .build();
             joints.push(joint);
 
-            let wheel_transform = car_transform + car_quat.mul_vec3(car_anchors[i]);
+            let wheel_transform = car_init.translation + car_init.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
             let wheel_id = commands
@@ -149,7 +149,8 @@ pub fn car_start_system(
         }
 
         // CAR
-        let car_transform = Transform::from_translation(car_transform).with_rotation(car_quat);
+        let car_transform =
+            Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
         let car = commands
             .spawn()
             .insert(RigidBody::Dynamic)
