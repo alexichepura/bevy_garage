@@ -67,5 +67,19 @@ fn main() {
         .add_system(arrow_input_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
+}
+
+fn display_events_system(
+    mut collision_events: EventReader<CollisionEvent>,
+    mut contact_force_events: EventReader<ContactForceEvent>,
+) {
+    for collision_event in collision_events.iter() {
+        println!("Received collision event: {:?}", collision_event);
+    }
+
+    for contact_force_event in contact_force_events.iter() {
+        println!("Received contact force event: {:?}", contact_force_event);
+    }
 }

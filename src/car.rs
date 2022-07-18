@@ -33,15 +33,17 @@ pub struct Car {
     pub brake: f32,
     pub steering: f32,
     pub use_brain: bool,
+    pub wheels: Vec<Entity>,
 }
 
 impl Car {
-    pub fn new() -> Self {
+    pub fn new(wheels: Vec<Entity>) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
             steering: 0.,
             use_brain: true,
+            wheels,
         }
     }
 }
@@ -56,7 +58,7 @@ pub fn car_start_system(
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
 ) {
-    for i in 0..1 {
+    for i in 0..2 {
         let car_graphics = "hatchbackSports.obj";
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.5;
@@ -66,6 +68,84 @@ pub fn car_start_system(
         let car_transform = Vec3::new(0., 1.3 + 0.5, 0.);
         let car_quat = Quat::from_rotation_y(-PI / 4.);
 
+        // WHEELS
+        let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
+        let car_anchors: [Vec3; 4] = [
+            Vec3::new(shift.x, shift.y, shift.z),
+            Vec3::new(-shift.x, shift.y, shift.z),
+            Vec3::new(shift.x, shift.y, -shift.z),
+            Vec3::new(-shift.x, shift.y, -shift.z),
+        ];
+
+        let mut wheels: Vec<Entity> = vec![];
+        let mut joints: Vec<GenericJoint> = vec![];
+
+        for i in 0..4 {
+            let joint_mask = JointAxesMask::X
+                | JointAxesMask::Y
+                | JointAxesMask::Z
+                | JointAxesMask::ANG_Y
+                | JointAxesMask::ANG_Z;
+
+            let joint = GenericJointBuilder::new(joint_mask)
+                .local_axis1(Vec3::X)
+                .local_axis2(Vec3::Y)
+                .local_anchor1(car_anchors[i])
+                .local_anchor2(Vec3::new(0., 0., 0.).into())
+                .build();
+            joints.push(joint);
+
+            let wheel_transform = car_transform + car_quat.mul_vec3(car_anchors[i]);
+            let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
+            let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+            let wheel_id = commands
+                .spawn()
+                // .insert_bundle(PbrBundle {
+                //     mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(100))),
+                //     material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+                //     ..default()
+                // })
+                .insert(RigidBody::Dynamic)
+                .insert(Ccd::enabled())
+                .insert_bundle(TransformBundle::from(
+                    Transform::from_translation(wheel_transform).with_rotation(
+                        Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI),
+                    ),
+                ))
+                .insert(Velocity::zero())
+                .insert(Collider::from(wheel_shape))
+                .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                .insert(Friction::coefficient(1000.))
+                .insert(Restitution::coefficient(0.01))
+                .insert(ColliderMassProperties::MassProperties(MassProperties {
+                    local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
+                    mass: 15.0,
+                    principal_inertia: Vec3::new(1.0, 1.0, 1.0),
+                    ..default()
+                }))
+                .insert(Wheel)
+                .insert(ExternalForce::default())
+                .id();
+            wheels.push(wheel_id);
+
+            if i == 0 {
+                commands
+                    .entity(wheel_id)
+                    .insert(FrontRightJoint)
+                    .insert(FrontJoint);
+            } else if i == 1 {
+                commands
+                    .entity(wheel_id)
+                    .insert(FrontLeftJoint)
+                    .insert(FrontJoint);
+            } else if i == 2 {
+                commands.entity(wheel_id).insert(BackJoint);
+            } else if i == 3 {
+                commands.entity(wheel_id).insert(BackJoint);
+            }
+        }
+
+        // CAR
         let car = commands
             .spawn()
             .insert(RigidBody::Dynamic)
@@ -117,83 +197,17 @@ pub fn car_start_system(
                 }
             })
             .insert(CarBrain::new())
-            .insert(Car::new())
+            .insert(Car::new(wheels.clone()))
             .id();
+
+        for (i, wheel_id) in wheels.iter().enumerate() {
+            commands
+                .entity(*wheel_id)
+                .insert(MultibodyJoint::new(car, joints[i]));
+        }
 
         if i == 0 {
             commands.entity(car).insert(HID); // allow human inputs for first car
-        }
-
-        let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
-        let car_anchors: [Vec3; 4] = [
-            Vec3::new(shift.x, shift.y, shift.z),
-            Vec3::new(-shift.x, shift.y, shift.z),
-            Vec3::new(shift.x, shift.y, -shift.z),
-            Vec3::new(-shift.x, shift.y, -shift.z),
-        ];
-
-        for i in 0..4 {
-            let joint_mask = JointAxesMask::X
-                | JointAxesMask::Y
-                | JointAxesMask::Z
-                | JointAxesMask::ANG_Y
-                | JointAxesMask::ANG_Z;
-
-            let joint = GenericJointBuilder::new(joint_mask)
-                .local_axis1(Vec3::X)
-                .local_axis2(Vec3::Y)
-                .local_anchor1(car_anchors[i])
-                .local_anchor2(Vec3::new(0., 0., 0.).into())
-                .build();
-
-            let wheel_transform = car_transform + car_quat.mul_vec3(car_anchors[i]);
-            let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-            let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
-            let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
-            let wheel = commands
-                .spawn()
-                // .insert_bundle(PbrBundle {
-                //     mesh: meshes.add(wheel_mesh),
-                //     material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
-                //     ..default()
-                // })
-                .insert(RigidBody::Dynamic)
-                .insert(Ccd::enabled())
-                .insert_bundle(TransformBundle::from(
-                    Transform::from_translation(wheel_transform).with_rotation(
-                        Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI),
-                    ),
-                ))
-                .insert(Velocity::zero())
-                .insert(Collider::from(wheel_shape))
-                .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(1000.))
-                .insert(Restitution::coefficient(0.01))
-                .insert(ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
-                    mass: 15.0,
-                    principal_inertia: Vec3::new(1.0, 1.0, 1.0),
-                    ..default()
-                }))
-                .insert(Wheel)
-                .insert(MultibodyJoint::new(car, joint))
-                .insert(ExternalForce::default())
-                .id();
-            if i == 0 {
-                commands
-                    .entity(wheel)
-                    .insert(FrontRightJoint)
-                    .insert(FrontJoint);
-            } else if i == 1 {
-                commands
-                    .entity(wheel)
-                    .insert(FrontLeftJoint)
-                    .insert(FrontJoint);
-            } else if i == 2 {
-                commands.entity(wheel).insert(BackJoint);
-            } else if i == 3 {
-                commands.entity(wheel).insert(BackJoint);
-            }
         }
     }
 }
