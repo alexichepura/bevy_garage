@@ -214,8 +214,8 @@ pub fn car_start_system(
 
 pub fn car_change_detection_system(
     query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
-    mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
     mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
+    mut wheels: Query<(&mut ExternalForce, &Transform), With<Wheel>>,
 ) {
     for (_entity, car, velocity, transform) in query.iter() {
         let torque: f32;
@@ -244,13 +244,15 @@ pub fn car_change_detection_system(
             }
         }
 
-        for (mut forces, transform, _) in wheels.iter_mut() {
-            forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
-        }
+        for wheel_entity in car.wheels.iter() {
+            if let Ok((mut forces, transform)) = wheels.get_mut(*wheel_entity) {
+                forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
+            }
 
-        let axis = Vec3::new(1., 0., car.steering * 0.3);
-        for (mut joint, _) in front.iter_mut() {
-            joint.data.set_local_axis1(axis);
+            let axis = Vec3::new(1., 0., car.steering * 0.3);
+            if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
+                joint.data.set_local_axis1(axis);
+            }
         }
     }
 }
