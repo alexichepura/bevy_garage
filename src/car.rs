@@ -35,6 +35,7 @@ pub struct Car {
     pub steering: f32,
     pub use_brain: bool,
     pub wheels: Vec<Entity>,
+    pub wheel_max_torque: f32,
 }
 
 impl Car {
@@ -45,6 +46,7 @@ impl Car {
             steering: 0.,
             use_brain: true,
             wheels,
+            wheel_max_torque: 200.,
         }
     }
 }
@@ -60,7 +62,6 @@ pub fn car_start_system(
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
 ) {
-    let a = "";
     for i in 0..10 {
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.5;
@@ -102,11 +103,11 @@ pub fn car_start_system(
             let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
             let wheel_id = commands
                 .spawn()
-                // .insert_bundle(PbrBundle {
-                //     mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(100))),
-                //     material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
-                //     ..default()
-                // })
+                .insert_bundle(PbrBundle {
+                    mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(100))),
+                    material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+                    ..default()
+                })
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert_bundle(TransformBundle::from(
@@ -158,7 +159,6 @@ pub fn car_start_system(
             .insert(Friction::coefficient(0.001))
             .insert(Restitution::coefficient(0.1))
             .insert(ReadMassProperties::default())
-            .insert_bundle(TransformBundle::from(car_transform))
             .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
             .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
@@ -166,6 +166,7 @@ pub fn car_start_system(
                 principal_inertia: Vec3::new(100.0, 100.0, 100.0),
                 ..default()
             }))
+            // .insert_bundle(TransformBundle::from(car_transform))
             .insert_bundle(PbrBundle {
                 mesh: asset_server.load(CAR_OBJ),
                 material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
@@ -173,16 +174,6 @@ pub fn car_start_system(
                 ..default()
             })
             .insert_bundle(PickableBundle::default())
-            // .with_children(|parent| {
-            //     parent
-            //         .spawn_bundle(PbrBundle {
-            //             mesh: asset_server.load(car_graphics),
-            //             material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-            //             transform: Transform::from_translation(Vec3::new(0.0, -car_hh, 0.0)),
-            //             ..default()
-            //         })
-            //         .insert_bundle(PickableBundle::default());
-            // })
             .with_children(|parent| {
                 for a in -2..3 {
                     parent
@@ -238,17 +229,16 @@ pub fn car_change_detection_system(
             forward = false;
         }
 
-        let gas_max_torque = 100.;
-        let break_max_torque = 200.;
+        let break_max_torque = car.wheel_max_torque * 2.;
         if forward {
             if car.brake > 0. {
                 torque = -car.brake * break_max_torque;
             } else {
-                torque = car.gas * gas_max_torque;
+                torque = car.gas * car.wheel_max_torque;
             }
         } else {
             if car.brake > 0. {
-                torque = -car.brake * gas_max_torque;
+                torque = -car.brake * car.wheel_max_torque;
             } else {
                 torque = car.gas * break_max_torque;
             }
