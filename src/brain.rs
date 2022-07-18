@@ -1,12 +1,10 @@
+use crate::car::*;
 use bevy::prelude::*;
+use bevy_mod_picking::PickingEvent;
 use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
-use rand::thread_rng;
 use rand::{distributions::Standard, Rng};
-use std::f32::consts::PI;
-
-use crate::car::*;
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
@@ -14,7 +12,7 @@ fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     a + (b - a) * t
 }
 
-#[derive(Debug, Component)]
+#[derive(Debug, Component, Clone)]
 pub struct CarBrain {
     levels: Vec<Level>,
 }
@@ -34,7 +32,6 @@ impl CarBrain {
         }
     }
 
-    #[allow(dead_code)]
     pub fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
         for level in self.levels.iter_mut() {
@@ -154,5 +151,30 @@ pub fn car_brain_system(
         car.gas = gas;
         car.brake = brake;
         car.steering = -left + right;
+    }
+}
+
+pub fn cars_pick_brain_mutate_restart(
+    mut events: EventReader<PickingEvent>,
+    mut cars: Query<(&mut CarBrain, With<CarBrain>)>,
+) {
+    let mut selected_brain: Option<CarBrain> = None;
+    for event in events.iter() {
+        match event {
+            PickingEvent::Selection(e) => info!("selection {:?}", e),
+            PickingEvent::Hover(e) => info!("hover {:?}", e),
+            PickingEvent::Clicked(e) => {
+                info!("click {:?}", e);
+                let (brain, _) = cars.get(*e).unwrap();
+                selected_brain = Some(brain.clone());
+            }
+        }
+    }
+    if let Some(selected_brain) = selected_brain {
+        for (mut brain, _) in cars.iter_mut() {
+            let mut new_brain = selected_brain.clone();
+            new_brain.mutate();
+            *brain = new_brain;
+        }
     }
 }

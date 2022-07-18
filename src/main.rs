@@ -52,7 +52,7 @@ fn main() {
         .add_plugin(PolylinePlugin)
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DebugCursorPickingPlugin)
-        .add_plugin(DebugEventsPickingPlugin)
+        .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
         .init_resource::<GamepadLobby>()
         // .add_startup_system(camera_start_system)
         .add_startup_system(unreal_camera_start_system)
