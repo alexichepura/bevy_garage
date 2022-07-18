@@ -1,5 +1,6 @@
 // use crate::Car;
 use bevy::prelude::*;
+use bevy_mod_picking::PickingCameraBundle;
 // use core::f32::consts::PI;
 use smooth_bevy_cameras::controllers::unreal::{UnrealCameraBundle, UnrealCameraController};
 
@@ -37,6 +38,7 @@ use smooth_bevy_cameras::controllers::unreal::{UnrealCameraBundle, UnrealCameraC
 pub fn unreal_camera_start_system(mut commands: Commands) {
     commands
         .spawn_bundle(PerspectiveCameraBundle::default())
+        .insert_bundle(PickingCameraBundle::default())
         .insert_bundle(UnrealCameraBundle::new(
             UnrealCameraController::default(),
             Vec3::new(15., 4., -15.),

@@ -13,6 +13,7 @@ use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
 // use bevy_inspector_egui::InspectorPlugin;
 // use bevy_inspector_egui_rapier::InspectableRapierPlugin;
+use bevy_mod_picking::*;
 use bevy_obj::ObjPlugin;
 use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -49,6 +50,9 @@ fn main() {
             ..default()
         })
         .add_plugin(PolylinePlugin)
+        .add_plugins(DefaultPickingPlugins)
+        .add_plugin(DebugCursorPickingPlugin)
+        .add_plugin(DebugEventsPickingPlugin)
         .init_resource::<GamepadLobby>()
         // .add_startup_system(camera_start_system)
         .add_startup_system(unreal_camera_start_system)
@@ -56,7 +60,6 @@ fn main() {
         .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)
         .add_startup_system(car_start_system)
-        .add_startup_system(car_brain_start_system)
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_system(car_change_detection_system)

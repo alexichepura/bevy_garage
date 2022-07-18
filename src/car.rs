@@ -1,5 +1,6 @@
 use crate::{brain::*, mesh::*, track::*};
 use bevy::prelude::*;
+use bevy_mod_picking::PickableBundle;
 use bevy_polyline::prelude::{Polyline, PolylineBundle, PolylineMaterial};
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
@@ -49,6 +50,7 @@ impl Car {
 }
 
 pub const CAR_TRAINING_GROUP: u32 = 0b001;
+const CAR_OBJ: &str = "hatchbackSports.obj";
 
 pub fn car_start_system(
     mut commands: Commands,
@@ -58,8 +60,8 @@ pub fn car_start_system(
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
 ) {
+    let a = "";
     for i in 0..10 {
-        let car_graphics = "hatchbackSports.obj";
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.5;
         let car_hl: f32 = 1.8;
@@ -146,6 +148,7 @@ pub fn car_start_system(
         }
 
         // CAR
+        let car_transform = Transform::from_translation(car_transform).with_rotation(car_quat);
         let car = commands
             .spawn()
             .insert(RigidBody::Dynamic)
@@ -155,9 +158,7 @@ pub fn car_start_system(
             .insert(Friction::coefficient(0.001))
             .insert(Restitution::coefficient(0.1))
             .insert(ReadMassProperties::default())
-            .insert_bundle(TransformBundle::from(
-                Transform::from_translation(car_transform).with_rotation(car_quat),
-            ))
+            .insert_bundle(TransformBundle::from(car_transform))
             .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
             .insert(ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
@@ -165,15 +166,24 @@ pub fn car_start_system(
                 principal_inertia: Vec3::new(100.0, 100.0, 100.0),
                 ..default()
             }))
+            .insert_bundle(PbrBundle {
+                mesh: asset_server.load(CAR_OBJ),
+                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+                transform: car_transform,
+                ..default()
+            })
+            .insert_bundle(PickableBundle::default())
+            // .with_children(|parent| {
+            //     parent
+            //         .spawn_bundle(PbrBundle {
+            //             mesh: asset_server.load(car_graphics),
+            //             material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+            //             transform: Transform::from_translation(Vec3::new(0.0, -car_hh, 0.0)),
+            //             ..default()
+            //         })
+            //         .insert_bundle(PickableBundle::default());
+            // })
             .with_children(|parent| {
-                //     let mut tr: Transform = Transform { ..default() };
-                //     tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-                //     parent.spawn_bundle(PbrBundle {
-                //         mesh: asset_server.load(car_graphics),
-                //         material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                //         transform: tr,
-                //         ..default()
-                //     });
                 for a in -2..3 {
                     parent
                         .spawn_bundle(PolylineBundle {
@@ -228,8 +238,8 @@ pub fn car_change_detection_system(
             forward = false;
         }
 
-        let gas_max_torque = 500.;
-        let break_max_torque = 2000.;
+        let gas_max_torque = 100.;
+        let break_max_torque = 200.;
         if forward {
             if car.brake > 0. {
                 torque = -car.brake * break_max_torque;

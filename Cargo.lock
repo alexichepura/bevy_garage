@@ -511,6 +511,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_picking"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee28e69e9bcd2990273c0d2a976ea0d5b499d154a15c6990864f85fbb6bbee9e"
+dependencies = [
+ "bevy",
+ "bevy_mod_raycast",
+]
+
+[[package]]
+name = "bevy_mod_raycast"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b84a8d57fb1f20aca8c6e3d96e724e54f0ec58ba1d8e8a0989ce3e52d52e2d23"
+dependencies = [
+ "bevy",
+ "float-ord",
+]
+
+[[package]]
 name = "bevy_obj"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -575,6 +595,7 @@ name = "bevy_rapier_3d_car_sim"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_mod_picking",
  "bevy_obj",
  "bevy_polyline",
  "bevy_rapier3d",
@@ -1427,6 +1448,12 @@ name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
+
+[[package]]
+name = "float-ord"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ce81f49ae8a0482e4c55ea62ebbd7e5a686af544c00b9d090bba3ff9be97b3d"
 
 [[package]]
 name = "fnv"

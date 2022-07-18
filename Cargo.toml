@@ -14,6 +14,7 @@ resolver = "2"
 bevy = { version = "0.7.0" }
 bevy_obj = "^0.7.0"
 obj-rs = { version =  "0.7", default-features = false }
+bevy_mod_picking = "0.7"
 nalgebra = "^0.31.0"
 rand = "0.8"
 smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras", rev = "ed50679" }
