@@ -13,7 +13,7 @@ use std::f32::consts::PI;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
-// use bevy_inspector_egui::InspectorPlugin;
+// use bevy_inspector_egui::{InspectorPlugin, WorldInspectorPlugin};
 // use bevy_inspector_egui_rapier::InspectableRapierPlugin;
 use bevy_mod_picking::*;
 use bevy_obj::ObjPlugin;
@@ -35,6 +35,7 @@ fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
+        // .add_plugin(WorldInspectorPlugin::new())
         // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
@@ -58,8 +59,8 @@ fn main() {
         .init_resource::<GamepadLobby>()
         .insert_resource(CarInit {
             translation: Vec3::new(0., 0.6, 0.),
-            quat: Quat::IDENTITY,
-            // quat: Quat::from_rotation_y(-PI / 4.),
+            quat: Quat::from_rotation_y(-PI / 4.),
+            hid_car: None,
         })
         // .add_startup_system(camera_start_system)
         .add_startup_system(unreal_camera_start_system)

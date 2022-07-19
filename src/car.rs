@@ -9,6 +9,7 @@ use std::{f32::consts::PI, fs::File, path::Path, sync::Arc};
 pub struct CarInit {
     pub translation: Vec3,
     pub quat: Quat,
+    pub hid_car: Option<Entity>,
 }
 
 #[derive(Component)]
@@ -68,16 +69,15 @@ impl Car {
 }
 
 pub const CAR_TRAINING_GROUP: u32 = 0b001;
-const CAR_OBJ: &str = "hatchbackSports.obj";
-
+// const CAR_OBJ: &str = "hatchbackSports.obj";
 pub fn car_start_system(
+    // asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
     mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
     mut polylines: ResMut<Assets<Polyline>>,
-    car_init: Res<CarInit>,
+    mut car_init: ResMut<CarInit>,
 ) {
     let ray_point_half = 0.05;
     let ray_point_size = ray_point_half * 2.;
@@ -115,7 +115,7 @@ pub fn car_start_system(
         saved_brain = None;
     }
 
-    for i in 0..1 {
+    for i in 0..2 {
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.3;
         let car_hl: f32 = 1.8;
@@ -205,6 +205,18 @@ pub fn car_start_system(
         let car = commands
             .spawn()
             .insert(Name::new("Car"))
+            .insert_bundle(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Box {
+                    max_x: car_hw,
+                    min_x: -car_hw,
+                    max_y: car_hh,
+                    min_y: -car_hh,
+                    max_z: car_hl,
+                    min_z: -car_hl,
+                })),
+                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
+                ..default()
+            })
             .insert(Car::new(&wheels))
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
@@ -212,12 +224,12 @@ pub fn car_start_system(
             .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
             .with_children(|children| {
-                children.spawn().insert_bundle(PbrBundle {
-                    mesh: asset_server.load(CAR_OBJ),
-                    material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                    transform: Transform::from_translation(Vec3::new(0., -0.3, 0.)),
-                    ..default()
-                });
+                // children.spawn().insert_bundle(PbrBundle {
+                //     mesh: asset_server.load(CAR_OBJ),
+                //     material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+                //     transform: Transform::from_translation(Vec3::new(0., -0.3, 0.)),
+                //     ..default()
+                // });
                 children
                     .spawn()
                     .insert(Ccd::enabled())
@@ -292,6 +304,12 @@ pub fn car_start_system(
             })
             .id();
 
+        if i == 0 {
+            // select first car for human interactions
+            car_init.hid_car = Some(car);
+            commands.entity(car).insert(HID);
+        }
+
         for (i, wheel_id) in wheels.iter().enumerate() {
             commands
                 .entity(*wheel_id)
@@ -302,10 +320,6 @@ pub fn car_start_system(
             commands.entity(car).insert(saved_brain.clone());
         } else {
             commands.entity(car).insert(CarBrain::new());
-        }
-
-        if i == 0 {
-            commands.entity(car).insert(HID); // allow human inputs for first car
         }
     }
 }

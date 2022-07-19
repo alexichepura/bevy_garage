@@ -115,13 +115,8 @@ pub struct CarSensor;
 
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    mut q_car: Query<(
-        &mut Car,
-        &mut CarBrain,
-        &Children,
-        // With<CarBrain>,
-        With<HID>,
-    )>,
+    car_init: Res<CarInit>,
+    mut q_car: Query<(Entity, &mut Car, &mut CarBrain, &Children), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
     mut ray_set: ParamSet<(
@@ -135,7 +130,7 @@ pub fn car_brain_system(
     // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
     // .predicate(&|handle, collider| collider.user_data == 10)
     // .exclude_sensors();
-    for (mut car, mut brain, children, _) in q_car.iter_mut() {
+    for (e, mut car, mut brain, children) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
@@ -155,18 +150,6 @@ pub fn car_brain_system(
         let solid = false;
         for (i, &ray_dir) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            // let hit = rapier_context.cast_ray(ray_pos, ray_dir, max_toi, solid, sensor_filter);
-            // match hit {
-            //     Some((_, toi)) => {
-            //         if toi > 1. {
-            //             inputs.push(0.);
-            //             return;
-            //         }
-            //         inputs.push(toi);
-            //     }
-            //     None => inputs.push(-1.),
-            // }
-
             rapier_context.intersections_with_ray(
                 ray_pos,
                 ray_dir,
@@ -178,46 +161,45 @@ pub fn car_brain_system(
                     hit_point = intersection.point;
                     hit_points[i] = hit_point;
                     inputs[i] = toi;
-                    // if toi > 1. {
-                    //     inputs[i] = 0.;
-                    // } else if toi > 0. {
-                    //     inputs[i] = 1. - toi;
-                    // } else {
-                    //     inputs[i] = 0.;
-                    // }
+                    if toi > 0. {
+                        inputs[i] = 1. - toi;
+                    } else {
+                        inputs[i] = 0.;
+                    }
                     false // Return `false` instead if we want to stop searching for other hits.
                 },
             );
         }
 
-        for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
-            trf.translation = hit_points[i];
+        if car_init.hid_car.unwrap() == e {
+            for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
+                trf.translation = hit_points[i];
+            }
+            for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
+                trf.translation = dirs[i];
+            }
+            for (i, (mut trf, _)) in ray_set.p1().iter_mut().enumerate() {
+                trf.translation = origins[i];
+            }
+            println!(
+                "inputs {:?}",
+                inputs
+                    .iter()
+                    .map(|x| format!("{:.1} ", x))
+                    .collect::<String>(),
+            );
+            // println!(
+            //     "inputs {:?} {:.1} {:?}",
+            //     inputs
+            //         .iter()
+            //         .map(|x| format!("{:.1} ", x))
+            //         .collect::<String>(),
+            //     origins[0],
+            //     dirs.iter()
+            //         .map(|x| format!("{:.1} ", x))
+            //         .collect::<String>(),
+            // );
         }
-        for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
-            trf.translation = dirs[i];
-        }
-        for (i, (mut trf, _)) in ray_set.p1().iter_mut().enumerate() {
-            trf.translation = origins[i];
-        }
-
-        println!(
-            "inputs {:?}",
-            inputs
-                .iter()
-                .map(|x| format!("{:.1} ", x))
-                .collect::<String>(),
-        );
-        // println!(
-        //     "inputs {:?} {:.1} {:?}",
-        //     inputs
-        //         .iter()
-        //         .map(|x| format!("{:.1} ", x))
-        //         .collect::<String>(),
-        //     origins[0],
-        //     dirs.iter()
-        //         .map(|x| format!("{:.1} ", x))
-        //         .collect::<String>(),
-        // );
         if !car.use_brain {
             return;
         }
@@ -244,6 +226,7 @@ pub fn cars_pick_brain_mutate_restart(
     for event in events.iter() {
         match event {
             PickingEvent::Clicked(e) => {
+                println!("clicked entity {:?}", e);
                 let (brain, _, _) = cars.get(*e).unwrap();
                 selected_brain = Some(brain.clone());
             }
