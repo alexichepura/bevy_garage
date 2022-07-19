@@ -104,7 +104,7 @@ pub fn car_start_system(
                 .local_axis1(Vec3::X)
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
-                .local_anchor2(Vec3::new(0., 0., 0.).into())
+                .local_anchor2(Vec3::new(0., 0., 0.))
                 .build();
             joints.push(joint);
 
@@ -163,38 +163,38 @@ pub fn car_start_system(
             Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
         let car = commands
             .spawn()
+            .insert(Name::new("Car"))
+            .insert(Car::new(&wheels))
             .insert(RigidBody::Dynamic)
-            .insert(Ccd::enabled())
             .insert(Velocity::zero())
-            .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-            .insert(Friction::coefficient(0.001))
-            .insert(Restitution::coefficient(0.1))
-            .insert(ReadMassProperties::default())
-            .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-            .insert(ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::new(0., -0.2, 0.),
-                mass: 1500.0,
-                principal_inertia: Vec3::new(10., 10., 10.),
-                ..default()
-            }))
-            // .insert_bundle(TransformBundle::from(car_transform))
-            .insert_bundle(PbrBundle {
-                mesh: asset_server.load(CAR_OBJ),
-                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                transform: car_transform,
-                ..default()
-            })
+            .insert_bundle(TransformBundle::from(car_transform))
             .insert_bundle(PickableBundle::default())
-            // .with_children(|children| {
-            //     children
-            //         .spawn()
-            //         .insert(Collider::cuboid(car_hw + 1., 0.5, 10.))
-            //         .insert_bundle(TransformBundle::from(Transform::from_translation(
-            //             Vec3::new(0., 0., car_hl),
-            //         )))
-            //         .insert(Sensor(true));
-            // })
+            .insert(ReadMassProperties::default())
             .with_children(|children| {
+                children.spawn().insert_bundle(PbrBundle {
+                    mesh: asset_server.load(CAR_OBJ),
+                    material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+                    transform: Transform::from_translation(Vec3::new(0., -0.3, 0.)),
+                    ..default()
+                });
+                children
+                    .spawn()
+                    .insert(Ccd::enabled())
+                    .insert(Collider::cuboid(car_hw, car_hh, car_hl))
+                    .insert(Friction::coefficient(0.001))
+                    .insert(Restitution::coefficient(0.1))
+                    .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                    .insert(ColliderMassProperties::MassProperties(MassProperties {
+                        local_center_of_mass: Vec3::new(0., -0.2, 0.),
+                        mass: 1500.0,
+                        principal_inertia: Vec3::new(10., 10., 10.),
+                        ..default()
+                    }));
+                //         .insert(Collider::cuboid(car_hw + 1., 0.5, 10.))
+                //         .insert_bundle(TransformBundle::from(Transform::from_translation(
+                //             Vec3::new(0., 0., car_hl),
+                //         )))
+                //         .insert(Sensor(true));
                 for a in -2..3 {
                     children
                         .spawn_bundle(PolylineBundle {
@@ -217,7 +217,6 @@ pub fn car_start_system(
                         .insert(CarSensor);
                 }
             })
-            .insert(Car::new(&wheels))
             .id();
 
         for (i, wheel_id) in wheels.iter().enumerate() {

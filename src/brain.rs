@@ -133,42 +133,40 @@ pub fn car_brain_system(
         let max_toi: f32 = 10.;
 
         for &child in children.iter() {
-            let mut ray_origin: Vec3 = Vec3::ZERO;
-            let mut ray_dir: Vec3 = Vec3::ZERO;
-
             if let Ok((_, polyline)) = rays.get(child) {
                 let vertices = &polylines.get(polyline).unwrap().vertices;
-                ray_origin = transform.translation + transform.rotation.mul_vec3(vertices[0]);
-                ray_dir = transform.rotation.mul_vec3(vertices[1]);
-            }
-
-            let hit = rapier_context.cast_ray(
-                ray_origin,
-                ray_dir,
-                max_toi,
-                false,
-                QueryFilter {
-                    // CollisionGroups::new(STATIC_GROUP, u32::MAX)
-                    // groups: Some(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
-                    // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
-                    // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
-                    ..default()
-                },
-                // QueryFilter::new(),
-                // QueryFilter::exclude_dynamic(),
-                // QueryFilter::only_fixed(),
-                // QueryFilter::from(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
-                // QueryFilter::from(InteractionGroups::new(STATIC_GROUP, STATIC_GROUP)),
-            );
-            match hit {
-                Some((_, sensor_units)) => {
-                    if sensor_units > 1. {
-                        inputs.push(0.);
-                        return;
+                let ray_origin = transform.translation + transform.rotation.mul_vec3(vertices[0]);
+                let ray_dir = transform.rotation.mul_vec3(vertices[1]);
+                let hit = rapier_context.cast_ray(
+                    ray_origin,
+                    ray_dir,
+                    max_toi,
+                    false,
+                    QueryFilter {
+                        // CollisionGroups::new(STATIC_GROUP, u32::MAX)
+                        // groups: Some(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
+                        // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
+                        // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
+                        ..default()
+                    },
+                    // QueryFilter::new(),
+                    // QueryFilter::exclude_dynamic(),
+                    // QueryFilter::only_fixed(),
+                    // QueryFilter::from(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
+                    // QueryFilter::from(InteractionGroups::new(STATIC_GROUP, STATIC_GROUP)),
+                );
+                match hit {
+                    Some((_, sensor_units)) => {
+                        if sensor_units > 1. {
+                            inputs.push(0.);
+                            return;
+                        }
+                        inputs.push(sensor_units);
                     }
-                    inputs.push(sensor_units);
+                    None => inputs.push(-1.),
                 }
-                None => inputs.push(-1.),
+            } else {
+                // println!("not a polyline");
             }
         }
         if inputs.len() != 5 {
