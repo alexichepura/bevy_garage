@@ -1,13 +1,11 @@
 use crate::car::*;
-use crate::track::*;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
-use bevy_polyline::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{fs, string};
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
@@ -117,42 +115,39 @@ pub struct CarSensor;
 
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    mut cars: Query<(
+    mut q_car: Query<(
         &mut Car,
         &mut CarBrain,
         &Children,
         // With<CarBrain>,
         With<HID>,
     )>,
-    polylines: ResMut<Assets<Polyline>>,
-    rays: Query<(Entity, &Handle<Polyline>)>,
-    sensor_fars: Query<(&mut GlobalTransform, With<SensorFar>)>,
-    mut rays_dirs: Query<(&mut Transform, With<RayDir>)>,
+    q_near: Query<(&GlobalTransform, With<SensorNear>)>,
+    q_far: Query<(&GlobalTransform, With<SensorFar>)>,
+    mut q_ray_dir: Query<(&mut Transform, With<RayDir>)>,
 ) {
-    let filter = QueryFilter::new();
+    let sensor_filter = QueryFilter::new();
     // .exclude_dynamic()
     // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
     // .predicate(&|handle, collider| collider.user_data == 10)
     // .exclude_sensors();
-    for (mut car, mut brain, children, _) in cars.iter_mut() {
-        let mut inputs: Vec<f32> = Vec::new();
-        let max_toi: f32 = 10.;
+    for (mut car, mut brain, children, _) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
         for &child in children.iter() {
-            if let Ok((gtrf, _)) = sensor_fars.get(child) {
-                dirs.push(gtrf.translation);
+            if let Ok((gtrf, _)) = q_near.get(child) {
+                origins.push(gtrf.translation);
             }
-            if let Ok((_, polyline)) = rays.get(child) {
-                let pc = polylines.get(polyline).unwrap();
-                let vertices = &pc.vertices;
-                origins.push(vertices[0]);
+            if let Ok((gtrf, _)) = q_far.get(child) {
+                dirs.push(gtrf.translation);
             }
         }
 
+        let mut inputs: Vec<f32> = Vec::new();
+        let max_toi: f32 = 10.;
         for (i, &dir) in dirs.iter().enumerate() {
-            let hit = rapier_context.cast_ray(origins[i], dir, max_toi, false, filter);
+            let hit = rapier_context.cast_ray(origins[i], dir, max_toi, false, sensor_filter);
             match hit {
                 Some((_, sensor_units)) => {
                     if sensor_units > 1. {
@@ -165,15 +160,21 @@ pub fn car_brain_system(
             }
         }
 
-        for (i, (mut trf, _)) in rays_dirs.iter_mut().enumerate() {
+        for (i, (mut trf, _)) in q_ray_dir.iter_mut().enumerate() {
             trf.translation = dirs[i];
         }
 
-        if inputs.len() != 5 {
-            println!("inputs 5!={:?}", inputs);
-            inputs = vec![0., 0., 0., 0., 0.];
-        }
-        println!("inputs {:?}", inputs);
+        println!(
+            "inputs {:?} {:.1} {:?}",
+            inputs
+                .iter()
+                .map(|x| format!("{:.1} ", x))
+                .collect::<String>(),
+            origins[0],
+            dirs.iter()
+                .map(|x| format!("{:.1} ", x))
+                .collect::<String>(),
+        );
         if !car.use_brain {
             return;
         }

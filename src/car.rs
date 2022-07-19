@@ -73,7 +73,7 @@ pub fn car_start_system(
     mut polylines: ResMut<Assets<Polyline>>,
     car_init: Res<CarInit>,
 ) {
-    for i in 0..5 {
+    for _i in 0..1 {
         commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
@@ -219,7 +219,7 @@ pub fn car_start_system(
                 //     // .insert(ActiveEvents::COLLISION_EVENTS)
                 //     .insert(Sensor);
 
-                for a in -2..3 {
+                for a in 0..1 {
                     let far_quat = Quat::from_rotation_y(a as f32 * PI / 8.);
                     let dir = Vec3::Z * 10.;
                     children
@@ -246,17 +246,6 @@ pub fn car_start_system(
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
                     children
                         .spawn()
-                        .insert(SensorFar)
-                        .insert_bundle(PbrBundle {
-                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
-                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
-                            ..default()
-                        })
-                        .insert_bundle(TransformBundle::from(Transform::from_translation(
-                            sensor_pos_on_car + far_quat.mul_vec3(dir),
-                        )));
-                    children
-                        .spawn()
                         .insert(SensorNear)
                         .insert_bundle(PbrBundle {
                             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
@@ -265,6 +254,17 @@ pub fn car_start_system(
                         })
                         .insert_bundle(TransformBundle::from(Transform::from_translation(
                             sensor_pos_on_car,
+                        )));
+                    children
+                        .spawn()
+                        .insert(SensorFar)
+                        .insert_bundle(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(Transform::from_translation(
+                            sensor_pos_on_car + far_quat.mul_vec3(dir),
                         )));
                 }
             })

@@ -57,8 +57,9 @@ fn main() {
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
         .init_resource::<GamepadLobby>()
         .insert_resource(CarInit {
-            translation: Vec3::new(-2., 0.6, 0.),
-            quat: Quat::from_rotation_y(-PI / 4.),
+            translation: Vec3::new(0., 0.6, 0.),
+            quat: Quat::IDENTITY,
+            // quat: Quat::from_rotation_y(-PI / 4.),
         })
         // .add_startup_system(camera_start_system)
         .add_startup_system(unreal_camera_start_system)
