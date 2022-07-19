@@ -29,6 +29,15 @@ pub struct BackJoint;
 #[derive(Component)]
 pub struct HID;
 
+#[derive(Component)]
+pub struct SensorFar;
+
+#[derive(Component)]
+pub struct SensorNear;
+
+#[derive(Component)]
+pub struct RayDir;
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub gas: f32,
@@ -45,7 +54,7 @@ impl Car {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: true,
+            use_brain: false,
             wheels: wheels.clone(),
             wheel_max_torque: 200.,
         }
@@ -64,6 +73,14 @@ pub fn car_start_system(
     mut polylines: ResMut<Assets<Polyline>>,
     car_init: Res<CarInit>,
 ) {
+    for i in 0..5 {
+        commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+            ..default()
+        });
+    }
+
     let saved_brain: Option<CarBrain>;
     let json_file = File::open(Path::new("brain.json"));
     if json_file.is_ok() {
@@ -74,7 +91,7 @@ pub fn car_start_system(
         saved_brain = None;
     }
 
-    for i in 0..10 {
+    for i in 0..1 {
         let car_hw: f32 = 0.45;
         let car_hh: f32 = 0.3;
         let car_hl: f32 = 1.8;
@@ -183,6 +200,7 @@ pub fn car_start_system(
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(Friction::coefficient(0.001))
                     .insert(Restitution::coefficient(0.1))
+                    // .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(ColliderMassProperties::MassProperties(MassProperties {
                         local_center_of_mass: Vec3::new(0., -0.2, 0.),
@@ -190,16 +208,24 @@ pub fn car_start_system(
                         principal_inertia: Vec3::new(10., 10., 10.),
                         ..default()
                     }));
-                //         .insert(Collider::cuboid(car_hw + 1., 0.5, 10.))
-                //         .insert_bundle(TransformBundle::from(Transform::from_translation(
-                //             Vec3::new(0., 0., car_hl),
-                //         )))
-                //         .insert(Sensor(true));
+
+                // children
+                //     .spawn()
+                //     .insert(Collider::cuboid(car_hw + 1., 0.5, 10.))
+                //     .insert_bundle(TransformBundle::from(Transform::from_translation(
+                //         Vec3::new(0., 0., car_hl + 10.),
+                //     )))
+                //     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                //     // .insert(ActiveEvents::COLLISION_EVENTS)
+                //     .insert(Sensor);
+
                 for a in -2..3 {
+                    let far_quat = Quat::from_rotation_y(a as f32 * PI / 8.);
+                    let dir = Vec3::Z * 10.;
                     children
                         .spawn_bundle(PolylineBundle {
                             polyline: polylines.add(Polyline {
-                                vertices: vec![Vec3::ZERO, Vec3::Z * 10.],
+                                vertices: vec![Vec3::ZERO, dir],
                                 ..default()
                             }),
                             material: polyline_materials.add(PolylineMaterial {
@@ -212,9 +238,34 @@ pub fn car_start_system(
                         })
                         .insert_bundle(TransformBundle::from(
                             Transform::from_translation(Vec3::new(0., 0., car_hl))
-                                .with_rotation(Quat::from_rotation_y(a as f32 * PI / 8.)),
+                                .with_rotation(far_quat),
                         ))
+                        // .insert(ActiveEvents::COLLISION_EVENTS)
                         .insert(CarSensor);
+
+                    let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
+                    children
+                        .spawn()
+                        .insert(SensorFar)
+                        .insert_bundle(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(Transform::from_translation(
+                            sensor_pos_on_car + far_quat.mul_vec3(dir),
+                        )));
+                    children
+                        .spawn()
+                        .insert(SensorNear)
+                        .insert_bundle(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(Transform::from_translation(
+                            sensor_pos_on_car,
+                        )));
                 }
             })
             .id();

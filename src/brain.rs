@@ -1,7 +1,5 @@
-use std::fs;
-
 use crate::car::*;
-use crate::track::STATIC_GROUP;
+use crate::track::*;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 use bevy_polyline::prelude::*;
@@ -9,6 +7,7 @@ use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
 use serde::{Deserialize, Serialize};
+use std::fs;
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
@@ -120,60 +119,61 @@ pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     mut cars: Query<(
         &mut Car,
-        &Transform,
         &mut CarBrain,
         &Children,
-        With<CarBrain>,
+        // With<CarBrain>,
+        With<HID>,
     )>,
     polylines: ResMut<Assets<Polyline>>,
     rays: Query<(Entity, &Handle<Polyline>)>,
+    sensor_fars: Query<(&mut GlobalTransform, With<SensorFar>)>,
+    mut rays_dirs: Query<(&mut Transform, With<RayDir>)>,
 ) {
-    for (mut car, transform, mut brain, children, _) in cars.iter_mut() {
+    let filter = QueryFilter::new();
+    // .exclude_dynamic()
+    // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+    // .predicate(&|handle, collider| collider.user_data == 10)
+    // .exclude_sensors();
+    for (mut car, mut brain, children, _) in cars.iter_mut() {
         let mut inputs: Vec<f32> = Vec::new();
         let max_toi: f32 = 10.;
+        let mut origins: Vec<Vec3> = Vec::new();
+        let mut dirs: Vec<Vec3> = Vec::new();
 
         for &child in children.iter() {
+            if let Ok((gtrf, _)) = sensor_fars.get(child) {
+                dirs.push(gtrf.translation);
+            }
             if let Ok((_, polyline)) = rays.get(child) {
-                let vertices = &polylines.get(polyline).unwrap().vertices;
-                let ray_origin = transform.translation + transform.rotation.mul_vec3(vertices[0]);
-                let ray_dir = transform.rotation.mul_vec3(vertices[1]);
-                let hit = rapier_context.cast_ray(
-                    ray_origin,
-                    ray_dir,
-                    max_toi,
-                    false,
-                    QueryFilter {
-                        // CollisionGroups::new(STATIC_GROUP, u32::MAX)
-                        // groups: Some(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
-                        // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
-                        // groups: Some(InteractionGroups::new(STATIC_GROUP, u32::MAX)),
-                        ..default()
-                    },
-                    // QueryFilter::new(),
-                    // QueryFilter::exclude_dynamic(),
-                    // QueryFilter::only_fixed(),
-                    // QueryFilter::from(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP)),
-                    // QueryFilter::from(InteractionGroups::new(STATIC_GROUP, STATIC_GROUP)),
-                );
-                match hit {
-                    Some((_, sensor_units)) => {
-                        if sensor_units > 1. {
-                            inputs.push(0.);
-                            return;
-                        }
-                        inputs.push(sensor_units);
-                    }
-                    None => inputs.push(-1.),
-                }
-            } else {
-                // println!("not a polyline");
+                let pc = polylines.get(polyline).unwrap();
+                let vertices = &pc.vertices;
+                origins.push(vertices[0]);
             }
         }
+
+        for (i, &dir) in dirs.iter().enumerate() {
+            let hit = rapier_context.cast_ray(origins[i], dir, max_toi, false, filter);
+            match hit {
+                Some((_, sensor_units)) => {
+                    if sensor_units > 1. {
+                        inputs.push(0.);
+                        return;
+                    }
+                    inputs.push(sensor_units);
+                }
+                None => inputs.push(-1.),
+            }
+        }
+
+        for (i, (mut trf, _)) in rays_dirs.iter_mut().enumerate() {
+            trf.translation = dirs[i];
+        }
+
         if inputs.len() != 5 {
             println!("inputs 5!={:?}", inputs);
             inputs = vec![0., 0., 0., 0., 0.];
         }
-
+        println!("inputs {:?}", inputs);
         if !car.use_brain {
             return;
         }
@@ -181,12 +181,10 @@ pub fn car_brain_system(
         brain.feed_forward(inputs.clone());
 
         let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
-
         let gas = outputs[0];
         let brake = outputs[1];
         let left = outputs[2];
         let right = outputs[3];
-
         car.gas = gas;
         car.brake = brake;
         car.steering = -left + right;
