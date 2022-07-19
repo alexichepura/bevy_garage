@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
 use serde::{Deserialize, Serialize};
-use std::{fs, string};
+use std::{fmt, fs, string};
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
@@ -124,7 +124,11 @@ pub fn car_brain_system(
     )>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
-    mut q_ray_dir: Query<(&mut Transform, With<RayDir>)>,
+    mut ray_set: ParamSet<(
+        Query<(&mut Transform, With<RayDir>)>,
+        Query<(&mut Transform, With<RayOrig>)>,
+        Query<(&mut Transform, With<RayHit>)>,
+    )>,
 ) {
     let sensor_filter = QueryFilter::new();
     // .exclude_dynamic()
@@ -144,37 +148,76 @@ pub fn car_brain_system(
             }
         }
 
-        let mut inputs: Vec<f32> = Vec::new();
+        let mut inputs: Vec<f32> = vec![0.; 5];
+        let mut hit_point: Vec3 = Vec3::ZERO;
+        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
         let max_toi: f32 = 10.;
-        for (i, &dir) in dirs.iter().enumerate() {
-            let hit = rapier_context.cast_ray(origins[i], dir, max_toi, false, sensor_filter);
-            match hit {
-                Some((_, sensor_units)) => {
-                    if sensor_units > 1. {
-                        inputs.push(0.);
-                        return;
-                    }
-                    inputs.push(sensor_units);
-                }
-                None => inputs.push(-1.),
-            }
+        let solid = false;
+        for (i, &ray_dir) in dirs.iter().enumerate() {
+            let ray_pos = origins[i];
+            // let hit = rapier_context.cast_ray(ray_pos, ray_dir, max_toi, solid, sensor_filter);
+            // match hit {
+            //     Some((_, toi)) => {
+            //         if toi > 1. {
+            //             inputs.push(0.);
+            //             return;
+            //         }
+            //         inputs.push(toi);
+            //     }
+            //     None => inputs.push(-1.),
+            // }
+
+            rapier_context.intersections_with_ray(
+                ray_pos,
+                ray_dir,
+                max_toi,
+                solid,
+                sensor_filter,
+                |_entity, intersection| {
+                    let toi = intersection.toi;
+                    hit_point = intersection.point;
+                    hit_points[i] = hit_point;
+                    inputs[i] = toi;
+                    // if toi > 1. {
+                    //     inputs[i] = 0.;
+                    // } else if toi > 0. {
+                    //     inputs[i] = 1. - toi;
+                    // } else {
+                    //     inputs[i] = 0.;
+                    // }
+                    false // Return `false` instead if we want to stop searching for other hits.
+                },
+            );
         }
 
-        for (i, (mut trf, _)) in q_ray_dir.iter_mut().enumerate() {
+        for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
+            trf.translation = hit_points[i];
+        }
+        for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
             trf.translation = dirs[i];
+        }
+        for (i, (mut trf, _)) in ray_set.p1().iter_mut().enumerate() {
+            trf.translation = origins[i];
         }
 
         println!(
-            "inputs {:?} {:.1} {:?}",
+            "inputs {:?}",
             inputs
                 .iter()
                 .map(|x| format!("{:.1} ", x))
                 .collect::<String>(),
-            origins[0],
-            dirs.iter()
-                .map(|x| format!("{:.1} ", x))
-                .collect::<String>(),
         );
+        // println!(
+        //     "inputs {:?} {:.1} {:?}",
+        //     inputs
+        //         .iter()
+        //         .map(|x| format!("{:.1} ", x))
+        //         .collect::<String>(),
+        //     origins[0],
+        //     dirs.iter()
+        //         .map(|x| format!("{:.1} ", x))
+        //         .collect::<String>(),
+        // );
         if !car.use_brain {
             return;
         }

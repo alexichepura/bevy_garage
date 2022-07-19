@@ -38,6 +38,12 @@ pub struct SensorNear;
 #[derive(Component)]
 pub struct RayDir;
 
+#[derive(Component)]
+pub struct RayOrig;
+
+#[derive(Component)]
+pub struct RayHit;
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub gas: f32,
@@ -73,10 +79,28 @@ pub fn car_start_system(
     mut polylines: ResMut<Assets<Polyline>>,
     car_init: Res<CarInit>,
 ) {
-    for _i in 0..1 {
+    let ray_point_half = 0.05;
+    let ray_point_size = ray_point_half * 2.;
+    for _i in 0..5 {
         commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+            mesh: meshes.add(Mesh::from(shape::Cube {
+                size: ray_point_size,
+            })),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+            ..default()
+        });
+        commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube {
+                size: ray_point_size,
+            })),
+            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+            ..default()
+        });
+        commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube {
+                size: ray_point_size,
+            })),
+            material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
             ..default()
         });
     }
@@ -200,7 +224,6 @@ pub fn car_start_system(
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(Friction::coefficient(0.001))
                     .insert(Restitution::coefficient(0.1))
-                    // .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(ColliderMassProperties::MassProperties(MassProperties {
                         local_center_of_mass: Vec3::new(0., -0.2, 0.),
@@ -219,8 +242,8 @@ pub fn car_start_system(
                 //     // .insert(ActiveEvents::COLLISION_EVENTS)
                 //     .insert(Sensor);
 
-                for a in 0..1 {
-                    let far_quat = Quat::from_rotation_y(a as f32 * PI / 8.);
+                for a in -2..3 {
+                    let far_quat = Quat::from_rotation_y(-a as f32 * PI / 8.);
                     let dir = Vec3::Z * 10.;
                     children
                         .spawn_bundle(PolylineBundle {
@@ -240,7 +263,6 @@ pub fn car_start_system(
                             Transform::from_translation(Vec3::new(0., 0., car_hl))
                                 .with_rotation(far_quat),
                         ))
-                        // .insert(ActiveEvents::COLLISION_EVENTS)
                         .insert(CarSensor);
 
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
