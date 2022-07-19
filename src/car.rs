@@ -76,7 +76,7 @@ pub fn car_start_system(
 
     for i in 0..10 {
         let car_hw: f32 = 0.45;
-        let car_hh: f32 = 0.4;
+        let car_hh: f32 = 0.3;
         let car_hl: f32 = 1.8;
         let wheel_r: f32 = 0.3;
         let wheel_hw: f32 = 0.125;
