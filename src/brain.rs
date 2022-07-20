@@ -146,7 +146,7 @@ pub fn car_brain_system(
 
         let mut inputs: Vec<f32> = vec![0.; 5];
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
-        let max_toi: f32 = 10.;
+        let max_toi: f32 = 50.;
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
@@ -171,6 +171,29 @@ pub fn car_brain_system(
             );
         }
 
+        for contact_pair in rapier_context.contacts_with(e) {
+            let other_collider = if contact_pair.collider1() == e {
+                contact_pair.collider2()
+            } else {
+                contact_pair.collider1()
+            };
+            println!("other_collider: {:?}", other_collider);
+            for manifold in contact_pair.manifolds() {
+                println!("Local-space contact normal: {}", manifold.local_n1());
+                println!("Local-space contact normal: {}", manifold.local_n2());
+                println!("World-space contact normal: {}", manifold.normal());
+                for contact_point in manifold.points() {
+                    println!("local contact point 1: {:?}", contact_point.local_p1());
+                    println!("contact distance: {:?}", contact_point.dist());
+                    println!("contact impulse: {}", contact_point.impulse());
+                    println!("friction impulse: {:?}", contact_point.tangent_impulse());
+                }
+                for solver_contact in manifold.solver_contacts() {
+                    println!("solver contact point: {:?}", solver_contact.point());
+                    println!("solver contact distance: {:?}", solver_contact.dist());
+                }
+            }
+        }
         if e == e_hid_car {
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
                 trf.translation = origins[i];

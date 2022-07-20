@@ -1,4 +1,4 @@
-use crate::Car;
+use crate::car::HID;
 use bevy::prelude::*;
 use bevy::render::camera::Camera3d;
 use bevy_mod_picking::PickingCameraBundle;
@@ -9,7 +9,7 @@ use smooth_bevy_cameras::controllers::unreal::{UnrealCameraBundle, UnrealCameraC
 pub fn camera_focus_update_system(
     mut transforms: ParamSet<(
         Query<(&mut Transform, &Camera, With<Camera3d>)>,
-        Query<(&Transform, &Car)>,
+        Query<(&Transform, &HID)>,
     )>,
 ) {
     let p1 = transforms.p1();

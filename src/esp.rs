@@ -55,22 +55,33 @@ pub fn car_change_detection_system(
             let wheel_result = q_front_wheels.get_mut(*wheel_entity);
             if let Ok((wheel, mut forces, transform, velocity)) = wheel_result {
                 let radius_vel = velocity.angvel * wheel.radius;
-                let velocity_slipp = (
+                let velocity_slip = (
                     radius_vel[0] - velocity.linvel[2],
                     radius_vel[2] + velocity.linvel[0],
                 );
-                println!(
-                    "slip {velocity_slipp:?} {:?} {:?}",
-                    (radius_vel * 10.).round() / 10.,
-                    (velocity.linvel * 10.).round() / 10.,
-                );
-                forces.torque = (transform.rotation.mul_vec3(steering_torque_vec)).into();
+                let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
+                let max_slip = 0.4; // TODO is too much for slip control
+                let slip_sq_x: f32 = match slip_sq / max_slip {
+                    x if x >= 1. => {
+                        // println!("max_slip {max_slip}, slip {slip_sq}");
+                        0.
+                    }
+                    x => 1. - x,
+                };
+                forces.torque =
+                    (transform.rotation.mul_vec3(steering_torque_vec * slip_sq_x)).into();
+                // println!("slip adjust {slip_sq_x}");
+                // println!(
+                //     "slip {velocity_slip:?} {:?} {:?}",
+                //     (radius_vel * 10.).round() / 10.,
+                //     (velocity.linvel * 10.).round() / 10.,
+                // );
             }
 
-            let mut q_back_wheels = wheel_set.p1();
-            if let Ok((mut forces, transform, _velocity)) = q_back_wheels.get_mut(*wheel_entity) {
-                forces.torque = (transform.rotation.mul_vec3(torque_vec)).into();
-            }
+            // let mut q_back_wheels = wheel_set.p1();
+            // if let Ok((mut forces, transform, _velocity)) = q_back_wheels.get_mut(*wheel_entity) {
+            //     forces.torque = (transform.rotation.mul_vec3(torque_vec)).into();
+            // }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
                 joint.data.set_local_axis1(axis);
             }

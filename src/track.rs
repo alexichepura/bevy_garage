@@ -53,6 +53,8 @@ pub fn track_start_system(
 
         commands
             .spawn()
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(ContactForceEventThreshold(0.01))
             .insert_bundle(pbr)
             .insert(Name::new("Track"))
             .insert(collider)
@@ -60,7 +62,7 @@ pub fn track_start_system(
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
             .insert(Friction::coefficient(1000.))
-            .insert(Restitution::coefficient(0.01))
+            .insert(Restitution::coefficient(0.00000001))
             .insert_bundle(TransformBundle::identity());
     }
 }

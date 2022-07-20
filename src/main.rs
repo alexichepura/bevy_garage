@@ -42,8 +42,13 @@ fn main() {
         // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
-        // .add_plugin(LookTransformPlugin)
-        // .add_plugin(UnrealCameraPlugin::default())
+        // CAMERA
+        .add_plugin(LookTransformPlugin)
+        .add_plugin(UnrealCameraPlugin::default())
+        .add_startup_system(unreal_camera_start_system)
+        // .add_startup_system(camera_start_system)
+        // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -51,26 +56,23 @@ fn main() {
             mode: DebugRenderMode::COLLIDER_SHAPES
                 | DebugRenderMode::RIGID_BODY_AXES
                 | DebugRenderMode::JOINTS
-                | DebugRenderMode::COLLIDER_AABBS
+                // | DebugRenderMode::COLLIDER_AABBS
                 | DebugRenderMode::CONTACTS
                 | DebugRenderMode::SOLVER_CONTACTS,
             ..default()
         })
         .add_plugin(PolylinePlugin)
-        // .add_plugin(DebugLinesPlugin::default())
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DebugCursorPickingPlugin)
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
+        // APP
         .init_resource::<GamepadLobby>()
         .insert_resource(CarInit {
-            translation: Vec3::new(10., 0.8, 0.),
-            // quat: Quat::from_rotation_y(-PI / 4.),
-            quat: Quat::IDENTITY,
+            translation: Vec3::new(0., 0.8, 0.),
+            quat: Quat::from_rotation_y(-PI / 4.),
             hid_car: None,
         })
-        .add_startup_system(camera_start_system)
-        .add_startup_system(unreal_camera_start_system)
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)
@@ -84,20 +86,30 @@ fn main() {
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
-        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
 }
 
 fn display_events_system(
-    mut collision_events: EventReader<CollisionEvent>,
-    mut contact_force_events: EventReader<ContactForceEvent>,
+    mut e_collision: EventReader<CollisionEvent>,
+    mut e_force: EventReader<ContactForceEvent>,
 ) {
-    for collision_event in collision_events.iter() {
-        println!("Received collision event: {:?}", collision_event);
-    }
+    // for collision_e in e_collision.iter() {
+    //     println!("collision: {:?}", collision_e);
+    // }
 
-    for contact_force_event in contact_force_events.iter() {
-        println!("Received contact force event: {:?}", contact_force_event);
+    for force_e in e_force.iter() {
+        // ContactForceEvent {
+        //     collider1: todo!(),
+        //     collider2: todo!(),
+        //     total_force: todo!(),
+        //     total_force_magnitude: todo!(),
+        //     max_force_direction: todo!(),
+        //     max_force_magnitude: todo!(),
+        // };
+        println!(
+            "force: {:?} {:?}",
+            force_e.total_force, force_e.total_force_magnitude
+        );
     }
 }
