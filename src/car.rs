@@ -60,7 +60,7 @@ impl Car {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: false,
+            use_brain: true,
             wheels: wheels.clone(),
             wheel_max_torque: 200.,
         }
@@ -125,7 +125,7 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..1 {
+    for i in 0..10 {
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
 

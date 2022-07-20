@@ -208,15 +208,16 @@ pub fn car_brain_system(
 
 pub fn cars_pick_brain_mutate_restart(
     mut events: EventReader<PickingEvent>,
-    mut cars: Query<(&mut CarBrain, &mut Transform, With<CarBrain>)>,
+    mut cars: Query<(&mut CarBrain, &mut Transform, &mut Velocity, With<CarBrain>)>,
     car_init: Res<CarInit>,
+    // wheels: Query<(&Velocity, &ExternalForce), With<Wheel>>,
 ) {
     let mut selected_brain: Option<CarBrain> = None;
     for event in events.iter() {
         match event {
             PickingEvent::Clicked(e) => {
                 println!("clicked entity {:?}", e);
-                let (brain, _, _) = cars.get(*e).unwrap();
+                let (brain, _, _, _) = cars.get(*e).unwrap();
                 selected_brain = Some(brain.clone());
             }
             _ => (),
@@ -227,12 +228,13 @@ pub fn cars_pick_brain_mutate_restart(
         println!("saving brain.json");
         fs::write("brain.json", serialized).expect("Unable to write brain.json");
 
-        for (mut brain, mut transform, _) in cars.iter_mut() {
+        for (mut brain, mut transform, mut velocity, _) in cars.iter_mut() {
             let mut new_brain = selected_brain.clone();
             new_brain.mutate_random();
             *brain = new_brain;
             *transform =
                 Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+            *velocity = Velocity::default();
         }
     }
 }
