@@ -45,6 +45,9 @@ pub struct RayOrig;
 #[derive(Component)]
 pub struct RayHit;
 
+#[derive(Component)]
+pub struct RayLine;
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub gas: f32,
@@ -63,7 +66,7 @@ impl Car {
             steering: 0.,
             use_brain: false,
             wheels: wheels.clone(),
-            wheel_max_torque: 200.,
+            wheel_max_torque: 400.,
         }
     }
 }
@@ -81,25 +84,22 @@ pub fn car_start_system(
 ) {
     let ray_point_half = 0.05;
     let ray_point_size = ray_point_half * 2.;
+    let ray_point_mesh = Mesh::from(shape::Cube {
+        size: ray_point_size,
+    });
     for _i in 0..5 {
         commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube {
-                size: ray_point_size,
-            })),
+            mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
             ..default()
         });
         commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube {
-                size: ray_point_size,
-            })),
+            mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
             ..default()
         });
         commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube {
-                size: ray_point_size,
-            })),
+            mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
             ..default()
         });
@@ -115,13 +115,13 @@ pub fn car_start_system(
         saved_brain = None;
     }
 
-    let car_hw: f32 = 0.75;
-    let car_hh: f32 = 0.3;
-    let car_hl: f32 = 1.8;
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
+    let car_hw: f32 = 0.75;
+    let car_hh: f32 = wheel_r / 2.;
+    let car_hl: f32 = 1.8;
 
-    let shift = Vec3::new(car_hw - wheel_hw, -car_hh + 0.1, car_hl - wheel_r);
+    let shift = Vec3::new(car_hw - wheel_hw, -car_hh, car_hl - wheel_r);
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
         Vec3::new(-shift.x, shift.y, shift.z),
@@ -155,7 +155,7 @@ pub fn car_start_system(
                 .spawn()
                 .insert_bundle(PbrBundle {
                     mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(100))),
-                    material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+                    material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.8).into()),
                     ..default()
                 })
                 .insert(RigidBody::Dynamic)
@@ -212,7 +212,7 @@ pub fn car_start_system(
                     max_z: car_hl,
                     min_z: -car_hl,
                 })),
-                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
+                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.8).into()),
                 ..default()
             })
             .insert(Car::new(&wheels))
@@ -264,7 +264,7 @@ pub fn car_start_system(
                             material: polyline_materials.add(PolylineMaterial {
                                 width: 2.0,
                                 color: Color::RED,
-                                perspective: false,
+                                perspective: true,
                                 ..default()
                             }),
                             ..default()
@@ -338,7 +338,7 @@ pub fn car_change_detection_system(
             forward = false;
         }
 
-        let break_max_torque = car.wheel_max_torque * 1.;
+        let break_max_torque = car.wheel_max_torque * 2.;
         if forward {
             if car.brake > 0. {
                 torque = -car.brake * break_max_torque;

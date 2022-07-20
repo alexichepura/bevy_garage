@@ -2,6 +2,7 @@ use crate::car::*;
 use crate::track::STATIC_GROUP;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
+use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
@@ -121,10 +122,11 @@ pub fn car_brain_system(
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
     mut ray_set: ParamSet<(
-        Query<(&mut Transform, With<RayDir>)>,
         Query<(&mut Transform, With<RayOrig>)>,
+        Query<(&mut Transform, With<RayDir>)>,
         Query<(&mut Transform, With<RayHit>)>,
     )>,
+    mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
     // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP));
@@ -146,8 +148,11 @@ pub fn car_brain_system(
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
         let max_toi: f32 = 10.;
         let solid = false;
-        for (i, &ray_dir) in dirs.iter().enumerate() {
+        for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
+            lines.line(ray_pos, ray_dir_pos, 0.0);
+
+            let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,
                 ray_dir,
@@ -164,20 +169,20 @@ pub fn car_brain_system(
                     } else {
                         inputs[i] = 0.;
                     }
-                    false // Return `false` instead if we want to stop searching for other hits.
+                    true // Return `false` instead if we want to stop searching for other hits.
                 },
             );
         }
 
         if car_init.hid_car.unwrap() == e {
-            for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
-                trf.translation = hit_points[i];
-            }
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
-                trf.translation = dirs[i];
+                trf.translation = origins[i];
             }
             for (i, (mut trf, _)) in ray_set.p1().iter_mut().enumerate() {
-                trf.translation = origins[i];
+                trf.translation = dirs[i];
+            }
+            for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
+                trf.translation = hit_points[i];
             }
             println!(
                 "inputs {:?}",
