@@ -1,5 +1,4 @@
 use crate::car::*;
-use crate::track::STATIC_GROUP;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 use bevy_prototype_debug_lines::DebugLines;
@@ -112,8 +111,6 @@ impl Level {
         }
     }
 }
-#[derive(Component)]
-pub struct CarSensor;
 
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
@@ -146,11 +143,16 @@ pub fn car_brain_system(
 
         let mut inputs: Vec<f32> = vec![0.; 5];
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
-        let max_toi: f32 = 50.;
+        let max_toi: f32 = 20.;
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            lines.line(ray_pos, ray_dir_pos, 0.0);
+            lines.line_colored(
+                ray_pos,
+                ray_dir_pos,
+                0.0,
+                Color::rgba(0.25, 0.88, 0.82, 0.1),
+            );
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,
@@ -163,6 +165,12 @@ pub fn car_brain_system(
                     hit_points[i] = intersection.point;
                     if toi > 0. {
                         inputs[i] = 1. - toi / max_toi;
+                        lines.line_colored(
+                            ray_pos,
+                            intersection.point,
+                            0.0,
+                            Color::rgba(0.98, 0.5, 0.45, 0.9),
+                        );
                     } else {
                         inputs[i] = 0.;
                     }

@@ -91,7 +91,7 @@ fn main() {
 }
 
 fn display_events_system(
-    mut e_collision: EventReader<CollisionEvent>,
+    // mut e_collision: EventReader<CollisionEvent>,
     mut e_force: EventReader<ContactForceEvent>,
 ) {
     // for collision_e in e_collision.iter() {
