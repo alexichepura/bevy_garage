@@ -13,7 +13,10 @@ pub struct CarInit {
 }
 
 #[derive(Component)]
-pub struct Wheel;
+pub struct Wheel {
+    pub radius: f32,
+    pub width: f32,
+}
 #[derive(Component)]
 pub struct WheelFront;
 #[derive(Component)]
@@ -22,28 +25,18 @@ pub struct WheelBack;
 pub struct WheelFrontLeft;
 #[derive(Component)]
 pub struct WheelFrontRight;
-
-#[derive(Component)]
-pub struct HID;
-
 #[derive(Component)]
 pub struct SensorFar;
-
 #[derive(Component)]
 pub struct SensorNear;
-
 #[derive(Component)]
 pub struct RayDir;
-
 #[derive(Component)]
 pub struct RayOrig;
-
 #[derive(Component)]
 pub struct RayHit;
-
 #[derive(Component)]
 pub struct RayLine;
-
 #[derive(Component, Debug)]
 pub struct Car {
     pub gas: f32,
@@ -53,6 +46,8 @@ pub struct Car {
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
 }
+#[derive(Component)]
+pub struct HID;
 
 impl Car {
     pub fn new(wheels: &Vec<Entity>) -> Self {
@@ -60,9 +55,9 @@ impl Car {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: true,
+            use_brain: false,
             wheels: wheels.clone(),
-            wheel_max_torque: 200.,
+            wheel_max_torque: 400.,
         }
     }
 }
@@ -111,7 +106,7 @@ pub fn car_start_system(
         saved_brain = None;
     }
 
-    let wheel_r: f32 = 0.3;
+    let wheel_r: f32 = 0.5;
     let wheel_hw: f32 = 0.125;
     let car_hw: f32 = 0.75;
     let car_hh: f32 = wheel_r / 2.;
@@ -125,7 +120,7 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..10 {
+    for i in 0..1 {
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
 
@@ -171,7 +166,10 @@ pub fn car_start_system(
                     principal_inertia: Vec3::new(0.3, 0.3, 0.3),
                     ..default()
                 }))
-                .insert(Wheel)
+                .insert(Wheel {
+                    radius: wheel_r,
+                    width: wheel_hw * 2.,
+                })
                 .insert(ExternalForce::default())
                 .id();
             wheels.push(wheel_id);

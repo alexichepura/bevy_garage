@@ -42,8 +42,8 @@ fn main() {
         // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
-        .add_plugin(LookTransformPlugin)
-        .add_plugin(UnrealCameraPlugin::default())
+        // .add_plugin(LookTransformPlugin)
+        // .add_plugin(UnrealCameraPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -51,6 +51,7 @@ fn main() {
             mode: DebugRenderMode::COLLIDER_SHAPES
                 | DebugRenderMode::RIGID_BODY_AXES
                 | DebugRenderMode::JOINTS
+                | DebugRenderMode::COLLIDER_AABBS
                 | DebugRenderMode::CONTACTS
                 | DebugRenderMode::SOLVER_CONTACTS,
             ..default()
@@ -63,11 +64,12 @@ fn main() {
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
         .init_resource::<GamepadLobby>()
         .insert_resource(CarInit {
-            translation: Vec3::new(0., 0.6, 0.),
-            quat: Quat::from_rotation_y(-PI / 4.),
+            translation: Vec3::new(10., 0.8, 0.),
+            // quat: Quat::from_rotation_y(-PI / 4.),
+            quat: Quat::IDENTITY,
             hid_car: None,
         })
-        // .add_startup_system(camera_start_system)
+        .add_startup_system(camera_start_system)
         .add_startup_system(unreal_camera_start_system)
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
@@ -82,7 +84,7 @@ fn main() {
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
 }

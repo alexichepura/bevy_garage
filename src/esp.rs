@@ -7,8 +7,8 @@ pub fn car_change_detection_system(
     query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
     mut front: Query<(&mut MultibodyJoint, With<WheelFront>)>,
     mut wheel_set: ParamSet<(
-        Query<(&mut ExternalForce, &Transform), With<WheelFront>>,
-        Query<(&mut ExternalForce, &Transform), With<WheelBack>>,
+        Query<(&Wheel, &mut ExternalForce, &Transform, &Velocity), With<WheelFront>>,
+        Query<(&mut ExternalForce, &Transform, &Velocity), With<WheelBack>>,
     )>,
 ) {
     for (_entity, car, velocity, transform) in query.iter() {
@@ -51,10 +51,24 @@ pub fn car_change_detection_system(
         let axis = quat.mul_vec3(Vec3::X);
 
         for wheel_entity in car.wheels.iter() {
-            if let Ok((mut forces, transform)) = wheel_set.p0().get_mut(*wheel_entity) {
+            let mut q_front_wheels = wheel_set.p0();
+            let wheel_result = q_front_wheels.get_mut(*wheel_entity);
+            if let Ok((wheel, mut forces, transform, velocity)) = wheel_result {
+                let radius_vel = velocity.angvel * wheel.radius;
+                let velocity_slipp = (
+                    radius_vel[0] - velocity.linvel[2],
+                    radius_vel[2] + velocity.linvel[0],
+                );
+                println!(
+                    "slip {velocity_slipp:?} {:?} {:?}",
+                    (radius_vel * 10.).round() / 10.,
+                    (velocity.linvel * 10.).round() / 10.,
+                );
                 forces.torque = (transform.rotation.mul_vec3(steering_torque_vec)).into();
             }
-            if let Ok((mut forces, transform)) = wheel_set.p1().get_mut(*wheel_entity) {
+
+            let mut q_back_wheels = wheel_set.p1();
+            if let Ok((mut forces, transform, _velocity)) = q_back_wheels.get_mut(*wheel_entity) {
                 forces.torque = (transform.rotation.mul_vec3(torque_vec)).into();
             }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
