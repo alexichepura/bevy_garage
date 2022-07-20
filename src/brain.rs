@@ -112,6 +112,16 @@ impl Level {
     }
 }
 
+pub fn reset_pos_system(car_init: Res<CarInit>, mut q_car: Query<&mut Transform, With<Car>>) {
+    for mut car_transform in q_car.iter_mut() {
+        if car_transform.translation.y > 2. || car_transform.translation.y < 0. {
+            println!("car is out of bound, resetting transform");
+            *car_transform =
+                Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+        }
+    }
+}
+
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     car_init: Res<CarInit>,
@@ -126,7 +136,7 @@ pub fn car_brain_system(
     mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
-    // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP));
+
     let e_hid_car = car_init.hid_car.unwrap();
     for (e, mut car, mut brain, children) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();

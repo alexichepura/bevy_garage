@@ -85,6 +85,7 @@ fn main() {
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
+        .add_system(reset_pos_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();

@@ -117,7 +117,7 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..40 {
+    for i in 0..100 {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
             car_init.translation + Vec3::new(-12. + 0.18 * i as f32, 0., 12. - 0.18 * i as f32),
