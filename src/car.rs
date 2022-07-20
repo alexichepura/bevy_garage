@@ -247,26 +247,26 @@ pub fn car_start_system(
                     let far_quat = Quat::from_rotation_y(-a as f32 * PI / 16.);
                     let dir = Vec3::Z * 20.;
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
-                    let point_size = 0.05;
+                    // let point_size = 0.05;
                     children
                         .spawn()
                         .insert(SensorNear)
-                        .insert_bundle(PbrBundle {
-                            mesh: meshes.add(Mesh::from(shape::Cube { size: point_size })),
-                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
-                            ..default()
-                        })
+                        // .insert_bundle(PbrBundle {
+                        //     mesh: meshes.add(Mesh::from(shape::Cube { size: point_size })),
+                        //     material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                        //     ..default()
+                        // })
                         .insert_bundle(TransformBundle::from(Transform::from_translation(
                             sensor_pos_on_car,
                         )));
                     children
                         .spawn()
                         .insert(SensorFar)
-                        .insert_bundle(PbrBundle {
-                            mesh: meshes.add(Mesh::from(shape::Cube { size: point_size })),
-                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
-                            ..default()
-                        })
+                        // .insert_bundle(PbrBundle {
+                        //     mesh: meshes.add(Mesh::from(shape::Cube { size: point_size })),
+                        //     material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                        //     ..default()
+                        // })
                         .insert_bundle(TransformBundle::from(Transform::from_translation(
                             sensor_pos_on_car + far_quat.mul_vec3(dir),
                         )));
