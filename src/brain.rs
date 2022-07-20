@@ -130,6 +130,7 @@ pub fn car_brain_system(
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
     // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP));
+    let e_hid_car = car_init.hid_car.unwrap();
     for (e, mut car, mut brain, children) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
@@ -144,14 +145,12 @@ pub fn car_brain_system(
         }
 
         let mut inputs: Vec<f32> = vec![0.; 5];
-        let mut hit_point: Vec3 = Vec3::ZERO;
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
         let max_toi: f32 = 10.;
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
             lines.line(ray_pos, ray_dir_pos, 0.0);
-
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,
@@ -161,20 +160,18 @@ pub fn car_brain_system(
                 sensor_filter,
                 |_entity, intersection| {
                     let toi = intersection.toi;
-                    hit_point = intersection.point;
-                    hit_points[i] = hit_point;
-                    inputs[i] = toi;
+                    hit_points[i] = intersection.point;
                     if toi > 0. {
-                        inputs[i] = 1. - toi;
+                        inputs[i] = 1. - toi / max_toi;
                     } else {
                         inputs[i] = 0.;
                     }
-                    true // Return `false` instead if we want to stop searching for other hits.
+                    false
                 },
             );
         }
 
-        if car_init.hid_car.unwrap() == e {
+        if e == e_hid_car {
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
                 trf.translation = origins[i];
             }
@@ -184,13 +181,13 @@ pub fn car_brain_system(
             for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
                 trf.translation = hit_points[i];
             }
-            println!(
-                "inputs {:?}",
-                inputs
-                    .iter()
-                    .map(|x| format!("{:.1} ", x))
-                    .collect::<String>(),
-            );
+            // println!(
+            //     "inputs {:?}",
+            //     inputs
+            //         .iter()
+            //         .map(|x| format!("{:.1} ", x))
+            //         .collect::<String>(),
+            // );
         }
         if !car.use_brain {
             return;

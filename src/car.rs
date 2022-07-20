@@ -14,18 +14,14 @@ pub struct CarInit {
 
 #[derive(Component)]
 pub struct Wheel;
-
 #[derive(Component)]
-pub struct FrontJoint;
-
+pub struct WheelFront;
 #[derive(Component)]
-pub struct FrontLeftJoint;
-
+pub struct WheelBack;
 #[derive(Component)]
-pub struct FrontRightJoint;
-
+pub struct WheelFrontLeft;
 #[derive(Component)]
-pub struct BackJoint;
+pub struct WheelFrontRight;
 
 #[derive(Component)]
 pub struct HID;
@@ -168,7 +164,7 @@ pub fn car_start_system(
                 .insert(Velocity::zero())
                 .insert(Collider::from(wheel_shape))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(1000.))
+                .insert(Friction::coefficient(1.))
                 .insert(Restitution::coefficient(0.01))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
@@ -184,17 +180,17 @@ pub fn car_start_system(
             if i == 0 {
                 commands
                     .entity(wheel_id)
-                    .insert(FrontRightJoint)
-                    .insert(FrontJoint);
+                    .insert(WheelFrontRight)
+                    .insert(WheelFront);
             } else if i == 1 {
                 commands
                     .entity(wheel_id)
-                    .insert(FrontLeftJoint)
-                    .insert(FrontJoint);
+                    .insert(WheelFrontLeft)
+                    .insert(WheelFront);
             } else if i == 2 {
-                commands.entity(wheel_id).insert(BackJoint);
+                commands.entity(wheel_id).insert(WheelBack);
             } else if i == 3 {
-                commands.entity(wheel_id).insert(BackJoint);
+                commands.entity(wheel_id).insert(WheelBack);
             }
         }
 
@@ -232,7 +228,7 @@ pub fn car_start_system(
                     .spawn()
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(0.001))
+                    .insert(Friction::coefficient(0.1))
                     .insert(Restitution::coefficient(0.1))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(ColliderMassProperties::MassProperties(MassProperties {
@@ -324,8 +320,11 @@ pub fn car_start_system(
 
 pub fn car_change_detection_system(
     query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
-    mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
-    mut wheels: Query<(&mut ExternalForce, &Transform), With<Wheel>>,
+    mut front: Query<(&mut MultibodyJoint, With<WheelFront>)>,
+    mut wheel_set: ParamSet<(
+        Query<(&mut ExternalForce, &Transform), With<WheelFront>>,
+        Query<(&mut ExternalForce, &Transform), With<WheelBack>>,
+    )>,
 ) {
     for (_entity, car, velocity, transform) in query.iter() {
         let torque: f32;
@@ -354,19 +353,28 @@ pub fn car_change_detection_system(
         }
 
         let limit_mps = 10.;
-        let wheel_steering_speed_dependent: f32 = match 1. - velocity.linvel.length() / limit_mps {
-            x if x <= 0. => 0.,
-            x => x,
+        let wheel_steering_speed_dependent: f32 = match velocity.linvel.length() / limit_mps {
+            x if x >= 1. => 1.,
+            x => 1. - x,
         };
-        let steering = car.steering * (0.1 + wheel_steering_speed_dependent);
-        let steering_axis = Vec3::new(1., 0., steering);
+
+        let max_angle = PI / 2.;
+        let angle: f32 = max_angle * car.steering * (0.1 + 0.6 * wheel_steering_speed_dependent);
+        println!("angle {angle}");
+        let quat = Quat::from_axis_angle(Vec3::Y, -angle);
+        let torque_vec = Vec3::new(0., torque, 0.);
+        let steering_torque_vec = quat.mul_vec3(torque_vec);
+        let axis = quat.mul_vec3(Vec3::X);
 
         for wheel_entity in car.wheels.iter() {
-            if let Ok((mut forces, transform)) = wheels.get_mut(*wheel_entity) {
-                forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
+            if let Ok((mut forces, transform)) = wheel_set.p0().get_mut(*wheel_entity) {
+                forces.torque = (transform.rotation.mul_vec3(steering_torque_vec)).into();
+            }
+            if let Ok((mut forces, transform)) = wheel_set.p1().get_mut(*wheel_entity) {
+                forces.torque = (transform.rotation.mul_vec3(torque_vec)).into();
             }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
-                joint.data.set_local_axis1(steering_axis);
+                joint.data.set_local_axis1(axis);
             }
         }
     }
