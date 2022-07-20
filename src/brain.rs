@@ -1,14 +1,21 @@
-use std::f32::consts::PI;
-
-use bevy::prelude::*;
-use bevy_polyline::prelude::*;
-use bevy_rapier3d::prelude::*;
-use rand::thread_rng;
-use rand::{distributions::Standard, Rng};
-
 use crate::car::*;
+use crate::track::STATIC_GROUP;
+use bevy::prelude::*;
+use bevy_mod_picking::PickingEvent;
+use bevy_prototype_debug_lines::DebugLines;
+use bevy_rapier3d::prelude::*;
+use rand::prelude::*;
+use rand::{distributions::Standard, Rng};
+use serde::{Deserialize, Serialize};
+use std::fs;
 
-#[derive(Debug, Component)]
+fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
+    let b = random_0_to_1 * 2. - 1.;
+    let t = 0.1;
+    a + (b - a) * t
+}
+
+#[derive(Debug, Component, Clone, Serialize, Deserialize)]
 pub struct CarBrain {
     levels: Vec<Level>,
 }
@@ -27,8 +34,44 @@ impl CarBrain {
             outputs = level.outputs.clone();
         }
     }
+
+    pub fn mutate_random(&mut self) {
+        let mut rng = rand::thread_rng();
+        for level in self.levels.iter_mut() {
+            for bias in level.biases.iter_mut() {
+                *bias = car_lerp(*bias, rng.gen::<f32>());
+            }
+            for weighti in level.weights.iter_mut() {
+                for weight in weighti.iter_mut() {
+                    *weight = car_lerp(*weight, rng.gen::<f32>());
+                }
+            }
+        }
+    }
+
+    pub fn clone_randomised(brain: Option<CarBrain>) -> Option<CarBrain> {
+        if let Some(brain) = brain {
+            let mut rng = rand::thread_rng();
+            let mut levels: Vec<Level> = vec![];
+            for level in brain.levels.iter() {
+                let mut cloned_level = level.clone();
+                for bias in cloned_level.biases.iter_mut() {
+                    *bias = car_lerp(*bias, rng.gen::<f32>());
+                }
+                for weighti in cloned_level.weights.iter_mut() {
+                    for weight in weighti.iter_mut() {
+                        *weight = car_lerp(*weight, rng.gen::<f32>());
+                    }
+                }
+                levels.push(cloned_level)
+            }
+            return Some(CarBrain { levels });
+        }
+        None
+    }
 }
-#[derive(Debug, Clone)]
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Level {
     inputs: Vec<f32>,
     outputs: Vec<f32>,
@@ -72,87 +115,126 @@ impl Level {
 #[derive(Component)]
 pub struct CarSensor;
 
-pub fn car_brain_start_system(
-    mut commands: Commands,
-    mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
-    mut polylines: ResMut<Assets<Polyline>>,
-    // cars: Query<(&Transform, With<Car>)>,
-) {
-    for _ in 0..5 {
-        commands
-            .spawn_bundle(PolylineBundle {
-                polyline: polylines.add(Polyline {
-                    vertices: vec![-Vec3::ONE, Vec3::ONE],
-                    ..default()
-                }),
-                material: polyline_materials.add(PolylineMaterial {
-                    width: 2.0,
-                    color: Color::RED,
-                    perspective: false,
-                    ..default()
-                }),
-                ..default()
-            })
-            .insert(CarSensor);
-    }
-    // let (transform, _car) = cars.single();
-}
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    mut cars: Query<(&mut Car, &Transform, With<Car>)>,
-    mut brains: Query<(&mut CarBrain, With<CarBrain>)>,
-    mut polylines: ResMut<Assets<Polyline>>,
-    sensors: Query<(Entity, &Handle<Polyline>)>,
+    car_init: Res<CarInit>,
+    mut q_car: Query<(Entity, &mut Car, &mut CarBrain, &Children), With<Car>>,
+    q_near: Query<(&GlobalTransform, With<SensorNear>)>,
+    q_far: Query<(&GlobalTransform, With<SensorFar>)>,
+    mut ray_set: ParamSet<(
+        Query<(&mut Transform, With<RayOrig>)>,
+        Query<(&mut Transform, With<RayDir>)>,
+        Query<(&mut Transform, With<RayHit>)>,
+    )>,
+    mut lines: ResMut<DebugLines>,
 ) {
-    let (mut car, transform, _car) = cars.single_mut();
-    let (mut brain, _brain) = brains.single_mut();
-    let mut inputs: Vec<f32> = Vec::new();
-    let max_toi: f32 = 10.;
-    let mut i: i8 = 0;
-    sensors.for_each(|(_, polyline)| {
-        let mut line_tf = transform.clone();
-        let angle = PI / 8.;
-        let start_angle = -2. * angle;
-        line_tf.rotate(Quat::from_rotation_y(start_angle + i as f32 * angle));
-        i += 1;
+    let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
+    // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP));
+    let e_hid_car = car_init.hid_car.unwrap();
+    for (e, mut car, mut brain, children) in q_car.iter_mut() {
+        let mut origins: Vec<Vec3> = Vec::new();
+        let mut dirs: Vec<Vec3> = Vec::new();
 
-        let ray_origin: Vect =
-            line_tf.translation + line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, 2.));
-        let ray_dir: Vect = line_tf.rotation.mul_vec3(Vec3::new(0., -0.2, max_toi));
-
-        polylines.get_mut(polyline).unwrap().vertices = vec![ray_origin, ray_origin + ray_dir];
-
-        let hit = rapier_context.cast_ray(ray_origin, ray_dir, max_toi, false, QueryFilter::new());
-        match hit {
-            Some((_, sensor_units)) => {
-                if sensor_units > 1. {
-                    inputs.push(0.);
-                    return;
-                }
-                inputs.push(sensor_units);
+        for &child in children.iter() {
+            if let Ok((gtrf, _)) = q_near.get(child) {
+                origins.push(gtrf.translation);
             }
-            None => inputs.push(-1.),
+            if let Ok((gtrf, _)) = q_far.get(child) {
+                dirs.push(gtrf.translation);
+            }
         }
-    });
-    if inputs.len() != 5 {
-        println!("inputs 5!={:?}", inputs);
-        inputs = vec![0., 0., 0., 0., 0.];
+
+        let mut inputs: Vec<f32> = vec![0.; 5];
+        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
+        let max_toi: f32 = 10.;
+        let solid = false;
+        for (i, &ray_dir_pos) in dirs.iter().enumerate() {
+            let ray_pos = origins[i];
+            lines.line(ray_pos, ray_dir_pos, 0.0);
+            let ray_dir = (ray_dir_pos - ray_pos).normalize();
+            rapier_context.intersections_with_ray(
+                ray_pos,
+                ray_dir,
+                max_toi,
+                solid,
+                sensor_filter,
+                |_entity, intersection| {
+                    let toi = intersection.toi;
+                    hit_points[i] = intersection.point;
+                    if toi > 0. {
+                        inputs[i] = 1. - toi / max_toi;
+                    } else {
+                        inputs[i] = 0.;
+                    }
+                    false
+                },
+            );
+        }
+
+        if e == e_hid_car {
+            for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
+                trf.translation = origins[i];
+            }
+            for (i, (mut trf, _)) in ray_set.p1().iter_mut().enumerate() {
+                trf.translation = dirs[i];
+            }
+            for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
+                trf.translation = hit_points[i];
+            }
+            // println!(
+            //     "inputs {:?}",
+            //     inputs
+            //         .iter()
+            //         .map(|x| format!("{:.1} ", x))
+            //         .collect::<String>(),
+            // );
+        }
+        if !car.use_brain {
+            return;
+        }
+
+        brain.feed_forward(inputs.clone());
+
+        let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
+        let gas = outputs[0];
+        let brake = outputs[1];
+        let left = outputs[2];
+        let right = outputs[3];
+        car.gas = gas;
+        car.brake = brake;
+        car.steering = -left + right;
     }
+}
 
-    if !car.use_brain {
-        return;
+pub fn cars_pick_brain_mutate_restart(
+    mut events: EventReader<PickingEvent>,
+    mut cars: Query<(&mut CarBrain, &mut Transform, &mut Velocity, With<CarBrain>)>,
+    car_init: Res<CarInit>,
+    // wheels: Query<(&Velocity, &ExternalForce), With<Wheel>>,
+) {
+    let mut selected_brain: Option<CarBrain> = None;
+    for event in events.iter() {
+        match event {
+            PickingEvent::Clicked(e) => {
+                println!("clicked entity {:?}", e);
+                let (brain, _, _, _) = cars.get(*e).unwrap();
+                selected_brain = Some(brain.clone());
+            }
+            _ => (),
+        }
     }
+    if let Some(selected_brain) = selected_brain {
+        let serialized = serde_json::to_string(&selected_brain).unwrap();
+        println!("saving brain.json");
+        fs::write("brain.json", serialized).expect("Unable to write brain.json");
 
-    brain.feed_forward(inputs.clone());
-
-    let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
-
-    let gas = outputs[0];
-    let brake = outputs[1];
-    let left = outputs[2];
-    let right = outputs[3];
-
-    car.gas = gas;
-    car.brake = brake;
-    car.steering = -left + right;
+        for (mut brain, mut transform, mut velocity, _) in cars.iter_mut() {
+            let mut new_brain = selected_brain.clone();
+            new_brain.mutate_random();
+            *brain = new_brain;
+            *transform =
+                Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+            *velocity = Velocity::default();
+        }
+    }
 }

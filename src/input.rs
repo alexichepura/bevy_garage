@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 pub fn arrow_input_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut cars: Query<(&mut Car, &Transform, With<Car>)>,
+    mut cars: Query<(&mut Car, &Transform, With<HID>)>,
 ) {
     let (mut car, _transform, _car) = cars.single_mut();
     if keyboard_input.pressed(KeyCode::Up) {

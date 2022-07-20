@@ -1,28 +1,48 @@
+use crate::{brain::*, mesh::*, track::*};
 use bevy::prelude::*;
+use bevy_mod_picking::PickableBundle;
+use bevy_polyline::prelude::{Polyline, PolylineBundle, PolylineMaterial};
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
-use std::{f32::consts::PI, sync::Arc};
+use std::{f32::consts::PI, fs::File, path::Path, sync::Arc};
 
-use crate::{brain::CarBrain, mesh::bevy_mesh};
+pub struct CarInit {
+    pub translation: Vec3,
+    pub quat: Quat,
+    pub hid_car: Option<Entity>,
+}
 
 #[derive(Component)]
 pub struct Wheel;
-// #[derive(Component)]
-// struct Wheel2 {
-//     diameter: f32,
-//     widrh: f32,
-// }
 #[derive(Component)]
-pub struct FrontJoint;
+pub struct WheelFront;
+#[derive(Component)]
+pub struct WheelBack;
+#[derive(Component)]
+pub struct WheelFrontLeft;
+#[derive(Component)]
+pub struct WheelFrontRight;
 
 #[derive(Component)]
-pub struct FrontLeftJoint;
+pub struct HID;
 
 #[derive(Component)]
-pub struct FrontRightJoint;
+pub struct SensorFar;
 
 #[derive(Component)]
-pub struct BackJoint;
+pub struct SensorNear;
+
+#[derive(Component)]
+pub struct RayDir;
+
+#[derive(Component)]
+pub struct RayOrig;
+
+#[derive(Component)]
+pub struct RayHit;
+
+#[derive(Component)]
+pub struct RayLine;
 
 #[derive(Component, Debug)]
 pub struct Car {
@@ -30,66 +50,74 @@ pub struct Car {
     pub brake: f32,
     pub steering: f32,
     pub use_brain: bool,
+    pub wheels: Vec<Entity>,
+    pub wheel_max_torque: f32,
 }
 
 impl Car {
-    pub fn new() -> Self {
+    pub fn new(wheels: &Vec<Entity>) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: false,
+            use_brain: true,
+            wheels: wheels.clone(),
+            wheel_max_torque: 200.,
         }
     }
 }
 
+pub const CAR_TRAINING_GROUP: u32 = 0b001;
+// const CAR_OBJ: &str = "hatchbackSports.obj";
 pub fn car_start_system(
+    // asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
+    mut polyline_materials: ResMut<Assets<PolylineMaterial>>,
+    mut polylines: ResMut<Assets<Polyline>>,
+    mut car_init: ResMut<CarInit>,
 ) {
-    let car_graphics = "hatchbackSports.obj";
-    let car_hw: f32 = 0.45;
-    let car_hh: f32 = 0.5;
-    let car_hl: f32 = 1.8;
+    let ray_point_half = 0.05;
+    let ray_point_size = ray_point_half * 2.;
+    let ray_point_mesh = Mesh::from(shape::Cube {
+        size: ray_point_size,
+    });
+    for _i in 0..5 {
+        commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
+            mesh: meshes.add(ray_point_mesh.clone()),
+            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+            ..default()
+        });
+        commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
+            mesh: meshes.add(ray_point_mesh.clone()),
+            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+            ..default()
+        });
+        commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
+            mesh: meshes.add(ray_point_mesh.clone()),
+            material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
+            ..default()
+        });
+    }
+
+    let saved_brain: Option<CarBrain>;
+    let json_file = File::open(Path::new("brain.json"));
+    if json_file.is_ok() {
+        println!("brain.json found");
+        saved_brain =
+            CarBrain::clone_randomised(serde_json::from_reader(json_file.unwrap()).unwrap());
+    } else {
+        saved_brain = None;
+    }
+
     let wheel_r: f32 = 0.3;
     let wheel_hw: f32 = 0.125;
-    let car_transform = Vec3::new(0., 1.3 + 0.5, 0.);
-    let car_quat = Quat::from_rotation_y(-PI / 4.);
+    let car_hw: f32 = 0.75;
+    let car_hh: f32 = wheel_r / 2.;
+    let car_hl: f32 = 1.8;
 
-    let car = commands
-        .spawn()
-        .insert(RigidBody::Dynamic)
-        .insert(Ccd::enabled())
-        .insert(Velocity::zero())
-        .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-        .insert(Friction::coefficient(0.001))
-        .insert(Restitution::coefficient(0.1))
-        .insert(ReadMassProperties::default())
-        .insert_bundle(TransformBundle::from(
-            Transform::from_translation(car_transform).with_rotation(car_quat),
-        ))
-        .insert(ColliderMassProperties::MassProperties(MassProperties {
-            local_center_of_mass: Vec3::new(0.0, -0.4, 0.0),
-            mass: 1500.0,
-            principal_inertia: Vec3::new(100.0, 100.0, 100.0),
-            ..default()
-        }))
-        .with_children(|parent| {
-            let mut tr: Transform = Transform { ..default() };
-            tr.translation = Vec3::new(0.0, -car_hh, 0.0);
-            parent.spawn_bundle(PbrBundle {
-                mesh: asset_server.load(car_graphics),
-                material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                transform: tr,
-                ..default()
-            });
-        })
-        .insert(CarBrain::new())
-        .insert(Car::new())
-        .id();
-    let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh, car_hl);
+    let shift = Vec3::new(car_hw - wheel_hw, -car_hh, car_hl - wheel_r);
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
         Vec3::new(-shift.x, shift.y, shift.z),
@@ -97,73 +125,205 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..4 {
-        let joint_mask = JointAxesMask::X
-            | JointAxesMask::Y
-            | JointAxesMask::Z
-            | JointAxesMask::ANG_Y
-            | JointAxesMask::ANG_Z;
+    for i in 0..10 {
+        let mut wheels: Vec<Entity> = vec![];
+        let mut joints: Vec<GenericJoint> = vec![];
 
-        let joint = GenericJointBuilder::new(joint_mask)
-            .local_axis1(Vec3::X)
-            .local_axis2(Vec3::Y)
-            .local_anchor1(car_anchors[i])
-            .local_anchor2(Vec3::new(0., 0., 0.).into())
-            .build();
+        for i in 0..4 {
+            let joint_mask = JointAxesMask::X
+                | JointAxesMask::Y
+                | JointAxesMask::Z
+                | JointAxesMask::ANG_Y
+                | JointAxesMask::ANG_Z;
 
-        let wheel_transform = car_transform + car_quat.mul_vec3(car_anchors[i]);
-        let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-        let wheel_mesh = bevy_mesh(wheel_cylinder.to_trimesh(100));
-        let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
-        let wheel = commands
-            // .spawn()
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(wheel_mesh),
-                material: materials.add(Color::rgb(0.03, 0.01, 0.03).into()),
+            let joint = GenericJointBuilder::new(joint_mask)
+                .local_axis1(Vec3::X)
+                .local_axis2(Vec3::Y)
+                .local_anchor1(car_anchors[i])
+                .local_anchor2(Vec3::ZERO)
+                .build();
+            joints.push(joint);
+
+            let wheel_transform = car_init.translation + car_init.quat.mul_vec3(car_anchors[i]);
+            let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
+            let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+            let wheel_id = commands
+                .spawn()
+                .insert_bundle(PbrBundle {
+                    mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(100))),
+                    material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.2).into()),
+                    ..default()
+                })
+                .insert(RigidBody::Dynamic)
+                .insert(Ccd::enabled())
+                .insert_bundle(TransformBundle::from(
+                    Transform::from_translation(wheel_transform)
+                        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
+                ))
+                .insert(Velocity::zero())
+                .insert(Collider::from(wheel_shape))
+                .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                .insert(Friction::coefficient(1000.))
+                .insert(Restitution::coefficient(0.001))
+                .insert(ColliderMassProperties::MassProperties(MassProperties {
+                    local_center_of_mass: Vec3::ZERO,
+                    mass: 15.,
+                    principal_inertia: Vec3::new(0.3, 0.3, 0.3),
+                    ..default()
+                }))
+                .insert(Wheel)
+                .insert(ExternalForce::default())
+                .id();
+            wheels.push(wheel_id);
+
+            if i == 0 {
+                commands
+                    .entity(wheel_id)
+                    .insert(WheelFrontRight)
+                    .insert(WheelFront);
+            } else if i == 1 {
+                commands
+                    .entity(wheel_id)
+                    .insert(WheelFrontLeft)
+                    .insert(WheelFront);
+            } else if i == 2 {
+                commands.entity(wheel_id).insert(WheelBack);
+            } else if i == 3 {
+                commands.entity(wheel_id).insert(WheelBack);
+            }
+        }
+
+        let car_transform =
+            Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+        let car = commands
+            .spawn()
+            .insert(Name::new("Car"))
+            .insert_bundle(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Box {
+                    max_x: car_hw,
+                    min_x: -car_hw,
+                    max_y: car_hh,
+                    min_y: -car_hh,
+                    max_z: car_hl,
+                    min_z: -car_hl,
+                })),
+                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
                 ..default()
             })
+            .insert(Car::new(&wheels))
             .insert(RigidBody::Dynamic)
-            .insert(Ccd::enabled())
-            .insert_bundle(TransformBundle::from(
-                Transform::from_translation(wheel_transform)
-                    .with_rotation(Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI)),
-            ))
             .insert(Velocity::zero())
-            .insert(Collider::from(wheel_shape))
-            .insert(Friction::coefficient(1000.))
-            .insert(Restitution::coefficient(0.01))
-            .insert(ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::new(0.0, 0.0, 0.0),
-                mass: 15.0,
-                principal_inertia: Vec3::new(1.0, 1.0, 1.0),
-                ..default()
-            }))
-            .insert(Wheel)
-            .insert(MultibodyJoint::new(car, joint))
-            .insert(ExternalForce::default())
+            .insert_bundle(TransformBundle::from(car_transform))
+            .insert_bundle(PickableBundle::default())
+            .insert(ReadMassProperties::default())
+            .with_children(|children| {
+                // children.spawn().insert_bundle(PbrBundle {
+                //     mesh: asset_server.load(CAR_OBJ),
+                //     material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
+                //     transform: Transform::from_translation(Vec3::new(0., -0.3, 0.)),
+                //     ..default()
+                // });
+                children
+                    .spawn()
+                    .insert(Ccd::enabled())
+                    .insert(Collider::cuboid(car_hw, car_hh, car_hl))
+                    .insert(Friction::coefficient(1.))
+                    .insert(Restitution::coefficient(0.1))
+                    .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                    .insert(ColliderMassProperties::MassProperties(MassProperties {
+                        local_center_of_mass: Vec3::new(0., -0.2, 0.),
+                        mass: 1500.0,
+                        principal_inertia: Vec3::new(10., 10., 10.),
+                        ..default()
+                    }));
+
+                // children
+                //     .spawn()
+                //     .insert(Collider::cuboid(car_hw + 1., 0.5, 10.))
+                //     .insert_bundle(TransformBundle::from(Transform::from_translation(
+                //         Vec3::new(0., 0., car_hl + 10.),
+                //     )))
+                //     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                //     // .insert(ActiveEvents::COLLISION_EVENTS)
+                //     .insert(Sensor);
+
+                for a in -2..3 {
+                    let far_quat = Quat::from_rotation_y(-a as f32 * PI / 8.);
+                    let dir = Vec3::Z * 10.;
+                    children
+                        .spawn_bundle(PolylineBundle {
+                            polyline: polylines.add(Polyline {
+                                vertices: vec![Vec3::ZERO, dir],
+                                ..default()
+                            }),
+                            material: polyline_materials.add(PolylineMaterial {
+                                width: 2.0,
+                                color: Color::RED,
+                                perspective: true,
+                                ..default()
+                            }),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(
+                            Transform::from_translation(Vec3::new(0., 0., car_hl))
+                                .with_rotation(far_quat),
+                        ))
+                        .insert(CarSensor);
+
+                    let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
+                    children
+                        .spawn()
+                        .insert(SensorNear)
+                        .insert_bundle(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(Transform::from_translation(
+                            sensor_pos_on_car,
+                        )));
+                    children
+                        .spawn()
+                        .insert(SensorFar)
+                        .insert_bundle(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.1 })),
+                            material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
+                            ..default()
+                        })
+                        .insert_bundle(TransformBundle::from(Transform::from_translation(
+                            sensor_pos_on_car + far_quat.mul_vec3(dir),
+                        )));
+                }
+            })
             .id();
+
         if i == 0 {
+            // select first car for human interactions
+            car_init.hid_car = Some(car);
+            commands.entity(car).insert(HID);
+        }
+
+        for (i, wheel_id) in wheels.iter().enumerate() {
             commands
-                .entity(wheel)
-                .insert(FrontRightJoint)
-                .insert(FrontJoint);
-        } else if i == 1 {
-            commands
-                .entity(wheel)
-                .insert(FrontLeftJoint)
-                .insert(FrontJoint);
-        } else if i == 2 {
-            commands.entity(wheel).insert(BackJoint);
-        } else if i == 3 {
-            commands.entity(wheel).insert(BackJoint);
+                .entity(*wheel_id)
+                .insert(MultibodyJoint::new(car, joints[i]));
+        }
+
+        if let Some(saved_brain) = &saved_brain {
+            commands.entity(car).insert(saved_brain.clone());
+        } else {
+            commands.entity(car).insert(CarBrain::new());
         }
     }
 }
 
 pub fn car_change_detection_system(
     query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
-    mut wheels: Query<(&mut ExternalForce, &Transform, With<Wheel>)>,
-    mut front: Query<(&mut MultibodyJoint, With<FrontJoint>)>,
+    mut front: Query<(&mut MultibodyJoint, With<WheelFront>)>,
+    mut wheel_set: ParamSet<(
+        Query<(&mut ExternalForce, &Transform), With<WheelFront>>,
+        Query<(&mut ExternalForce, &Transform), With<WheelBack>>,
+    )>,
 ) {
     for (_entity, car, velocity, transform) in query.iter() {
         let torque: f32;
@@ -176,29 +336,44 @@ pub fn car_change_detection_system(
             forward = false;
         }
 
-        let gas_max_torque = 500.;
-        let break_max_torque = 2000.;
+        let break_max_torque = car.wheel_max_torque * 2.;
         if forward {
             if car.brake > 0. {
                 torque = -car.brake * break_max_torque;
             } else {
-                torque = car.gas * gas_max_torque;
+                torque = car.gas * car.wheel_max_torque;
             }
         } else {
             if car.brake > 0. {
-                torque = -car.brake * gas_max_torque;
+                torque = -car.brake * car.wheel_max_torque;
             } else {
                 torque = car.gas * break_max_torque;
             }
         }
 
-        for (mut forces, transform, _) in wheels.iter_mut() {
-            forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
-        }
+        let steering_speed_x: f32 = match velocity.linvel.length() / 10. {
+            x if x >= 1. => 0.,
+            x => 1. - x,
+        };
 
-        let axis = Vec3::new(1., 0., car.steering * 0.3);
-        for (mut joint, _) in front.iter_mut() {
-            joint.data.set_local_axis1(axis);
+        let max_angle = PI / 4.;
+        let steer_speed_sq = steering_speed_x.powi(2);
+        let angle: f32 = max_angle * car.steering * (0.1 + 0.9 * steer_speed_sq);
+        let quat = Quat::from_axis_angle(Vec3::Y, -angle);
+        let torque_vec = Vec3::new(0., torque, 0.);
+        let steering_torque_vec = quat.mul_vec3(torque_vec);
+        let axis = quat.mul_vec3(Vec3::X);
+
+        for wheel_entity in car.wheels.iter() {
+            if let Ok((mut forces, transform)) = wheel_set.p0().get_mut(*wheel_entity) {
+                forces.torque = (transform.rotation.mul_vec3(steering_torque_vec)).into();
+            }
+            if let Ok((mut forces, transform)) = wheel_set.p1().get_mut(*wheel_entity) {
+                forces.torque = (transform.rotation.mul_vec3(torque_vec)).into();
+            }
+            if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
+                joint.data.set_local_axis1(axis);
+            }
         }
     }
 }

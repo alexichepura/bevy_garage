@@ -29,6 +29,6 @@ pub fn plain_start_system(
         )))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))
-        .insert(Friction::coefficient(100.))
-        .insert(Restitution::coefficient(0.1));
+        .insert(Friction::coefficient(1000.))
+        .insert(Restitution::coefficient(0.01));
 }

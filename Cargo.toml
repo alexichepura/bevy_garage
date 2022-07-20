@@ -11,13 +11,17 @@ license = "MIT OR Apache-2.0"
 resolver = "2"
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 bevy = { version = "0.7.0" }
 bevy_obj = "^0.7.0"
 obj-rs = { version =  "0.7", default-features = false }
+bevy_mod_picking = "0.7"
 nalgebra = "^0.31.0"
 rand = "0.8"
 smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras", rev = "ed50679" }
 bevy_polyline = "0.2"
+bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }
 bevy_rapier3d = { version = "0.15.0", features = [ "debug-render" ] }
 # bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "69ea60c", features = [ "debug-render" ] }
 
