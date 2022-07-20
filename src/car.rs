@@ -62,7 +62,7 @@ impl Car {
             steering: 0.,
             use_brain: false,
             wheels: wheels.clone(),
-            wheel_max_torque: 400.,
+            wheel_max_torque: 200.,
         }
     }
 }
@@ -125,7 +125,7 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..2 {
+    for i in 0..1 {
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
 
@@ -140,7 +140,7 @@ pub fn car_start_system(
                 .local_axis1(Vec3::X)
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
-                .local_anchor2(Vec3::new(0., 0., 0.))
+                .local_anchor2(Vec3::ZERO)
                 .build();
             joints.push(joint);
 
@@ -151,21 +151,20 @@ pub fn car_start_system(
                 .spawn()
                 .insert_bundle(PbrBundle {
                     mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(100))),
-                    material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.8).into()),
+                    material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.2).into()),
                     ..default()
                 })
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert_bundle(TransformBundle::from(
-                    Transform::from_translation(wheel_transform).with_rotation(
-                        Quat::from_axis_angle(Vec3::new(0., 1., 0.).normalize(), PI),
-                    ),
+                    Transform::from_translation(wheel_transform)
+                        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
                 ))
                 .insert(Velocity::zero())
                 .insert(Collider::from(wheel_shape))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(1.))
-                .insert(Restitution::coefficient(0.01))
+                .insert(Friction::coefficient(1000.))
+                .insert(Restitution::coefficient(0.001))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
                     mass: 15.,
@@ -208,7 +207,7 @@ pub fn car_start_system(
                     max_z: car_hl,
                     min_z: -car_hl,
                 })),
-                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.8).into()),
+                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
                 ..default()
             })
             .insert(Car::new(&wheels))
@@ -228,7 +227,7 @@ pub fn car_start_system(
                     .spawn()
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(0.1))
+                    .insert(Friction::coefficient(1.))
                     .insert(Restitution::coefficient(0.1))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(ColliderMassProperties::MassProperties(MassProperties {
@@ -352,15 +351,14 @@ pub fn car_change_detection_system(
             }
         }
 
-        let limit_mps = 10.;
-        let wheel_steering_speed_dependent: f32 = match velocity.linvel.length() / limit_mps {
-            x if x >= 1. => 1.,
+        let steering_speed_x: f32 = match velocity.linvel.length() / 10. {
+            x if x >= 1. => 0.,
             x => 1. - x,
         };
 
-        let max_angle = PI / 2.;
-        let angle: f32 = max_angle * car.steering * (0.1 + 0.6 * wheel_steering_speed_dependent);
-        println!("angle {angle}");
+        let max_angle = PI / 4.;
+        let steer_speed_sq = steering_speed_x.powi(2);
+        let angle: f32 = max_angle * car.steering * (0.1 + 0.9 * steer_speed_sq);
         let quat = Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);
