@@ -115,22 +115,21 @@ pub fn car_start_system(
         saved_brain = None;
     }
 
+    let car_hw: f32 = 0.75;
+    let car_hh: f32 = 0.3;
+    let car_hl: f32 = 1.8;
+    let wheel_r: f32 = 0.3;
+    let wheel_hw: f32 = 0.125;
+
+    let shift = Vec3::new(car_hw - wheel_hw, -car_hh + 0.1, car_hl - wheel_r);
+    let car_anchors: [Vec3; 4] = [
+        Vec3::new(shift.x, shift.y, shift.z),
+        Vec3::new(-shift.x, shift.y, shift.z),
+        Vec3::new(shift.x, shift.y, -shift.z),
+        Vec3::new(-shift.x, shift.y, -shift.z),
+    ];
+
     for i in 0..2 {
-        let car_hw: f32 = 0.45;
-        let car_hh: f32 = 0.3;
-        let car_hl: f32 = 1.8;
-        let wheel_r: f32 = 0.3;
-        let wheel_hw: f32 = 0.125;
-
-        // WHEELS
-        let shift = Vec3::new(car_hw + 0.30 + wheel_hw, -car_hh + 0.1, car_hl);
-        let car_anchors: [Vec3; 4] = [
-            Vec3::new(shift.x, shift.y, shift.z),
-            Vec3::new(-shift.x, shift.y, shift.z),
-            Vec3::new(shift.x, shift.y, -shift.z),
-            Vec3::new(-shift.x, shift.y, -shift.z),
-        ];
-
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
 
@@ -199,7 +198,6 @@ pub fn car_start_system(
             }
         }
 
-        // CAR
         let car_transform =
             Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
         let car = commands
@@ -355,14 +353,20 @@ pub fn car_change_detection_system(
             }
         }
 
+        let limit_mps = 10.;
+        let wheel_steering_speed_dependent: f32 = match 1. - velocity.linvel.length() / limit_mps {
+            x if x <= 0. => 0.,
+            x => x,
+        };
+        let steering = car.steering * (0.1 + wheel_steering_speed_dependent);
+        let steering_axis = Vec3::new(1., 0., steering);
+
         for wheel_entity in car.wheels.iter() {
             if let Ok((mut forces, transform)) = wheels.get_mut(*wheel_entity) {
                 forces.torque = (transform.rotation.mul_vec3(Vec3::new(0., torque, 0.))).into();
             }
-
-            let axis = Vec3::new(1., 0., car.steering * 0.3);
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
-                joint.data.set_local_axis1(axis);
+                joint.data.set_local_axis1(steering_axis);
             }
         }
     }

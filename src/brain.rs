@@ -1,11 +1,12 @@
 use crate::car::*;
+use crate::track::STATIC_GROUP;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
 use serde::{Deserialize, Serialize};
-use std::{fmt, fs, string};
+use std::fs;
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
@@ -125,11 +126,8 @@ pub fn car_brain_system(
         Query<(&mut Transform, With<RayHit>)>,
     )>,
 ) {
-    let sensor_filter = QueryFilter::new();
-    // .exclude_dynamic()
-    // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-    // .predicate(&|handle, collider| collider.user_data == 10)
-    // .exclude_sensors();
+    let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
+    // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP));
     for (e, mut car, mut brain, children) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
@@ -188,17 +186,6 @@ pub fn car_brain_system(
                     .map(|x| format!("{:.1} ", x))
                     .collect::<String>(),
             );
-            // println!(
-            //     "inputs {:?} {:.1} {:?}",
-            //     inputs
-            //         .iter()
-            //         .map(|x| format!("{:.1} ", x))
-            //         .collect::<String>(),
-            //     origins[0],
-            //     dirs.iter()
-            //         .map(|x| format!("{:.1} ", x))
-            //         .collect::<String>(),
-            // );
         }
         if !car.use_brain {
             return;
