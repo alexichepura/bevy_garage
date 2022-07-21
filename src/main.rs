@@ -35,6 +35,13 @@ use plain::*;
 use track::*;
 
 fn main() {
+    let config = Config {
+        translation: Vec3::new(0., 0.8, 0.),
+        quat: Quat::from_rotation_y(-PI * 0.2),
+        hid_car: None,
+        cars_count: 1,
+        use_brain: false,
+    };
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
@@ -68,11 +75,7 @@ fn main() {
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
         // APP
         .init_resource::<GamepadLobby>()
-        .insert_resource(CarInit {
-            translation: Vec3::new(0., 0.8, 0.),
-            quat: Quat::from_rotation_y(-PI * 0.2),
-            hid_car: None,
-        })
+        .insert_resource(config)
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)

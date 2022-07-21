@@ -113,12 +113,11 @@ impl Level {
     }
 }
 
-pub fn reset_pos_system(car_init: Res<CarInit>, mut q_car: Query<&mut Transform, With<Car>>) {
+pub fn reset_pos_system(config: Res<Config>, mut q_car: Query<&mut Transform, With<Car>>) {
     for mut transform in q_car.iter_mut() {
         if transform.translation.y > 20. || transform.translation.y < 0. {
             println!("car is out of bound, resetting transform");
-            *transform =
-                Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+            *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
         }
     }
 }
@@ -137,12 +136,12 @@ pub fn reset_spawn_system(
 }
 
 pub fn reset_spawn_key_system(
-    car_init: Res<CarInit>,
+    config: Res<Config>,
     keys: Res<Input<KeyCode>>,
     mut set: ParamSet<(
         Query<(&mut Transform, &mut Velocity, &Car)>,
         Query<(&mut Velocity, &mut ExternalForce), With<Wheel>>,
-        Query<&mut Velocity, With<Velocity>>,
+        Query<&mut Velocity>,
     )>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
@@ -157,8 +156,8 @@ pub fn reset_spawn_key_system(
         for (mut transform, mut vel, car) in set.p0().iter_mut() {
             vel.linvel = Vec3::ZERO;
             vel.angvel = Vec3::ZERO;
-            transform.rotation = car_init.quat;
-            transform.translation = car_init.translation;
+            transform.rotation = config.quat;
+            transform.translation = config.translation;
             car.wheels
                 .iter()
                 .for_each(|wheel_e| wheel_es.push(*wheel_e));
@@ -177,7 +176,7 @@ pub fn reset_spawn_key_system(
 
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    car_init: Res<CarInit>,
+    config: Res<Config>,
     mut q_car: Query<(Entity, &mut Car, &mut CarBrain, &Children), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
@@ -190,7 +189,7 @@ pub fn car_brain_system(
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
 
-    let e_hid_car = car_init.hid_car.unwrap();
+    let e_hid_car = config.hid_car.unwrap();
     for (e, mut car, mut brain, children) in q_car.iter_mut() {
         let is_hid_car = e == e_hid_car;
         let mut origins: Vec<Vec3> = Vec::new();
@@ -306,7 +305,7 @@ pub fn car_brain_system(
 pub fn cars_pick_brain_mutate_restart(
     mut events: EventReader<PickingEvent>,
     mut cars: Query<(&mut CarBrain, &mut Transform, &mut Velocity, With<CarBrain>)>,
-    car_init: Res<CarInit>,
+    config: Res<Config>,
 ) {
     let mut selected_brain_option: Option<CarBrain> = None;
     for event in events.iter() {
@@ -333,8 +332,7 @@ pub fn cars_pick_brain_mutate_restart(
             let mut new_brain = selected_brain.clone();
             new_brain.mutate_random();
             *brain = new_brain;
-            *transform =
-                Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+            *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
             *velocity = Velocity::default();
         }
     }

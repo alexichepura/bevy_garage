@@ -5,10 +5,12 @@ use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, fs::File, path::Path, sync::Arc};
 
-pub struct CarInit {
+pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,
     pub hid_car: Option<Entity>,
+    pub cars_count: i8,
+    pub use_brain: bool,
 }
 
 #[derive(Component)]
@@ -49,12 +51,12 @@ pub struct Car {
 pub struct HID;
 
 impl Car {
-    pub fn new(wheels: &Vec<Entity>) -> Self {
+    pub fn new(wheels: &Vec<Entity>, use_brain: bool) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: true,
+            use_brain,
             wheels: wheels.clone(),
             wheel_max_torque: 600.,
         }
@@ -66,7 +68,7 @@ pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut car_init: ResMut<CarInit>,
+    mut config: ResMut<Config>,
 ) {
     let ray_point_half = 0.05;
     let ray_point_size = ray_point_half * 2.;
@@ -115,12 +117,12 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..50 {
+    for i in 0..config.cars_count {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            car_init.translation + Vec3::new(-15. + 0.5 * i as f32, 0., 14. - 0.5 * i as f32),
+            config.translation + Vec3::new(-15. + 0.5 * i as f32, 0., 14. - 0.5 * i as f32),
         )
-        .with_rotation(car_init.quat);
+        .with_rotation(config.quat);
 
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
@@ -139,7 +141,7 @@ pub fn car_start_system(
                 .build();
             joints.push(joint);
 
-            let wheel_transform = car_init.translation + car_init.quat.mul_vec3(car_anchors[i]);
+            let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
             let wheel_pbr = PbrBundle {
@@ -216,7 +218,7 @@ pub fn car_start_system(
             .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
             .insert_bundle(car_pbr)
-            .insert(Car::new(&wheels))
+            .insert(Car::new(&wheels, config.use_brain))
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
             .insert_bundle(TransformBundle::from(car_transform))
@@ -260,7 +262,7 @@ pub fn car_start_system(
             .id();
 
         if is_hid {
-            car_init.hid_car = Some(car);
+            config.hid_car = Some(car);
             commands.entity(car).insert(HID);
         }
         for (i, wheel_id) in wheels.iter().enumerate() {
