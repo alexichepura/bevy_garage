@@ -1,3 +1,4 @@
+use crate::config::Config;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -5,6 +6,7 @@ pub fn plain_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    config: Res<Config>,
 ) {
     let plane_hx = 800.0;
     let plane_hz = 1200.0;
@@ -29,6 +31,6 @@ pub fn plain_start_system(
         )))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))
-        .insert(Friction::coefficient(1000.))
-        .insert(Restitution::coefficient(0.01));
+        .insert(Friction::coefficient(config.friction))
+        .insert(Restitution::coefficient(config.restitution));
 }

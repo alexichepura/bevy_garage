@@ -1,6 +1,7 @@
 mod brain;
 mod camera;
 mod car;
+mod config;
 mod dash;
 mod esp;
 mod gamepad;
@@ -26,6 +27,7 @@ use smooth_bevy_cameras::{controllers::unreal::UnrealCameraPlugin, LookTransform
 use brain::*;
 use camera::*;
 use car::*;
+use config::*;
 use dash::*;
 use esp::*;
 use gamepad::*;
@@ -35,13 +37,6 @@ use plain::*;
 use track::*;
 
 fn main() {
-    let config = Config {
-        translation: Vec3::new(0., 0.8, 0.),
-        quat: Quat::from_rotation_y(-PI * 0.2),
-        hid_car: None,
-        cars_count: 1,
-        use_brain: false,
-    };
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
@@ -55,6 +50,7 @@ fn main() {
         .add_startup_system(unreal_camera_start_system)
         // .add_startup_system(camera_start_system)
         // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        //
         // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
@@ -73,10 +69,11 @@ fn main() {
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DebugCursorPickingPlugin)
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
+        //
         // APP
         .init_resource::<GamepadLobby>()
-        .insert_resource(config)
-        .add_startup_system(plain_start_system)
+        .insert_resource(Config::default())
+        // .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)
         .add_startup_system(car_start_system)

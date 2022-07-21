@@ -1,3 +1,4 @@
+use crate::config::Config;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_rapier3d::prelude::*;
@@ -12,6 +13,7 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    config: Res<Config>,
 ) {
     let geoms = models();
     for obj_path in geoms.into_iter() {
@@ -61,8 +63,8 @@ pub fn track_start_system(
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
-            .insert(Friction::coefficient(1000.))
-            .insert(Restitution::coefficient(0.00000001))
+            .insert(Friction::coefficient(config.friction))
+            .insert(Restitution::coefficient(config.restitution))
             .insert_bundle(TransformBundle::identity());
     }
 }

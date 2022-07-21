@@ -1,4 +1,5 @@
 use crate::car::*;
+use crate::config::Config;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 use bevy_prototype_debug_lines::DebugLines;
@@ -115,7 +116,7 @@ impl Level {
 
 pub fn reset_pos_system(config: Res<Config>, mut q_car: Query<&mut Transform, With<Car>>) {
     for mut transform in q_car.iter_mut() {
-        if transform.translation.y > 20. || transform.translation.y < 0. {
+        if transform.translation.y > 100. || transform.translation.y < 0. {
             println!("car is out of bound, resetting transform");
             *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
         }

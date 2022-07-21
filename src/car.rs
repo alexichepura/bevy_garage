@@ -1,22 +1,16 @@
-use crate::{brain::*, mesh::*, track::*};
+use crate::{brain::*, config::Config, mesh::*, track::*};
 use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
 use std::{f32::consts::PI, fs::File, path::Path, sync::Arc};
 
-pub struct Config {
-    pub translation: Vec3,
-    pub quat: Quat,
-    pub hid_car: Option<Entity>,
-    pub cars_count: i8,
-    pub use_brain: bool,
-}
-
 #[derive(Component)]
 pub struct Wheel {
     pub radius: f32,
     pub width: f32,
+    pub friction: f32,
+    pub restitution: f32,
 }
 #[derive(Component)]
 pub struct WheelFront;
@@ -58,7 +52,7 @@ impl Car {
             steering: 0.,
             use_brain,
             wheels: wheels.clone(),
-            wheel_max_torque: 600.,
+            wheel_max_torque: 200.,
         }
     }
 }
@@ -97,8 +91,7 @@ pub fn car_start_system(
     let json_file = File::open(Path::new("brain.json"));
     if json_file.is_ok() {
         println!("brain.json found");
-        saved_brain =
-            CarBrain::clone_randomised(serde_json::from_reader(json_file.unwrap()).unwrap());
+        saved_brain = serde_json::from_reader(json_file.unwrap()).unwrap();
     } else {
         saved_brain = None;
     }
@@ -106,10 +99,10 @@ pub fn car_start_system(
     let wheel_r: f32 = 0.5;
     let wheel_hw: f32 = 0.125;
     let car_hw: f32 = 1.;
-    let car_hh: f32 = wheel_r / 2. + 0.01;
+    let car_hh: f32 = wheel_r / 2.;
     let car_hl: f32 = 2.3;
 
-    let shift = Vec3::new(car_hw - wheel_hw - 0.05, -car_hh, car_hl - wheel_r - 0.2);
+    let shift = Vec3::new(car_hw - wheel_hw - 0.01, -car_hh, car_hl - wheel_r - 0.2);
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
         Vec3::new(-shift.x, shift.y, shift.z),
@@ -118,6 +111,7 @@ pub fn car_start_system(
     ];
 
     for i in 0..config.cars_count {
+        let car_brain = CarBrain::clone_randomised(saved_brain.clone());
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
             config.translation + Vec3::new(-15. + 0.5 * i as f32, 0., 14. - 0.5 * i as f32),
@@ -159,6 +153,12 @@ pub fn car_start_system(
                 principal_inertia: Vec3::new(0.3, 0.3, 0.3),
                 ..default()
             });
+            let wheel = Wheel {
+                radius: wheel_r,
+                width: wheel_hw * 2.,
+                friction: config.friction,
+                restitution: config.restitution,
+            };
             let wheel_id = commands
                 .spawn()
                 .insert(Sleeping::disabled())
@@ -171,13 +171,10 @@ pub fn car_start_system(
                 .insert(Velocity::zero())
                 .insert(Collider::from(wheel_shape))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(1000.))
-                .insert(Restitution::coefficient(0.00001))
+                .insert(Friction::coefficient(wheel.friction))
+                .insert(Restitution::coefficient(wheel.restitution))
                 .insert(wheel_collider_mass)
-                .insert(Wheel {
-                    radius: wheel_r,
-                    width: wheel_hw * 2.,
-                })
+                .insert(wheel)
                 .insert(ExternalForce::default())
                 .id();
             wheels.push(wheel_id);
@@ -220,6 +217,9 @@ pub fn car_start_system(
             .insert_bundle(car_pbr)
             .insert(Car::new(&wheels, config.use_brain))
             .insert(RigidBody::Dynamic)
+            .insert(Ccd::enabled())
+            .insert(Friction::coefficient(config.friction))
+            .insert(Restitution::coefficient(config.restitution))
             .insert(Velocity::zero())
             .insert_bundle(TransformBundle::from(car_transform))
             .insert_bundle(PickableBundle::default())
@@ -237,8 +237,8 @@ pub fn car_start_system(
                     .insert(ContactForceEventThreshold(0.01))
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(1.))
-                    .insert(Restitution::coefficient(0.0001))
+                    .insert(Friction::coefficient(config.friction))
+                    .insert(Restitution::coefficient(config.restitution))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
                 for a in -2..3 {
@@ -270,8 +270,8 @@ pub fn car_start_system(
                 .entity(*wheel_id)
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
-        if let Some(saved_brain) = &saved_brain {
-            commands.entity(car).insert(saved_brain.clone());
+        if let Some(car_brain) = &car_brain {
+            commands.entity(car).insert(car_brain.clone());
         } else {
             commands.entity(car).insert(CarBrain::new());
         }
