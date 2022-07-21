@@ -6,8 +6,8 @@ pub fn plain_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let plane_hx = 400.0;
-    let plane_hz = 600.0;
+    let plane_hx = 800.0;
+    let plane_hz = 1200.0;
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box {
@@ -25,7 +25,7 @@ pub fn plain_start_system(
         .insert(RigidBody::Fixed)
         // .insert_bundle(TransformBundle::identity())
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
-            -300., -0.5, 400.,
+            -600., -0.5, 800.,
         )))
         .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))

@@ -149,11 +149,11 @@ pub fn car_start_system(
                 .insert(Sleeping::disabled())
                 .insert(ActiveEvents::COLLISION_EVENTS)
                 .insert(ContactForceEventThreshold(0.01))
-                .insert_bundle(PbrBundle {
-                    mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(20))),
-                    material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
-                    ..default()
-                })
+                // .insert_bundle(PbrBundle {
+                //     mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(20))),
+                //     material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
+                //     ..default()
+                // })
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert_bundle(TransformBundle::from(
@@ -202,18 +202,18 @@ pub fn car_start_system(
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
-            .insert_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Box {
-                    max_x: car_hw,
-                    min_x: -car_hw,
-                    max_y: car_hh,
-                    min_y: -car_hh,
-                    max_z: car_hl,
-                    min_z: -car_hl,
-                })),
-                material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
-                ..default()
-            })
+            // .insert_bundle(PbrBundle {
+            //     mesh: meshes.add(Mesh::from(shape::Box {
+            //         max_x: car_hw,
+            //         min_x: -car_hw,
+            //         max_y: car_hh,
+            //         min_y: -car_hh,
+            //         max_z: car_hl,
+            //         min_z: -car_hl,
+            //     })),
+            //     material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
+            //     ..default()
+            // })
             .insert(Car::new(&wheels))
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
@@ -247,26 +247,15 @@ pub fn car_start_system(
                     let far_quat = Quat::from_rotation_y(-a as f32 * PI / 16.);
                     let dir = Vec3::Z * 20.;
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
-                    // let point_size = 0.05;
                     children
                         .spawn()
                         .insert(SensorNear)
-                        // .insert_bundle(PbrBundle {
-                        //     mesh: meshes.add(Mesh::from(shape::Cube { size: point_size })),
-                        //     material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
-                        //     ..default()
-                        // })
                         .insert_bundle(TransformBundle::from(Transform::from_translation(
                             sensor_pos_on_car,
                         )));
                     children
                         .spawn()
                         .insert(SensorFar)
-                        // .insert_bundle(PbrBundle {
-                        //     mesh: meshes.add(Mesh::from(shape::Cube { size: point_size })),
-                        //     material: materials.add(Color::rgba(0.9, 0.5, 0.5, 0.5).into()),
-                        //     ..default()
-                        // })
                         .insert_bundle(TransformBundle::from(Transform::from_translation(
                             sensor_pos_on_car + far_quat.mul_vec3(dir),
                         )));

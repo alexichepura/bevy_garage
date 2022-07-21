@@ -112,9 +112,16 @@ impl Level {
     }
 }
 
-pub fn reset_pos_system(car_init: Res<CarInit>, mut q_car: Query<&mut Transform, With<Car>>) {
-    for mut car_transform in q_car.iter_mut() {
-        if car_transform.translation.y > 2. || car_transform.translation.y < 0. {
+pub fn reset_pos_system(
+    car_init: Res<CarInit>,
+    mut q_car: Query<(Entity, &mut Transform), With<Car>>,
+    // mut commands: Commands,
+) {
+    for (_e, mut car_transform) in q_car.iter_mut() {
+        // println!("{}", car_transform.rotation.to_axis_angle());
+        if car_transform.translation.y > 10. || car_transform.translation.y < 0. {
+            // commands.entity(e).despawn_recursive();
+            // commands.entity(e).remove::<Collider>();
             println!("car is out of bound, resetting transform");
             *car_transform =
                 Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
@@ -139,6 +146,7 @@ pub fn car_brain_system(
 
     let e_hid_car = car_init.hid_car.unwrap();
     for (e, mut car, mut brain, children) in q_car.iter_mut() {
+        let is_hid_car = e == e_hid_car;
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
@@ -157,12 +165,14 @@ pub fn car_brain_system(
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            lines.line_colored(
-                ray_pos,
-                ray_dir_pos,
-                0.0,
-                Color::rgba(0.25, 0.88, 0.82, 0.1),
-            );
+            if is_hid_car {
+                lines.line_colored(
+                    ray_pos,
+                    ray_dir_pos,
+                    0.0,
+                    Color::rgba(0.25, 0.88, 0.82, 0.1),
+                );
+            }
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,
@@ -212,7 +222,7 @@ pub fn car_brain_system(
                 }
             }
         }
-        if e == e_hid_car {
+        if is_hid_car {
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
                 trf.translation = origins[i];
             }
@@ -251,20 +261,24 @@ pub fn cars_pick_brain_mutate_restart(
     mut events: EventReader<PickingEvent>,
     mut cars: Query<(&mut CarBrain, &mut Transform, &mut Velocity, With<CarBrain>)>,
     car_init: Res<CarInit>,
-    // wheels: Query<(&Velocity, &ExternalForce), With<Wheel>>,
 ) {
-    let mut selected_brain: Option<CarBrain> = None;
+    let mut selected_brain_option: Option<CarBrain> = None;
     for event in events.iter() {
         match event {
             PickingEvent::Clicked(e) => {
                 println!("clicked entity {:?}", e);
                 let (brain, _, _, _) = cars.get(*e).unwrap();
-                selected_brain = Some(brain.clone());
+                let mut selected_brain = brain.clone();
+                for level in selected_brain.levels.iter_mut() {
+                    level.inputs.fill(0.);
+                    level.outputs.fill(0.);
+                }
+                selected_brain_option = Some(selected_brain);
             }
             _ => (),
         }
     }
-    if let Some(selected_brain) = selected_brain {
+    if let Some(selected_brain) = selected_brain_option {
         let serialized = serde_json::to_string(&selected_brain).unwrap();
         println!("saving brain.json");
         fs::write("brain.json", serialized).expect("Unable to write brain.json");
