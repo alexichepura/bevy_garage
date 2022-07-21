@@ -24,7 +24,7 @@ pub fn car_change_detection_system(
             forward = false;
         }
 
-        let break_max_torque = car.wheel_max_torque * 3.;
+        let break_max_torque = car.wheel_max_torque * 5.;
         if forward {
             if braking {
                 torque = -car.brake * break_max_torque;
@@ -56,7 +56,7 @@ pub fn car_change_detection_system(
         let axis = quat.mul_vec3(Vec3::X);
 
         // let mut slip: Vec<f32> = vec![0.; 4];
-        for (i, wheel_entity) in car.wheels.iter().enumerate() {
+        for (_i, wheel_entity) in car.wheels.iter().enumerate() {
             let mut q_front_wheels = wheel_set.p0();
             let wheel_result = q_front_wheels.get_mut(*wheel_entity);
             if let Ok((wheel, mut forces, transform, velocity)) = wheel_result {
@@ -104,6 +104,6 @@ pub fn car_change_detection_system(
                 joint.data.set_local_axis1(axis);
             }
         }
-        // println!("slips {slip:?}");
+        // println!("slip {slip:?}");
     }
 }
