@@ -141,21 +141,22 @@ pub fn reset_spawn_key_system(
     keys: Res<Input<KeyCode>>,
     mut set: ParamSet<(
         Query<(&mut Transform, &mut Velocity, &Car)>,
-        Query<&mut Velocity, With<Wheel>>,
-        Query<&mut Velocity, With<Collider>>,
+        Query<(&mut Velocity, &mut ExternalForce), With<Wheel>>,
+        Query<&mut Velocity, With<Velocity>>,
     )>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         println!("KeyCode::Space, resetting transform");
         for mut vel in set.p2().iter_mut() {
+            println!("Collider velocity cleanup");
             vel.linvel = Vec3::ZERO;
             vel.angvel = Vec3::ZERO;
         }
 
         let mut wheel_es: Vec<Entity> = vec![];
         for (mut transform, mut vel, car) in set.p0().iter_mut() {
-            // vel.linvel = Vec3::ZERO;
-            // vel.angvel = Vec3::ZERO;
+            vel.linvel = Vec3::ZERO;
+            vel.angvel = Vec3::ZERO;
             transform.rotation = car_init.quat;
             transform.translation = car_init.translation;
             car.wheels
@@ -163,10 +164,12 @@ pub fn reset_spawn_key_system(
                 .for_each(|wheel_e| wheel_es.push(*wheel_e));
         }
         for wheel_e in wheel_es {
-            if let Ok(mut vel) = set.p1().get_mut(wheel_e) {
+            if let Ok((mut vel, mut force)) = set.p1().get_mut(wheel_e) {
                 println!("reset wheel velocity {wheel_e:?}");
-                // vel.linvel = Vec3::ZERO;
-                // vel.angvel = Vec3::ZERO;
+                force.force = Vec3::ZERO;
+                force.torque = Vec3::ZERO;
+                vel.linvel = Vec3::ZERO;
+                vel.angvel = Vec3::ZERO;
             }
         }
     }

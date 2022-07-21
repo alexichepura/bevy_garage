@@ -56,7 +56,7 @@ impl Car {
             steering: 0.,
             use_brain: false,
             wheels: wheels.clone(),
-            wheel_max_torque: 500.,
+            wheel_max_torque: 600.,
         }
     }
 }
@@ -104,7 +104,7 @@ pub fn car_start_system(
     let wheel_r: f32 = 0.5;
     let wheel_hw: f32 = 0.125;
     let car_hw: f32 = 1.;
-    let car_hh: f32 = wheel_r / 2.;
+    let car_hh: f32 = 0.1;
     let car_hl: f32 = 2.3;
 
     let shift = Vec3::new(car_hw - wheel_hw - 0.05, -car_hh, car_hl - wheel_r - 0.2);
@@ -229,7 +229,7 @@ pub fn car_start_system(
                     .insert(Restitution::coefficient(0.0001))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(ColliderMassProperties::MassProperties(MassProperties {
-                        local_center_of_mass: Vec3::new(0., -0.2, 0.),
+                        local_center_of_mass: Vec3::new(0., -0.1, 0.),
                         mass: 1500.0,
                         principal_inertia: Vec3::new(10., 10., 10.),
                         ..default()
