@@ -115,7 +115,7 @@ impl Level {
 
 pub fn reset_pos_system(car_init: Res<CarInit>, mut q_car: Query<&mut Transform, With<Car>>) {
     for mut transform in q_car.iter_mut() {
-        if transform.translation.y > 10. || transform.translation.y < 0. {
+        if transform.translation.y > 20. || transform.translation.y < 0. {
             println!("car is out of bound, resetting transform");
             *transform =
                 Transform::from_translation(car_init.translation).with_rotation(car_init.quat);

@@ -43,24 +43,24 @@ fn main() {
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
         // CAMERA
-        // .add_plugin(LookTransformPlugin)
-        // .add_plugin(UnrealCameraPlugin::default())
-        // .add_startup_system(unreal_camera_start_system)
-        .add_startup_system(camera_start_system)
-        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        .add_plugin(LookTransformPlugin)
+        .add_plugin(UnrealCameraPlugin::default())
+        .add_startup_system(unreal_camera_start_system)
+        // .add_startup_system(camera_start_system)
+        // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierDebugRenderPlugin {
-            mode: DebugRenderMode::COLLIDER_SHAPES
-                | DebugRenderMode::RIGID_BODY_AXES
-                | DebugRenderMode::JOINTS
-                // | DebugRenderMode::COLLIDER_AABBS
-                | DebugRenderMode::CONTACTS
-                | DebugRenderMode::SOLVER_CONTACTS,
-            ..default()
-        })
+        // .add_plugin(RapierDebugRenderPlugin {
+        //     mode: DebugRenderMode::COLLIDER_SHAPES
+        //         | DebugRenderMode::RIGID_BODY_AXES
+        //         | DebugRenderMode::JOINTS
+        //         | DebugRenderMode::COLLIDER_AABBS
+        //         | DebugRenderMode::CONTACTS
+        //         | DebugRenderMode::SOLVER_CONTACTS,
+        //     ..default()
+        // })
         .add_plugin(PolylinePlugin)
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .add_plugins(DefaultPickingPlugins)
@@ -70,7 +70,7 @@ fn main() {
         .init_resource::<GamepadLobby>()
         .insert_resource(CarInit {
             translation: Vec3::new(0., 0.8, 0.),
-            quat: Quat::from_rotation_y(-PI / 4.),
+            quat: Quat::from_rotation_y(-PI * 0.2),
             hid_car: None,
         })
         .add_startup_system(plain_start_system)
