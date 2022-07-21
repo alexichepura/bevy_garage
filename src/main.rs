@@ -43,11 +43,11 @@ fn main() {
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
         // CAMERA
-        .add_plugin(LookTransformPlugin)
-        .add_plugin(UnrealCameraPlugin::default())
-        .add_startup_system(unreal_camera_start_system)
-        // .add_startup_system(camera_start_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        // .add_plugin(LookTransformPlugin)
+        // .add_plugin(UnrealCameraPlugin::default())
+        // .add_startup_system(unreal_camera_start_system)
+        .add_startup_system(camera_start_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ObjPlugin)
@@ -86,6 +86,7 @@ fn main() {
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .add_system(reset_pos_system)
+        .add_system(reset_spawn_key_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();

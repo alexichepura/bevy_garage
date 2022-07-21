@@ -54,17 +54,15 @@ impl Car {
             gas: 0.,
             brake: 0.,
             steering: 0.,
-            use_brain: true,
+            use_brain: false,
             wheels: wheels.clone(),
-            wheel_max_torque: 300.,
+            wheel_max_torque: 500.,
         }
     }
 }
 
 pub const CAR_TRAINING_GROUP: u32 = 0b001;
-// const CAR_OBJ: &str = "hatchbackSports.obj";
 pub fn car_start_system(
-    // asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -117,7 +115,7 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..100 {
+    for i in 0..1 {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
             car_init.translation + Vec3::new(-12. + 0.18 * i as f32, 0., 12. - 0.18 * i as f32),
@@ -221,12 +219,6 @@ pub fn car_start_system(
             .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
             .with_children(|children| {
-                // children.spawn().insert_bundle(PbrBundle {
-                //     mesh: asset_server.load(CAR_OBJ),
-                //     material: materials.add(Color::rgb(0.3, 0.3, 0.8).into()),
-                //     transform: Transform::from_translation(Vec3::new(0., -0.3, 0.)),
-                //     ..default()
-                // });
                 children
                     .spawn()
                     .insert(ActiveEvents::COLLISION_EVENTS)
@@ -264,7 +256,6 @@ pub fn car_start_system(
             .id();
 
         if is_hid {
-            // select first car for human interactions
             car_init.hid_car = Some(car);
             commands.entity(car).insert(HID);
         }

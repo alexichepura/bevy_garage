@@ -5,6 +5,7 @@ use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
+use rapier3d::prelude::RigidBodyHandle;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -112,19 +113,61 @@ impl Level {
     }
 }
 
-pub fn reset_pos_system(
-    car_init: Res<CarInit>,
-    mut q_car: Query<(Entity, &mut Transform), With<Car>>,
-    // mut commands: Commands,
-) {
-    for (_e, mut car_transform) in q_car.iter_mut() {
-        // println!("{}", car_transform.rotation.to_axis_angle());
-        if car_transform.translation.y > 10. || car_transform.translation.y < 0. {
-            // commands.entity(e).despawn_recursive();
-            // commands.entity(e).remove::<Collider>();
+pub fn reset_pos_system(car_init: Res<CarInit>, mut q_car: Query<&mut Transform, With<Car>>) {
+    for mut transform in q_car.iter_mut() {
+        if transform.translation.y > 10. || transform.translation.y < 0. {
             println!("car is out of bound, resetting transform");
-            *car_transform =
+            *transform =
                 Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+        }
+    }
+}
+pub fn reset_spawn_system(
+    mut q_car: Query<(Entity, &Car, &Transform), With<Car>>,
+    mut commands: Commands,
+) {
+    for (e, car, transform) in q_car.iter_mut() {
+        if transform.translation.y > 10. || transform.translation.y < 0. {
+            commands.entity(e).despawn_recursive();
+            for wheel_e in car.wheels.iter() {
+                commands.entity(*wheel_e).despawn_recursive();
+            }
+        }
+    }
+}
+
+pub fn reset_spawn_key_system(
+    car_init: Res<CarInit>,
+    keys: Res<Input<KeyCode>>,
+    mut set: ParamSet<(
+        Query<(&mut Transform, &mut Velocity, &Car)>,
+        Query<&mut Velocity, With<Wheel>>,
+        Query<&mut Velocity, With<Collider>>,
+    )>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        println!("KeyCode::Space, resetting transform");
+        for mut vel in set.p2().iter_mut() {
+            vel.linvel = Vec3::ZERO;
+            vel.angvel = Vec3::ZERO;
+        }
+
+        let mut wheel_es: Vec<Entity> = vec![];
+        for (mut transform, mut vel, car) in set.p0().iter_mut() {
+            // vel.linvel = Vec3::ZERO;
+            // vel.angvel = Vec3::ZERO;
+            transform.rotation = car_init.quat;
+            transform.translation = car_init.translation;
+            car.wheels
+                .iter()
+                .for_each(|wheel_e| wheel_es.push(*wheel_e));
+        }
+        for wheel_e in wheel_es {
+            if let Ok(mut vel) = set.p1().get_mut(wheel_e) {
+                println!("reset wheel velocity {wheel_e:?}");
+                // vel.linvel = Vec3::ZERO;
+                // vel.angvel = Vec3::ZERO;
+            }
         }
     }
 }
