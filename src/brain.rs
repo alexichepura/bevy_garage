@@ -293,10 +293,18 @@ pub fn car_brain_system(
         brain.feed_forward(inputs.clone());
 
         let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
+        // println!(
+        //     "outputs {:?}",
+        //     outputs
+        //         .iter()
+        //         .map(|x| format!("{:.1} ", x))
+        //         .collect::<String>(),
+        // );
         let gas = outputs[0];
         let brake = outputs[1];
         let left = outputs[2];
         let right = outputs[3];
+        println!("brain output gas {gas:.2} {brake:.2} {left:.2} {right:.2}");
         car.gas = gas;
         car.brake = brake;
         car.steering = -left + right;

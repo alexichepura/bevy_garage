@@ -122,7 +122,7 @@ pub fn car_start_system(
         let car_brain = CarBrain::clone_randomised(saved_brain.clone());
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation + Vec3::new(-15. + 0.25 * i as f32, 0., 14. - 0.25 * i as f32),
+            config.translation + Vec3::new(-15. + 0.5 * i as f32, 0., 14. - 0.5 * i as f32),
         )
         .with_rotation(config.quat);
 

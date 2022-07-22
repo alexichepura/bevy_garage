@@ -15,13 +15,13 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 10,
+            cars_count: 1,
             use_brain: true,
             max_torque: 300.,
             translation: Vec3::new(0., 0.8, 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
-            restitution: 0.00001,
-            friction: 10000.,
+            restitution: 0.000001,
+            friction: 100000.,
             hid_car: None,
         }
     }

@@ -1,9 +1,7 @@
 use crate::car::HID;
 use bevy::prelude::*;
 use bevy::render::camera::Camera3d;
-use bevy_mod_picking::PickingCameraBundle;
 use core::f32::consts::PI;
-use smooth_bevy_cameras::controllers::unreal::{UnrealCameraBundle, UnrealCameraController};
 
 #[allow(dead_code)]
 pub fn camera_focus_update_system(
@@ -32,16 +30,4 @@ pub fn camera_start_system(mut commands: Commands) {
             .looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
-}
-
-#[allow(dead_code)]
-pub fn unreal_camera_start_system(mut commands: Commands) {
-    commands
-        .spawn_bundle(PerspectiveCameraBundle::default())
-        .insert_bundle(PickingCameraBundle::default())
-        .insert_bundle(UnrealCameraBundle::new(
-            UnrealCameraController::default(),
-            Vec3::new(15., 4., -15.),
-            Vec3::new(0., 3., 0.),
-        ));
 }

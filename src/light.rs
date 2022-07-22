@@ -14,26 +14,26 @@ pub fn light_start_system(mut commands: Commands) {
     //     ..default()
     // });
 
-    const HSIZE: f32 = 10.;
-    for x in -5..5 {
-        for z in -5..5 {
+    const HSIZE: f32 = 100.;
+    for x in 0..2 {
+        for z in 0..2 {
             commands.spawn_bundle(DirectionalLightBundle {
                 directional_light: DirectionalLight {
-                    illuminance: 20_000.,
+                    illuminance: 100_000.,
                     shadow_projection: OrthographicProjection {
-                        left: -HSIZE,
-                        right: HSIZE,
+                        left: -HSIZE + HSIZE * x as f32,
+                        right: HSIZE + HSIZE * x as f32,
                         bottom: -HSIZE,
                         top: HSIZE,
-                        near: -HSIZE,
-                        far: HSIZE,
+                        near: -HSIZE + HSIZE * z as f32,
+                        far: HSIZE + HSIZE * z as f32,
                         ..default()
                     },
                     shadows_enabled: true,
                     ..default()
                 },
                 transform: Transform {
-                    translation: Vec3::new(HSIZE * x as f32, 2., HSIZE * z as f32),
+                    translation: Vec3::new(HSIZE * x as f32, 5., HSIZE * z as f32),
                     rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_8),
                     ..default()
                 },

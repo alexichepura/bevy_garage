@@ -12,15 +12,11 @@ mod plain;
 mod track;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-// use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
-// use bevy_inspector_egui::{InspectorPlugin, WorldInspectorPlugin};
-// use bevy_inspector_egui_rapier::InspectableRapierPlugin;
 use bevy_mod_picking::*;
 use bevy_obj::ObjPlugin;
 use bevy_polyline::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
-use smooth_bevy_cameras::{controllers::unreal::UnrealCameraPlugin, LookTransformPlugin};
 
 use brain::*;
 use camera::*;
@@ -38,16 +34,18 @@ fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
+        .insert_resource(bevy_atmosphere::AtmosphereMat::default())
+        .add_plugin(bevy_atmosphere::AtmospherePlugin {
+            dynamic: false,
+            sky_radius: 10.0,
+        })
         // .add_plugin(WorldInspectorPlugin::new())
         // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
         // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
         // .add_plugin(InspectableRapierPlugin)
         // CAMERA
-        .add_plugin(LookTransformPlugin)
-        .add_plugin(UnrealCameraPlugin::default())
-        .add_startup_system(unreal_camera_start_system)
-        // .add_startup_system(camera_start_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
+        .add_startup_system(camera_start_system)
+        .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         //
         // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
