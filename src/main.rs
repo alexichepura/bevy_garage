@@ -37,7 +37,7 @@ fn main() {
         .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         .add_plugin(bevy_atmosphere::AtmospherePlugin {
             dynamic: false,
-            sky_radius: 10.0,
+            sky_radius: 1000.0,
         })
         // .add_plugin(WorldInspectorPlugin::new())
         // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())

@@ -49,7 +49,7 @@ pub fn track_start_system(
 
         let pbr = PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.3, 0.1, 0.3).into()),
+            material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
             ..default()
         };
 

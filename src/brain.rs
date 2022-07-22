@@ -304,7 +304,7 @@ pub fn car_brain_system(
         let brake = outputs[1];
         let left = outputs[2];
         let right = outputs[3];
-        println!("brain output gas {gas:.2} {brake:.2} {left:.2} {right:.2}");
+        println!("brain output gas {gas:.1} {brake:.1} {left:.1} {right:.1}");
         car.gas = gas;
         car.brake = brake;
         car.steering = -left + right;
