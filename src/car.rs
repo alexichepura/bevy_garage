@@ -45,14 +45,14 @@ pub struct Car {
 pub struct HID;
 
 impl Car {
-    pub fn new(wheels: &Vec<Entity>, use_brain: bool) -> Self {
+    pub fn new(wheels: &Vec<Entity>, use_brain: bool, wheel_max_torque: f32) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
             steering: 0.,
             use_brain,
             wheels: wheels.clone(),
-            wheel_max_torque: 200.,
+            wheel_max_torque,
         }
     }
 }
@@ -122,7 +122,8 @@ pub fn car_start_system(
         let car_brain = CarBrain::clone_randomised(saved_brain.clone());
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation + Vec3::new(-15. + 0.5 * i as f32, 0., 14. - 0.5 * i as f32),
+            // config.translation + Vec3::new(0.5 * i as f32, 0., 0.5 * i as f32),
+            config.translation,
         )
         .with_rotation(config.quat);
 
@@ -222,7 +223,7 @@ pub fn car_start_system(
             //     material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
             //     ..default()
             // })
-            .insert(Car::new(&wheels, config.use_brain))
+            .insert(Car::new(&wheels, config.use_brain, config.max_torque))
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
             .insert(Friction::coefficient(config.friction))
@@ -232,11 +233,11 @@ pub fn car_start_system(
             .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
             .with_children(|children| {
-                let gl_car_scale = 1.7;
+                let scale = 1.7;
                 children
                     .spawn()
                     .insert_bundle(TransformBundle::from(
-                        Transform::from_scale(Vec3::new(gl_car_scale, gl_car_scale, gl_car_scale))
+                        Transform::from_scale(Vec3::new(scale, scale, scale))
                             .with_translation(Vec3::new(0., -0.75, 0.2))
                             .with_rotation(Quat::from_rotation_y(PI)),
                     ))
@@ -244,7 +245,7 @@ pub fn car_start_system(
                         gl_children.spawn_scene(car_gl.clone());
                     });
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass: Vec3::new(0., -0.1, 0.),
+                    local_center_of_mass: Vec3::new(0., -0.3, 0.),
                     mass: 1500.0,
                     principal_inertia: Vec3::new(10., 10., 10.),
                     ..default()

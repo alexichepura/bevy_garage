@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_rapier3d::prelude::*;
 use nalgebra::point;
+use rapier3d::math::Translation;
 use rapier3d::prelude::ColliderShape;
+use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
 
@@ -71,4 +73,23 @@ pub fn track_start_system(
 
 fn models() -> Vec<String> {
     vec!["assets/track.obj".to_string()]
+}
+
+pub fn track_decorations_start_system(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    config: Res<Config>,
+) {
+    let gl_object = asset_server.load("overheadLights.glb#Scene0");
+    let scale = 15.;
+    commands
+        .spawn()
+        .insert_bundle(TransformBundle::from(
+            Transform::from_scale(Vec3::new(scale, scale, scale))
+                .with_translation(Vec3::new(2., 0., 2.))
+                .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI * 0.95))),
+        ))
+        .with_children(|gl_children| {
+            gl_children.spawn_scene(gl_object);
+        });
 }

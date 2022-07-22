@@ -71,6 +71,7 @@ fn main() {
         .insert_resource(Config::default())
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
+        .add_startup_system(track_decorations_start_system)
         .add_startup_system(light_start_system)
         .add_startup_system(car_start_system)
         .add_startup_system(dash_speed_start_system)
