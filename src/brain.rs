@@ -6,7 +6,6 @@ use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
-use rapier3d::prelude::RigidBodyHandle;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -122,6 +121,7 @@ pub fn reset_pos_system(config: Res<Config>, mut q_car: Query<&mut Transform, Wi
         }
     }
 }
+#[allow(dead_code)]
 pub fn reset_spawn_system(
     mut q_car: Query<(Entity, &Car, &Transform), With<Car>>,
     mut commands: Commands,

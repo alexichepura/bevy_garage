@@ -11,8 +11,6 @@ mod mesh;
 mod plain;
 mod track;
 
-use std::f32::consts::PI;
-
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 // use bevy_inspector_egui::widgets::{InspectorQuery, InspectorQuerySingle};
 // use bevy_inspector_egui::{InspectorPlugin, WorldInspectorPlugin};
@@ -56,10 +54,10 @@ fn main() {
         .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // .add_plugin(RapierDebugRenderPlugin {
+        //     // | DebugRenderMode::COLLIDER_AABBS
         //     mode: DebugRenderMode::COLLIDER_SHAPES
         //         | DebugRenderMode::RIGID_BODY_AXES
         //         | DebugRenderMode::JOINTS
-        //         | DebugRenderMode::COLLIDER_AABBS
         //         | DebugRenderMode::CONTACTS
         //         | DebugRenderMode::SOLVER_CONTACTS,
         //     ..default()
@@ -73,7 +71,7 @@ fn main() {
         // APP
         .init_resource::<GamepadLobby>()
         .insert_resource(Config::default())
-        // .add_startup_system(plain_start_system)
+        .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(light_start_system)
         .add_startup_system(car_start_system)

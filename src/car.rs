@@ -63,7 +63,10 @@ pub fn car_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
+    asset_server: Res<AssetServer>,
 ) {
+    let car_gl = asset_server.load("car-race.glb#Scene0");
+
     let ray_point_half = 0.05;
     let ray_point_size = ray_point_half * 2.;
     let ray_point_mesh = Mesh::from(shape::Cube {
@@ -96,13 +99,18 @@ pub fn car_start_system(
         saved_brain = None;
     }
 
-    let wheel_r: f32 = 0.5;
-    let wheel_hw: f32 = 0.125;
+    let wheel_r: f32 = 0.4;
+    let wheel_hw: f32 = 0.15;
     let car_hw: f32 = 1.;
-    let car_hh: f32 = wheel_r / 2.;
-    let car_hl: f32 = 2.3;
+    let car_hh: f32 = 0.5;
+    let car_hl: f32 = 2.2;
+    let ride_height = 0.15;
 
-    let shift = Vec3::new(car_hw - wheel_hw - 0.01, -car_hh, car_hl - wheel_r - 0.2);
+    let shift = Vec3::new(
+        car_hw - wheel_hw - 0.01,
+        -car_hh + wheel_r - ride_height,
+        car_hl - wheel_r - 0.5,
+    );
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
         Vec3::new(-shift.x, shift.y, shift.z),
@@ -114,7 +122,7 @@ pub fn car_start_system(
         let car_brain = CarBrain::clone_randomised(saved_brain.clone());
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation + Vec3::new(-15. + 0.5 * i as f32, 0., 14. - 0.5 * i as f32),
+            config.translation + Vec3::new(-15. + 0.25 * i as f32, 0., 14. - 0.25 * i as f32),
         )
         .with_rotation(config.quat);
 
@@ -139,7 +147,7 @@ pub fn car_start_system(
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
             let wheel_pbr = PbrBundle {
-                mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(20))),
+                mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(50))),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
                 ..default()
             };
@@ -196,25 +204,24 @@ pub fn car_start_system(
             }
         }
 
-        let car_pbr = PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box {
-                max_x: car_hw,
-                min_x: -car_hw,
-                max_y: car_hh,
-                min_y: -car_hh,
-                max_z: car_hl,
-                min_z: -car_hl,
-            })),
-            material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
-            ..default()
-        };
         let car = commands
             .spawn()
             .insert(Sleeping::disabled())
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
-            .insert_bundle(car_pbr)
+            // .insert_bundle(PbrBundle {
+            //     mesh: meshes.add(Mesh::from(shape::Box {
+            //         max_x: car_hw,
+            //         min_x: -car_hw,
+            //         max_y: car_hh,
+            //         min_y: -car_hh,
+            //         max_z: car_hl,
+            //         min_z: -car_hl,
+            //     })),
+            //     material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
+            //     ..default()
+            // })
             .insert(Car::new(&wheels, config.use_brain))
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
@@ -225,6 +232,17 @@ pub fn car_start_system(
             .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
             .with_children(|children| {
+                let gl_car_scale = 1.7;
+                children
+                    .spawn()
+                    .insert_bundle(TransformBundle::from(
+                        Transform::from_scale(Vec3::new(gl_car_scale, gl_car_scale, gl_car_scale))
+                            .with_translation(Vec3::new(0., -0.75, 0.2))
+                            .with_rotation(Quat::from_rotation_y(PI)),
+                    ))
+                    .with_children(|gl_children| {
+                        gl_children.spawn_scene(car_gl.clone());
+                    });
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -0.1, 0.),
                     mass: 1500.0,

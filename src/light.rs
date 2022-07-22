@@ -14,27 +14,31 @@ pub fn light_start_system(mut commands: Commands) {
     //     ..default()
     // });
 
-    const HSIZE: f32 = 400.;
-    commands.spawn_bundle(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            illuminance: 80_000.,
-            shadow_projection: OrthographicProjection {
-                left: -HSIZE,
-                right: HSIZE,
-                bottom: -HSIZE,
-                top: HSIZE,
-                near: -HSIZE,
-                far: HSIZE,
+    const HSIZE: f32 = 10.;
+    for x in -5..5 {
+        for z in -5..5 {
+            commands.spawn_bundle(DirectionalLightBundle {
+                directional_light: DirectionalLight {
+                    illuminance: 20_000.,
+                    shadow_projection: OrthographicProjection {
+                        left: -HSIZE,
+                        right: HSIZE,
+                        bottom: -HSIZE,
+                        top: HSIZE,
+                        near: -HSIZE,
+                        far: HSIZE,
+                        ..default()
+                    },
+                    shadows_enabled: true,
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(HSIZE * x as f32, 2., HSIZE * z as f32),
+                    rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_8),
+                    ..default()
+                },
                 ..default()
-            },
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform {
-            translation: Vec3::new(0., 2., 0.),
-            rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_8),
-            ..default()
-        },
-        ..default()
-    });
+            });
+        }
+    }
 }
