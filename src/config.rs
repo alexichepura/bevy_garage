@@ -18,10 +18,10 @@ impl Default for Config {
             cars_count: 10,
             use_brain: true,
             max_torque: 400.,
-            translation: Vec3::new(0., 0.8, 0.),
+            translation: Vec3::new(0., 1., 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
-            restitution: 0.000001,
-            friction: 100000.,
+            restitution: 0.000_000_000_1,
+            friction: 1.,
             hid_car: None,
         }
     }
