@@ -211,18 +211,6 @@ pub fn car_start_system(
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
-            // .insert_bundle(PbrBundle {
-            //     mesh: meshes.add(Mesh::from(shape::Box {
-            //         max_x: car_hw,
-            //         min_x: -car_hw,
-            //         max_y: car_hh,
-            //         min_y: -car_hh,
-            //         max_z: car_hl,
-            //         min_z: -car_hl,
-            //     })),
-            //     material: materials.add(Color::rgba(0.3, 0.3, 0.9, 0.2).into()),
-            //     ..default()
-            // })
             .insert(Car::new(&wheels, config.use_brain, config.max_torque))
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())

@@ -44,7 +44,8 @@ fn main() {
         // .add_plugin(InspectableRapierPlugin)
         // CAMERA
         .add_startup_system(camera_start_system)
-        .add_system(camera_controller)
+        .add_system(camera_controller_system)
+        .add_system(camera_switch_system)
         // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
         //
         // DEBUG

@@ -62,31 +62,42 @@ impl Default for CameraController {
     }
 }
 
-// mut config: ResMut<Config>,
-pub fn camera_controller(
+pub fn camera_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
+    if input.just_pressed(KeyCode::Key1) {
+        // TODO
+        // config.camera_follow = Some();
+    }
+    if input.just_pressed(KeyCode::Key0) {
+        config.camera_follow = None;
+    }
+}
+
+pub fn camera_controller_system(
     time: Res<Time>,
     config: Res<Config>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
     mut transforms: ParamSet<(
         Query<(&mut Transform, &mut CameraController), With<Camera>>,
-        Query<(&Transform, &HID)>,
+        Query<&Transform, With<HID>>,
     )>,
 ) {
-    if let Some(_e) = config.camera_follow {
-        // TODO use e for entity instead of HID
+    if let Some(e) = config.camera_follow {
         let p1 = transforms.p1();
-        let (car_transform, _car) = p1.single();
-        let mut tf = Transform::from_matrix(car_transform.compute_matrix());
-        let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 5., -25.));
-        tf.translation.x = tf.translation.x + shift_vec.x;
-        tf.translation.y = tf.translation.y + shift_vec.y;
-        tf.translation.z = tf.translation.z + shift_vec.z;
-        tf.rotate(Quat::from_rotation_y(-PI));
-        tf.look_at(car_transform.translation + Vec3::new(0., 2., 0.), Vec3::Y);
-        for (mut cam_transform, _) in transforms.p0().iter_mut() {
-            *cam_transform = tf;
+        let car_transform = p1.get(e);
+        if let Ok(car_transform) = car_transform {
+            let mut tf = Transform::from_matrix(car_transform.compute_matrix());
+            let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 5., -25.));
+            tf.translation.x = tf.translation.x + shift_vec.x;
+            tf.translation.y = tf.translation.y + shift_vec.y;
+            tf.translation.z = tf.translation.z + shift_vec.z;
+            tf.rotate(Quat::from_rotation_y(-PI));
+            tf.look_at(car_transform.translation + Vec3::new(0., 2., 0.), Vec3::Y);
+            for (mut cam_transform, _) in transforms.p0().iter_mut() {
+                *cam_transform = tf;
+            }
         }
+
         return;
     }
     let dt = time.delta_seconds();
