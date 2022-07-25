@@ -1,8 +1,11 @@
+use crate::config::Config;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_rapier3d::prelude::*;
 use nalgebra::point;
+use rapier3d::math::Translation;
 use rapier3d::prelude::ColliderShape;
+use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
 
@@ -12,6 +15,7 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    config: Res<Config>,
 ) {
     let geoms = models();
     for obj_path in geoms.into_iter() {
@@ -47,24 +51,45 @@ pub fn track_start_system(
 
         let pbr = PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.3, 0.1, 0.3).into()),
+            material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
             ..default()
         };
 
         commands
             .spawn()
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(ContactForceEventThreshold(0.01))
             .insert_bundle(pbr)
             .insert(Name::new("Track"))
             .insert(collider)
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
-            .insert(Friction::coefficient(1000.))
-            .insert(Restitution::coefficient(0.01))
+            .insert(Friction::coefficient(config.friction))
+            .insert(Restitution::coefficient(config.restitution))
             .insert_bundle(TransformBundle::identity());
     }
 }
 
 fn models() -> Vec<String> {
     vec!["assets/track.obj".to_string()]
+}
+
+pub fn track_decorations_start_system(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    config: Res<Config>,
+) {
+    let gl_object = asset_server.load("overheadLights.glb#Scene0");
+    let scale = 15.;
+    commands
+        .spawn()
+        .insert_bundle(TransformBundle::from(
+            Transform::from_scale(Vec3::new(scale, scale, scale))
+                .with_translation(Vec3::new(2., 0., 2.))
+                .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI * 0.95))),
+        ))
+        .with_children(|gl_children| {
+            gl_children.spawn_scene(gl_object);
+        });
 }

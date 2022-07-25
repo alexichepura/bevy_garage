@@ -1,5 +1,5 @@
 use crate::car::*;
-use crate::track::STATIC_GROUP;
+use crate::config::Config;
 use bevy::prelude::*;
 use bevy_mod_picking::PickingEvent;
 use bevy_prototype_debug_lines::DebugLines;
@@ -112,12 +112,72 @@ impl Level {
         }
     }
 }
-#[derive(Component)]
-pub struct CarSensor;
+
+pub fn reset_pos_system(config: Res<Config>, mut q_car: Query<&mut Transform, With<Car>>) {
+    for mut transform in q_car.iter_mut() {
+        if transform.translation.y > 100. || transform.translation.y < 0. {
+            println!("car is out of bound, resetting transform");
+            *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
+        }
+    }
+}
+#[allow(dead_code)]
+pub fn reset_spawn_system(
+    mut q_car: Query<(Entity, &Car, &Transform), With<Car>>,
+    mut commands: Commands,
+) {
+    for (e, car, transform) in q_car.iter_mut() {
+        if transform.translation.y > 10. || transform.translation.y < 0. {
+            commands.entity(e).despawn_recursive();
+            for wheel_e in car.wheels.iter() {
+                commands.entity(*wheel_e).despawn_recursive();
+            }
+        }
+    }
+}
+
+pub fn reset_spawn_key_system(
+    config: Res<Config>,
+    keys: Res<Input<KeyCode>>,
+    mut set: ParamSet<(
+        Query<(&mut Transform, &mut Velocity, &Car)>,
+        Query<(&mut Velocity, &mut ExternalForce), With<Wheel>>,
+        Query<&mut Velocity>,
+    )>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        println!("KeyCode::Space, resetting transform");
+        for mut vel in set.p2().iter_mut() {
+            println!("Collider velocity cleanup");
+            vel.linvel = Vec3::ZERO;
+            vel.angvel = Vec3::ZERO;
+        }
+
+        let mut wheel_es: Vec<Entity> = vec![];
+        for (mut transform, mut vel, car) in set.p0().iter_mut() {
+            vel.linvel = Vec3::ZERO;
+            vel.angvel = Vec3::ZERO;
+            transform.rotation = config.quat;
+            transform.translation = config.translation;
+            car.wheels
+                .iter()
+                .for_each(|wheel_e| wheel_es.push(*wheel_e));
+        }
+        for wheel_e in wheel_es {
+            if let Ok((mut vel, mut force)) = set.p1().get_mut(wheel_e) {
+                println!("reset wheel velocity {wheel_e:?}");
+                force.force = Vec3::ZERO;
+                force.torque = Vec3::ZERO;
+                vel.linvel = Vec3::ZERO;
+                vel.angvel = Vec3::ZERO;
+            }
+        }
+    }
+}
 
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
-    car_init: Res<CarInit>,
+    config: Res<Config>,
     mut q_car: Query<(Entity, &mut Car, &mut CarBrain, &Children), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
@@ -129,9 +189,10 @@ pub fn car_brain_system(
     mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
-    // .groups(InteractionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP));
-    let e_hid_car = car_init.hid_car.unwrap();
+
+    let e_hid_car = config.hid_car.unwrap();
     for (e, mut car, mut brain, children) in q_car.iter_mut() {
+        let is_hid_car = e == e_hid_car;
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
@@ -146,11 +207,18 @@ pub fn car_brain_system(
 
         let mut inputs: Vec<f32> = vec![0.; 5];
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
-        let max_toi: f32 = 10.;
+        let max_toi: f32 = 20.;
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            lines.line(ray_pos, ray_dir_pos, 0.0);
+            if is_hid_car {
+                lines.line_colored(
+                    ray_pos,
+                    ray_dir_pos,
+                    0.0,
+                    Color::rgba(0.25, 0.88, 0.82, 0.1),
+                );
+            }
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,
@@ -163,6 +231,12 @@ pub fn car_brain_system(
                     hit_points[i] = intersection.point;
                     if toi > 0. {
                         inputs[i] = 1. - toi / max_toi;
+                        lines.line_colored(
+                            ray_pos,
+                            intersection.point,
+                            0.0,
+                            Color::rgba(0.98, 0.5, 0.45, 0.9),
+                        );
                     } else {
                         inputs[i] = 0.;
                     }
@@ -171,7 +245,30 @@ pub fn car_brain_system(
             );
         }
 
-        if e == e_hid_car {
+        for contact_pair in rapier_context.contacts_with(e) {
+            let other_collider = if contact_pair.collider1() == e {
+                contact_pair.collider2()
+            } else {
+                contact_pair.collider1()
+            };
+            println!("other_collider: {:?}", other_collider);
+            for manifold in contact_pair.manifolds() {
+                println!("Local-space contact normal: {}", manifold.local_n1());
+                println!("Local-space contact normal: {}", manifold.local_n2());
+                println!("World-space contact normal: {}", manifold.normal());
+                for contact_point in manifold.points() {
+                    println!("local contact point 1: {:?}", contact_point.local_p1());
+                    println!("contact distance: {:?}", contact_point.dist());
+                    println!("contact impulse: {}", contact_point.impulse());
+                    println!("friction impulse: {:?}", contact_point.tangent_impulse());
+                }
+                for solver_contact in manifold.solver_contacts() {
+                    println!("solver contact point: {:?}", solver_contact.point());
+                    println!("solver contact distance: {:?}", solver_contact.dist());
+                }
+            }
+        }
+        if is_hid_car {
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
                 trf.translation = origins[i];
             }
@@ -196,10 +293,18 @@ pub fn car_brain_system(
         brain.feed_forward(inputs.clone());
 
         let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
+        // println!(
+        //     "outputs {:?}",
+        //     outputs
+        //         .iter()
+        //         .map(|x| format!("{:.1} ", x))
+        //         .collect::<String>(),
+        // );
         let gas = outputs[0];
         let brake = outputs[1];
         let left = outputs[2];
         let right = outputs[3];
+        // println!("brain output gas {gas:.1} {brake:.1} {left:.1} {right:.1}");
         car.gas = gas;
         car.brake = brake;
         car.steering = -left + right;
@@ -209,21 +314,25 @@ pub fn car_brain_system(
 pub fn cars_pick_brain_mutate_restart(
     mut events: EventReader<PickingEvent>,
     mut cars: Query<(&mut CarBrain, &mut Transform, &mut Velocity, With<CarBrain>)>,
-    car_init: Res<CarInit>,
-    // wheels: Query<(&Velocity, &ExternalForce), With<Wheel>>,
+    config: Res<Config>,
 ) {
-    let mut selected_brain: Option<CarBrain> = None;
+    let mut selected_brain_option: Option<CarBrain> = None;
     for event in events.iter() {
         match event {
             PickingEvent::Clicked(e) => {
                 println!("clicked entity {:?}", e);
                 let (brain, _, _, _) = cars.get(*e).unwrap();
-                selected_brain = Some(brain.clone());
+                let mut selected_brain = brain.clone();
+                for level in selected_brain.levels.iter_mut() {
+                    level.inputs.fill(0.);
+                    level.outputs.fill(0.);
+                }
+                selected_brain_option = Some(selected_brain);
             }
             _ => (),
         }
     }
-    if let Some(selected_brain) = selected_brain {
+    if let Some(selected_brain) = selected_brain_option {
         let serialized = serde_json::to_string(&selected_brain).unwrap();
         println!("saving brain.json");
         fs::write("brain.json", serialized).expect("Unable to write brain.json");
@@ -232,8 +341,7 @@ pub fn cars_pick_brain_mutate_restart(
             let mut new_brain = selected_brain.clone();
             new_brain.mutate_random();
             *brain = new_brain;
-            *transform =
-                Transform::from_translation(car_init.translation).with_rotation(car_init.quat);
+            *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
             *velocity = Velocity::default();
         }
     }

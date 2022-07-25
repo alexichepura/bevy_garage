@@ -14,10 +14,10 @@ pub fn light_start_system(mut commands: Commands) {
     //     ..default()
     // });
 
-    const HSIZE: f32 = 400.;
+    const HSIZE: f32 = 200.;
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 80_000.,
+            illuminance: 100_000.,
             shadow_projection: OrthographicProjection {
                 left: -HSIZE,
                 right: HSIZE,
@@ -31,7 +31,7 @@ pub fn light_start_system(mut commands: Commands) {
             ..default()
         },
         transform: Transform {
-            translation: Vec3::new(0., 2., 0.),
+            translation: Vec3::new(0., 5., 0.),
             rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_8),
             ..default()
         },
