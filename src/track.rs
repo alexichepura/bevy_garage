@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_rapier3d::prelude::*;
 use nalgebra::point;
-use rapier3d::math::Translation;
 use rapier3d::prelude::ColliderShape;
 use std::f32::consts::PI;
 use std::fs::File;
