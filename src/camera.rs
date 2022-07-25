@@ -1,34 +1,14 @@
 use crate::car::HID;
+use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::render::camera::Camera3d;
 use core::f32::consts::PI;
 
-#[allow(dead_code)]
-pub fn camera_focus_update_system(
-    mut transforms: ParamSet<(
-        Query<(&mut Transform, &Camera, With<Camera3d>)>,
-        Query<(&Transform, &HID)>,
-    )>,
-) {
-    let p1 = transforms.p1();
-    let (car_transform, _car) = p1.single();
-    let mut tf = Transform::from_matrix(car_transform.compute_matrix());
-    let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 5., -25.));
-    tf.translation.x = tf.translation.x + shift_vec.x;
-    tf.translation.y = tf.translation.y + shift_vec.y;
-    tf.translation.z = tf.translation.z + shift_vec.z;
-    tf.rotate(Quat::from_rotation_y(-PI));
-    tf.look_at(car_transform.translation + Vec3::new(0., 2., 0.), Vec3::Y);
-    for (mut cam_transform, _, _) in transforms.p0().iter_mut() {
-        *cam_transform = tf;
-    }
-}
 pub fn camera_start_system(mut commands: Commands) {
     commands
         .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(Vec3::new(0., 5., 10.))
-                .looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_translation(Vec3::new(20., 10., -20.))
+                .looking_at(Vec3::Y * 5., Vec3::Y),
             ..default()
         })
         .insert(CameraController::default());
@@ -82,26 +62,45 @@ impl Default for CameraController {
     }
 }
 
+// mut config: ResMut<Config>,
 pub fn camera_controller(
     time: Res<Time>,
+    config: Res<Config>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Transform, &mut CameraController), With<Camera>>,
+    mut transforms: ParamSet<(
+        Query<(&mut Transform, &mut CameraController), With<Camera>>,
+        Query<(&Transform, &HID)>,
+    )>,
 ) {
+    if let Some(_e) = config.camera_follow {
+        // TODO use e for entity instead of HID
+        let p1 = transforms.p1();
+        let (car_transform, _car) = p1.single();
+        let mut tf = Transform::from_matrix(car_transform.compute_matrix());
+        let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 5., -25.));
+        tf.translation.x = tf.translation.x + shift_vec.x;
+        tf.translation.y = tf.translation.y + shift_vec.y;
+        tf.translation.z = tf.translation.z + shift_vec.z;
+        tf.rotate(Quat::from_rotation_y(-PI));
+        tf.look_at(car_transform.translation + Vec3::new(0., 2., 0.), Vec3::Y);
+        for (mut cam_transform, _) in transforms.p0().iter_mut() {
+            *cam_transform = tf;
+        }
+        return;
+    }
     let dt = time.delta_seconds();
 
-    // Handle mouse input
     let mut mouse_delta = Vec2::ZERO;
     for mouse_event in mouse_events.iter() {
         mouse_delta += mouse_event.delta;
     }
 
-    for (mut transform, mut options) in query.iter_mut() {
+    for (mut transform, mut options) in transforms.p0().iter_mut() {
         if !options.enabled {
             continue;
         }
 
-        // Handle key input
         let mut axis_input = Vec3::ZERO;
         if key_input.pressed(options.key_forward) {
             axis_input.z += 1.0;
@@ -122,7 +121,6 @@ pub fn camera_controller(
             axis_input.y -= 1.0;
         }
 
-        // Apply movement update
         if axis_input != Vec3::ZERO {
             let max_speed = if key_input.pressed(options.key_run) {
                 options.run_speed
@@ -144,7 +142,6 @@ pub fn camera_controller(
             + options.velocity.z * dt * forward;
 
         if mouse_delta != Vec2::ZERO {
-            // Apply look update
             let (pitch, yaw) = (
                 (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt).clamp(
                     -0.99 * std::f32::consts::FRAC_PI_2,
