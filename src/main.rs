@@ -13,7 +13,6 @@ mod track;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_mod_picking::*;
-use bevy_obj::ObjPlugin;
 use bevy_polyline::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
@@ -49,7 +48,6 @@ fn main() {
         //
         // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(ObjPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin {
             // | DebugRenderMode::COLLIDER_AABBS

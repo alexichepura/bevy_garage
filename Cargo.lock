@@ -531,21 +531,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_obj"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ec5999eb52b848744af3c58e9ac810a7fbc2fedce412d651d640ba4c352868d"
-dependencies = [
- "anyhow",
- "bevy_app",
- "bevy_asset",
- "bevy_render",
- "bevy_utils",
- "obj-rs",
- "thiserror",
-]
-
-[[package]]
 name = "bevy_pbr"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -606,7 +591,6 @@ dependencies = [
  "bevy",
  "bevy_atmosphere",
  "bevy_mod_picking",
- "bevy_obj",
  "bevy_polyline",
  "bevy_prototype_debug_lines",
  "bevy_rapier3d",
