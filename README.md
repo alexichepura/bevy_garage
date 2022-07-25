@@ -1,28 +1,18 @@
 # 3d car simulation in rust
 
-This project is developed with intention to learn: programming on rust, computer graphics, physics simulation, geometric algebra.
+Sideproject to learn rust, CG and NN. Track is scaled Nürburgring GP.
+<img width="1277" alt="screenshot" src="https://user-images.githubusercontent.com/5582266/180704095-2d4d6819-0b35-4653-b8e6-a3a50f793a9c.png">
 
-<img width="1279" alt="Screenshot" src="https://user-images.githubusercontent.com/5582266/177758958-3ac7a6da-b178-45bf-a9f4-edb25de3008e.jpg">
-
-Some of new concepts learned and used here:
-
-- physically based rendering (PBR)
-- entity component system (ECS)
-- trimesh
-- normal
-- vertex
-- joint
-- collider
-- quaternion
-
-Standing on the shoulders of giants:
-
+Giants:
 - [Rust](https://www.rust-lang.org)
 - [Bevy](https://bevyengine.org)
 - [Rapier3d](https://rapier.rs)
 - [Nalgebra](https://nalgebra.org)
 
 Car 3d models are from https://www.kenney.nl/assets/car-kit
+
+Old screenshot:
+<img width="1279" alt="old screenshot" src="https://user-images.githubusercontent.com/5582266/177758958-3ac7a6da-b178-45bf-a9f4-edb25de3008e.jpg">
 
 ## License
 
