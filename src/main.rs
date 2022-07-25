@@ -38,17 +38,9 @@ fn main() {
             dynamic: false,
             sky_radius: 1000.0,
         })
-        // .add_plugin(WorldInspectorPlugin::new())
-        // .add_plugin(InspectorPlugin::<InspectorQuerySingle<Entity, With<Car>>>::new())
-        // .add_plugin(InspectorPlugin::<InspectorQuery<Entity, With<Wheel>>>::new())
-        // .add_plugin(InspectableRapierPlugin)
-        // CAMERA
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
         .add_system(camera_switch_system)
-        // .add_system_to_stage(CoreStage::Update, camera_focus_update_system)
-        //
-        // DEBUG
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin {
@@ -65,8 +57,6 @@ fn main() {
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DebugCursorPickingPlugin)
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
-        //
-        // APP
         .init_resource::<GamepadLobby>()
         .insert_resource(Config::default())
         .add_startup_system(plain_start_system)
@@ -98,14 +88,6 @@ fn display_events_system(
     // }
 
     for force_e in e_force.iter() {
-        // ContactForceEvent {
-        //     collider1: todo!(),
-        //     collider2: todo!(),
-        //     total_force: todo!(),
-        //     total_force_magnitude: todo!(),
-        //     max_force_direction: todo!(),
-        //     max_force_magnitude: todo!(),
-        // };
         println!(
             "force: {:?} {:?}",
             force_e.total_force, force_e.total_force_magnitude
