@@ -45,6 +45,9 @@ pub fn trainer_system(
                 best_brain = Some(brain.clone());
             }
         }
+        if !best_brain.is_some() {
+            best_brain = trainer.best_brain.clone();
+        }
         if !record_updated {
             trainer.best_brain = best_brain.clone();
             let cloned_best: CarBrain = CarBrain::clone_randomised(best_brain).unwrap();
