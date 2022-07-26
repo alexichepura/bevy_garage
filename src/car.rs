@@ -1,4 +1,4 @@
-use crate::{brain::*, config::Config, mesh::*, track::*};
+use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
 use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
@@ -212,6 +212,7 @@ pub fn car_start_system(
             .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
             .insert(Car::new(&wheels, config.use_brain, config.max_torque))
+            .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
             .insert(Friction::coefficient(config.friction))

@@ -12,6 +12,11 @@ use std::io::BufReader;
 #[derive(Component)]
 pub struct Tracker;
 
+#[derive(Component)]
+pub struct CarProgress {
+    pub meters: f32,
+}
+
 pub fn track_polyline_start_system(
     mut commands: Commands,
     mut config: ResMut<Config>,
@@ -84,30 +89,16 @@ pub fn track_polyline_start_system(
         ..default()
     });
 }
-// pub fn progress_system(config: Res<Config>, q_car: Query<&Transform, With<HID>>) {
-//     if let Some(polyline) = &config.polyline {
-//         for transform in q_car.iter() {
-//             let tr = transform.translation;
-//             let point: Point3<Real> = Point3::new(tr.x, tr.y, tr.z);
-//             let progress = polyline.project_local_point_and_get_location(&point, true);
-//             println!("progress {progress:?}");
-//         }
-//     }
-// }
+
 pub fn progress_system(
     config: Res<Config>,
-    mut set: ParamSet<(
-        Query<&Transform, With<HID>>,
-        Query<&mut Transform, With<Tracker>>,
-    )>,
+    mut cars: Query<(&Transform, &mut CarProgress), With<HID>>,
 ) {
     if let Some(polyline) = &config.polyline {
-        let mut progress: Point3<Real> = Point3::new(0., 0., 0.);
-        for transform in set.p0().iter() {
+        for (transform, mut car_progress) in cars.iter_mut() {
             let tr = transform.translation;
             let point: Point3<Real> = Point3::new(tr.x, tr.y, tr.z);
             let point_location = polyline.project_local_point_and_get_location(&point, true);
-            progress = point_location.0.point;
             let (segment_i, segment_location) = point_location.1;
             let segment = polyline.segment(segment_i);
             match segment_location {
@@ -116,35 +107,18 @@ pub fn progress_system(
                 }
                 SegmentPointLocation::OnEdge(uv) => {
                     let m = uv[1] * segment.length();
-                    // println!("edge_{uv:?} {:?} {:?}", m, m - config.segment_m);
-                    // let meters = m + config.meters[segment_i as usize] - config.meters_shift;
                     let meters = match segment_i {
                         i if i >= config.segment_i => {
                             m + config.meters[segment_i as usize] - config.meters_shift
                         }
                         _ => {
-                            m + config.meters[segment_i as usize]
-                                - (config.meters_total - config.meters_shift)
+                            m + config.meters[segment_i as usize] + config.meters_total
+                                - config.meters_shift
                         }
                     };
-                    println!(
-                        "s_{segment_i:?} {:?} {:?} {:?} {:?}",
-                        m.round(),
-                        config.meters_shift.round(),
-                        config.meters[segment_i as usize].round(),
-                        meters.round()
-                    );
+                    car_progress.meters = meters;
                 }
             }
-
-            // println!("segment {segment:?} location {location:?}");
-        }
-
-        for mut transform in set.p1().iter_mut() {
-            transform.translation.x = progress.x;
-            transform.translation.y = 1.;
-            //   transform.translation.y = progress.point.y;
-            transform.translation.z = progress.z;
         }
     }
 }
