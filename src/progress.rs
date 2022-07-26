@@ -37,11 +37,6 @@ pub fn track_polyline_start_system(
     let point_location = polyline.project_local_point_and_get_location(&initial_point, true);
     let (segment_i, segment_location) = point_location.1;
     let segment = polyline.segment(segment_i);
-    let track_length: f32 = polyline
-        .clone()
-        .segments()
-        .fold(0., |acc, x| acc + x.length());
-    println!("track_length_{track_length:?}");
     config.polyline = Some(polyline.clone());
     config.segment_i = segment_i;
 
@@ -62,10 +57,7 @@ pub fn track_polyline_start_system(
     config.meters_shift = config.meters[config.segment_i as usize];
     config.meters_total = meters;
 
-    println!(
-        "s_{:?} sm_{:?} sh_{:?}",
-        config.segment_i, config.segment_m, config.meters_shift
-    );
+    println!("meters_{meters:.1} shift_{:.1}", config.meters_shift);
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
     commands
@@ -92,7 +84,7 @@ pub fn track_polyline_start_system(
 
 pub fn progress_system(
     config: Res<Config>,
-    mut cars: Query<(&Transform, &mut CarProgress), With<HID>>,
+    mut cars: Query<(&Transform, &mut CarProgress), With<CarProgress>>,
 ) {
     if let Some(polyline) = &config.polyline {
         for (transform, mut car_progress) in cars.iter_mut() {
@@ -103,7 +95,7 @@ pub fn progress_system(
             let segment = polyline.segment(segment_i);
             match segment_location {
                 SegmentPointLocation::OnVertex(i) => {
-                    println!("vertex_i_{i:?}");
+                    // println!("vertex_i_{i:?}");
                 }
                 SegmentPointLocation::OnEdge(uv) => {
                     let m = uv[1] * segment.length();

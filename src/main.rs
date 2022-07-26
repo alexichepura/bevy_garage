@@ -72,6 +72,7 @@ fn main() {
         .add_system(car_change_detection_system)
         .add_system(car_brain_system)
         .add_system(dash_fps_system)
+        .add_system(dash_leaderboard_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
