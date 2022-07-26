@@ -17,7 +17,7 @@ fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
 
 #[derive(Debug, Component, Clone, Serialize, Deserialize)]
 pub struct CarBrain {
-    levels: Vec<Level>,
+    pub levels: Vec<Level>,
 }
 impl CarBrain {
     pub fn new() -> CarBrain {
@@ -55,6 +55,8 @@ impl CarBrain {
             let mut levels: Vec<Level> = vec![];
             for level in brain.levels.iter() {
                 let mut cloned_level = level.clone();
+                cloned_level.inputs.fill(0.);
+                cloned_level.outputs.fill(0.);
                 for bias in cloned_level.biases.iter_mut() {
                     *bias = car_lerp(*bias, rng.gen::<f32>());
                 }
@@ -72,11 +74,11 @@ impl CarBrain {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Level {
-    inputs: Vec<f32>,
-    outputs: Vec<f32>,
-    weights: Vec<Vec<f32>>,
-    biases: Vec<f32>,
+pub struct Level {
+    pub inputs: Vec<f32>,
+    pub outputs: Vec<f32>,
+    pub weights: Vec<Vec<f32>>,
+    pub biases: Vec<f32>,
 }
 
 impl Level {

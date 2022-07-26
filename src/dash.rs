@@ -1,5 +1,6 @@
 use crate::car::*;
 use crate::progress::*;
+use crate::trainer::TrainerTiming;
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -25,6 +26,42 @@ pub struct Leaderboard;
 pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(20.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "trainer timine: ".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 16.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..default()
+            },
+            ..default()
+        })
+        .insert(TrainerTiming);
     commands
         .spawn_bundle(TextBundle {
             style: Style {

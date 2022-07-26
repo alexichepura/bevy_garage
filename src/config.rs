@@ -23,7 +23,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 4,
+            cars_count: 10,
             use_brain: true,
             max_torque: 400.,
             translation: Vec3::new(0., 1., 0.),

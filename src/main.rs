@@ -11,6 +11,7 @@ mod mesh;
 mod plain;
 mod progress;
 mod track;
+mod trainer;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_mod_picking::*;
@@ -30,10 +31,13 @@ use light::*;
 use plain::*;
 use progress::*;
 use track::*;
+use trainer::*;
 
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Config::default())
+        .insert_resource(Trainer::default())
         .add_plugins(DefaultPlugins)
         .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         .add_plugin(bevy_atmosphere::AtmospherePlugin {
@@ -60,7 +64,6 @@ fn main() {
         .add_plugin(DebugCursorPickingPlugin)
         .add_system_to_stage(CoreStage::PostUpdate, cars_pick_brain_mutate_restart)
         .init_resource::<GamepadLobby>()
-        .insert_resource(Config::default())
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
@@ -71,6 +74,7 @@ fn main() {
         .add_startup_system(dash_fps_start_system)
         .add_system(car_change_detection_system)
         .add_system(car_brain_system)
+        .add_system(trainer_system)
         .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
         .add_system(dash_speed_update_system)

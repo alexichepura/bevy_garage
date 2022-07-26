@@ -1,4 +1,3 @@
-use crate::car::HID;
 use crate::config::Config;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -94,7 +93,7 @@ pub fn progress_system(
             let (segment_i, segment_location) = point_location.1;
             let segment = polyline.segment(segment_i);
             match segment_location {
-                SegmentPointLocation::OnVertex(i) => {
+                SegmentPointLocation::OnVertex(_i) => {
                     // println!("vertex_i_{i:?}");
                 }
                 SegmentPointLocation::OnEdge(uv) => {
