@@ -32,14 +32,12 @@ pub fn track_polyline_start_system(
     let point_location = polyline.project_local_point_and_get_location(&initial_point, true);
     let (segment_i, segment_location) = point_location.1;
     let segment = polyline.segment(segment_i);
-    let length: f32 = polyline
+    let track_length: f32 = polyline
         .clone()
         .segments()
         .fold(0., |acc, x| acc + x.length());
-
-    println!("polyline segments lenght sum: {length:?}");
-
-    config.polyline = Some(polyline);
+    println!("track_length_{track_length:?}");
+    config.polyline = Some(polyline.clone());
     config.segment_i = segment_i;
 
     match segment_location {
@@ -51,7 +49,18 @@ pub fn track_polyline_start_system(
         }
     }
 
-    println!("segment_{:?} m_{:?}", config.segment_i, config.segment_m);
+    let mut meters = 0.;
+    for s in polyline.segments() {
+        config.meters.push(meters);
+        meters += s.length();
+    }
+    config.meters_shift = config.meters[config.segment_i as usize];
+    config.meters_total = meters;
+
+    println!(
+        "s_{:?} sm_{:?} sh_{:?}",
+        config.segment_i, config.segment_m, config.meters_shift
+    );
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
     commands
@@ -108,7 +117,23 @@ pub fn progress_system(
                 SegmentPointLocation::OnEdge(uv) => {
                     let m = uv[1] * segment.length();
                     // println!("edge_{uv:?} {:?} {:?}", m, m - config.segment_m);
-                    println!("segment_{segment_i:?} {:?}", m);
+                    // let meters = m + config.meters[segment_i as usize] - config.meters_shift;
+                    let meters = match segment_i {
+                        i if i >= config.segment_i => {
+                            m + config.meters[segment_i as usize] - config.meters_shift
+                        }
+                        _ => {
+                            m + config.meters[segment_i as usize]
+                                - (config.meters_total - config.meters_shift)
+                        }
+                    };
+                    println!(
+                        "s_{segment_i:?} {:?} {:?} {:?} {:?}",
+                        m.round(),
+                        config.meters_shift.round(),
+                        config.meters[segment_i as usize].round(),
+                        meters.round()
+                    );
                 }
             }
 

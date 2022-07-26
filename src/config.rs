@@ -15,6 +15,9 @@ pub struct Config {
     pub polyline: Option<Polyline>,
     pub segment_i: u32,
     pub segment_m: f32,
+    pub meters: Vec<f32>,
+    pub meters_shift: f32,
+    pub meters_total: f32,
 }
 
 impl Default for Config {
@@ -25,13 +28,16 @@ impl Default for Config {
             max_torque: 400.,
             translation: Vec3::new(0., 1., 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
-            restitution: 0.000_000_000_000_000_001,
-            friction: 10.,
+            restitution: 0.000_000_000_000_000_000_001,
+            friction: 1.,
             hid_car: None,
             camera_follow: None,
             polyline: None,
             segment_i: 0,
             segment_m: 0.,
+            meters: vec![],
+            meters_shift: 0.,
+            meters_total: 0.,
         }
     }
 }
