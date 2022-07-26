@@ -5,7 +5,7 @@ use std::f32::consts::PI;
 pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,
-    pub cars_count: i16,
+    pub cars_count: u16,
     pub use_brain: bool,
     pub friction: f32,
     pub restitution: f32,
@@ -13,6 +13,8 @@ pub struct Config {
     pub hid_car: Option<Entity>,
     pub camera_follow: Option<Entity>,
     pub polyline: Option<Polyline>,
+    pub segment_i: u32,
+    pub segment_m: f32,
 }
 
 impl Default for Config {
@@ -28,6 +30,8 @@ impl Default for Config {
             hid_car: None,
             camera_follow: None,
             polyline: None,
+            segment_i: 0,
+            segment_m: 0.,
         }
     }
 }

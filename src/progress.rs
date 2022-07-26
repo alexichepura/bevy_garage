@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::*;
 use nalgebra::Point3;
 use obj::*;
 use parry3d::query::PointQueryWithLocation;
-use rapier3d::prelude::{ColliderShape, Polyline};
+use rapier3d::prelude::{ColliderShape, Polyline, SegmentPointLocation};
 use std::fs::File;
 use std::io::BufReader;
 
@@ -28,7 +28,30 @@ pub fn track_polyline_start_system(
         .collect();
 
     let polyline = Polyline::new(vertices.clone(), None);
+    let initial_point = Point3::from(config.translation);
+    let point_location = polyline.project_local_point_and_get_location(&initial_point, true);
+    let (segment_i, segment_location) = point_location.1;
+    let segment = polyline.segment(segment_i);
+    let length: f32 = polyline
+        .clone()
+        .segments()
+        .fold(0., |acc, x| acc + x.length());
+
+    println!("polyline segments lenght sum: {length:?}");
+
     config.polyline = Some(polyline);
+    config.segment_i = segment_i;
+
+    match segment_location {
+        SegmentPointLocation::OnVertex(_i) => {
+            config.segment_m = 0.;
+        }
+        SegmentPointLocation::OnEdge(uv) => {
+            config.segment_m = uv[1] * segment.length();
+        }
+    }
+
+    println!("segment_{:?} m_{:?}", config.segment_i, config.segment_m);
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
     commands
@@ -74,9 +97,22 @@ pub fn progress_system(
         for transform in set.p0().iter() {
             let tr = transform.translation;
             let point: Point3<Real> = Point3::new(tr.x, tr.y, tr.z);
-            let result = polyline.project_local_point_and_get_location(&point, true);
-            progress = result.0.point;
-            println!("result {:?}", result.1);
+            let point_location = polyline.project_local_point_and_get_location(&point, true);
+            progress = point_location.0.point;
+            let (segment_i, segment_location) = point_location.1;
+            let segment = polyline.segment(segment_i);
+            match segment_location {
+                SegmentPointLocation::OnVertex(i) => {
+                    println!("vertex_i_{i:?}");
+                }
+                SegmentPointLocation::OnEdge(uv) => {
+                    let m = uv[1] * segment.length();
+                    // println!("edge_{uv:?} {:?} {:?}", m, m - config.segment_m);
+                    println!("segment_{segment_i:?} {:?}", m);
+                }
+            }
+
+            // println!("segment {segment:?} location {location:?}");
         }
 
         for mut transform in set.p1().iter_mut() {
