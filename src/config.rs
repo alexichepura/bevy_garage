@@ -18,8 +18,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 10,
-            use_brain: true,
+            cars_count: 1,
+            use_brain: false,
             max_torque: 400.,
             translation: Vec3::new(0., 1., 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
