@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rapier3d::prelude::Polyline;
 use std::f32::consts::PI;
 
 pub struct Config {
@@ -11,6 +12,7 @@ pub struct Config {
     pub max_torque: f32,
     pub hid_car: Option<Entity>,
     pub camera_follow: Option<Entity>,
+    pub polyline: Option<Polyline>,
 }
 
 impl Default for Config {
@@ -25,6 +27,7 @@ impl Default for Config {
             friction: 10.,
             hid_car: None,
             camera_follow: None,
+            polyline: None,
         }
     }
 }
