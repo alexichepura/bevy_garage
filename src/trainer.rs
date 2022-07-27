@@ -49,7 +49,7 @@ pub fn trainer_system(
     )>,
 ) {
     let seconds = time.seconds_since_startup();
-    let interval = 10.;
+    let interval = 5.;
     let seconds_diff = seconds - trainer.last_check_at;
 
     let mut q_trainer_timing = dash_set.p0();
@@ -73,7 +73,8 @@ pub fn trainer_system(
         trainer.best_brain = Some(best_brain.clone());
         let best_brain = best_brain.clone();
 
-        if progress.meters > trainer.record {
+        let minimal_progress_delta = 1.;
+        if progress.meters > (trainer.record + minimal_progress_delta) {
             println!("distance record {:.1}", progress.meters);
             trainer.record = progress.meters;
         } else {
@@ -89,7 +90,12 @@ pub fn trainer_system(
             }
             println!("new generation {:?}", trainer.generation);
 
-            let serialized = serde_json::to_string(&best_brain).unwrap();
+            let mut brain_dump = best_brain.clone();
+            for level in brain_dump.levels.iter_mut() {
+                level.inputs.fill(0.);
+                level.outputs.fill(0.);
+            }
+            let serialized = serde_json::to_string(&brain_dump).unwrap();
             println!("saving brain.json");
             fs::write("brain.json", serialized).expect("Unable to write brain.json");
         }
