@@ -38,13 +38,16 @@ pub fn trainer_system(
         ),
         With<CarProgress>,
     >,
-    mut q_trainer_timing: Query<&mut Text, With<TrainerTimingText>>,
-    mut q_record_distance_text: Query<&mut Text, With<TrainerRecordDistanceText>>,
+    mut dash_set: ParamSet<(
+        Query<&mut Text, With<TrainerTimingText>>,
+        Query<&mut Text, With<TrainerRecordDistanceText>>,
+    )>,
 ) {
     let seconds = time.seconds_since_startup();
     let interval = 10.;
     let seconds_diff = seconds - trainer.last_check_at;
 
+    let mut q_trainer_timing = dash_set.p0();
     let mut text = q_trainer_timing.single_mut();
     let round_seconds = ((interval - seconds_diff) * 10.).round() / 10.;
     text.sections[1].value = round_seconds.to_string();
@@ -81,6 +84,7 @@ pub fn trainer_system(
         }
     }
 
+    let mut q_record_distance_text = dash_set.p1();
     let mut record_text = q_record_distance_text.single_mut();
     record_text.sections[1].value = trainer.record.round().to_string();
 }
