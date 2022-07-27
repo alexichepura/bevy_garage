@@ -1,5 +1,6 @@
 use crate::{brain::*, config::Config, progress::*};
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::Velocity;
 
 pub struct Trainer {
     pub record: f32,
@@ -24,7 +25,15 @@ pub fn trainer_system(
     config: Res<Config>,
     mut trainer: ResMut<Trainer>,
     time: Res<Time>,
-    mut cars: Query<(&mut CarProgress, &mut CarBrain, &mut Transform), With<CarProgress>>,
+    mut cars: Query<
+        (
+            &mut CarProgress,
+            &mut CarBrain,
+            &mut Transform,
+            &mut Velocity,
+        ),
+        With<CarProgress>,
+    >,
     mut q_trainer_timing: Query<&mut Text, With<TrainerTiming>>,
 ) {
     let seconds = time.seconds_since_startup();
@@ -32,13 +41,14 @@ pub fn trainer_system(
     let seconds_diff = seconds - trainer.last_check_at;
 
     let mut text = q_trainer_timing.single_mut();
-    text.sections[1].value = seconds_diff.to_string();
+    let round_seconds = ((interval - seconds_diff) * 10.).round() / 10.;
+    text.sections[1].value = round_seconds.to_string();
 
     if seconds_diff > interval {
         trainer.last_check_at = seconds;
         let mut record_updated = false;
         let mut best_brain: Option<CarBrain> = None;
-        for (progress, brain, _) in cars.iter() {
+        for (progress, brain, _, _) in cars.iter() {
             if progress.meters > trainer.record {
                 trainer.record = progress.meters;
                 record_updated = true;
@@ -46,15 +56,18 @@ pub fn trainer_system(
             }
         }
         if !best_brain.is_some() {
+            println!("trainer.best_brain.clone()");
             best_brain = trainer.best_brain.clone();
         }
         if !record_updated {
             trainer.best_brain = best_brain.clone();
             let cloned_best: CarBrain = CarBrain::clone_randomised(best_brain).unwrap();
-            for (_progress, mut brain, mut transform) in cars.iter_mut() {
+            for (_progress, mut brain, mut transform, mut velocity) in cars.iter_mut() {
                 brain.levels = cloned_best.levels.clone();
                 transform.rotation = config.quat;
                 transform.translation = config.translation;
+                velocity.linvel = Vec3::ZERO;
+                velocity.angvel = Vec3::ZERO;
             }
         }
     }

@@ -41,7 +41,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             text: Text {
                 sections: vec![
                     TextSection {
-                        value: "trainer timine: ".to_string(),
+                        value: "trainer timing: ".to_string(),
                         style: TextStyle {
                             font: bold.clone(),
                             font_size: 16.0,

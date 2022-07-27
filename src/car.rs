@@ -251,7 +251,7 @@ pub fn car_start_system(
                     .insert(collider_mass);
                 for a in -2..3 {
                     let far_quat = Quat::from_rotation_y(-a as f32 * PI / 16.);
-                    let dir = Vec3::Z * 20.;
+                    let dir = Vec3::Z * config.max_toi;
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
                     children
                         .spawn()

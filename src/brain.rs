@@ -143,7 +143,7 @@ pub fn reset_spawn_key_system(
     keys: Res<Input<KeyCode>>,
     mut set: ParamSet<(
         Query<(&mut Transform, &mut Velocity, &Car)>,
-        Query<(&mut Velocity, &mut ExternalForce), With<Wheel>>,
+        Query<(&mut Transform, &mut Velocity, &mut ExternalForce), With<Wheel>>,
         Query<&mut Velocity>,
     )>,
 ) {
@@ -166,12 +166,14 @@ pub fn reset_spawn_key_system(
                 .for_each(|wheel_e| wheel_es.push(*wheel_e));
         }
         for wheel_e in wheel_es {
-            if let Ok((mut vel, mut force)) = set.p1().get_mut(wheel_e) {
-                println!("reset wheel velocity {wheel_e:?}");
+            if let Ok((mut transform, mut vel, mut force)) = set.p1().get_mut(wheel_e) {
+                println!("reset wheel {wheel_e:?}");
                 force.force = Vec3::ZERO;
                 force.torque = Vec3::ZERO;
                 vel.linvel = Vec3::ZERO;
                 vel.angvel = Vec3::ZERO;
+                transform.rotation = Quat::IDENTITY;
+                transform.translation = Vec3::ZERO;
             }
         }
     }
@@ -209,7 +211,6 @@ pub fn car_brain_system(
 
         let mut inputs: Vec<f32> = vec![0.; 5];
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
-        let max_toi: f32 = 20.;
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
@@ -225,14 +226,14 @@ pub fn car_brain_system(
             rapier_context.intersections_with_ray(
                 ray_pos,
                 ray_dir,
-                max_toi,
+                config.max_toi,
                 solid,
                 sensor_filter,
                 |_entity, intersection| {
                     let toi = intersection.toi;
                     hit_points[i] = intersection.point;
                     if toi > 0. {
-                        inputs[i] = 1. - toi / max_toi;
+                        inputs[i] = 1. - toi / config.max_toi;
                         lines.line_colored(
                             ray_pos,
                             intersection.point,

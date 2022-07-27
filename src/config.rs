@@ -10,6 +10,7 @@ pub struct Config {
     pub friction: f32,
     pub restitution: f32,
     pub max_torque: f32,
+    pub max_toi: f32,
     pub hid_car: Option<Entity>,
     pub camera_follow: Option<Entity>,
     pub polyline: Option<Polyline>,
@@ -23,10 +24,11 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 10,
+            cars_count: 2,
             use_brain: true,
             max_torque: 400.,
-            translation: Vec3::new(0., 1., 0.),
+            max_toi: 50.,
+            translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
             restitution: 0.000_000_000_001,
             friction: 1.,
