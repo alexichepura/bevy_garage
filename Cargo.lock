@@ -596,6 +596,7 @@ dependencies = [
  "bevy_rapier3d",
  "nalgebra",
  "obj-rs",
+ "parry3d",
  "rand",
  "rapier3d",
  "serde",

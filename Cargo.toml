@@ -17,6 +17,7 @@ bevy = { version = "0.7.0" }
 obj-rs = { version =  "0.7", default-features = false }
 bevy_mod_picking = "0.7"
 nalgebra = "^0.31.0"
+parry3d = "0.9"
 rand = "0.8"
 bevy_polyline = "0.2"
 bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }

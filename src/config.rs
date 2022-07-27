@@ -1,30 +1,45 @@
 use bevy::prelude::*;
+use rapier3d::prelude::Polyline;
 use std::f32::consts::PI;
 
 pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,
-    pub cars_count: i16,
+    pub cars_count: u16,
     pub use_brain: bool,
     pub friction: f32,
     pub restitution: f32,
     pub max_torque: f32,
+    pub max_toi: f32,
     pub hid_car: Option<Entity>,
     pub camera_follow: Option<Entity>,
+    pub polyline: Option<Polyline>,
+    pub segment_i: u32,
+    pub segment_m: f32,
+    pub meters: Vec<f32>,
+    pub meters_shift: f32,
+    pub meters_total: f32,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 10,
+            cars_count: 20,
             use_brain: true,
-            max_torque: 400.,
-            translation: Vec3::new(0., 1., 0.),
+            max_torque: 800.,
+            max_toi: 50.,
+            translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
-            restitution: 0.000_000_000_000_000_001,
-            friction: 10.,
+            restitution: 0.001,
+            friction: 0.7,
             hid_car: None,
             camera_follow: None,
+            polyline: None,
+            segment_i: 0,
+            segment_m: 0.,
+            meters: vec![],
+            meters_shift: 0.,
+            meters_total: 0.,
         }
     }
 }

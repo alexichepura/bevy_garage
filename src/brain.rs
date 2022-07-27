@@ -17,7 +17,7 @@ fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
 
 #[derive(Debug, Component, Clone, Serialize, Deserialize)]
 pub struct CarBrain {
-    levels: Vec<Level>,
+    pub levels: Vec<Level>,
 }
 impl CarBrain {
     pub fn new() -> CarBrain {
@@ -49,34 +49,33 @@ impl CarBrain {
         }
     }
 
-    pub fn clone_randomised(brain: Option<CarBrain>) -> Option<CarBrain> {
-        if let Some(brain) = brain {
-            let mut rng = rand::thread_rng();
-            let mut levels: Vec<Level> = vec![];
-            for level in brain.levels.iter() {
-                let mut cloned_level = level.clone();
-                for bias in cloned_level.biases.iter_mut() {
-                    *bias = car_lerp(*bias, rng.gen::<f32>());
-                }
-                for weighti in cloned_level.weights.iter_mut() {
-                    for weight in weighti.iter_mut() {
-                        *weight = car_lerp(*weight, rng.gen::<f32>());
-                    }
-                }
-                levels.push(cloned_level)
+    pub fn clone_randomised(brain: &CarBrain) -> CarBrain {
+        let mut rng = rand::thread_rng();
+        let mut levels: Vec<Level> = vec![];
+        for level in brain.levels.iter() {
+            let mut cloned_level = level.clone();
+            cloned_level.inputs.fill(0.);
+            cloned_level.outputs.fill(0.);
+            for bias in cloned_level.biases.iter_mut() {
+                *bias = car_lerp(*bias, rng.gen::<f32>());
             }
-            return Some(CarBrain { levels });
+            for weighti in cloned_level.weights.iter_mut() {
+                for weight in weighti.iter_mut() {
+                    *weight = car_lerp(*weight, rng.gen::<f32>());
+                }
+            }
+            levels.push(cloned_level)
         }
-        None
+        return CarBrain { levels };
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Level {
-    inputs: Vec<f32>,
-    outputs: Vec<f32>,
-    weights: Vec<Vec<f32>>,
-    biases: Vec<f32>,
+pub struct Level {
+    pub inputs: Vec<f32>,
+    pub outputs: Vec<f32>,
+    pub weights: Vec<Vec<f32>>,
+    pub biases: Vec<f32>,
 }
 
 impl Level {
@@ -141,7 +140,7 @@ pub fn reset_spawn_key_system(
     keys: Res<Input<KeyCode>>,
     mut set: ParamSet<(
         Query<(&mut Transform, &mut Velocity, &Car)>,
-        Query<(&mut Velocity, &mut ExternalForce), With<Wheel>>,
+        Query<(&mut Transform, &mut Velocity, &mut ExternalForce), With<Wheel>>,
         Query<&mut Velocity>,
     )>,
 ) {
@@ -164,12 +163,14 @@ pub fn reset_spawn_key_system(
                 .for_each(|wheel_e| wheel_es.push(*wheel_e));
         }
         for wheel_e in wheel_es {
-            if let Ok((mut vel, mut force)) = set.p1().get_mut(wheel_e) {
-                println!("reset wheel velocity {wheel_e:?}");
+            if let Ok((mut transform, mut vel, mut force)) = set.p1().get_mut(wheel_e) {
+                println!("reset wheel {wheel_e:?}");
                 force.force = Vec3::ZERO;
                 force.torque = Vec3::ZERO;
                 vel.linvel = Vec3::ZERO;
                 vel.angvel = Vec3::ZERO;
+                transform.rotation = Quat::IDENTITY;
+                transform.translation = Vec3::ZERO;
             }
         }
     }
@@ -207,7 +208,6 @@ pub fn car_brain_system(
 
         let mut inputs: Vec<f32> = vec![0.; 5];
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
-        let max_toi: f32 = 20.;
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
@@ -223,14 +223,14 @@ pub fn car_brain_system(
             rapier_context.intersections_with_ray(
                 ray_pos,
                 ray_dir,
-                max_toi,
+                config.max_toi,
                 solid,
                 sensor_filter,
                 |_entity, intersection| {
                     let toi = intersection.toi;
                     hit_points[i] = intersection.point;
                     if toi > 0. {
-                        inputs[i] = 1. - toi / max_toi;
+                        inputs[i] = 1. - toi / config.max_toi;
                         lines.line_colored(
                             ray_pos,
                             intersection.point,

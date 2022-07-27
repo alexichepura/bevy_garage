@@ -1,4 +1,4 @@
-use crate::car::*;
+use crate::{car::*, progress::*, trainer::*};
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -18,9 +18,156 @@ pub struct WheelsWText;
 #[derive(Component)]
 pub struct WheelsTorqueText;
 
+#[derive(Component)]
+pub struct Leaderboard;
+
 pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(60.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "generation: ".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 16.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..default()
+            },
+            ..default()
+        })
+        .insert(TrainerGenerationText);
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(20.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "distance record: ".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 16.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..default()
+            },
+            ..default()
+        })
+        .insert(TrainerRecordDistanceText);
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(40.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "trainer timer: ".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 16.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..default()
+            },
+            ..default()
+        })
+        .insert(TrainerTimingText);
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(2.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "leaderboard: ".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 16.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Leaderboard);
     commands
         .spawn_bundle(TextBundle {
             style: Style {
@@ -59,6 +206,17 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(FpsText);
 }
 
+pub fn dash_leaderboard_system(
+    q_cars: Query<&CarProgress, With<CarProgress>>,
+    mut q_leaderboard: Query<&mut Text, With<Leaderboard>>,
+) {
+    let mut text_string: String = "".to_string();
+    for progress in q_cars.iter() {
+        text_string = text_string + &progress.meters.round().to_string() + " ";
+    }
+    let mut text = q_leaderboard.single_mut();
+    text.sections[1].value = text_string;
+}
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {

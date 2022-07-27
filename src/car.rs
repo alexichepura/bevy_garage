@@ -1,4 +1,4 @@
-use crate::{brain::*, config::Config, mesh::*, track::*};
+use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
 use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
@@ -119,7 +119,10 @@ pub fn car_start_system(
     ];
 
     for i in 0..config.cars_count {
-        let car_brain = CarBrain::clone_randomised(saved_brain.clone());
+        let car_brain = match saved_brain {
+            Some(ref b) => Some(CarBrain::clone_randomised(&b)),
+            None => None,
+        };
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
             // config.translation + Vec3::new(0.5 * i as f32, 0., 0.5 * i as f32),
@@ -180,8 +183,14 @@ pub fn car_start_system(
                 .insert(Velocity::zero())
                 .insert(Collider::from(wheel_shape))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(wheel.friction))
-                .insert(Restitution::coefficient(wheel.restitution))
+                .insert(Friction {
+                    coefficient: wheel.friction,
+                    combine_rule: CoefficientCombineRule::Max,
+                })
+                .insert(Restitution {
+                    coefficient: wheel.restitution,
+                    combine_rule: CoefficientCombineRule::Min,
+                })
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
@@ -212,6 +221,7 @@ pub fn car_start_system(
             .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
             .insert(Car::new(&wheels, config.use_brain, config.max_torque))
+            .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
             .insert(Friction::coefficient(config.friction))
@@ -250,7 +260,7 @@ pub fn car_start_system(
                     .insert(collider_mass);
                 for a in -2..3 {
                     let far_quat = Quat::from_rotation_y(-a as f32 * PI / 16.);
-                    let dir = Vec3::Z * 20.;
+                    let dir = Vec3::Z * config.max_toi;
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
                     children
                         .spawn()
