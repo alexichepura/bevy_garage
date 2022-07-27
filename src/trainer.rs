@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::Velocity;
 
 pub struct Trainer {
+    pub generation: i32,
     pub record: f32,
     pub last_check_at: f64,
     pub best_brain: Option<CarBrain>,
@@ -13,6 +14,7 @@ pub struct Trainer {
 impl Default for Trainer {
     fn default() -> Self {
         Self {
+            generation: 0,
             record: 0.,
             last_check_at: 0.,
             best_brain: None,
@@ -24,6 +26,8 @@ impl Default for Trainer {
 pub struct TrainerTimingText;
 #[derive(Component)]
 pub struct TrainerRecordDistanceText;
+#[derive(Component)]
+pub struct TrainerGenerationText;
 
 pub fn trainer_system(
     config: Res<Config>,
@@ -41,6 +45,7 @@ pub fn trainer_system(
     mut dash_set: ParamSet<(
         Query<&mut Text, With<TrainerTimingText>>,
         Query<&mut Text, With<TrainerRecordDistanceText>>,
+        Query<&mut Text, With<TrainerGenerationText>>,
     )>,
 ) {
     let seconds = time.seconds_since_startup();
@@ -59,11 +64,6 @@ pub fn trainer_system(
             .iter()
             .max_by(|a, b| {
                 if a.0.meters > b.0.meters {
-                    // if a.0.meters - trainer.record > 1000. {
-                    //     // prevents records by moving backwards
-                    //     println!("distance antirecord {:.1}", a.0.meters);
-                    //     return Ordering::Less;
-                    // }
                     return Ordering::Greater;
                 }
                 Ordering::Less
@@ -76,20 +76,25 @@ pub fn trainer_system(
             println!("distance record {:.1}", progress.meters);
             trainer.record = progress.meters;
         } else {
-            println!("no distance updates {:.1}", trainer.record);
+            trainer.generation += 1;
             trainer.record = 0.;
-            let cloned_best: CarBrain = CarBrain::clone_randomised(&brain);
             for (_progress, mut brain, mut transform, mut velocity) in cars.iter_mut() {
+                let cloned_best: CarBrain = CarBrain::clone_randomised(&brain);
                 brain.levels = cloned_best.levels.clone();
                 transform.rotation = config.quat;
                 transform.translation = config.translation;
                 velocity.linvel = Vec3::ZERO;
                 velocity.angvel = Vec3::ZERO;
             }
+            println!("new generation {:?}", trainer.generation);
         }
     }
 
     let mut q_record_distance_text = dash_set.p1();
     let mut record_text = q_record_distance_text.single_mut();
     record_text.sections[1].value = ((trainer.record * 10.).round() / 10.).to_string();
+
+    let mut q_generation_text = dash_set.p2();
+    let mut generation_text = q_generation_text.single_mut();
+    generation_text.sections[1].value = trainer.generation.to_string();
 }

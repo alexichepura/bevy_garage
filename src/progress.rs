@@ -108,7 +108,7 @@ pub fn progress_system(
                         }
                     };
                     if meters - car_progress.meters > 1000. {
-                        println!("car antiprogress {:.1}", car_progress.meters);
+                        // println!("car antiprogress {:.1}", car_progress.meters);
                         car_progress.meters = -(config.meters_total - meters);
                     } else {
                         car_progress.meters = meters;
