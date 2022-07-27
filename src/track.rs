@@ -18,7 +18,7 @@ pub fn track_start_system(
     config: Res<Config>,
 ) {
     let geoms = models();
-    for obj_path in geoms.into_iter() {
+    for (i, obj_path) in geoms.into_iter().enumerate() {
         let input = BufReader::new(File::open(obj_path).unwrap());
         let model = obj::raw::parse_obj(input).unwrap();
         let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
@@ -55,6 +55,11 @@ pub fn track_start_system(
             ..default()
         };
 
+        let h = match i {
+            0 => 0.1,
+            _ => 0.,
+        };
+
         commands
             .spawn()
             .insert(ActiveEvents::COLLISION_EVENTS)
@@ -67,12 +72,19 @@ pub fn track_start_system(
             .insert(Velocity::zero())
             .insert(Friction::coefficient(config.friction))
             .insert(Restitution::coefficient(config.restitution))
-            .insert_bundle(TransformBundle::identity());
+            .insert_bundle(TransformBundle::from_transform(Transform {
+                translation: Vec3::new(0., h, 0.),
+                ..default()
+            }));
     }
 }
 
 fn models() -> Vec<String> {
-    vec!["assets/track.obj".to_string()]
+    vec![
+        "assets/road.obj".to_string(),
+        "assets/border-left.obj".to_string(),
+        "assets/border-right.obj".to_string(),
+    ]
 }
 
 pub fn track_decorations_start_system(

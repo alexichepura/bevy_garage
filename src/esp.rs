@@ -39,11 +39,11 @@ pub fn car_change_detection_system(
             }
         }
         let torque_vec = Vec3::new(0., torque, 0.);
-        let torque_speed_x: f32 = match car_mps / 30. {
+        let torque_speed_x: f32 = match car_mps / 40. {
             x if x >= 1. => 0.,
             x => 1. - x,
         };
-        let steering_speed_x: f32 = match car_mps / 10. {
+        let steering_speed_x: f32 = match car_mps / 20. {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
