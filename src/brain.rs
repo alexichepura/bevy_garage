@@ -114,26 +114,26 @@ impl Level {
 
 pub fn reset_pos_system(config: Res<Config>, mut q_car: Query<&mut Transform, With<Car>>) {
     for mut transform in q_car.iter_mut() {
-        if transform.translation.y > 100. || transform.translation.y < 0. {
+        if transform.translation.y > 500. || transform.translation.y < 0. {
             println!("car is out of bound, resetting transform");
             *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
         }
     }
 }
-#[allow(dead_code)]
-pub fn reset_spawn_system(
-    mut q_car: Query<(Entity, &Car, &Transform), With<Car>>,
-    mut commands: Commands,
-) {
-    for (e, car, transform) in q_car.iter_mut() {
-        if transform.translation.y > 10. || transform.translation.y < 0. {
-            commands.entity(e).despawn_recursive();
-            for wheel_e in car.wheels.iter() {
-                commands.entity(*wheel_e).despawn_recursive();
-            }
-        }
-    }
-}
+// #[allow(dead_code)]
+// pub fn reset_spawn_system(
+//     mut q_car: Query<(Entity, &Car, &Transform), With<Car>>,
+//     mut commands: Commands,
+// ) {
+//     for (e, car, transform) in q_car.iter_mut() {
+//         if transform.translation.y > 10. || transform.translation.y < 0. {
+//             commands.entity(e).despawn_recursive();
+//             for wheel_e in car.wheels.iter() {
+//                 commands.entity(*wheel_e).despawn_recursive();
+//             }
+//         }
+//     }
+// }
 
 pub fn reset_spawn_key_system(
     config: Res<Config>,
