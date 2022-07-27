@@ -59,6 +59,11 @@ pub fn trainer_system(
             .iter()
             .max_by(|a, b| {
                 if a.0.meters > b.0.meters {
+                    // if a.0.meters - trainer.record > 1000. {
+                    //     // prevents records by moving backwards
+                    //     println!("distance antirecord {:.1}", a.0.meters);
+                    //     return Ordering::Less;
+                    // }
                     return Ordering::Greater;
                 }
                 Ordering::Less
@@ -68,7 +73,7 @@ pub fn trainer_system(
         trainer.best_brain = Some(brain.clone());
 
         if progress.meters > trainer.record {
-            println!("new distance record {:.1}", progress.meters);
+            println!("distance record {:.1}", progress.meters);
             trainer.record = progress.meters;
         } else {
             println!("no distance updates {:.1}", trainer.record);
@@ -86,5 +91,5 @@ pub fn trainer_system(
 
     let mut q_record_distance_text = dash_set.p1();
     let mut record_text = q_record_distance_text.single_mut();
-    record_text.sections[1].value = trainer.record.round().to_string();
+    record_text.sections[1].value = ((trainer.record * 10.).round() / 10.).to_string();
 }

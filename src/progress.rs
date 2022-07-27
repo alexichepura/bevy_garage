@@ -56,7 +56,7 @@ pub fn track_polyline_start_system(
     config.meters_shift = config.meters[config.segment_i as usize];
     config.meters_total = meters;
 
-    println!("meters_{meters:.1} shift_{:.1}", config.meters_shift);
+    println!("meters: {meters:.1} shift: {:.1}", config.meters_shift);
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
     commands
@@ -107,7 +107,12 @@ pub fn progress_system(
                                 - config.meters_shift
                         }
                     };
-                    car_progress.meters = meters;
+                    if meters - car_progress.meters > 1000. {
+                        println!("car antiprogress {:.1}", car_progress.meters);
+                        car_progress.meters = -(config.meters_total - meters);
+                    } else {
+                        car_progress.meters = meters;
+                    }
                 }
             }
         }
