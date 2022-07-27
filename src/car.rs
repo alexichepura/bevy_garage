@@ -183,8 +183,14 @@ pub fn car_start_system(
                 .insert(Velocity::zero())
                 .insert(Collider::from(wheel_shape))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(wheel.friction))
-                .insert(Restitution::coefficient(wheel.restitution))
+                .insert(Friction {
+                    coefficient: wheel.friction,
+                    combine_rule: CoefficientCombineRule::Max,
+                })
+                .insert(Restitution {
+                    coefficient: wheel.restitution,
+                    combine_rule: CoefficientCombineRule::Min,
+                })
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
