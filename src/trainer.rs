@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::{brain::*, config::Config, progress::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::Velocity;
@@ -19,7 +21,9 @@ impl Default for Trainer {
 }
 
 #[derive(Component)]
-pub struct TrainerTiming;
+pub struct TrainerTimingText;
+#[derive(Component)]
+pub struct TrainerRecordDistanceText;
 
 pub fn trainer_system(
     config: Res<Config>,
@@ -34,7 +38,8 @@ pub fn trainer_system(
         ),
         With<CarProgress>,
     >,
-    mut q_trainer_timing: Query<&mut Text, With<TrainerTiming>>,
+    mut q_trainer_timing: Query<&mut Text, With<TrainerTimingText>>,
+    mut q_record_distance_text: Query<&mut Text, With<TrainerRecordDistanceText>>,
 ) {
     let seconds = time.seconds_since_startup();
     let interval = 10.;
@@ -46,22 +51,26 @@ pub fn trainer_system(
 
     if seconds_diff > interval {
         trainer.last_check_at = seconds;
-        let mut record_updated = false;
-        let mut best_brain: Option<CarBrain> = None;
-        for (progress, brain, _, _) in cars.iter() {
-            if progress.meters > trainer.record {
-                trainer.record = progress.meters;
-                record_updated = true;
-                best_brain = Some(brain.clone());
-            }
-        }
-        if !best_brain.is_some() {
-            println!("trainer.best_brain.clone()");
-            best_brain = trainer.best_brain.clone();
-        }
-        if !record_updated {
-            trainer.best_brain = best_brain.clone();
-            let cloned_best: CarBrain = CarBrain::clone_randomised(best_brain).unwrap();
+
+        let best_car = cars
+            .iter()
+            .max_by(|a, b| {
+                if a.0.meters > b.0.meters {
+                    return Ordering::Greater;
+                }
+                Ordering::Less
+            })
+            .unwrap();
+        let (progress, brain, _, _) = best_car;
+        trainer.best_brain = Some(brain.clone());
+
+        if progress.meters > trainer.record {
+            println!("new distance record {:.1}", progress.meters);
+            trainer.record = progress.meters;
+        } else {
+            println!("no distance updates {:.1}", trainer.record);
+            trainer.record = 0.;
+            let cloned_best: CarBrain = CarBrain::clone_randomised(&brain);
             for (_progress, mut brain, mut transform, mut velocity) in cars.iter_mut() {
                 brain.levels = cloned_best.levels.clone();
                 transform.rotation = config.quat;
@@ -71,4 +80,7 @@ pub fn trainer_system(
             }
         }
     }
+
+    let mut record_text = q_record_distance_text.single_mut();
+    record_text.sections[1].value = trainer.record.round().to_string();
 }

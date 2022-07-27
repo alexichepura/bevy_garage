@@ -1,6 +1,7 @@
 use crate::car::*;
 use crate::progress::*;
-use crate::trainer::TrainerTiming;
+use crate::trainer::TrainerRecordDistanceText;
+use crate::trainer::TrainerTimingText;
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -41,7 +42,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             text: Text {
                 sections: vec![
                     TextSection {
-                        value: "trainer timing: ".to_string(),
+                        value: "distance record: ".to_string(),
                         style: TextStyle {
                             font: bold.clone(),
                             font_size: 16.0,
@@ -61,7 +62,43 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             },
             ..default()
         })
-        .insert(TrainerTiming);
+        .insert(TrainerRecordDistanceText);
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    bottom: Val::Px(40.0),
+                    left: Val::Px(2.0),
+                    ..default()
+                },
+                ..default()
+            },
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "trainer timer: ".to_string(),
+                        style: TextStyle {
+                            font: bold.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: medium.clone(),
+                            font_size: 16.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..default()
+            },
+            ..default()
+        })
+        .insert(TrainerTimingText);
     commands
         .spawn_bundle(TextBundle {
             style: Style {

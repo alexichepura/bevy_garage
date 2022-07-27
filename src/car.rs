@@ -119,7 +119,10 @@ pub fn car_start_system(
     ];
 
     for i in 0..config.cars_count {
-        let car_brain = CarBrain::clone_randomised(saved_brain.clone());
+        let car_brain = match saved_brain {
+            Some(ref b) => Some(CarBrain::clone_randomised(&b)),
+            None => None,
+        };
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
             // config.translation + Vec3::new(0.5 * i as f32, 0., 0.5 * i as f32),

@@ -27,7 +27,7 @@ impl Default for Config {
             cars_count: 2,
             use_brain: true,
             max_torque: 400.,
-            max_toi: 50.,
+            max_toi: 30.,
             translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.2),
             restitution: 0.000_000_000_001,

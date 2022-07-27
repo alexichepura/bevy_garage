@@ -49,27 +49,24 @@ impl CarBrain {
         }
     }
 
-    pub fn clone_randomised(brain: Option<CarBrain>) -> Option<CarBrain> {
-        if let Some(brain) = brain {
-            let mut rng = rand::thread_rng();
-            let mut levels: Vec<Level> = vec![];
-            for level in brain.levels.iter() {
-                let mut cloned_level = level.clone();
-                cloned_level.inputs.fill(0.);
-                cloned_level.outputs.fill(0.);
-                for bias in cloned_level.biases.iter_mut() {
-                    *bias = car_lerp(*bias, rng.gen::<f32>());
-                }
-                for weighti in cloned_level.weights.iter_mut() {
-                    for weight in weighti.iter_mut() {
-                        *weight = car_lerp(*weight, rng.gen::<f32>());
-                    }
-                }
-                levels.push(cloned_level)
+    pub fn clone_randomised(brain: &CarBrain) -> CarBrain {
+        let mut rng = rand::thread_rng();
+        let mut levels: Vec<Level> = vec![];
+        for level in brain.levels.iter() {
+            let mut cloned_level = level.clone();
+            cloned_level.inputs.fill(0.);
+            cloned_level.outputs.fill(0.);
+            for bias in cloned_level.biases.iter_mut() {
+                *bias = car_lerp(*bias, rng.gen::<f32>());
             }
-            return Some(CarBrain { levels });
+            for weighti in cloned_level.weights.iter_mut() {
+                for weight in weighti.iter_mut() {
+                    *weight = car_lerp(*weight, rng.gen::<f32>());
+                }
+            }
+            levels.push(cloned_level)
         }
-        None
+        return CarBrain { levels };
     }
 }
 
