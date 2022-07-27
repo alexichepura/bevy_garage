@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, fs};
 
 use crate::{brain::*, config::Config, progress::*};
 use bevy::prelude::*;
@@ -69,8 +69,9 @@ pub fn trainer_system(
                 Ordering::Less
             })
             .unwrap();
-        let (progress, brain, _, _) = best_car;
-        trainer.best_brain = Some(brain.clone());
+        let (progress, best_brain, _, _) = best_car;
+        trainer.best_brain = Some(best_brain.clone());
+        let best_brain = best_brain.clone();
 
         if progress.meters > trainer.record {
             println!("distance record {:.1}", progress.meters);
@@ -79,7 +80,7 @@ pub fn trainer_system(
             trainer.generation += 1;
             trainer.record = 0.;
             for (_progress, mut brain, mut transform, mut velocity) in cars.iter_mut() {
-                let cloned_best: CarBrain = CarBrain::clone_randomised(&brain);
+                let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
                 brain.levels = cloned_best.levels.clone();
                 transform.rotation = config.quat;
                 transform.translation = config.translation;
@@ -87,6 +88,10 @@ pub fn trainer_system(
                 velocity.angvel = Vec3::ZERO;
             }
             println!("new generation {:?}", trainer.generation);
+
+            let serialized = serde_json::to_string(&best_brain).unwrap();
+            println!("saving brain.json");
+            fs::write("brain.json", serialized).expect("Unable to write brain.json");
         }
     }
 
