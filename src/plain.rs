@@ -18,17 +18,17 @@ pub fn plain_start_system(
                 max_z: plane_hz,
                 min_z: -plane_hz,
             })),
-            material: materials.add(Color::rgba(0.2, 0.6, 0.2, 0.5).into()),
+            material: materials.add(Color::rgba(0.2, 0.4, 0.2, 0.1).into()),
             ..default()
         })
         .insert(Name::new("Plane"))
         .insert(RigidBody::Fixed)
         // .insert_bundle(TransformBundle::identity())
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
-            -600., -0.45, 800.,
+            -600., -0.5, 800.,
         )))
-        .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))
-        .insert(Friction::coefficient(10.))
-        .insert(Restitution::coefficient(0.))
+        // .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))
+        // .insert(Friction::coefficient(10.))
+        // .insert(Restitution::coefficient(0.))
         .insert(Velocity::zero());
 }

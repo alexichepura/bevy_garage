@@ -241,8 +241,8 @@ pub fn car_start_system(
                     .insert(ContactForceEventThreshold(0.01))
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(0.01))
-                    .insert(Restitution::coefficient(0.))
+                    .insert(Friction::coefficient(0.5))
+                    .insert(Restitution::coefficient(0.01))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
                 for a in -2..3 {

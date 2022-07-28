@@ -39,7 +39,6 @@ pub fn esp_system(
             x => 1. - x,
         }
         .powi(2);
-        println!("f {moving_forward} {braking} {car_angle_slip_rad}");
         let pedal = if moving_forward {
             if braking {
                 -car.brake
