@@ -49,15 +49,15 @@ fn main() {
         .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(RapierDebugRenderPlugin {
-        //     // | DebugRenderMode::COLLIDER_AABBS
-        //     mode: DebugRenderMode::COLLIDER_SHAPES
-        //         | DebugRenderMode::RIGID_BODY_AXES
-        //         | DebugRenderMode::JOINTS
-        //         | DebugRenderMode::CONTACTS
-        //         | DebugRenderMode::SOLVER_CONTACTS,
-        //     ..default()
-        // })
+        .add_plugin(RapierDebugRenderPlugin {
+            // | DebugRenderMode::COLLIDER_AABBS
+            mode: DebugRenderMode::COLLIDER_SHAPES
+                | DebugRenderMode::RIGID_BODY_AXES
+                | DebugRenderMode::JOINTS
+                | DebugRenderMode::CONTACTS
+                | DebugRenderMode::SOLVER_CONTACTS,
+            ..default()
+        })
         .add_plugin(PolylinePlugin)
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .add_plugins(DefaultPickingPlugins)
@@ -72,7 +72,7 @@ fn main() {
         .add_startup_system(car_start_system)
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
-        .add_system(car_change_detection_system)
+        .add_system(esp_system)
         .add_system(car_brain_system)
         .add_system(trainer_system)
         .add_system(dash_fps_system)

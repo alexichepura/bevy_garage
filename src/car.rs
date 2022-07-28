@@ -2,15 +2,13 @@ use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
 use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
-use rapier3d::prelude::{JointAxesMask, SharedShape};
-use std::{f32::consts::PI, fs::File, path::Path, sync::Arc};
+use rapier3d::prelude::JointAxesMask;
+use std::{f32::consts::PI, fs::File, path::Path};
 
 #[derive(Component)]
 pub struct Wheel {
     pub radius: f32,
     pub width: f32,
-    pub friction: f32,
-    pub restitution: f32,
 }
 #[derive(Component)]
 pub struct WheelFront;
@@ -100,7 +98,7 @@ pub fn car_start_system(
     }
 
     let wheel_r: f32 = 0.4;
-    let wheel_hw: f32 = 0.15;
+    let wheel_hw: f32 = 0.2;
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.5;
     let car_hl: f32 = 2.2;
@@ -148,9 +146,12 @@ pub fn car_start_system(
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-            let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(20));
+            // let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+            // let collider = Collider::from(wheel_shape);
+            let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
             let wheel_pbr = PbrBundle {
-                mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(50))),
+                mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
                 ..default()
             };
@@ -167,8 +168,6 @@ pub fn car_start_system(
             let wheel = Wheel {
                 radius: wheel_r,
                 width: wheel_hw * 2.,
-                friction: config.friction,
-                restitution: config.restitution,
             };
             let wheel_id = commands
                 .spawn()
@@ -180,16 +179,10 @@ pub fn car_start_system(
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert(Velocity::zero())
-                .insert(Collider::from(wheel_shape))
+                .insert(collider)
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction {
-                    coefficient: wheel.friction,
-                    combine_rule: CoefficientCombineRule::Max,
-                })
-                .insert(Restitution {
-                    coefficient: wheel.restitution,
-                    combine_rule: CoefficientCombineRule::Min,
-                })
+                .insert(Friction::coefficient(100.))
+                .insert(Restitution::coefficient(0.))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
@@ -216,15 +209,10 @@ pub fn car_start_system(
         let car = commands
             .spawn()
             .insert(Sleeping::disabled())
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ContactForceEventThreshold(0.01))
             .insert(Name::new("Car"))
             .insert(Car::new(&wheels, config.use_brain, config.max_torque))
             .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
-            .insert(Ccd::enabled())
-            .insert(Friction::coefficient(config.friction))
-            .insert(Restitution::coefficient(config.restitution))
             .insert(Velocity::zero())
             .insert_bundle(TransformBundle::from(car_transform))
             .insert_bundle(PickableBundle::default())
@@ -253,8 +241,8 @@ pub fn car_start_system(
                     .insert(ContactForceEventThreshold(0.01))
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(config.friction))
-                    .insert(Restitution::coefficient(config.restitution))
+                    .insert(Friction::coefficient(0.5))
+                    .insert(Restitution::coefficient(0.01))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
                 for a in -2..3 {

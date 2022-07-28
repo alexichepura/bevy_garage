@@ -15,10 +15,10 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    config: Res<Config>,
 ) {
     let geoms = models();
-    for (i, obj_path) in geoms.into_iter().enumerate() {
+    for obj_path in geoms.into_iter() {
+        let is_road = obj_path.contains(&"road.obj".to_string());
         let input = BufReader::new(File::open(obj_path).unwrap());
         let model = obj::raw::parse_obj(input).unwrap();
         let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
@@ -39,7 +39,19 @@ pub fn track_start_system(
             obj.indices.iter().map(|i| *i as u32).collect(),
         )));
 
-        let vertices: Vec<_> = positions.iter().map(|v| point![v[0], v[1], v[2]]).collect();
+        let vertices: Vec<_> = positions
+            .iter()
+            .map(|v| {
+                point![
+                    v[0],
+                    match is_road {
+                        true => 0.,
+                        false => v[1],
+                    },
+                    v[2]
+                ]
+            })
+            .collect();
 
         let indices: Vec<_> = obj
             .indices
@@ -55,23 +67,28 @@ pub fn track_start_system(
             ..default()
         };
 
-        let h = match i {
-            0 => 0.1,
-            _ => 0.,
+        let h = match is_road {
+            true => 0.1,
+            false => 0.,
         };
-
+        let restitution = match is_road {
+            true => 0.,
+            false => 0.,
+        };
+        let friction = match is_road {
+            true => 1.,
+            false => 0.01,
+        };
         commands
             .spawn()
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ContactForceEventThreshold(0.01))
             .insert_bundle(pbr)
             .insert(Name::new("Track"))
             .insert(collider)
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
             .insert(Velocity::zero())
-            .insert(Friction::coefficient(config.friction))
-            .insert(Restitution::coefficient(config.restitution))
+            .insert(Friction::coefficient(friction))
+            .insert(Restitution::coefficient(restitution))
             .insert_bundle(TransformBundle::from_transform(Transform {
                 translation: Vec3::new(0., h, 0.),
                 ..default()

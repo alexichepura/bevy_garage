@@ -48,6 +48,9 @@ pub fn trainer_system(
         Query<&mut Text, With<TrainerGenerationText>>,
     )>,
 ) {
+    if !config.use_brain {
+        return;
+    }
     let seconds = time.seconds_since_startup();
     let interval = 5.;
     let seconds_diff = seconds - trainer.last_check_at;
