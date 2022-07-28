@@ -154,7 +154,7 @@ pub fn car_start_system(
             let mesh = bevy_mesh(wheel_cylinder.to_trimesh(4));
             // let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
             // let collider = Collider::from(wheel_shape);
-            let collider = Collider::round_cylinder(wheel_hw, wheel_r, 0.02);
+            let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),

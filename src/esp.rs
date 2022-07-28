@@ -17,18 +17,18 @@ pub fn car_change_detection_system(
         let torque: f32;
         let braking = car.brake > 0.;
 
-        // let car_mps = velocity.linvel.length();
-        let torque_speed_x: f32 = 1.;
-        let steering_speed_x: f32 = 1.;
-        // let torque_speed_x: f32 = match car_mps / 40. {
-        //     x if x >= 1. => 0.,
-        //     x => 1. - x,
-        // };
-        // let steering_speed_x: f32 = match car_mps / 20. {
-        //     x if x >= 1. => 0.,
-        //     x => 1. - x,
-        // }
-        // .powi(2);
+        // let torque_speed_x: f32 = 1.;
+        // let steering_speed_x: f32 = 1.;
+        let car_mps = velocity.linvel.length();
+        let torque_speed_x: f32 = match car_mps / 40. {
+            x if x >= 1. => 0.,
+            x => 1. - x,
+        };
+        let steering_speed_x: f32 = match car_mps / 20. {
+            x if x >= 1. => 0.,
+            x => 1. - x,
+        }
+        .powi(2);
 
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let delta = velocity.linvel.normalize() - car_vector.normalize();
@@ -60,57 +60,49 @@ pub fn car_change_detection_system(
         for (_i, wheel_entity) in car.wheels.iter().enumerate() {
             let mut q_front_wheels = wheel_set.p0();
             let wheel_result = q_front_wheels.get_mut(*wheel_entity);
-            if let Ok((_wheel, mut forces, transform, _velocity)) = wheel_result {
-                // let radius_vel = velocity.angvel * wheel.radius;
-                // let velocity_slip = (
-                //     radius_vel[0] - velocity.linvel[2],
-                //     radius_vel[2] + velocity.linvel[0],
-                // );
-                // let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                // let max_slip = 0.4;
-                // let slip_sq_x: f32 = match slip_sq / max_slip {
-                //     x if x >= 1. => {
-                //         // println!("max_slip {max_slip}, slip {slip_sq}");
-                //         0.
-                //     }
-                //     x => 1. - x,
-                // };
+            if let Ok((wheel, mut f, transform, v)) = wheel_result {
+                let radius_vel = v.angvel * wheel.radius;
+                let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
+                let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
+                let max_slip = 0.5;
+                let slip_sq_x: f32 = match slip_sq / max_slip {
+                    x if x >= 1. => {
+                        println!("max_slip {max_slip}, slip {slip_sq}");
+                        0.
+                    }
+                    x => 1. - x,
+                };
+                // let slip_sq_x: f32 = 1.;
 
-                let slip_sq_x: f32 = 1.;
                 let steering_torque_vec = quat.mul_vec3(torque_vec);
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
-                forces.torque = (transform.rotation.mul_vec3(total_torque)).into();
+                f.torque = (transform.rotation.mul_vec3(total_torque)).into();
 
                 let start = transform.translation + Vec3::Y * 0.5;
                 let end =
-                    start + Quat::from_axis_angle(-Vec3::Y, PI / 2.).mul_vec3(forces.torque) / 100.;
+                    start + Quat::from_axis_angle(-Vec3::Y, PI / 2.).mul_vec3(f.torque) / 100.;
                 lines.line_colored(start, end, 0.0, Color::VIOLET);
             }
 
-            if let Ok((_wheel, mut forces, transform, _velocity)) =
-                wheel_set.p1().get_mut(*wheel_entity)
-            {
-                // let radius_vel = velocity.angvel * wheel.radius;
-                // let velocity_slip = (
-                //     radius_vel[0] - velocity.linvel[2],
-                //     radius_vel[2] + velocity.linvel[0],
-                // );
-                // let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                // let max_slip = 0.4;
-                // let slip_sq_x: f32 = match slip_sq / max_slip {
-                //     x if x >= 1. => {
-                //         // println!("max_slip {max_slip}, slip {slip_sq}");
-                //         0.
-                //     }
-                //     x => 1. - x,
-                // };
-                let slip_sq_x: f32 = 1.;
+            if let Ok((wheel, mut f, transform, v)) = wheel_set.p1().get_mut(*wheel_entity) {
+                let radius_vel = v.angvel * wheel.radius;
+                let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
+                let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
+                let max_slip = 0.3;
+                let slip_sq_x: f32 = match slip_sq / max_slip {
+                    x if x >= 1. => {
+                        println!("max_slip {max_slip}, slip {slip_sq}");
+                        0.
+                    }
+                    x => 1. - x,
+                };
+                // let slip_sq_x: f32 = 1.;
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
-                forces.torque = (transform.rotation.mul_vec3(total_torque)).into();
+                f.torque = (transform.rotation.mul_vec3(total_torque)).into();
 
                 let start = transform.translation + Vec3::Y * 0.5;
                 let end =
-                    start + Quat::from_axis_angle(-Vec3::Y, PI / 2.).mul_vec3(forces.torque) / 100.;
+                    start + Quat::from_axis_angle(-Vec3::Y, PI / 2.).mul_vec3(f.torque) / 100.;
                 lines.line_colored(start, end, 0.0, Color::VIOLET);
             }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
