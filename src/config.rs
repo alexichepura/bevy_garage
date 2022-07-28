@@ -31,7 +31,7 @@ impl Default for Config {
             translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
             restitution: 0.0,
-            friction: 20.,
+            friction: 100.,
             hid_car: None,
             camera_follow: None,
             polyline: None,

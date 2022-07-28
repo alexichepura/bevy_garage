@@ -62,10 +62,13 @@ impl Default for CameraController {
     }
 }
 
-pub fn camera_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
+pub fn camera_switch_system(
+    mut config: ResMut<Config>,
+    input: Res<Input<KeyCode>>,
+    query: Query<Entity, With<HID>>,
+) {
     if input.just_pressed(KeyCode::Key1) {
-        // TODO
-        // config.camera_follow = Some();
+        config.camera_follow = Some(query.single());
     }
     if input.just_pressed(KeyCode::Key0) {
         config.camera_follow = None;
