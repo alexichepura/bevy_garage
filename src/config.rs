@@ -24,14 +24,14 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 20,
-            use_brain: true,
-            max_torque: 400.,
+            cars_count: 1,
+            use_brain: false,
+            max_torque: 1100.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
             restitution: 0.0,
-            friction: 1.,
+            friction: 100.,
             hid_car: None,
             camera_follow: None,
             polyline: None,

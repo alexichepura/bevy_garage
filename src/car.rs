@@ -1,5 +1,8 @@
 use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues},
+};
 use bevy_mod_picking::PickableBundle;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::{JointAxesMask, SharedShape};
@@ -100,7 +103,7 @@ pub fn car_start_system(
     }
 
     let wheel_r: f32 = 0.4;
-    let wheel_hw: f32 = 0.15;
+    let wheel_hw: f32 = 0.2;
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.5;
     let car_hl: f32 = 2.2;
@@ -148,9 +151,12 @@ pub fn car_start_system(
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-            let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(4));
+            // let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
+            // let collider = Collider::from(wheel_shape);
+            let collider = Collider::round_cylinder(wheel_hw, wheel_r, 0.02);
             let wheel_pbr = PbrBundle {
-                mesh: meshes.add(bevy_mesh(wheel_cylinder.to_trimesh(50))),
+                mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
                 ..default()
             };
@@ -180,7 +186,7 @@ pub fn car_start_system(
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert(Velocity::zero())
-                .insert(Collider::from(wheel_shape))
+                .insert(collider)
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction {
                     coefficient: wheel.friction,
