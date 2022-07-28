@@ -29,7 +29,7 @@ impl Default for Config {
             max_torque: 400.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.9, 0.),
-            quat: Quat::from_rotation_y(-PI * 0.2),
+            quat: Quat::from_rotation_y(-PI * 0.225),
             restitution: 0.0,
             friction: 1.,
             hid_car: None,

@@ -125,8 +125,7 @@ pub fn car_start_system(
         };
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            // config.translation + Vec3::new(0.5 * i as f32, 0., 0.5 * i as f32),
-            config.translation,
+            config.translation, // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
         )
         .with_rotation(config.quat);
 

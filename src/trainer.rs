@@ -80,11 +80,13 @@ pub fn trainer_system(
         } else {
             trainer.generation += 1;
             trainer.record = 0.;
-            for (_progress, mut brain, mut transform, mut velocity) in cars.iter_mut() {
+            for (_i, (_progress, mut brain, mut transform, mut velocity)) in
+                cars.iter_mut().enumerate()
+            {
                 let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
                 brain.levels = cloned_best.levels.clone();
                 transform.rotation = config.quat;
-                transform.translation = config.translation;
+                transform.translation = config.translation; // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32);
                 velocity.linvel = Vec3::ZERO;
                 velocity.angvel = Vec3::ZERO;
             }
