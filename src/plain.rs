@@ -1,4 +1,3 @@
-use crate::config::Config;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -6,7 +5,6 @@ pub fn plain_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    config: Res<Config>,
 ) {
     let plane_hx = 800.0;
     let plane_hz = 1200.0;
@@ -27,10 +25,10 @@ pub fn plain_start_system(
         .insert(RigidBody::Fixed)
         // .insert_bundle(TransformBundle::identity())
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
-            -600., -0.5, 800.,
+            -600., -0.45, 800.,
         )))
-        .insert(Velocity::zero())
         .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))
-        .insert(Friction::coefficient(config.friction))
-        .insert(Restitution::coefficient(config.restitution));
+        .insert(Friction::coefficient(10.))
+        .insert(Restitution::coefficient(0.))
+        .insert(Velocity::zero());
 }
