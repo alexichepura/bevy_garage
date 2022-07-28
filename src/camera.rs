@@ -15,7 +15,7 @@ pub fn camera_start_system(mut commands: Commands) {
     println!(
         "Controls:
         WSAD   - forward/back/strafe left/right
-        LShift - 'run'
+        LShift - run
         E      - up
         Q      - down"
     );

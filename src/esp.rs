@@ -20,11 +20,8 @@ pub fn esp_system(
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let delta = velocity.linvel.normalize() - car_vector.normalize();
         let car_angle_slip_rad = Vec3::new(delta.x, 0., delta.z).length();
-        let mut forward: bool = true;
-        if car_angle_slip_rad > 1. {
-            forward = false;
-        }
-        let braking = match forward {
+        let moving_forward: bool = car_angle_slip_rad < PI / 2.;
+        let braking = match moving_forward {
             true => car.brake > 0.,
             false => car.gas > 0.,
         };
@@ -42,13 +39,21 @@ pub fn esp_system(
             x => 1. - x,
         }
         .powi(2);
-
-        let torque: f32 = if car.brake > 0. {
-            -car.brake * car.wheel_max_torque
+        println!("f {moving_forward} {braking} {car_angle_slip_rad}");
+        let pedal = if moving_forward {
+            if braking {
+                -car.brake
+            } else {
+                car.gas
+            }
         } else {
-            car.gas * car.wheel_max_torque
+            if braking {
+                car.gas
+            } else {
+                -car.brake
+            }
         };
-
+        let torque: f32 = pedal * car.wheel_max_torque;
         let angle: f32 = max_angle * car.steering * (0.1 + 0.9 * steering_speed_x);
         let quat = Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);

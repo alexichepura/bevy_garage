@@ -73,16 +73,14 @@ pub fn track_start_system(
         };
         let restitution = match is_road {
             true => 0.,
-            false => 0.5,
+            false => 0.,
         };
         let friction = match is_road {
             true => 1.,
-            false => 0.5,
+            false => 0.01,
         };
         commands
             .spawn()
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ContactForceEventThreshold(0.01))
             .insert_bundle(pbr)
             .insert(Name::new("Track"))
             .insert(collider)
