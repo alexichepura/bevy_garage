@@ -38,12 +38,18 @@ pub struct Car {
     pub use_brain: bool,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
+    pub init_transform: Transform,
 }
 #[derive(Component)]
 pub struct HID;
 
 impl Car {
-    pub fn new(wheels: &Vec<Entity>, use_brain: bool, wheel_max_torque: f32) -> Self {
+    pub fn new(
+        wheels: &Vec<Entity>,
+        use_brain: bool,
+        wheel_max_torque: f32,
+        init_transform: Transform,
+    ) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
@@ -51,6 +57,7 @@ impl Car {
             use_brain,
             wheels: wheels.clone(),
             wheel_max_torque,
+            init_transform,
         }
     }
 }
@@ -70,7 +77,7 @@ pub fn car_start_system(
     let ray_point_mesh = Mesh::from(shape::Cube {
         size: ray_point_size,
     });
-    for _i in 0..5 {
+    for _i in 0..config.sensor_count {
         commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
             mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
@@ -117,13 +124,10 @@ pub fn car_start_system(
     ];
 
     for i in 0..config.cars_count {
-        let car_brain = match saved_brain {
-            Some(ref b) => Some(CarBrain::clone_randomised(&b)),
-            None => None,
-        };
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation, // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
+            config.translation,
+            // config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
         )
         .with_rotation(config.quat);
 
@@ -210,7 +214,12 @@ pub fn car_start_system(
             .spawn()
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
-            .insert(Car::new(&wheels, config.use_brain, config.max_torque))
+            .insert(Car::new(
+                &wheels,
+                config.use_brain,
+                config.max_torque,
+                car_transform,
+            ))
             .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
@@ -242,11 +251,13 @@ pub fn car_start_system(
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(Friction::coefficient(0.5))
-                    .insert(Restitution::coefficient(0.01))
+                    .insert(Restitution::coefficient(0.))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
-                for a in -2..3 {
-                    let far_quat = Quat::from_rotation_y(-a as f32 * PI / 16.);
+
+                let half = config.sensor_count as i8 / 2;
+                for a in -half..(half + 1) {
+                    let far_quat = Quat::from_rotation_y(-a as f32 * PI * 0.02);
                     let dir = Vec3::Z * config.max_toi;
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
                     children
@@ -274,10 +285,14 @@ pub fn car_start_system(
                 .entity(*wheel_id)
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
-        if let Some(car_brain) = &car_brain {
-            commands.entity(car).insert(car_brain.clone());
-        } else {
-            commands.entity(car).insert(CarBrain::new());
+
+        if config.use_brain {
+            let brain = match saved_brain {
+                Some(ref b) => CarBrain::clone_randomised(&b),
+                None => CarBrain::new(config.sensor_count),
+            };
+            // println!("br {:?}", brain.levels.clone());
+            commands.entity(car).insert(brain);
         }
     }
 }

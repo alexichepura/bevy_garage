@@ -1,4 +1,4 @@
-use crate::car::*;
+use crate::{car::*, config::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
@@ -12,6 +12,7 @@ pub fn esp_system(
         Query<(&Wheel, &mut ExternalForce, &Transform, &Velocity), With<WheelBack>>,
     )>,
     mut lines: ResMut<DebugLines>,
+    config: Res<Config>,
 ) {
     let max_angle = PI / 4.;
     let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
@@ -29,7 +30,7 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 3.,
-            _ => match car_kmh / 90. {
+            _ => match car_kmh / 70. {
                 x if x >= 1. => 0.,
                 x => 1. - x,
             },
@@ -73,9 +74,11 @@ pub fn esp_system(
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
                 f.torque = (transform.rotation.mul_vec3(total_torque)).into();
 
-                let start = transform.translation + Vec3::Y * 0.5;
-                let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
-                lines.line_colored(start, end, 0.0, Color::VIOLET);
+                if config.show_rays {
+                    let start = transform.translation + Vec3::Y * 0.5;
+                    let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
+                    lines.line_colored(start, end, 0.0, Color::VIOLET);
+                }
             }
 
             if let Ok((wheel, mut f, transform, v)) = wheel_set.p1().get_mut(*wheel_entity) {
@@ -90,9 +93,11 @@ pub fn esp_system(
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
                 f.torque = (transform.rotation.mul_vec3(total_torque)).into();
 
-                let start = transform.translation + Vec3::Y * 0.5;
-                let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
-                lines.line_colored(start, end, 0.0, Color::VIOLET);
+                if config.show_rays {
+                    let start = transform.translation + Vec3::Y * 0.5;
+                    let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
+                    lines.line_colored(start, end, 0.0, Color::VIOLET);
+                }
             }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
                 let axis = quat.mul_vec3(Vec3::X);

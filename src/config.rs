@@ -5,7 +5,9 @@ use std::f32::consts::PI;
 pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,
-    pub cars_count: u16,
+    pub cars_count: usize,
+    pub sensor_count: usize,
+    pub show_rays: bool,
     pub use_brain: bool,
     pub max_torque: f32,
     pub max_toi: f32,
@@ -24,7 +26,9 @@ impl Default for Config {
         Self {
             cars_count: 20,
             use_brain: true,
-            max_torque: 600.,
+            show_rays: true,
+            sensor_count: 7,
+            max_torque: 700.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),

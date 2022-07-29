@@ -9,19 +9,11 @@ use std::fs::File;
 use std::io::BufReader;
 
 #[derive(Component)]
-pub struct Tracker;
-
-#[derive(Component)]
 pub struct CarProgress {
     pub meters: f32,
 }
 
-pub fn track_polyline_start_system(
-    mut commands: Commands,
-    mut config: ResMut<Config>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Config>) {
     let obj_path = "assets/track-polyline.obj";
     let polyline_buf = BufReader::new(File::open(obj_path).unwrap());
     let model = raw::parse_obj(polyline_buf).unwrap();
@@ -70,15 +62,6 @@ pub fn track_polyline_start_system(
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
             0., 1., 0.,
         )));
-
-    let point_half = 0.25;
-    let point_size = point_half * 2.;
-    let point_mesh = Mesh::from(shape::Cube { size: point_size });
-    commands.spawn().insert(Tracker).insert_bundle(PbrBundle {
-        mesh: meshes.add(point_mesh.clone()),
-        material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
-        ..default()
-    });
 }
 
 pub fn progress_system(

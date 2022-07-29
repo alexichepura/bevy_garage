@@ -1,10 +1,11 @@
 use std::{cmp::Ordering, fs};
 
-use crate::{brain::*, config::Config, progress::*};
+use crate::{brain::*, car::Car, config::Config, progress::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::Velocity;
 
 pub struct Trainer {
+    pub interval: f64,
     pub generation: i32,
     pub record: f32,
     pub last_check_at: f64,
@@ -14,6 +15,7 @@ pub struct Trainer {
 impl Default for Trainer {
     fn default() -> Self {
         Self {
+            interval: 10.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
@@ -39,6 +41,7 @@ pub fn trainer_system(
             &mut CarBrain,
             &mut Transform,
             &mut Velocity,
+            &Car,
         ),
         With<CarProgress>,
     >,
@@ -52,15 +55,14 @@ pub fn trainer_system(
         return;
     }
     let seconds = time.seconds_since_startup();
-    let interval = 5.;
     let seconds_diff = seconds - trainer.last_check_at;
 
     let mut q_trainer_timing = dash_set.p0();
     let mut text = q_trainer_timing.single_mut();
-    let round_seconds = ((interval - seconds_diff) * 10.).round() / 10.;
+    let round_seconds = ((trainer.interval - seconds_diff) * 10.).round() / 10.;
     text.sections[1].value = round_seconds.to_string();
 
-    if seconds_diff > interval {
+    if seconds_diff > trainer.interval {
         trainer.last_check_at = seconds;
 
         let best_car = cars
@@ -72,7 +74,7 @@ pub fn trainer_system(
                 Ordering::Less
             })
             .unwrap();
-        let (progress, best_brain, _, _) = best_car;
+        let (progress, best_brain, _, _, _) = best_car;
         trainer.best_brain = Some(best_brain.clone());
         let best_brain = best_brain.clone();
 
@@ -83,13 +85,12 @@ pub fn trainer_system(
         } else {
             trainer.generation += 1;
             trainer.record = 0.;
-            for (_i, (_progress, mut brain, mut transform, mut velocity)) in
+            for (_i, (_progress, mut brain, mut transform, mut velocity, car)) in
                 cars.iter_mut().enumerate()
             {
                 let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
                 brain.levels = cloned_best.levels.clone();
-                transform.rotation = config.quat;
-                transform.translation = config.translation; // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32);
+                *transform = car.init_transform;
                 velocity.linvel = Vec3::ZERO;
                 velocity.angvel = Vec3::ZERO;
             }
