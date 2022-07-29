@@ -4,11 +4,13 @@ use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use core::f32::consts::PI;
 
-pub fn camera_start_system(mut commands: Commands) {
+pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
         .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(Vec3::new(20., 10., -20.))
-                .looking_at(Vec3::Y * 5., Vec3::Y),
+            transform: Transform::from_translation(
+                config.translation + Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+            )
+            .looking_at(Vec3::Y * 6., config.translation),
             ..default()
         })
         .insert(CameraController::default());

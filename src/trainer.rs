@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, fs};
 
-use crate::{brain::*, config::Config, progress::*};
+use crate::{brain::*, car::Car, config::Config, progress::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::Velocity;
 
@@ -39,6 +39,7 @@ pub fn trainer_system(
             &mut CarBrain,
             &mut Transform,
             &mut Velocity,
+            &Car,
         ),
         With<CarProgress>,
     >,
@@ -72,7 +73,7 @@ pub fn trainer_system(
                 Ordering::Less
             })
             .unwrap();
-        let (progress, best_brain, _, _) = best_car;
+        let (progress, best_brain, _, _, _) = best_car;
         trainer.best_brain = Some(best_brain.clone());
         let best_brain = best_brain.clone();
 
@@ -83,13 +84,12 @@ pub fn trainer_system(
         } else {
             trainer.generation += 1;
             trainer.record = 0.;
-            for (_i, (_progress, mut brain, mut transform, mut velocity)) in
+            for (_i, (_progress, mut brain, mut transform, mut velocity, car)) in
                 cars.iter_mut().enumerate()
             {
                 let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
                 brain.levels = cloned_best.levels.clone();
-                transform.rotation = config.quat;
-                transform.translation = config.translation; // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32);
+                *transform = car.init_transform;
                 velocity.linvel = Vec3::ZERO;
                 velocity.angvel = Vec3::ZERO;
             }

@@ -115,8 +115,12 @@ pub fn track_decorations_start_system(
         .spawn()
         .insert_bundle(TransformBundle::from(
             Transform::from_scale(Vec3::new(scale, scale, scale))
-                .with_translation(Vec3::new(2., 0., 2.))
-                .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI * 0.95))),
+                .with_translation(Vec3::new(
+                    config.translation.x + 1.65,
+                    0.,
+                    config.translation.z + 1.65,
+                ))
+                .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI))),
         ))
         .with_children(|gl_children| {
             gl_children.spawn_scene(gl_object);

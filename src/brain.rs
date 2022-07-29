@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
-    let t = 0.1;
+    let t = 0.01;
     a + (b - a) * t
 }
 
@@ -111,11 +111,11 @@ impl Level {
     }
 }
 
-pub fn reset_pos_system(config: Res<Config>, mut q_car: Query<&mut Transform, With<Car>>) {
-    for mut transform in q_car.iter_mut() {
+pub fn reset_pos_system(mut q_car: Query<(&mut Transform, &Car)>) {
+    for (mut transform, car) in q_car.iter_mut() {
         if transform.translation.y > 500. || transform.translation.y < 0. {
             println!("car is out of bound, resetting transform");
-            *transform = Transform::from_translation(config.translation).with_rotation(config.quat);
+            *transform = car.init_transform;
         }
     }
 }

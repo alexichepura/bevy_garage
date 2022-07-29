@@ -38,12 +38,18 @@ pub struct Car {
     pub use_brain: bool,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
+    pub init_transform: Transform,
 }
 #[derive(Component)]
 pub struct HID;
 
 impl Car {
-    pub fn new(wheels: &Vec<Entity>, use_brain: bool, wheel_max_torque: f32) -> Self {
+    pub fn new(
+        wheels: &Vec<Entity>,
+        use_brain: bool,
+        wheel_max_torque: f32,
+        init_transform: Transform,
+    ) -> Self {
         Self {
             gas: 0.,
             brake: 0.,
@@ -51,6 +57,7 @@ impl Car {
             use_brain,
             wheels: wheels.clone(),
             wheel_max_torque,
+            init_transform,
         }
     }
 }
@@ -119,7 +126,8 @@ pub fn car_start_system(
     for i in 0..config.cars_count {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation, // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
+            config.translation,
+            // config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
         )
         .with_rotation(config.quat);
 
@@ -206,7 +214,12 @@ pub fn car_start_system(
             .spawn()
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
-            .insert(Car::new(&wheels, config.use_brain, config.max_torque))
+            .insert(Car::new(
+                &wheels,
+                config.use_brain,
+                config.max_torque,
+                car_transform,
+            ))
             .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
@@ -238,7 +251,7 @@ pub fn car_start_system(
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(Friction::coefficient(0.5))
-                    .insert(Restitution::coefficient(0.01))
+                    .insert(Restitution::coefficient(0.))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
 
