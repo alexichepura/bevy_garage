@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::Velocity;
 
 pub struct Trainer {
+    pub interval: f64,
     pub generation: i32,
     pub record: f32,
     pub last_check_at: f64,
@@ -14,6 +15,7 @@ pub struct Trainer {
 impl Default for Trainer {
     fn default() -> Self {
         Self {
+            interval: 10.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
@@ -53,15 +55,14 @@ pub fn trainer_system(
         return;
     }
     let seconds = time.seconds_since_startup();
-    let interval = 5.;
     let seconds_diff = seconds - trainer.last_check_at;
 
     let mut q_trainer_timing = dash_set.p0();
     let mut text = q_trainer_timing.single_mut();
-    let round_seconds = ((interval - seconds_diff) * 10.).round() / 10.;
+    let round_seconds = ((trainer.interval - seconds_diff) * 10.).round() / 10.;
     text.sections[1].value = round_seconds.to_string();
 
-    if seconds_diff > interval {
+    if seconds_diff > trainer.interval {
         trainer.last_check_at = seconds;
 
         let best_car = cars
