@@ -117,10 +117,6 @@ pub fn car_start_system(
     ];
 
     for i in 0..config.cars_count {
-        let car_brain = match saved_brain {
-            Some(ref b) => Some(CarBrain::clone_randomised(&b)),
-            None => None,
-        };
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
             config.translation, // + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
@@ -274,10 +270,14 @@ pub fn car_start_system(
                 .entity(*wheel_id)
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
-        if let Some(car_brain) = &car_brain {
-            commands.entity(car).insert(car_brain.clone());
-        } else {
-            commands.entity(car).insert(CarBrain::new());
+
+        if config.use_brain {
+            let brain = match saved_brain {
+                Some(ref b) => CarBrain::clone_randomised(&b),
+                None => CarBrain::new(),
+            };
+            // println!("br {:?}", brain.levels.clone());
+            commands.entity(car).insert(brain);
         }
     }
 }
