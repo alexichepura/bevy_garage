@@ -70,7 +70,7 @@ pub fn car_start_system(
     let ray_point_mesh = Mesh::from(shape::Cube {
         size: ray_point_size,
     });
-    for _i in 0..5 {
+    for _i in 0..config.sensor_count {
         commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
             mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
@@ -241,8 +241,10 @@ pub fn car_start_system(
                     .insert(Restitution::coefficient(0.01))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
-                for a in -2..3 {
-                    let far_quat = Quat::from_rotation_y(-a as f32 * PI / 16.);
+
+                let half = config.sensor_count as i8 / 2;
+                for a in -half..(half + 1) {
+                    let far_quat = Quat::from_rotation_y(-a as f32 * PI * 0.02);
                     let dir = Vec3::Z * config.max_toi;
                     let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
                     children
@@ -274,7 +276,7 @@ pub fn car_start_system(
         if config.use_brain {
             let brain = match saved_brain {
                 Some(ref b) => CarBrain::clone_randomised(&b),
-                None => CarBrain::new(),
+                None => CarBrain::new(config.sensor_count),
             };
             // println!("br {:?}", brain.levels.clone());
             commands.entity(car).insert(brain);

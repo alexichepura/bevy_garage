@@ -1,6 +1,5 @@
 use crate::car::*;
 use crate::config::Config;
-use crate::util::print_float_arr;
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
@@ -19,9 +18,9 @@ pub struct CarBrain {
     pub levels: Vec<Level>,
 }
 impl CarBrain {
-    pub fn new() -> CarBrain {
-        let ins = Level::new(5, 6);
-        let hidden = Level::new(6, 4);
+    pub fn new(n_ins: usize) -> CarBrain {
+        let ins = Level::new(n_ins, n_ins + 1);
+        let hidden = Level::new(n_ins + 1, 4);
         CarBrain {
             levels: [ins, hidden].to_vec(),
         }
@@ -192,8 +191,8 @@ pub fn car_brain_system(
             }
         }
 
-        let mut inputs: Vec<f32> = vec![0.; 5];
-        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; 5];
+        let mut inputs: Vec<f32> = vec![0.; config.sensor_count];
+        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; config.sensor_count];
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
@@ -217,12 +216,14 @@ pub fn car_brain_system(
                     hit_points[i] = intersection.point;
                     if toi > 0. {
                         inputs[i] = 1. - toi / config.max_toi;
-                        lines.line_colored(
-                            ray_pos,
-                            intersection.point,
-                            0.0,
-                            Color::rgba(0.98, 0.5, 0.45, 0.9),
-                        );
+                        if config.show_rays {
+                            lines.line_colored(
+                                ray_pos,
+                                intersection.point,
+                                0.0,
+                                Color::rgba(0.98, 0.5, 0.45, 0.9),
+                            );
+                        }
                     } else {
                         inputs[i] = 0.;
                     }
