@@ -86,7 +86,6 @@ pub fn track_start_system(
             .insert(collider)
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
-            .insert(Velocity::zero())
             .insert(Friction::coefficient(friction))
             .insert(Restitution::coefficient(restitution))
             .insert_bundle(TransformBundle::from_transform(Transform {

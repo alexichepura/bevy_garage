@@ -22,7 +22,7 @@ rand = "0.8"
 bevy_polyline = "0.2"
 bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }
 bevy_rapier3d = { version = "0.15.0", features = [ "debug-render" ] }
-rapier3d = { version = "^0.14.0", default-features = false, features = [ "dim3", "f32" ] }
+rapier3d = { version = "^0.14.0" }
 bevy_atmosphere = "0.3.1"
 
 [profile.dev.package.bevy_rapier3d]

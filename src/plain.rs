@@ -23,12 +23,7 @@ pub fn plain_start_system(
         })
         .insert(Name::new("Plane"))
         .insert(RigidBody::Fixed)
-        // .insert_bundle(TransformBundle::identity())
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
             -600., -0.5, 800.,
-        )))
-        // .insert(Collider::cuboid(plane_hx, 0.5, plane_hz))
-        // .insert(Friction::coefficient(10.))
-        // .insert(Restitution::coefficient(0.))
-        .insert(Velocity::zero());
+        )));
 }

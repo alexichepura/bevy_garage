@@ -19,6 +19,7 @@ pub struct Config {
     pub meters: Vec<f32>,
     pub meters_shift: f32,
     pub meters_total: f32,
+    pub reset_pause_until: f64,
 }
 
 impl Default for Config {
@@ -28,7 +29,7 @@ impl Default for Config {
             use_brain: true,
             show_rays: true,
             sensor_count: 7,
-            max_torque: 700.,
+            max_torque: 600.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
@@ -40,6 +41,7 @@ impl Default for Config {
             meters: vec![],
             meters_shift: 0.,
             meters_total: 0.,
+            reset_pause_until: 0.,
         }
     }
 }

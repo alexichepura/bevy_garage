@@ -39,6 +39,7 @@ pub struct Car {
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
     pub init_transform: Transform,
+    pub reset_pause_until: f64,
 }
 #[derive(Component)]
 pub struct HID;
@@ -58,6 +59,7 @@ impl Car {
             wheels: wheels.clone(),
             wheel_max_torque,
             init_transform,
+            reset_pause_until: 0.,
         }
     }
 }
@@ -126,8 +128,8 @@ pub fn car_start_system(
     for i in 0..config.cars_count {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation,
-            // config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
+            // config.translation,
+            config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
         )
         .with_rotation(config.quat);
 
@@ -176,8 +178,6 @@ pub fn car_start_system(
             let wheel_id = commands
                 .spawn()
                 .insert(Sleeping::disabled())
-                .insert(ActiveEvents::COLLISION_EVENTS)
-                .insert(ContactForceEventThreshold(0.01))
                 .insert_bundle(wheel_pbr)
                 .insert_bundle(wheel_transform)
                 .insert(RigidBody::Dynamic)
@@ -190,6 +190,7 @@ pub fn car_start_system(
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
+                .insert(ExternalImpulse::default())
                 .id();
             wheels.push(wheel_id);
 
@@ -223,6 +224,8 @@ pub fn car_start_system(
             .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
+            // .insert(ExternalImpulse::default())
+            .insert(ExternalForce::default())
             .insert_bundle(TransformBundle::from(car_transform))
             .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
@@ -246,8 +249,6 @@ pub fn car_start_system(
                 });
                 children
                     .spawn()
-                    .insert(ActiveEvents::COLLISION_EVENTS)
-                    .insert(ContactForceEventThreshold(0.01))
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(Friction::coefficient(0.5))
