@@ -128,8 +128,8 @@ pub fn car_start_system(
     for i in 0..config.cars_count {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation,
-            // config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
+            // config.translation,
+            config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
         )
         .with_rotation(config.quat);
 

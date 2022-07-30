@@ -25,11 +25,11 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 20,
+            cars_count: 40,
             use_brain: true,
             show_rays: true,
             sensor_count: 7,
-            max_torque: 1000.,
+            max_torque: 600.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.9, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),

@@ -3,6 +3,10 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::{ExternalForce, Velocity};
 use std::{cmp::Ordering, fs};
 
+const PAUSE: f64 = 3.;
+const LINVEL_FORCE: f32 = 10000.;
+const ANGVEL_FORCE: f32 = 2.;
+
 pub struct Trainer {
     pub interval: f64,
     pub generation: i32,
@@ -14,7 +18,7 @@ pub struct Trainer {
 impl Default for Trainer {
     fn default() -> Self {
         Self {
-            interval: 10.,
+            interval: 20.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
@@ -96,7 +100,7 @@ pub fn trainer_system(
             trainer.generation += 1;
             trainer.record = 0.;
             config.use_brain = false;
-            config.reset_pause_until = time.seconds_since_startup() + 1.;
+            config.reset_pause_until = time.seconds_since_startup() + 5.;
             for (_i, (_progress, mut brain, mut t, mut car, mut f)) in cars.iter_mut().enumerate() {
                 let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
                 brain.levels = cloned_best.levels.clone();
@@ -136,22 +140,28 @@ pub fn reset_pos_system(
 ) {
     let seconds = time.seconds_since_startup();
     for (mut t, mut car, mut f, v) in q_car.iter_mut() {
-        if t.translation.y > 500. || t.translation.y < 0. {
+        if t.translation.y > 500. || t.translation.y < 0.
+        // || v.linvel.length() > 100.
+        // || v.angvel.length() > PI
+        {
             println!("car is out of bound {:?}", t.translation.round());
             car.gas = 0.;
             car.brake = 0.;
             car.steering = 0.;
             car.use_brain = false;
-            car.reset_pause_until = seconds + 1.;
+            car.reset_pause_until = seconds + PAUSE;
             *t = car.init_transform;
             *f = ExternalForce::default()
         }
         if car.reset_pause_until > seconds {
-            f.force = -v.linvel * 10000.;
-            f.torque = -v.angvel * 5.;
-        } else {
+            *t = car.init_transform;
+            f.force = -v.linvel * LINVEL_FORCE;
+            f.torque = -v.angvel * ANGVEL_FORCE;
+        } else if car.reset_pause_until > 0. {
+            *t = car.init_transform;
             *f = ExternalForce::default();
             car.use_brain = config.use_brain;
+            car.reset_pause_until = 0.;
         }
     }
 }
@@ -164,7 +174,7 @@ pub fn reset_spawn_key_system(
     if keys.just_pressed(KeyCode::Space) {
         println!("KeyCode::Space, cleanup");
         config.use_brain = false;
-        config.reset_pause_until = time.seconds_since_startup() + 1.;
+        config.reset_pause_until = time.seconds_since_startup() + PAUSE;
         for (mut car, mut t) in query.iter_mut() {
             car.gas = 0.;
             car.brake = 0.;
@@ -177,12 +187,13 @@ pub fn reset_spawn_key_system(
 pub fn reset_force_system(
     config: Res<Config>,
     time: Res<Time>,
-    mut q_carforces: Query<(&Velocity, &mut ExternalForce), With<Car>>,
+    mut q_carforces: Query<(&Velocity, &mut ExternalForce, &mut Transform, &Car), With<Car>>,
 ) {
     if config.reset_pause_until > time.seconds_since_startup() {
-        for (v, mut f) in q_carforces.iter_mut() {
-            f.force = -v.linvel * 10000.;
-            f.torque = -v.angvel * 5.;
+        for (v, mut f, mut t, car) in q_carforces.iter_mut() {
+            f.force = -v.linvel * LINVEL_FORCE;
+            f.torque = -v.angvel * ANGVEL_FORCE;
+            *t = car.init_transform;
         }
     }
 }
