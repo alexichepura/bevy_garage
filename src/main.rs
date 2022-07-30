@@ -83,6 +83,7 @@ fn main() {
         .add_system(reset_pos_system)
         .add_system(progress_system)
         .add_system(reset_spawn_key_system)
+        .add_system(reset_force_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();

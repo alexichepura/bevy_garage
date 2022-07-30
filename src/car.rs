@@ -39,6 +39,7 @@ pub struct Car {
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
     pub init_transform: Transform,
+    pub reset_pause_until: f64,
 }
 #[derive(Component)]
 pub struct HID;
@@ -58,6 +59,7 @@ impl Car {
             wheels: wheels.clone(),
             wheel_max_torque,
             init_transform,
+            reset_pause_until: 0.,
         }
     }
 }
@@ -222,7 +224,7 @@ pub fn car_start_system(
             .insert(CarProgress { meters: 0. })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
-            .insert(ExternalImpulse::default())
+            // .insert(ExternalImpulse::default())
             .insert(ExternalForce::default())
             .insert_bundle(TransformBundle::from(car_transform))
             .insert_bundle(PickableBundle::default())
