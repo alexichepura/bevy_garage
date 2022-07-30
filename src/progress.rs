@@ -53,11 +53,9 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
     commands
         .spawn()
-        // .insert_bundle(pbr)
         .insert(Name::new("Track polyline"))
         .insert(collider)
         .insert(RigidBody::Fixed)
-        .insert(Velocity::zero())
         .insert(Sensor)
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
             0., 1., 0.,

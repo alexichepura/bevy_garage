@@ -111,56 +111,6 @@ impl Level {
     }
 }
 
-pub fn reset_pos_system(mut q_car: Query<(&mut Transform, &Car)>) {
-    for (mut transform, car) in q_car.iter_mut() {
-        if transform.translation.y > 500. || transform.translation.y < 0. {
-            println!("car is out of bound, resetting transform");
-            *transform = car.init_transform;
-        }
-    }
-}
-
-pub fn reset_spawn_key_system(
-    config: Res<Config>,
-    keys: Res<Input<KeyCode>>,
-    mut set: ParamSet<(
-        Query<(&mut Transform, &mut Velocity, &Car)>,
-        Query<(&mut Transform, &mut Velocity, &mut ExternalForce), With<Wheel>>,
-        Query<&mut Velocity>,
-    )>,
-) {
-    if keys.just_pressed(KeyCode::Space) {
-        println!("KeyCode::Space, resetting transform");
-        for mut vel in set.p2().iter_mut() {
-            println!("Collider velocity cleanup");
-            vel.linvel = Vec3::ZERO;
-            vel.angvel = Vec3::ZERO;
-        }
-
-        let mut wheel_es: Vec<Entity> = vec![];
-        for (mut transform, mut vel, car) in set.p0().iter_mut() {
-            vel.linvel = Vec3::ZERO;
-            vel.angvel = Vec3::ZERO;
-            transform.rotation = config.quat;
-            transform.translation = config.translation;
-            car.wheels
-                .iter()
-                .for_each(|wheel_e| wheel_es.push(*wheel_e));
-        }
-        for wheel_e in wheel_es {
-            if let Ok((mut transform, mut vel, mut force)) = set.p1().get_mut(wheel_e) {
-                println!("reset wheel {wheel_e:?}");
-                force.force = Vec3::ZERO;
-                force.torque = Vec3::ZERO;
-                vel.linvel = Vec3::ZERO;
-                vel.angvel = Vec3::ZERO;
-                transform.rotation = Quat::IDENTITY;
-                transform.translation = Vec3::ZERO;
-            }
-        }
-    }
-}
-
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,

@@ -19,12 +19,13 @@ pub struct Config {
     pub meters: Vec<f32>,
     pub meters_shift: f32,
     pub meters_total: f32,
+    pub pause_brain_until: f64,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 20,
+            cars_count: 10,
             use_brain: true,
             show_rays: true,
             sensor_count: 7,
@@ -40,6 +41,7 @@ impl Default for Config {
             meters: vec![],
             meters_shift: 0.,
             meters_total: 0.,
+            pause_brain_until: 0.,
         }
     }
 }

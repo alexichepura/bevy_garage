@@ -15,7 +15,7 @@ pub struct Trainer {
 impl Default for Trainer {
     fn default() -> Self {
         Self {
-            interval: 10.,
+            interval: 20.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
@@ -32,7 +32,7 @@ pub struct TrainerRecordDistanceText;
 pub struct TrainerGenerationText;
 
 pub fn trainer_system(
-    config: Res<Config>,
+    mut config: ResMut<Config>,
     mut trainer: ResMut<Trainer>,
     time: Res<Time>,
     mut cars: Query<
@@ -41,7 +41,7 @@ pub fn trainer_system(
             &mut CarBrain,
             &mut Transform,
             &mut Velocity,
-            &Car,
+            &mut Car,
         ),
         With<CarProgress>,
     >,
@@ -51,10 +51,20 @@ pub fn trainer_system(
         Query<&mut Text, With<TrainerGenerationText>>,
     )>,
 ) {
+    let seconds = time.seconds_since_startup();
+    if config.pause_brain_until > seconds {
+        return;
+    }
+    if config.pause_brain_until > 0. {
+        config.pause_brain_until = 0.;
+        config.use_brain = true;
+        for (_, _, _, _, mut car) in cars.iter_mut() {
+            car.use_brain = true;
+        }
+    }
     if !config.use_brain {
         return;
     }
-    let seconds = time.seconds_since_startup();
     let seconds_diff = seconds - trainer.last_check_at;
 
     let mut q_trainer_timing = dash_set.p0();
@@ -115,3 +125,48 @@ pub fn trainer_system(
     let mut generation_text = q_generation_text.single_mut();
     generation_text.sections[1].value = trainer.generation.to_string();
 }
+
+pub fn reset_pos_system(mut q_car: Query<(&mut Transform, &Car)>) {
+    for (mut transform, car) in q_car.iter_mut() {
+        if transform.translation.y > 500. || transform.translation.y < 0. {
+            println!("car is out of bound, resetting transform");
+            *transform = car.init_transform;
+        }
+    }
+}
+pub fn reset_spawn_key_system(
+    keys: Res<Input<KeyCode>>,
+    mut config: ResMut<Config>,
+    time: Res<Time>,
+    mut query: Query<(&mut Car, &mut Transform)>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        println!("KeyCode::Space, cleanup");
+        config.use_brain = false;
+        config.pause_brain_until = time.seconds_since_startup() + 10.;
+        for (mut car, mut t) in query.iter_mut() {
+            *t = car.init_transform;
+            car.gas = 0.;
+            car.brake = 0.;
+            car.steering = 0.;
+            car.use_brain = false;
+        }
+    }
+}
+
+// https://github.com/dimforge/bevy_rapier/issues/196
+// pub fn reset_spawn_key_system(
+//     keys: Res<Input<KeyCode>>,
+//     mut commands: Commands,
+//     query: Query<Entity, With<MultibodyJoint>>,
+// ) {
+//     if !keys.just_pressed(KeyCode::Space) {
+//         return;
+//     }
+//     println!("KeyCode::Space, cleanup");
+//     for e in query.iter() {
+//         println!("cleanup MultibodyJoint");
+//         /// commands.entity(e).remove::<MultibodyJoint>();
+//         commands.entity(e).despawn();
+//     }
+// }
