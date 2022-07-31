@@ -1,6 +1,5 @@
 use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
 use bevy::prelude::*;
-use bevy_mod_picking::PickableBundle;
 use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
 use rapier3d::prelude::JointAxesMask;
 use std::{f32::consts::PI, fs::File, path::Path};

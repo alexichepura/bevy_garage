@@ -1,7 +1,7 @@
 use crate::car::*;
 use crate::config::Config;
 use bevy::prelude::*;
-use bevy_prototype_debug_lines::DebugLines;
+// use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use rand::prelude::*;
 use rand::{distributions::Standard, Rng};
@@ -122,7 +122,7 @@ pub fn car_brain_system(
         Query<(&mut Transform, With<RayDir>)>,
         Query<(&mut Transform, With<RayHit>)>,
     )>,
-    mut lines: ResMut<DebugLines>,
+    // mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
 
@@ -146,14 +146,14 @@ pub fn car_brain_system(
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            if is_hid_car {
-                lines.line_colored(
-                    ray_pos,
-                    ray_dir_pos,
-                    0.0,
-                    Color::rgba(0.25, 0.88, 0.82, 0.1),
-                );
-            }
+            // if is_hid_car {
+            //     lines.line_colored(
+            //         ray_pos,
+            //         ray_dir_pos,
+            //         0.0,
+            //         Color::rgba(0.25, 0.88, 0.82, 0.1),
+            //     );
+            // }
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,
@@ -166,14 +166,14 @@ pub fn car_brain_system(
                     hit_points[i] = intersection.point;
                     if toi > 0. {
                         inputs[i] = 1. - toi / config.max_toi;
-                        if config.show_rays {
-                            lines.line_colored(
-                                ray_pos,
-                                intersection.point,
-                                0.0,
-                                Color::rgba(0.98, 0.5, 0.45, 0.9),
-                            );
-                        }
+                        // if config.show_rays {
+                        //     lines.line_colored(
+                        //         ray_pos,
+                        //         intersection.point,
+                        //         0.0,
+                        //         Color::rgba(0.98, 0.5, 0.45, 0.9),
+                        //     );
+                        // }
                     } else {
                         inputs[i] = 0.;
                     }
