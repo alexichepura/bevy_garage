@@ -1,7 +1,7 @@
 use crate::config::Config;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
-use bevy_rapier3d::na::{point, Point3};
+use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
 
 use rapier3d::prelude::ColliderShape;

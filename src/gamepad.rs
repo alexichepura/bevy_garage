@@ -11,22 +11,27 @@ pub fn gamepad_stage_preupdate_system(
     mut gamepad_event: EventReader<GamepadEvent>,
 ) {
     for event in gamepad_event.iter() {
-        match &event {
-            GamepadEvent {
-                gamepad,
-                event_type,
-            } => {
-                lobby.gamepads.insert(*gamepad);
-                println!("{:?} Connected", gamepad);
+        match &event.event_type {
+            GamepadEventType::Connected => {
+                info!("{:?} Connected", event.gamepad);
+                lobby.gamepads.insert(event.gamepad);
             }
-            GamepadEvent {
-                gamepad,
-                event_type,
-            } => {
-                lobby.gamepads.remove(gamepad);
-                println!("{:?} Disconnected", gamepad);
+            GamepadEventType::Disconnected => {
+                info!("{:?} Disconnected", event.gamepad);
+                lobby.gamepads.remove(&event.gamepad);
             }
-            _ => (),
+            GamepadEventType::ButtonChanged(button_type, value) => {
+                info!(
+                    "{:?} of {:?} is changed to {}",
+                    button_type, event.gamepad, value
+                );
+            }
+            GamepadEventType::AxisChanged(axis_type, value) => {
+                info!(
+                    "{:?} of {:?} is changed to {}",
+                    axis_type, event.gamepad, value
+                );
+            }
         }
     }
 }

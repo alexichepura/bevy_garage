@@ -230,19 +230,27 @@ pub fn car_start_system(
             .insert(ReadMassProperties::default())
             .with_children(|children| {
                 let scale = 1.7;
-                children
-                    .spawn()
-                    .insert_bundle(TransformBundle::from(
-                        Transform::from_scale(Vec3::new(scale, scale, scale))
-                            .with_translation(Vec3::new(0., -0.75, 0.2))
-                            .with_rotation(Quat::from_rotation_y(PI)),
-                    ))
-                    .with_children(|gl_children| {
-                        gl_children.spawn_bundle(SceneBundle {
-                            scene: car_gl.clone(),
-                            ..default()
-                        });
-                    });
+
+                children.spawn_bundle(SceneBundle {
+                    scene: car_gl.clone(),
+                    transform: Transform::from_scale(Vec3::new(scale, scale, scale))
+                        .with_translation(Vec3::new(0., -0.75, 0.2))
+                        .with_rotation(Quat::from_rotation_y(PI)),
+                    ..default()
+                });
+                // children
+                //     .spawn()
+                //     .insert_bundle(TransformBundle::from(
+                //         Transform::from_scale(Vec3::new(scale, scale, scale))
+                //             .with_translation(Vec3::new(0., -0.75, 0.2))
+                //             .with_rotation(Quat::from_rotation_y(PI)),
+                //     ))
+                //     .with_children(|gl_children| {
+                //         gl_children.spawn_bundle(SceneBundle {
+                //             scene: car_gl.clone(),
+                //             ..default()
+                //         });
+                //     });
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -0.3, 0.),
                     mass: 1500.0,
