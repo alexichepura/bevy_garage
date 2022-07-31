@@ -12,11 +12,17 @@ pub fn gamepad_stage_preupdate_system(
 ) {
     for event in gamepad_event.iter() {
         match &event {
-            GamepadEvent(gamepad, GamepadEventType::Connected) => {
+            GamepadEvent {
+                gamepad,
+                event_type,
+            } => {
                 lobby.gamepads.insert(*gamepad);
                 println!("{:?} Connected", gamepad);
             }
-            GamepadEvent(gamepad, GamepadEventType::Disconnected) => {
+            GamepadEvent {
+                gamepad,
+                event_type,
+            } => {
                 lobby.gamepads.remove(gamepad);
                 println!("{:?} Disconnected", gamepad);
             }

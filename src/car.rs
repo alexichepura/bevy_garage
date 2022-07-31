@@ -226,7 +226,7 @@ pub fn car_start_system(
             // .insert(ExternalImpulse::default())
             .insert(ExternalForce::default())
             .insert_bundle(TransformBundle::from(car_transform))
-            .insert_bundle(PickableBundle::default())
+            // .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
             .with_children(|children| {
                 let scale = 1.7;
@@ -238,7 +238,10 @@ pub fn car_start_system(
                             .with_rotation(Quat::from_rotation_y(PI)),
                     ))
                     .with_children(|gl_children| {
-                        gl_children.spawn_scene(car_gl.clone());
+                        gl_children.spawn_bundle(SceneBundle {
+                            scene: car_gl.clone(),
+                            ..default()
+                        });
                     });
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -0.3, 0.),

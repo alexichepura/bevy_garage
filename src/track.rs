@@ -1,9 +1,9 @@
 use crate::config::Config;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
+use bevy_rapier3d::na::{point, Point3};
 use bevy_rapier3d::prelude::*;
 
-use nalgebra::point;
 use rapier3d::prelude::ColliderShape;
 use std::f32::consts::PI;
 use std::fs::File;
@@ -39,17 +39,17 @@ pub fn track_start_system(
             obj.indices.iter().map(|i| *i as u32).collect(),
         )));
 
-        let vertices: Vec<_> = positions
+        let vertices: Vec<Point3<Real>> = positions
             .iter()
             .map(|v| {
-                point![
+                Point3::new(
                     v[0],
                     match is_road {
                         true => 0.,
                         false => v[1],
                     },
-                    v[2]
-                ]
+                    v[2],
+                )
             })
             .collect();
 
@@ -122,6 +122,9 @@ pub fn track_decorations_start_system(
                 .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI))),
         ))
         .with_children(|gl_children| {
-            gl_children.spawn_scene(gl_object);
+            gl_children.spawn_bundle(SceneBundle {
+                scene: gl_object,
+                ..default()
+            });
         });
 }

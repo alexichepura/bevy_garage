@@ -6,7 +6,7 @@ use core::f32::consts::PI;
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
-        .spawn_bundle(PerspectiveCameraBundle {
+        .spawn_bundle(Camera3dBundle {
             transform: Transform::from_translation(
                 config.translation + Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
             )

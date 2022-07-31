@@ -57,10 +57,10 @@ fn main() {
         //         | DebugRenderMode::SOLVER_CONTACTS,
         //     ..default()
         // })
-        .add_plugin(PolylinePlugin)
+        // .add_plugin(PolylinePlugin)
         // .add_plugin(DebugLinesPlugin::with_depth_test(true))
-        .add_plugins(DefaultPickingPlugins)
-        .add_plugin(DebugCursorPickingPlugin)
+        // .add_plugins(DefaultPickingPlugins)
+        // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)

@@ -134,10 +134,10 @@ pub fn car_brain_system(
 
         for &child in children.iter() {
             if let Ok((gtrf, _)) = q_near.get(child) {
-                origins.push(gtrf.translation);
+                origins.push(gtrf.translation());
             }
             if let Ok((gtrf, _)) = q_far.get(child) {
-                dirs.push(gtrf.translation);
+                dirs.push(gtrf.translation());
             }
         }
 
