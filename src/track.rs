@@ -23,7 +23,20 @@ pub fn track_start_system(
         let model = obj::raw::parse_obj(input).unwrap();
         let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
 
-        let positions: Vec<[f32; 3]> = obj.vertices.iter().map(|v| v.position).collect();
+        let positions: Vec<[f32; 3]> = obj
+            .vertices
+            .iter()
+            .map(|v| {
+                [
+                    v.position[0],
+                    match is_road {
+                        true => 0., // fix small deviations from 0. after blender obj triangulation export
+                        false => v.position[1],
+                    },
+                    v.position[2],
+                ]
+            })
+            .collect();
         let normales: Vec<[f32; 3]> = obj.vertices.iter().map(|v| v.normal).collect();
         let uv_data: Vec<[f32; 2]> = obj
             .vertices
@@ -41,16 +54,7 @@ pub fn track_start_system(
 
         let vertices: Vec<Point3<Real>> = positions
             .iter()
-            .map(|v| {
-                Point3::new(
-                    v[0],
-                    match is_road {
-                        true => 0.,
-                        false => v[1],
-                    },
-                    v[2],
-                )
-            })
+            .map(|v| Point3::new(v[0], v[1], v[2]))
             .collect();
 
         let indices: Vec<_> = obj

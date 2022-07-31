@@ -165,6 +165,7 @@ pub fn reset_pos_system(
         }
     }
 }
+
 pub fn reset_spawn_key_system(
     keys: Res<Input<KeyCode>>,
     mut config: ResMut<Config>,
@@ -197,6 +198,31 @@ pub fn reset_force_system(
         }
     }
 }
+
+// TODO velocity does not work
+// pub fn reset_spawn_key_system(keys: Res<Input<KeyCode>>, mut q: Query<&mut Velocity>) {
+//     if keys.just_pressed(KeyCode::Space) {
+//         println!("KeyCode::Space, cleanup");
+//         for mut v in &mut q {
+//             println!("reset velocity");
+//             *v = Velocity::zero();
+//         }
+//     }
+// }
+
+// TODO impulse does not work
+// pub fn reset_spawn_key_system(
+//     keys: Res<Input<KeyCode>>,
+//     mut q: Query<&mut ExternalImpulse, &Wheel>,
+// ) {
+//     if keys.just_pressed(KeyCode::Space) {
+//         println!("KeyCode::Space, cleanup");
+//         for mut impulse in &mut q {
+//             println!("impulse.impulse = Vec3::Y * 1_000_000.;");
+//             impulse.impulse = Vec3::X * 1_000_000.;
+//         }
+//     }
+// }
 
 // https://github.com/dimforge/bevy_rapier/issues/196
 // pub fn reset_spawn_key_system(
