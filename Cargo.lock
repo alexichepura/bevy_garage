@@ -560,11 +560,9 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_rapier3d",
- "nalgebra",
  "obj-rs",
  "parry3d",
  "rand",
- "rapier3d",
  "serde",
  "serde_json",
 ]

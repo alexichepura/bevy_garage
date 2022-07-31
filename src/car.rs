@@ -1,7 +1,6 @@
 use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
 use bevy::prelude::*;
-use bevy_rapier3d::{parry::shape::Cylinder, prelude::*};
-use rapier3d::prelude::JointAxesMask;
+use bevy_rapier3d::{parry::shape::Cylinder, prelude::*, rapier::prelude::JointAxesMask};
 use std::{f32::consts::PI, fs::File, path::Path};
 
 #[derive(Component)]
@@ -151,10 +150,11 @@ pub fn car_start_system(
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(20));
+            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(200));
             // let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
             // let collider = Collider::from(wheel_shape);
-            let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
+            let collider = Collider::cylinder(wheel_hw, wheel_r - 0.02);
+            // let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::Polyline;
+use parry3d::shape::Polyline;
 use std::f32::consts::PI;
 
 pub struct Config {

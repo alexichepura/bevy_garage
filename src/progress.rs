@@ -1,10 +1,9 @@
 use crate::config::Config;
 use bevy::prelude::*;
-use bevy_rapier3d::na::Point3;
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use obj::*;
 use parry3d::query::PointQueryWithLocation;
-use rapier3d::prelude::{ColliderShape, Polyline, SegmentPointLocation};
+use parry3d::shape::{Polyline, SegmentPointLocation};
 use std::fs::File;
 use std::io::BufReader;
 

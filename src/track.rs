@@ -3,8 +3,8 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::rapier::prelude::ColliderShape;
 
-use rapier3d::prelude::ColliderShape;
 use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
