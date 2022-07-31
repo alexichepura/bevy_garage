@@ -210,6 +210,8 @@ pub fn car_start_system(
             }
         }
 
+        let scale = 1.7;
+        let scale_vec = Vec3::new(scale, scale, scale);
         let car = commands
             .spawn()
             .insert(Sleeping::disabled())
@@ -228,29 +230,15 @@ pub fn car_start_system(
             .insert_bundle(TransformBundle::from(car_transform))
             // .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
+            .insert_bundle(SceneBundle {
+                scene: car_gl.clone(),
+                transform: Transform::identity()
+                    .with_translation(Vec3::new(0., -0.75, 0.2))
+                    .with_rotation(Quat::from_rotation_y(PI))
+                    .with_scale(scale_vec),
+                ..default()
+            })
             .with_children(|children| {
-                let scale = 1.7;
-
-                children.spawn_bundle(SceneBundle {
-                    scene: car_gl.clone(),
-                    transform: Transform::from_scale(Vec3::new(scale, scale, scale))
-                        .with_translation(Vec3::new(0., -0.75, 0.2))
-                        .with_rotation(Quat::from_rotation_y(PI)),
-                    ..default()
-                });
-                // children
-                //     .spawn()
-                //     .insert_bundle(TransformBundle::from(
-                //         Transform::from_scale(Vec3::new(scale, scale, scale))
-                //             .with_translation(Vec3::new(0., -0.75, 0.2))
-                //             .with_rotation(Quat::from_rotation_y(PI)),
-                //     ))
-                //     .with_children(|gl_children| {
-                //         gl_children.spawn_bundle(SceneBundle {
-                //             scene: car_gl.clone(),
-                //             ..default()
-                //         });
-                //     });
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -0.3, 0.),
                     mass: 1500.0,
