@@ -1,7 +1,7 @@
 use crate::config::Config;
 use bevy::prelude::*;
+use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
-use nalgebra::Point3;
 use obj::*;
 use parry3d::query::PointQueryWithLocation;
 use rapier3d::prelude::{ColliderShape, Polyline, SegmentPointLocation};

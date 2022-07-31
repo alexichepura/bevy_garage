@@ -15,9 +15,7 @@ mod trainer;
 mod util;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-use bevy_mod_picking::*;
-use bevy_polyline::prelude::*;
-use bevy_prototype_debug_lines::DebugLinesPlugin;
+// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 use brain::*;
@@ -40,11 +38,11 @@ fn main() {
         .insert_resource(Config::default())
         .insert_resource(Trainer::default())
         .add_plugins(DefaultPlugins)
-        .insert_resource(bevy_atmosphere::AtmosphereMat::default())
-        .add_plugin(bevy_atmosphere::AtmospherePlugin {
-            dynamic: false,
-            sky_radius: 1000.0,
-        })
+        // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
+        // .add_plugin(bevy_atmosphere::AtmospherePlugin {
+        //     dynamic: false,
+        //     sky_radius: 1000.0,
+        // })
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
         .add_system(camera_switch_system)
@@ -59,10 +57,10 @@ fn main() {
         //         | DebugRenderMode::SOLVER_CONTACTS,
         //     ..default()
         // })
-        .add_plugin(PolylinePlugin)
-        .add_plugin(DebugLinesPlugin::with_depth_test(true))
-        .add_plugins(DefaultPickingPlugins)
-        .add_plugin(DebugCursorPickingPlugin)
+        // .add_plugin(PolylinePlugin)
+        // .add_plugin(DebugLinesPlugin::with_depth_test(true))
+        // .add_plugins(DefaultPickingPlugins)
+        // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)

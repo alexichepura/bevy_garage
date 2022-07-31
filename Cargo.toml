@@ -1,34 +1,25 @@
-#cargo-features = ["edition2021"]
-
 [package]
 name    = "bevy_rapier_3d_car_sim"
 version = "0.1.0"
 authors = [ "Alexi Chepura <a.chepura@gmail.com>" ]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-
 [workspace]
 resolver = "2"
-
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-bevy = { version = "0.7.0" }
-obj-rs = { version =  "0.7", default-features = false }
-bevy_mod_picking = "0.7"
-nalgebra = "^0.31.0"
-parry3d = "0.9"
-rand = "0.8"
-bevy_polyline = "0.2"
-bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }
-bevy_rapier3d = { version = "0.15.0", features = [ "debug-render" ] }
-rapier3d = { version = "^0.14.0" }
-bevy_atmosphere = "0.3.1"
-
-[profile.dev.package.bevy_rapier3d]
-opt-level = 3
-
 [profile.release]
 codegen-units = 1
-
+[dependencies]
+bevy = { version = "0.8" }
+bevy_rapier3d = { version = "0.16" }
+# bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }
+# bevy_atmosphere = "0.3.1"
+rapier3d = { version = "^0.14" }
+nalgebra = "^0.31.1"
+parry3d = "0.9"
+obj-rs = { version =  "0.7", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand = "0.8"
+[profile.dev.package.bevy_rapier3d]
+opt-level = 3
 [dev-dependencies]

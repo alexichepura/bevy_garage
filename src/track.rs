@@ -1,9 +1,9 @@
 use crate::config::Config;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
+use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
 
-use nalgebra::point;
 use rapier3d::prelude::ColliderShape;
 use std::f32::consts::PI;
 use std::fs::File;
@@ -23,7 +23,20 @@ pub fn track_start_system(
         let model = obj::raw::parse_obj(input).unwrap();
         let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
 
-        let positions: Vec<[f32; 3]> = obj.vertices.iter().map(|v| v.position).collect();
+        let positions: Vec<[f32; 3]> = obj
+            .vertices
+            .iter()
+            .map(|v| {
+                [
+                    v.position[0],
+                    match is_road {
+                        true => 0., // fix small deviations from 0. after blender obj triangulation export
+                        false => v.position[1],
+                    },
+                    v.position[2],
+                ]
+            })
+            .collect();
         let normales: Vec<[f32; 3]> = obj.vertices.iter().map(|v| v.normal).collect();
         let uv_data: Vec<[f32; 2]> = obj
             .vertices
@@ -39,18 +52,9 @@ pub fn track_start_system(
             obj.indices.iter().map(|i| *i as u32).collect(),
         )));
 
-        let vertices: Vec<_> = positions
+        let vertices: Vec<Point3<Real>> = positions
             .iter()
-            .map(|v| {
-                point![
-                    v[0],
-                    match is_road {
-                        true => 0.,
-                        false => v[1],
-                    },
-                    v[2]
-                ]
-            })
+            .map(|v| Point3::new(v[0], v[1], v[2]))
             .collect();
 
         let indices: Vec<_> = obj
@@ -110,18 +114,15 @@ pub fn track_decorations_start_system(
 ) {
     let gl_object = asset_server.load("overheadLights.glb#Scene0");
     let scale = 15.;
-    commands
-        .spawn()
-        .insert_bundle(TransformBundle::from(
-            Transform::from_scale(Vec3::new(scale, scale, scale))
-                .with_translation(Vec3::new(
-                    config.translation.x + 1.65,
-                    0.,
-                    config.translation.z + 1.65,
-                ))
-                .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI))),
-        ))
-        .with_children(|gl_children| {
-            gl_children.spawn_scene(gl_object);
-        });
+    commands.spawn_bundle(SceneBundle {
+        scene: gl_object,
+        transform: Transform::from_scale(Vec3::new(scale, scale, scale))
+            .with_translation(Vec3::new(
+                config.translation.x + 1.65,
+                0.,
+                config.translation.z + 1.65,
+            ))
+            .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI))),
+        ..default()
+    });
 }

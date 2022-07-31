@@ -29,7 +29,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(60.0),
                     left: Val::Px(2.0),
                     ..default()
@@ -65,7 +65,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(20.0),
                     left: Val::Px(2.0),
                     ..default()
@@ -101,7 +101,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(40.0),
                     left: Val::Px(2.0),
                     ..default()
@@ -137,7 +137,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(2.0),
                     left: Val::Px(2.0),
                     ..default()
@@ -173,7 +173,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     top: Val::Px(2.0),
                     left: Val::Px(2.0),
                     ..default()
@@ -228,7 +228,7 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
 }
 
 pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(UiCameraBundle::default());
+    // commands.spawn_bundle(UiCameraBundle::default());
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     commands
@@ -236,7 +236,7 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(5.0),
                     right: Val::Px(15.0),
                     ..default()
@@ -272,7 +272,7 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(25.0),
                     right: Val::Px(15.0),
                     ..default()
@@ -309,7 +309,7 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(50.0),
                     right: Val::Px(15.0),
                     ..default()
@@ -346,7 +346,7 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     bottom: Val::Px(70.0),
                     right: Val::Px(15.0),
                     ..default()

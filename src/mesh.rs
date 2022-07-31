@@ -5,8 +5,7 @@ use bevy::{
         render_resource::PrimitiveTopology,
     },
 };
-use bevy_rapier3d::prelude::Real;
-use nalgebra::Point3;
+use bevy_rapier3d::{na::Point3, prelude::Real};
 
 pub fn bevy_mesh(buffers: (Vec<Point3<Real>>, Vec<[u32; 3]>)) -> Mesh {
     let (vtx, idx) = buffers;
