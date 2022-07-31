@@ -543,13 +543,14 @@ checksum = "d92d5679e89602a18682a37846573dcd1979410179e14204280460ba9fb8713a"
 
 [[package]]
 name = "bevy_rapier3d"
-version = "0.15.0"
-source = "git+https://github.com/oddfacade/bevy_rapier?branch=rolling#90297afbe39e929e49477b7f703b8d640f8907c9"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6a7e920b88d792baddfd06a4429d9ecf018db7af4e5fc714b4a8b154d36fe9d"
 dependencies = [
  "bevy",
  "bitflags",
  "log",
- "nalgebra 0.31.0 (git+https://github.com/dimforge/nalgebra)",
+ "nalgebra",
  "rapier3d",
 ]
 
@@ -559,7 +560,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_rapier3d",
- "nalgebra 0.31.0 (git+https://github.com/dimforge/nalgebra?branch=dev)",
+ "nalgebra",
  "obj-rs",
  "parry3d",
  "rand",
@@ -2108,28 +2109,14 @@ dependencies = [
 
 [[package]]
 name = "nalgebra"
-version = "0.31.0"
-source = "git+https://github.com/dimforge/nalgebra?branch=dev#d0d88f1e82eb8d65857d520eb9755ceb8b1d6f32"
-dependencies = [
- "approx",
- "matrixmultiply",
- "nalgebra-macros 0.1.0 (git+https://github.com/dimforge/nalgebra?branch=dev)",
- "num-complex",
- "num-rational",
- "num-traits",
- "simba",
- "typenum",
-]
-
-[[package]]
-name = "nalgebra"
-version = "0.31.0"
-source = "git+https://github.com/dimforge/nalgebra#d0d88f1e82eb8d65857d520eb9755ceb8b1d6f32"
+version = "0.31.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9e0a04ce089f9401aac565c740ed30c46291260f27d4911fdbaa6ca65fa3044"
 dependencies = [
  "approx",
  "glam",
  "matrixmultiply",
- "nalgebra-macros 0.1.0 (git+https://github.com/dimforge/nalgebra)",
+ "nalgebra-macros",
  "num-complex",
  "num-rational",
  "num-traits",
@@ -2140,17 +2127,8 @@ dependencies = [
 [[package]]
 name = "nalgebra-macros"
 version = "0.1.0"
-source = "git+https://github.com/dimforge/nalgebra?branch=dev#d0d88f1e82eb8d65857d520eb9755ceb8b1d6f32"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "nalgebra-macros"
-version = "0.1.0"
-source = "git+https://github.com/dimforge/nalgebra#d0d88f1e82eb8d65857d520eb9755ceb8b1d6f32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01fcc0b8149b4632adc89ac3b7b31a12fb6099a0317a4eb2ebff574ef7de7218"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2528,7 +2506,7 @@ dependencies = [
  "bitflags",
  "downcast-rs",
  "either",
- "nalgebra 0.31.0 (git+https://github.com/dimforge/nalgebra)",
+ "nalgebra",
  "num-derive",
  "num-traits",
  "rustc-hash",
@@ -2693,7 +2671,7 @@ dependencies = [
  "bitflags",
  "crossbeam",
  "downcast-rs",
- "nalgebra 0.31.0 (git+https://github.com/dimforge/nalgebra)",
+ "nalgebra",
  "num-derive",
  "num-traits",
  "parry3d",

@@ -1,37 +1,25 @@
-#cargo-features = ["edition2021"]
-
 [package]
 name    = "bevy_rapier_3d_car_sim"
 version = "0.1.0"
 authors = [ "Alexi Chepura <a.chepura@gmail.com>" ]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-
 [workspace]
 resolver = "2"
-
-[dependencies]
-bevy = { version = "0.8" }
-# bevy_rapier3d = { version = "0.15.0", features = [ "debug-render" ] }
-bevy_rapier3d = { git = "https://github.com/oddfacade/bevy_rapier", branch = "rolling", features = [ "debug-render" ] }
-# bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }
-# bevy_atmosphere = "0.3.1"
-rapier3d = { version = "^0.14.0" }
-# nalgebra = "^0.31.0"
-nalgebra = { git = "https://github.com/dimforge/nalgebra", branch = "dev" }
-parry3d = "0.9"
-obj-rs = { version =  "0.7", default-features = false }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-rand = "0.8"
-
-[patch.crates-io]
-nalgebra = { git = "https://github.com/dimforge/nalgebra" }
-
-[profile.dev.package.bevy_rapier3d]
-opt-level = 3
-
 [profile.release]
 codegen-units = 1
-
+[dependencies]
+bevy = { version = "0.8" }
+bevy_rapier3d = { version = "0.16" }
+# bevy_prototype_debug_lines = { version = "0.7", features = ["3d"] }
+# bevy_atmosphere = "0.3.1"
+rapier3d = { version = "^0.14" }
+nalgebra = "^0.31.1"
+parry3d = "0.9"
+obj-rs = { version =  "0.7", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand = "0.8"
+[profile.dev.package.bevy_rapier3d]
+opt-level = 3
 [dev-dependencies]
