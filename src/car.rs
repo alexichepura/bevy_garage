@@ -1,6 +1,10 @@
 use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
 use bevy::prelude::*;
-use bevy_rapier3d::{parry::shape::Cylinder, prelude::*, rapier::prelude::JointAxesMask};
+use bevy_rapier3d::{
+    parry::shape::Cylinder,
+    prelude::*,
+    rapier::prelude::{JointAxesMask, JointAxis},
+};
 use std::{f32::consts::PI, fs::File, path::Path};
 
 #[derive(Component)]
@@ -126,7 +130,6 @@ pub fn car_start_system(
     for i in 0..config.cars_count {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            // config.translation,
             config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
         )
         .with_rotation(config.quat);
@@ -134,26 +137,22 @@ pub fn car_start_system(
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
-            let joint_mask = JointAxesMask::X
-                | JointAxesMask::Y
-                | JointAxesMask::Z
-                | JointAxesMask::ANG_Y
-                | JointAxesMask::ANG_Z;
+            let joint_mask =
+                JointAxesMask::X | JointAxesMask::Y | JointAxesMask::ANG_Y | JointAxesMask::ANG_Z;
 
             let joint = GenericJointBuilder::new(joint_mask)
                 .local_axis1(Vec3::X)
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
+                .motor_position(JointAxis::Z, 0., 0.0001, 0.0000001)
                 .build();
             joints.push(joint);
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let mesh = bevy_mesh(wheel_cylinder.to_trimesh(200));
-            // let wheel_shape = SharedShape(Arc::new(wheel_cylinder));
-            // let collider = Collider::from(wheel_shape);
-            let collider = Collider::cylinder(wheel_hw, wheel_r - 0.02);
+            let collider = Collider::cylinder(wheel_hw, wheel_r);
             // let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
