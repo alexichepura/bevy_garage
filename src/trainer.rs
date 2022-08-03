@@ -34,7 +34,7 @@ impl Default for Trainer {
             saved_brain = None;
         }
         Self {
-            interval: 20.,
+            interval: 5.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
@@ -153,11 +153,15 @@ pub fn reset_collider_system(
     trainer: Res<Trainer>,
 ) {
     for (p, colliding_entities) in q_colliding_entities.iter_mut() {
+        let mut has_not_road_colliders: bool = false;
         for e in colliding_entities.iter() {
             let colliding_entity = q_name.get(e).unwrap();
-            println!("colliding_entity {:?}", colliding_entity);
+            if !colliding_entity.contains("road") {
+                println!("colliding non road entity {:?}", colliding_entity);
+                has_not_road_colliders = true;
+            }
         }
-        if !colliding_entities.is_empty() {
+        if has_not_road_colliders {
             let (mut t, mut car, mut f, mut v, mut car_brain) = q_parent.get_mut(p.get()).unwrap();
             car.gas = 0.;
             car.brake = 0.;

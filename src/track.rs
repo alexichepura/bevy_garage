@@ -18,7 +18,7 @@ pub fn track_start_system(
 ) {
     let geoms = models();
     for obj_path in geoms.into_iter() {
-        let is_road = obj_path.contains(&"road.obj".to_string());
+        let is_road = obj_path.contains("road.obj");
         let input = BufReader::new(File::open(&obj_path).unwrap());
         let model = obj::raw::parse_obj(input).unwrap();
         let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
