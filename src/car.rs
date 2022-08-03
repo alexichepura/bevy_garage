@@ -113,7 +113,7 @@ pub fn car_start_system(
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.15;
+    let ride_height = 0.25;
 
     let shift = Vec3::new(
         car_hw - wheel_hw - 0.01,
@@ -145,7 +145,7 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 10_000_000.0, 5000.)
+                .set_motor(JointAxis::Z, 0., 0., 100_000_000_000., 10_000_000.)
                 .build();
             joints.push(joint);
 
@@ -174,6 +174,7 @@ pub fn car_start_system(
             };
             let wheel_id = commands
                 .spawn()
+                .insert(Name::new("wheel"))
                 .insert(Sleeping::disabled())
                 .insert_bundle(wheel_pbr)
                 .insert_bundle(wheel_transform)
@@ -211,6 +212,7 @@ pub fn car_start_system(
 
         let car = commands
             .spawn()
+            .insert(Name::new("car"))
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
             .insert(Car::new(
@@ -244,11 +246,14 @@ pub fn car_start_system(
                 });
                 children
                     .spawn()
+                    .insert(Name::new("car_collider"))
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(Friction::coefficient(0.0001))
                     .insert(Restitution::coefficient(0.9))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
+                    .insert(CollidingEntities::default())
+                    .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(collider_mass);
 
                 let half = config.sensor_count as i8 / 2;

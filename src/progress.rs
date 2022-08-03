@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::{car::*, config::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use obj::*;
@@ -56,6 +56,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
         .insert(collider)
         .insert(RigidBody::Fixed)
         .insert(Sensor)
+        .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
             0., 1., 0.,
         )));

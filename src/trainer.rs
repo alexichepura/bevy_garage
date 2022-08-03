@@ -1,6 +1,6 @@
 use crate::{brain::*, car::Car, config::Config, progress::*};
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::{ExternalForce, Velocity};
+use bevy_rapier3d::prelude::*;
 use std::{cmp::Ordering, fs};
 
 pub struct Trainer {
@@ -117,6 +117,28 @@ pub fn trainer_system(
     let mut q_generation_text = dash_set.p2();
     let mut generation_text = q_generation_text.single_mut();
     generation_text.sections[1].value = trainer.generation.to_string();
+}
+
+pub fn reset_collider_system(
+    mut q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
+    mut q_parent: Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
+    q_name: Query<&Name>,
+) {
+    for (p, colliding_entities) in q_colliding_entities.iter_mut() {
+        for e in colliding_entities.iter() {
+            let colliding_entity = q_name.get(e).unwrap();
+            println!("colliding_entity {:?}", colliding_entity);
+        }
+        if !colliding_entities.is_empty() {
+            let (mut t, mut car, mut f, mut v) = q_parent.get_mut(p.get()).unwrap();
+            car.gas = 0.;
+            car.brake = 0.;
+            car.steering = 0.;
+            *t = car.init_transform;
+            *f = ExternalForce::default();
+            *v = Velocity::zero();
+        }
+    }
 }
 
 pub fn reset_pos_system(

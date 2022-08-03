@@ -79,25 +79,26 @@ fn main() {
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .add_system(reset_pos_system)
+        .add_system(reset_collider_system)
         .add_system(progress_system)
         .add_system(reset_spawn_key_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
-        .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
+        // .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
 }
 
-fn display_events_system(
-    // mut e_collision: EventReader<CollisionEvent>,
-    mut e_force: EventReader<ContactForceEvent>,
-) {
-    // for collision_e in e_collision.iter() {
-    //     println!("collision: {:?}", collision_e);
-    // }
+// fn display_events_system(
+//     mut e_collision: EventReader<CollisionEvent>,
+//     mut e_force: EventReader<ContactForceEvent>,
+// ) {
+//     for collision_e in e_collision.iter() {
+//         println!("main collision event: {:?}", collision_e);
+//     }
 
-    for force_e in e_force.iter() {
-        println!(
-            "force: {:?} {:?}",
-            force_e.total_force, force_e.total_force_magnitude
-        );
-    }
-}
+//     for force_e in e_force.iter() {
+//         println!(
+//             "glomainbal force event: {:?} {:?}",
+//             force_e.total_force, force_e.total_force_magnitude
+//         );
+//     }
+// }

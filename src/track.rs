@@ -19,7 +19,7 @@ pub fn track_start_system(
     let geoms = models();
     for obj_path in geoms.into_iter() {
         let is_road = obj_path.contains(&"road.obj".to_string());
-        let input = BufReader::new(File::open(obj_path).unwrap());
+        let input = BufReader::new(File::open(&obj_path).unwrap());
         let model = obj::raw::parse_obj(input).unwrap();
         let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
 
@@ -86,7 +86,7 @@ pub fn track_start_system(
         commands
             .spawn()
             .insert_bundle(pbr)
-            .insert(Name::new("Track"))
+            .insert(Name::new(obj_path))
             .insert(collider)
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
