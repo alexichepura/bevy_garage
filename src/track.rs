@@ -113,10 +113,9 @@ pub fn track_decorations_start_system(
     config: Res<Config>,
 ) {
     let gl_object = asset_server.load("overheadLights.glb#Scene0");
-    let scale = 15.;
     commands.spawn_bundle(SceneBundle {
         scene: gl_object,
-        transform: Transform::from_scale(Vec3::new(scale, scale, scale))
+        transform: Transform::from_scale(Vec3::ONE * 15.)
             .with_translation(Vec3::new(
                 config.translation.x + 1.65,
                 0.,

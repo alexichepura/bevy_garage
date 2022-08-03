@@ -20,4 +20,6 @@ serde_json = "1"
 rand = "0.8"
 [profile.dev.package.bevy_rapier3d]
 opt-level = 3
+[profile.dev.package.rapier3d]
+opt-level = 3
 [dev-dependencies]

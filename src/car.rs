@@ -182,6 +182,7 @@ pub fn car_start_system(
                 .insert(Ccd::enabled())
                 .insert(Velocity::zero())
                 .insert(collider)
+                .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction::coefficient(100.))
                 .insert(Restitution::coefficient(0.))
@@ -209,8 +210,6 @@ pub fn car_start_system(
             }
         }
 
-        let scale = 1.7;
-        let scale_vec = Vec3::new(scale, scale, scale);
         let car = commands
             .spawn()
             .insert(Sleeping::disabled())
@@ -234,7 +233,7 @@ pub fn car_start_system(
                 transform: Transform::identity()
                     .with_translation(Vec3::new(0., -0.75, 0.2))
                     .with_rotation(Quat::from_rotation_y(PI))
-                    .with_scale(scale_vec),
+                    .with_scale(Vec3::ONE * 1.7),
                 ..default()
             })
             .with_children(|children| {
