@@ -15,7 +15,7 @@ mod trainer;
 mod util;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-// use bevy_prototype_debug_lines::DebugLinesPlugin;
+use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 use brain::*;
@@ -58,7 +58,7 @@ fn main() {
         //     ..default()
         // })
         // .add_plugin(PolylinePlugin)
-        // .add_plugin(DebugLinesPlugin::with_depth_test(true))
+        .add_plugin(DebugLinesPlugin::with_depth_test(true))
         // .add_plugins(DefaultPickingPlugins)
         // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
