@@ -2,6 +2,7 @@ use crate::{brain::*, car::Car, config::Config, progress::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::{cmp::Ordering, fs};
+use std::{fs::File, path::Path};
 
 pub struct Trainer {
     pub interval: f64,
@@ -9,16 +10,36 @@ pub struct Trainer {
     pub record: f32,
     pub last_check_at: f64,
     pub best_brain: Option<CarBrain>,
+    pub sensor_count: usize,
+}
+
+impl Trainer {
+    pub fn get_brain(&self) -> CarBrain {
+        let brain = match self.best_brain {
+            Some(ref b) => CarBrain::clone_randomised(&b),
+            None => CarBrain::new(7),
+        };
+        brain
+    }
 }
 
 impl Default for Trainer {
     fn default() -> Self {
+        let saved_brain: Option<CarBrain>;
+        let json_file = File::open(Path::new("brain.json"));
+        if json_file.is_ok() {
+            println!("brain.json found");
+            saved_brain = serde_json::from_reader(json_file.unwrap()).unwrap();
+        } else {
+            saved_brain = None;
+        }
         Self {
             interval: 20.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
-            best_brain: None,
+            best_brain: saved_brain,
+            sensor_count: 7,
         }
     }
 }
@@ -121,8 +142,15 @@ pub fn trainer_system(
 
 pub fn reset_collider_system(
     mut q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
-    mut q_parent: Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
+    mut q_parent: Query<(
+        &mut Transform,
+        &mut Car,
+        &mut ExternalForce,
+        &mut Velocity,
+        &mut CarBrain,
+    )>,
     q_name: Query<&Name>,
+    trainer: Res<Trainer>,
 ) {
     for (p, colliding_entities) in q_colliding_entities.iter_mut() {
         for e in colliding_entities.iter() {
@@ -130,10 +158,11 @@ pub fn reset_collider_system(
             println!("colliding_entity {:?}", colliding_entity);
         }
         if !colliding_entities.is_empty() {
-            let (mut t, mut car, mut f, mut v) = q_parent.get_mut(p.get()).unwrap();
+            let (mut t, mut car, mut f, mut v, mut car_brain) = q_parent.get_mut(p.get()).unwrap();
             car.gas = 0.;
             car.brake = 0.;
             car.steering = 0.;
+            *car_brain = trainer.get_brain();
             *t = car.init_transform;
             *f = ExternalForce::default();
             *v = Velocity::zero();

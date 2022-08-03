@@ -33,10 +33,15 @@ use track::*;
 use trainer::*;
 
 fn main() {
+    let config = Config::default();
+    let sensor_count = config.sensor_count;
     App::new()
         .insert_resource(Msaa { samples: 4 })
-        .insert_resource(Config::default())
-        .insert_resource(Trainer::default())
+        .insert_resource(config)
+        .insert_resource(Trainer {
+            sensor_count,
+            ..default()
+        })
         .add_plugins(DefaultPlugins)
         // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         // .add_plugin(bevy_atmosphere::AtmospherePlugin {

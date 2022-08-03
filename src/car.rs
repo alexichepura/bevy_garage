@@ -1,11 +1,11 @@
-use crate::{brain::*, config::Config, mesh::*, progress::CarProgress, track::*};
+use crate::{config::Config, mesh::*, progress::CarProgress, track::*, trainer::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
     prelude::*,
     rapier::prelude::{JointAxesMask, JointAxis},
 };
-use std::{f32::consts::PI, fs::File, path::Path};
+use std::f32::consts::PI;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -73,6 +73,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
+    trainer: Res<Trainer>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -97,15 +98,6 @@ pub fn car_start_system(
             material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
             ..default()
         });
-    }
-
-    let saved_brain: Option<CarBrain>;
-    let json_file = File::open(Path::new("brain.json"));
-    if json_file.is_ok() {
-        println!("brain.json found");
-        saved_brain = serde_json::from_reader(json_file.unwrap()).unwrap();
-    } else {
-        saved_brain = None;
     }
 
     let wheel_r: f32 = 0.4;
@@ -288,12 +280,7 @@ pub fn car_start_system(
         }
 
         if config.use_brain {
-            let brain = match saved_brain {
-                Some(ref b) => CarBrain::clone_randomised(&b),
-                None => CarBrain::new(config.sensor_count),
-            };
-            // println!("br {:?}", brain.levels.clone());
-            commands.entity(car).insert(brain);
+            commands.entity(car).insert(trainer.get_brain());
         }
     }
 }
