@@ -77,11 +77,11 @@ pub fn track_start_system(
         };
         let restitution = match is_road {
             true => 0.,
-            false => 0.,
+            false => 1.,
         };
         let friction = match is_road {
             true => 1.,
-            false => 0.01,
+            false => 0.0001,
         };
         commands
             .spawn()

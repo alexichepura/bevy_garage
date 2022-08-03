@@ -3,10 +3,6 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::{ExternalForce, Velocity};
 use std::{cmp::Ordering, fs};
 
-const PAUSE: f64 = 3.;
-const LINVEL_FORCE: f32 = 10000.;
-const ANGVEL_FORCE: f32 = 2.;
-
 pub struct Trainer {
     pub interval: f64,
     pub generation: i32,
@@ -35,7 +31,7 @@ pub struct TrainerRecordDistanceText;
 pub struct TrainerGenerationText;
 
 pub fn trainer_system(
-    mut config: ResMut<Config>,
+    config: Res<Config>,
     mut trainer: ResMut<Trainer>,
     time: Res<Time>,
     mut cars: Query<
@@ -45,6 +41,7 @@ pub fn trainer_system(
             &mut Transform,
             &mut Car,
             &mut ExternalForce,
+            &mut Velocity,
         ),
         With<CarProgress>,
     >,
@@ -55,17 +52,6 @@ pub fn trainer_system(
     )>,
 ) {
     let seconds = time.seconds_since_startup();
-    if config.reset_pause_until > seconds {
-        return;
-    }
-    if config.reset_pause_until > 0. {
-        config.reset_pause_until = 0.;
-        config.use_brain = true;
-        for (_, _, _, mut car, mut f) in cars.iter_mut() {
-            car.use_brain = true;
-            *f = ExternalForce::default();
-        }
-    }
     if !config.use_brain {
         return;
     }
@@ -88,7 +74,7 @@ pub fn trainer_system(
                 Ordering::Less
             })
             .unwrap();
-        let (progress, best_brain, _, _, _) = best_car;
+        let (progress, best_brain, _, _, _, _) = best_car;
         trainer.best_brain = Some(best_brain.clone());
         let best_brain = best_brain.clone();
 
@@ -99,17 +85,17 @@ pub fn trainer_system(
         } else {
             trainer.generation += 1;
             trainer.record = 0.;
-            config.use_brain = false;
-            config.reset_pause_until = time.seconds_since_startup() + 5.;
-            for (_i, (_progress, mut brain, mut t, mut car, mut f)) in cars.iter_mut().enumerate() {
+            for (_i, (_progress, mut brain, mut t, mut car, mut f, mut v)) in
+                cars.iter_mut().enumerate()
+            {
                 let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
                 brain.levels = cloned_best.levels.clone();
                 car.gas = 0.;
                 car.brake = 0.;
                 car.steering = 0.;
-                car.use_brain = false;
                 *t = car.init_transform;
-                *f = ExternalForce::default()
+                *f = ExternalForce::default();
+                *v = Velocity::zero();
             }
             println!("new generation {:?}", trainer.generation);
 
@@ -134,12 +120,9 @@ pub fn trainer_system(
 }
 
 pub fn reset_pos_system(
-    config: Res<Config>,
-    time: Res<Time>,
-    mut q_car: Query<(&mut Transform, &mut Car, &mut ExternalForce, &Velocity)>,
+    mut q_car: Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
 ) {
-    let seconds = time.seconds_since_startup();
-    for (mut t, mut car, mut f, v) in q_car.iter_mut() {
+    for (mut t, mut car, mut f, mut v) in q_car.iter_mut() {
         if t.translation.y > 500. || t.translation.y < 0.
         // || v.linvel.length() > 100.
         // || v.angvel.length() > PI
@@ -148,53 +131,26 @@ pub fn reset_pos_system(
             car.gas = 0.;
             car.brake = 0.;
             car.steering = 0.;
-            car.use_brain = false;
-            car.reset_pause_until = seconds + PAUSE;
-            *t = car.init_transform;
-            *f = ExternalForce::default()
-        }
-        if car.reset_pause_until > seconds {
-            *t = car.init_transform;
-            f.force = -v.linvel * LINVEL_FORCE;
-            f.torque = -v.angvel * ANGVEL_FORCE;
-        } else if car.reset_pause_until > 0. {
             *t = car.init_transform;
             *f = ExternalForce::default();
-            car.use_brain = config.use_brain;
-            car.reset_pause_until = 0.;
+            *v = Velocity::zero();
         }
     }
 }
 
 pub fn reset_spawn_key_system(
     keys: Res<Input<KeyCode>>,
-    mut config: ResMut<Config>,
-    time: Res<Time>,
-    mut query: Query<(&mut Car, &mut Transform)>,
+    mut query: Query<(&mut Car, &mut Transform, &mut ExternalForce, &mut Velocity)>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         println!("KeyCode::Space, cleanup");
-        config.use_brain = false;
-        config.reset_pause_until = time.seconds_since_startup() + PAUSE;
-        for (mut car, mut t) in query.iter_mut() {
+        for (mut car, mut t, mut f, mut v) in query.iter_mut() {
             car.gas = 0.;
             car.brake = 0.;
             car.steering = 0.;
-            car.use_brain = false;
             *t = car.init_transform;
-        }
-    }
-}
-pub fn reset_force_system(
-    config: Res<Config>,
-    time: Res<Time>,
-    mut q_carforces: Query<(&Velocity, &mut ExternalForce, &mut Transform, &Car), With<Car>>,
-) {
-    if config.reset_pause_until > time.seconds_since_startup() {
-        for (v, mut f, mut t, car) in q_carforces.iter_mut() {
-            f.force = -v.linvel * LINVEL_FORCE;
-            f.torque = -v.angvel * ANGVEL_FORCE;
-            *t = car.init_transform;
+            *f = ExternalForce::default();
+            *v = Velocity::zero();
         }
     }
 }

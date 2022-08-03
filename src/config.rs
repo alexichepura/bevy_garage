@@ -19,7 +19,6 @@ pub struct Config {
     pub meters: Vec<f32>,
     pub meters_shift: f32,
     pub meters_total: f32,
-    pub reset_pause_until: f64,
 }
 
 impl Default for Config {
@@ -41,7 +40,6 @@ impl Default for Config {
             meters: vec![],
             meters_shift: 0.,
             meters_total: 0.,
-            reset_pause_until: 0.,
         }
     }
 }

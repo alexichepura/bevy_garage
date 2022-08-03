@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
     prelude::*,
-    rapier::prelude::{JointAxesMask, JointAxis, MotorModel},
+    rapier::prelude::{JointAxesMask, JointAxis},
 };
 use std::{f32::consts::PI, fs::File, path::Path};
 
@@ -109,14 +109,14 @@ pub fn car_start_system(
     }
 
     let wheel_r: f32 = 0.4;
-    let wheel_hw: f32 = 0.2;
-    let car_hw: f32 = 1.1;
-    let car_hh: f32 = 0.3;
+    let wheel_hw: f32 = 0.15;
+    let car_hw: f32 = 1.;
+    let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
     let ride_height = 0.15;
 
     let shift = Vec3::new(
-        car_hw - wheel_hw - 0.15,
+        car_hw - wheel_hw - 0.01,
         -car_hh + wheel_r - ride_height,
         car_hl - wheel_r - 0.5,
     );
@@ -145,7 +145,7 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 100.0, 5.)
+                .set_motor(JointAxis::Z, 0., 0., 10_000_000.0, 5000.)
                 .build();
             joints.push(joint);
 
@@ -183,7 +183,7 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(100.))
+                .insert(Friction::coefficient(2.))
                 .insert(Restitution::coefficient(0.))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
@@ -246,8 +246,8 @@ pub fn car_start_system(
                     .spawn()
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(0.01))
-                    .insert(Restitution::coefficient(0.))
+                    .insert(Friction::coefficient(0.0001))
+                    .insert(Restitution::coefficient(0.9))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);
 
@@ -255,7 +255,7 @@ pub fn car_start_system(
                 for a in -half..(half + 1) {
                     let far_quat = Quat::from_rotation_y(-a as f32 * PI * 0.02);
                     let dir = Vec3::Z * config.max_toi;
-                    let sensor_pos_on_car = Vec3::new(0., 0., car_hl);
+                    let sensor_pos_on_car = Vec3::new(0., 0.3, car_hl);
                     children
                         .spawn()
                         .insert(SensorNear)
