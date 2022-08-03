@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
     prelude::*,
-    rapier::prelude::{JointAxesMask, JointAxis},
+    rapier::prelude::{JointAxesMask, JointAxis, MotorModel},
 };
 use std::{f32::consts::PI, fs::File, path::Path};
 
@@ -110,13 +110,13 @@ pub fn car_start_system(
 
     let wheel_r: f32 = 0.4;
     let wheel_hw: f32 = 0.2;
-    let car_hw: f32 = 1.;
-    let car_hh: f32 = 0.5;
+    let car_hw: f32 = 1.1;
+    let car_hh: f32 = 0.3;
     let car_hl: f32 = 2.2;
     let ride_height = 0.15;
 
     let shift = Vec3::new(
-        car_hw - wheel_hw - 0.01,
+        car_hw - wheel_hw - 0.15,
         -car_hh + wheel_r - ride_height,
         car_hl - wheel_r - 0.5,
     );
@@ -145,15 +145,14 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .motor_position(JointAxis::Z, 0., 0.0001, 0.0000001)
+                .set_motor(JointAxis::Z, 0., 0., 100.0, 5.)
                 .build();
             joints.push(joint);
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let mesh = bevy_mesh(wheel_cylinder.to_trimesh(200));
-            let collider = Collider::cylinder(wheel_hw, wheel_r);
-            // let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
+            let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
@@ -238,7 +237,7 @@ pub fn car_start_system(
             })
             .with_children(|children| {
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass: Vec3::new(0., -0.3, 0.),
+                    local_center_of_mass: Vec3::new(0., -car_hh, 0.),
                     mass: 1500.0,
                     principal_inertia: Vec3::new(10., 10., 10.),
                     ..default()
@@ -247,7 +246,7 @@ pub fn car_start_system(
                     .spawn()
                     .insert(Ccd::enabled())
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
-                    .insert(Friction::coefficient(0.5))
+                    .insert(Friction::coefficient(0.01))
                     .insert(Restitution::coefficient(0.))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(collider_mass);

@@ -18,7 +18,7 @@ pub fn plain_start_system(
                 max_z: plane_hz,
                 min_z: -plane_hz,
             })),
-            material: materials.add(Color::rgba(0.2, 0.4, 0.2, 0.1).into()),
+            material: materials.add(Color::rgba(0.2, 0.4, 0.2, 0.5).into()),
             ..default()
         })
         .insert(Name::new("Plane"))
