@@ -28,7 +28,7 @@ impl Default for Config {
             use_brain: true,
             show_rays: true,
             sensor_count: 7,
-            max_torque: 600.,
+            max_torque: 750.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.7, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),

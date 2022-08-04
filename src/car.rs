@@ -137,14 +137,25 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 100_000_000_000., 100_000_000.)
+                .set_motor(
+                    JointAxis::Z,
+                    0.,
+                    0.,
+                    100_000_000_000_000_000_000.,
+                    1000_000_000_000_000_000.,
+                )
                 .build();
             joints.push(joint);
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let mesh = bevy_mesh(wheel_cylinder.to_trimesh(200));
-            let collider = Collider::round_cylinder(wheel_hw, wheel_r - 0.02, 0.02);
+            let wheel_border_radius = 0.05;
+            let collider = Collider::round_cylinder(
+                wheel_hw,
+                wheel_r - wheel_border_radius,
+                wheel_border_radius,
+            );
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
@@ -176,7 +187,7 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(2.))
+                .insert(Friction::coefficient(6.))
                 .insert(Restitution::coefficient(0.))
                 .insert(wheel_collider_mass)
                 .insert(wheel)

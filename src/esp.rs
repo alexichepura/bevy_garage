@@ -30,7 +30,7 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 3.,
-            _ => match car_kmh / 70. {
+            _ => match car_kmh / 100. {
                 x if x >= 1. => 0.,
                 x => 1. - x,
             },
