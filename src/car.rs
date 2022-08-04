@@ -141,15 +141,15 @@ pub fn car_start_system(
                     JointAxis::Z,
                     0.,
                     0.,
-                    100_000_000_000_000_000_000.,
-                    1000_000_000_000_000_000.,
+                    10_000_000_000_000_000_000_000_000_000_000.,
+                    100_000_000_000_000_000_000_000_000_000.,
                 )
                 .build();
             joints.push(joint);
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(200));
+            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(50));
             let wheel_border_radius = 0.05;
             let collider = Collider::round_cylinder(
                 wheel_hw,
@@ -168,7 +168,7 @@ pub fn car_start_system(
             let wheel_collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::ZERO,
                 mass: 15.,
-                principal_inertia: Vec3::new(0.3, 0.3, 0.3),
+                principal_inertia: Vec3::ONE * 0.5,
                 ..default()
             });
             let wheel = Wheel {
@@ -187,7 +187,7 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(6.))
+                .insert(Friction::coefficient(10.))
                 .insert(Restitution::coefficient(0.))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
@@ -234,10 +234,10 @@ pub fn car_start_system(
             .insert(ReadMassProperties::default())
             .insert_bundle(SceneBundle {
                 scene: car_gl.clone(),
-                transform: Transform::identity()
-                    .with_translation(Vec3::new(0., -0.75, 0.2))
-                    .with_rotation(Quat::from_rotation_y(PI))
-                    .with_scale(Vec3::ONE * 1.7),
+                transform: Transform::identity(),
+                // .with_translation(Vec3::new(0., -0.75, 0.2))
+                // .with_rotation(Quat::from_rotation_y(PI))
+                // .with_scale(Vec3::ONE * 1.7),
                 ..default()
             })
             .with_children(|children| {
