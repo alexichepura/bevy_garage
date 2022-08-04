@@ -73,21 +73,22 @@ pub fn track_start_system(
 
         let h = match is_road {
             true => 0.01,
-            false => 0.2,
+            false => 0.1,
         };
         let restitution = match is_road {
             true => 0.,
-            false => 1.,
+            false => 0.,
         };
         let friction = match is_road {
             true => 1.,
-            false => 0.0001,
+            false => 0.5,
         };
         commands
             .spawn()
             .insert_bundle(pbr)
             .insert(Name::new(obj_path))
             .insert(collider)
+            .insert(ColliderScale::Absolute(Vec3::ONE))
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
             .insert(Friction::coefficient(friction))
