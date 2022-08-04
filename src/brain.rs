@@ -114,7 +114,7 @@ impl Level {
 pub fn car_brain_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
-    mut q_car: Query<(Entity, &mut Car, &mut CarBrain, &Children), With<Car>>,
+    mut q_car: Query<(Entity, &mut Car, &mut CarBrain, &Children, &Velocity), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
     mut ray_set: ParamSet<(
@@ -127,7 +127,7 @@ pub fn car_brain_system(
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
 
     let e_hid_car = config.hid_car.unwrap();
-    for (e, mut car, mut brain, children) in q_car.iter_mut() {
+    for (e, mut car, mut brain, children, v) in q_car.iter_mut() {
         let is_hid_car = e == e_hid_car;
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
@@ -196,7 +196,8 @@ pub fn car_brain_system(
         if !car.use_brain {
             return;
         }
-        brain.feed_forward(inputs.clone());
+        inputs.push(v.linvel.length());
+        brain.feed_forward(inputs);
 
         let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;
         // print_float_arr("outputs", outputs);

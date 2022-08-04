@@ -14,10 +14,10 @@ pub struct Trainer {
 }
 
 impl Trainer {
-    pub fn get_brain(&self) -> CarBrain {
+    pub fn clone_best_brain_or_get_new(&self) -> CarBrain {
         let brain = match self.best_brain {
             Some(ref b) => CarBrain::clone_randomised(&b),
-            None => CarBrain::new(7),
+            None => CarBrain::new(8),
         };
         brain
     }
@@ -86,7 +86,7 @@ pub fn trainer_system(
     if seconds_diff > trainer.interval {
         trainer.last_check_at = seconds;
 
-        let best_car = cars
+        let leader_car = cars
             .iter()
             .max_by(|a, b| {
                 if a.0.meters > b.0.meters {
@@ -95,39 +95,53 @@ pub fn trainer_system(
                 Ordering::Less
             })
             .unwrap();
-        let (progress, best_brain, _, _, _, _) = best_car;
-        trainer.best_brain = Some(best_brain.clone());
-        let best_brain = best_brain.clone();
+        let (leader_progress, leader_brain, _, _, _, _) = leader_car;
 
         let minimal_progress_delta = 1.;
-        if progress.meters > (trainer.record + minimal_progress_delta) {
-            println!("distance record {:.1}", progress.meters);
-            trainer.record = progress.meters;
+        if leader_progress.meters > (trainer.record + minimal_progress_delta) {
+            println!("distance record {:.1}", leader_progress.meters);
+            trainer.record = leader_progress.meters;
         } else {
             trainer.generation += 1;
             trainer.record = 0.;
-            for (_i, (_progress, mut brain, mut t, mut car, mut f, mut v)) in
-                cars.iter_mut().enumerate()
-            {
-                let cloned_best: CarBrain = CarBrain::clone_randomised(&best_brain);
-                brain.levels = cloned_best.levels.clone();
-                car.gas = 0.;
-                car.brake = 0.;
-                car.steering = 0.;
-                *t = car.init_transform;
-                *f = ExternalForce::default();
-                *v = Velocity::zero();
-            }
-            println!("new generation {:?}", trainer.generation);
+            if leader_progress.meters > 5. {
+                println!("cloning leader_brain");
+                let new_brain = leader_brain.clone();
+                trainer.best_brain = Some(new_brain.clone());
 
-            let mut brain_dump = best_brain.clone();
-            for level in brain_dump.levels.iter_mut() {
-                level.inputs.fill(0.);
-                level.outputs.fill(0.);
+                for (_progress, mut brain, mut t, mut car, mut f, mut v) in cars.iter_mut() {
+                    brain.levels = CarBrain::clone_randomised(&new_brain).levels.clone();
+                    car.gas = 0.;
+                    car.brake = 0.;
+                    car.steering = 0.;
+                    *t = car.init_transform;
+                    *f = ExternalForce::default();
+                    *v = Velocity::zero();
+                }
+                println!("new generation {:?}", trainer.generation);
+
+                let mut brain_dump = new_brain.clone();
+                for level in brain_dump.levels.iter_mut() {
+                    level.inputs.fill(0.);
+                    level.outputs.fill(0.);
+                }
+                let serialized = serde_json::to_string(&brain_dump).unwrap();
+                println!("saving brain.json");
+                fs::write("brain.json", serialized).expect("Unable to write brain.json");
+            } else {
+                println!("small progress, getting new brains");
+                println!("best_brain.is_some() {:?}", trainer.best_brain.is_some());
+                for (_progress, mut brain, mut t, mut car, mut f, mut v) in cars.iter_mut() {
+                    let new_brain = trainer.clone_best_brain_or_get_new();
+                    brain.levels = new_brain.levels.clone();
+                    car.gas = 0.;
+                    car.brake = 0.;
+                    car.steering = 0.;
+                    *t = car.init_transform;
+                    *f = ExternalForce::default();
+                    *v = Velocity::zero();
+                }
             }
-            let serialized = serde_json::to_string(&brain_dump).unwrap();
-            println!("saving brain.json");
-            fs::write("brain.json", serialized).expect("Unable to write brain.json");
         }
     }
 
@@ -166,7 +180,7 @@ pub fn reset_collider_system(
             car.gas = 0.;
             car.brake = 0.;
             car.steering = 0.;
-            *car_brain = trainer.get_brain();
+            *car_brain = trainer.clone_best_brain_or_get_new();
             *t = car.init_transform;
             *f = ExternalForce::default();
             *v = Velocity::zero();

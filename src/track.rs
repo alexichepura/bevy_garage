@@ -73,7 +73,7 @@ pub fn track_start_system(
 
         let h = match is_road {
             true => 0.01,
-            false => 0.,
+            false => 0.2,
         };
         let restitution = match is_road {
             true => 0.,

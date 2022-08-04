@@ -122,7 +122,8 @@ pub fn car_start_system(
     for i in 0..config.cars_count {
         let is_hid = i == 0;
         let car_transform = Transform::from_translation(
-            config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
+            // config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
+            config.translation,
         )
         .with_rotation(config.quat);
 
@@ -285,7 +286,9 @@ pub fn car_start_system(
         }
 
         if config.use_brain {
-            commands.entity(car).insert(trainer.get_brain());
+            commands
+                .entity(car)
+                .insert(trainer.clone_best_brain_or_get_new());
         }
     }
 }
