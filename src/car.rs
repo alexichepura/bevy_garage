@@ -137,13 +137,7 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(
-                    JointAxis::Z,
-                    0.,
-                    0.,
-                    10_000_000_000_000_000_000_000_000_000_000.,
-                    100_000_000_000_000_000_000_000_000_000.,
-                )
+                .set_motor(JointAxis::Z, 0., 0., 10e35 * 300., 10e35 * 10.)
                 .build();
             joints.push(joint);
 
@@ -244,7 +238,7 @@ pub fn car_start_system(
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -car_hh, 0.),
                     mass: 1500.0,
-                    principal_inertia: Vec3::new(10., 10., 10.),
+                    principal_inertia: Vec3::new(2000., 2000., 200.),
                     ..default()
                 });
                 children

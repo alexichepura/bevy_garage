@@ -35,7 +35,7 @@ pub fn esp_system(
                 x => 1. - x,
             },
         };
-        let steering_speed_x: f32 = match car_kmh / 70. {
+        let steering_speed_x: f32 = match car_kmh / 100. {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
