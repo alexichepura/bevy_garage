@@ -1,3 +1,4 @@
+use crate::track::ASSET_ROAD;
 use crate::{brain::*, car::Car, config::Config, progress::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -34,7 +35,7 @@ impl Default for Trainer {
             saved_brain = None;
         }
         Self {
-            interval: 5.,
+            interval: 10.,
             generation: 0,
             record: 0.,
             last_check_at: 0.,
@@ -156,31 +157,46 @@ pub fn trainer_system(
 
 pub fn reset_collider_system(
     mut q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
-    mut q_parent: Query<(
-        &mut Transform,
-        &mut Car,
-        &mut ExternalForce,
-        &mut Velocity,
-        &mut CarBrain,
-    )>,
     q_name: Query<&Name>,
-    trainer: Res<Trainer>,
+    mut trainer: ResMut<Trainer>,
+    time: Res<Time>,
+    mut paramset: ParamSet<(
+        Query<(&mut Car, &mut CarBrain)>,
+        Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
+    )>,
 ) {
+    let seconds = time.seconds_since_startup();
+    let reset_at = seconds + 1.;
     for (p, colliding_entities) in q_colliding_entities.iter_mut() {
-        let mut has_not_road_colliders: bool = false;
+        let mut should_reset: bool = false;
         for e in colliding_entities.iter() {
             let colliding_entity = q_name.get(e).unwrap();
-            if !colliding_entity.contains("road") {
-                println!("colliding non road entity {:?}", colliding_entity);
-                has_not_road_colliders = true;
+            if !colliding_entity.contains(ASSET_ROAD) {
+                should_reset = true;
             }
         }
-        if has_not_road_colliders {
-            let (mut t, mut car, mut f, mut v, mut car_brain) = q_parent.get_mut(p.get()).unwrap();
-            car.gas = 0.;
-            car.brake = 0.;
-            car.steering = 0.;
-            *car_brain = trainer.clone_best_brain_or_get_new();
+        if should_reset {
+            let mut q_parent = paramset.p0();
+            let (mut car, mut car_brain) = q_parent.get_mut(p.get()).unwrap();
+            if car.reset_at.is_none() {
+                println!("should_reset, car.reset_at=Some");
+                trainer.record = 0.;
+                car.gas = 0.;
+                car.brake = 0.;
+                car.steering = 0.;
+                car.use_brain = false;
+                car.reset_at = Some(reset_at);
+                *car_brain = trainer.clone_best_brain_or_get_new();
+            }
+        }
+    }
+    let mut q_car = paramset.p1();
+    for (mut t, mut car, mut f, mut v) in q_car.iter_mut() {
+        f.force = -v.linvel * 100.;
+        f.torque = -v.angvel * 100.;
+        if car.reset_at.unwrap_or(seconds) < seconds {
+            car.use_brain = true;
+            car.reset_at = None;
             *t = car.init_transform;
             *f = ExternalForce::default();
             *v = Velocity::zero();

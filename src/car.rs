@@ -41,7 +41,7 @@ pub struct Car {
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
     pub init_transform: Transform,
-    pub reset_pause_until: f64,
+    pub reset_at: Option<f64>,
 }
 #[derive(Component)]
 pub struct HID;
@@ -61,7 +61,7 @@ impl Car {
             wheels: wheels.clone(),
             wheel_max_torque,
             init_transform,
-            reset_pause_until: 0.,
+            reset_at: None,
         }
     }
 }

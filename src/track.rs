@@ -81,7 +81,7 @@ pub fn track_start_system(
         };
         let friction = match is_road {
             true => 1.,
-            false => 0.5,
+            false => 0.01,
         };
         commands
             .spawn()
@@ -100,9 +100,11 @@ pub fn track_start_system(
     }
 }
 
+pub const ASSET_ROAD: &str = "assets/road.obj";
+
 fn models() -> Vec<String> {
     vec![
-        "assets/road.obj".to_string(),
+        ASSET_ROAD.to_string(),
         "assets/border-left.obj".to_string(),
         "assets/border-right.obj".to_string(),
     ]
