@@ -9,6 +9,7 @@ pub struct Trainer {
     pub interval: f64,
     pub generation: i32,
     pub record: f32,
+    pub leader: Option<Entity>,
     pub last_check_at: f64,
     pub best_brain: Option<CarBrain>,
     pub sensor_count: usize,
@@ -38,6 +39,7 @@ impl Default for Trainer {
             interval: 10.,
             generation: 0,
             record: 0.,
+            leader: None,
             last_check_at: 0.,
             best_brain: saved_brain,
             sensor_count: 7,
@@ -74,6 +76,7 @@ pub fn trainer_system(
     )>,
 ) {
     let seconds = time.seconds_since_startup();
+
     if !config.use_brain {
         return;
     }
@@ -161,7 +164,7 @@ pub fn reset_collider_system(
     mut trainer: ResMut<Trainer>,
     time: Res<Time>,
     mut paramset: ParamSet<(
-        Query<(&mut Car, &mut CarBrain)>,
+        Query<(&mut Car, &mut CarBrain, &CarProgress)>,
         Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
     )>,
 ) {
@@ -177,10 +180,12 @@ pub fn reset_collider_system(
         }
         if should_reset {
             let mut q_parent = paramset.p0();
-            let (mut car, mut car_brain) = q_parent.get_mut(p.get()).unwrap();
+            let (mut car, mut car_brain, progress) = q_parent.get_mut(p.get()).unwrap();
             if car.reset_at.is_none() {
                 println!("should_reset, car.reset_at=Some");
-                trainer.record = 0.;
+                if progress.place == 0 {
+                    trainer.record = 0.;
+                }
                 car.gas = 0.;
                 car.brake = 0.;
                 car.steering = 0.;
@@ -208,10 +213,7 @@ pub fn reset_pos_system(
     mut q_car: Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
 ) {
     for (mut t, mut car, mut f, mut v) in q_car.iter_mut() {
-        if t.translation.y > 500. || t.translation.y < 0.
-        // || v.linvel.length() > 100.
-        // || v.angvel.length() > PI
-        {
+        if t.translation.y > 500. || t.translation.y < -10. {
             println!("car is out of bound {:?}", t.translation.round());
             car.gas = 0.;
             car.brake = 0.;

@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 fn car_lerp(a: f32, random_0_to_1: f32) -> f32 {
     let b = random_0_to_1 * 2. - 1.;
-    let t = 0.05;
+    let t = 0.01;
     a + (b - a) * t
 }
 

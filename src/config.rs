@@ -24,7 +24,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 20,
+            cars_count: 50,
             use_brain: true,
             show_rays: false,
             sensor_count: 7,

@@ -4,12 +4,14 @@ use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use obj::*;
 use parry3d::query::PointQueryWithLocation;
 use parry3d::shape::{Polyline, SegmentPointLocation};
+use std::cmp::Ordering;
 use std::fs::File;
 use std::io::BufReader;
 
 #[derive(Component)]
 pub struct CarProgress {
     pub meters: f32,
+    pub place: usize,
 }
 
 pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Config>) {
@@ -64,10 +66,11 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
 
 pub fn progress_system(
     config: Res<Config>,
-    mut cars: Query<(&Transform, &mut CarProgress), With<CarProgress>>,
+    mut cars: Query<(&Transform, &mut CarProgress, Entity), With<CarProgress>>,
 ) {
     if let Some(polyline) = &config.polyline {
-        for (transform, mut car_progress) in cars.iter_mut() {
+        let mut board: Vec<(Entity, f32)> = Vec::new();
+        for (transform, mut car_progress, e) in cars.iter_mut() {
             let tr = transform.translation;
             let point: Point3<Real> = Point3::new(tr.x, tr.y, tr.z);
             let point_location = polyline.project_local_point_and_get_location(&point, true);
@@ -79,7 +82,7 @@ pub fn progress_system(
                 }
                 SegmentPointLocation::OnEdge(uv) => {
                     let m = uv[1] * segment.length();
-                    let meters = match segment_i {
+                    let mut meters = match segment_i {
                         i if i >= config.segment_i => {
                             m + config.meters[segment_i as usize] - config.meters_shift
                         }
@@ -89,13 +92,22 @@ pub fn progress_system(
                         }
                     };
                     if meters - car_progress.meters > 1000. {
-                        // println!("car antiprogress {:.1}", car_progress.meters);
-                        car_progress.meters = -(config.meters_total - meters);
-                    } else {
-                        car_progress.meters = meters;
+                        meters = -(config.meters_total - meters);
                     }
+                    car_progress.meters = meters;
+                    board.push((e, meters));
                 }
             }
+        }
+        board.sort_by(|a, b| {
+            if a.1 > b.1 {
+                return Ordering::Greater;
+            }
+            Ordering::Less
+        });
+        for (i, (e, _)) in board.iter().enumerate() {
+            let (_, mut p, _) = cars.get_mut(*e).unwrap();
+            p.place = i;
         }
     }
 }

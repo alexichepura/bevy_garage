@@ -219,7 +219,10 @@ pub fn car_start_system(
                 config.max_torque,
                 car_transform,
             ))
-            .insert(CarProgress { meters: 0. })
+            .insert(CarProgress {
+                meters: 0.,
+                place: 0,
+            })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
             // .insert(ExternalImpulse::default())
@@ -229,7 +232,7 @@ pub fn car_start_system(
             .insert(ReadMassProperties::default())
             .insert_bundle(SceneBundle {
                 scene: car_gl.clone(),
-                transform: Transform::identity(),
+                transform: car_transform,
                 // .with_translation(Vec3::new(0., -0.75, 0.2))
                 // .with_rotation(Quat::from_rotation_y(PI))
                 // .with_scale(Vec3::ONE * 1.7),
