@@ -197,6 +197,7 @@ pub fn car_brain_system(
             return;
         }
         inputs.push(v.linvel.length());
+        car.sensor_inputs = inputs.clone();
         brain.feed_forward(inputs);
 
         let outputs: &Vec<f32> = &brain.levels.last().unwrap().outputs;

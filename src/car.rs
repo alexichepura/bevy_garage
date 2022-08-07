@@ -34,6 +34,7 @@ pub struct RayHit;
 pub struct RayLine;
 #[derive(Component, Debug)]
 pub struct Car {
+    pub sensor_inputs: Vec<f32>,
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
@@ -54,6 +55,7 @@ impl Car {
         init_transform: Transform,
     ) -> Self {
         Self {
+            sensor_inputs: vec![0.; 7],
             gas: 0.,
             brake: 0.,
             steering: 0.,
