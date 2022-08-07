@@ -11,6 +11,7 @@ use crate::{car::Car, progress::CarProgress};
 // https://iq.opengenus.org/deep-q-learning/
 // https://towardsdatascience.com/deep-q-learning-tutorial-mindqn-2a4c855abffc
 
+const MEM_SIZE: usize = 64;
 const SENSORS_SIZE: usize = 7;
 const STATE_SIZE: usize = SENSORS_SIZE + 2;
 const ACTION_SIZE: usize = 4;
@@ -25,9 +26,9 @@ type TSingleState = [f32; STATE_SIZE];
 pub struct ReplayMemory {
     pub state: TState,
     pub next_state: TState,
-    pub action: [usize; 64],
-    pub reward: Tensor1D<64>,
-    pub done: Tensor1D<64>,
+    pub action: [usize; MEM_SIZE],
+    pub reward: Tensor1D<MEM_SIZE>,
+    pub done: Tensor1D<MEM_SIZE>,
     pub i: usize,
 }
 impl ReplayMemory {
@@ -35,7 +36,7 @@ impl ReplayMemory {
         Self {
             state: Tensor2D::zeros(),
             next_state: Tensor2D::zeros(),
-            action: [(); 64].map(|_| 0),
+            action: [(); MEM_SIZE].map(|_| 0),
             reward: Tensor1D::zeros(),
             done: Tensor1D::zeros(),
             i: 0,
@@ -46,7 +47,7 @@ impl ReplayMemory {
         Self {
             state: Tensor2D::randn(&mut rng),
             next_state: Tensor2D::randn(&mut rng),
-            action: [(); 64].map(|_| rng.gen_range(0..ACTION_SIZE)),
+            action: [(); MEM_SIZE].map(|_| rng.gen_range(0..ACTION_SIZE)),
             reward: Tensor1D::randn(&mut rng),
             done: Tensor1D::zeros(),
             i: 0,
@@ -60,11 +61,13 @@ impl ReplayMemory {
         reward: f32,
         done: f32,
     ) {
-        self.state.mut_data()[self.i] = state;
-        self.next_state.mut_data()[self.i] = next_state;
-        self.action[self.i] = action;
-        self.reward.mut_data()[self.i] = reward;
-        self.done.mut_data()[self.i] = done;
+        let i = self.i % MEM_SIZE;
+        self.state.mut_data()[i] = state;
+        self.next_state.mut_data()[i] = next_state;
+        self.action[i] = action;
+        self.reward.mut_data()[i] = reward;
+        self.done.mut_data()[i] = done;
+        self.i += 1;
     }
 }
 pub struct DqnResource {
@@ -129,22 +132,29 @@ pub fn dqn_system(
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
     let mut action: usize = 0;
+
     if random_number <= dqn.epsilon {
-        // action = env.action_space.sample()
-        action = 1;
-        println!("TODO random action");
+        action = rng.gen_range(0..3);
     } else {
         let start = Instant::now();
-        let next_q_values = dqn.tqn.forward(dqn.rpl.next_state.clone());
-        let max_next_q = next_q_values.max_last_dim();
-        let discount = 0.99;
+        let next_q_values: Tensor2D<MEM_SIZE, ACTION_SIZE> =
+            dqn.tqn.forward(dqn.rpl.next_state.clone());
+        let max_next_q_values = next_q_values.max_last_dim();
+        let max_next_q = mul(max_next_q_values, &(1.0 - dqn.rpl.done.clone()));
+
         // targ_q = R + discount * max(Q(S'))
-        let target_q = discount * mul(max_next_q, &(1.0 - dqn.rpl.done.clone())) + &dqn.rpl.reward;
+        let discount = 0.99;
+        let target_q: Tensor1D<MEM_SIZE> = discount * max_next_q + &dqn.rpl.reward;
+
         // curr_q = Q(S)[A]
-        let q_values = dqn.qn.forward(dqn.rpl.state.trace());
+        let q_values: Tensor2D<MEM_SIZE, ACTION_SIZE, OwnedTape> =
+            dqn.qn.forward(dqn.rpl.state.trace());
+        let curr_q = q_values.gather_last_dim(&dqn.rpl.action);
+
         // loss = mse(curr_q, targ_q)
-        let loss = mse_loss(q_values.gather_last_dim(&dqn.rpl.action), &target_q);
-        let loss_v = *loss.data();
+        let loss: Tensor0D<OwnedTape> = mse_loss(curr_q, &target_q);
+        let loss_v: f32 = *loss.data();
+
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
         let seconds_round = seconds.round() as i32;
