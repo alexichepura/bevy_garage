@@ -40,8 +40,6 @@ fn main() {
 
     // let dqn = Dqn::default();
     App::new()
-        .add_startup_system(dqn_start_system.exclusive_system())
-        // .insert_resource(Dqn::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(config)
         .insert_resource(Trainer {
@@ -73,6 +71,7 @@ fn main() {
         // .add_plugins(DefaultPickingPlugins)
         // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
+        .add_startup_system(dqn_start_system.exclusive_system())
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
@@ -83,6 +82,7 @@ fn main() {
         .add_startup_system(dash_fps_start_system)
         .add_system(esp_system)
         .add_system(car_brain_system)
+        .add_system(dqn_system)
         .add_system(trainer_system)
         .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
