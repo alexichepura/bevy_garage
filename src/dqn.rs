@@ -26,17 +26,21 @@ pub struct ReplayMemory {
 }
 impl ReplayMemory {
     pub fn default() -> Self {
+        Self {
+            state: Tensor2D::zeros(),
+            next_state: Tensor2D::zeros(),
+            action: [(); 64].map(|_| 0),
+            reward: Tensor1D::zeros(),
+            done: Tensor1D::zeros(),
+        }
+    }
+    pub fn random() -> Self {
         let mut rng = StdRng::seed_from_u64(0);
         Self {
-            // state: Tensor2D::zeros(),
             state: Tensor2D::randn(&mut rng),
-            // next_state: Tensor2D::zeros(),
             next_state: Tensor2D::randn(&mut rng),
-            // action: [(); 64].map(|_| 0),
             action: [(); 64].map(|_| rng.gen_range(0..ACTION_SIZE)),
-            // reward: Tensor1D::zeros(),
             reward: Tensor1D::randn(&mut rng),
-            // done: Tensor1D::zeros(),
             done: Tensor1D::zeros(),
         }
     }
@@ -46,11 +50,6 @@ pub struct DqnResource {
     pub qn: QNetwork,
     pub tqn: QNetwork,
     pub replay: ReplayMemory,
-    // pub state: TState,
-    // pub next_state: TState,
-    // pub action: [usize; 64],
-    // pub reward: Tensor1D<64>,
-    // pub done: Tensor1D<64>,
     pub epsilon: f32,
     pub max_epsilon: f32,
     pub min_epsilon: f32,
@@ -63,6 +62,7 @@ impl DqnResource {
             seconds: 0,
             qn: qn.clone(),
             tqn: qn.clone(),
+            // replay: ReplayMemory::random(),
             replay: ReplayMemory::default(),
             epsilon: 1.,
             max_epsilon: 1.,
