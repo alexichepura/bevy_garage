@@ -1,9 +1,9 @@
 mod brain;
-mod brain_dfdx;
 mod camera;
 mod car;
 mod config;
 mod dash;
+mod dqn;
 mod esp;
 mod gamepad;
 mod input;
@@ -20,11 +20,11 @@ use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 use brain::*;
-use brain_dfdx::*;
 use camera::*;
 use car::*;
 use config::*;
 use dash::*;
+use dqn::*;
 use esp::*;
 use gamepad::*;
 use input::*;
