@@ -26,7 +26,7 @@ impl Default for Config {
         Self {
             cars_count: 1,
             use_brain: false,
-            show_rays: false,
+            show_rays: true,
             sensor_count: 7,
             max_torque: 800.,
             max_toi: 50.,

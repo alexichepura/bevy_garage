@@ -291,10 +291,8 @@ pub fn car_start_system(
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
 
-        if config.use_brain {
-            commands
-                .entity(car)
-                .insert(trainer.clone_best_brain_or_get_new());
-        }
+        commands
+            .entity(car)
+            .insert(trainer.clone_best_brain_or_get_new());
     }
 }
