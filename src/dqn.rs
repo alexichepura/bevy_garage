@@ -6,9 +6,12 @@ use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
-const BATCH_SIZE: usize = 32;
+const DECAY: f32 = 0.001;
+const SYNC_INTERVAL_STEPS: i32 = 20;
+const STEP_DURATION: f64 = 0.25;
+const BATCH_SIZE: usize = 256;
 // const MIN_REPLAY_SIZE: usize = 1000;
-const BUFFER_SIZE: usize = 5_000;
+const BUFFER_SIZE: usize = 500_000;
 const SENSORS_SIZE: usize = 7;
 const STATE_SIZE: usize = SENSORS_SIZE + 2;
 const ACTION_SIZE: usize = 4;
@@ -81,7 +84,6 @@ pub struct DqnResource {
     pub eps: f32,
     pub max_eps: f32,
     pub min_eps: f32,
-    pub decay: f32,
     pub done: f32,
 }
 impl DqnResource {
@@ -98,7 +100,6 @@ impl DqnResource {
             eps: 1.,
             max_eps: 1.,
             min_eps: 0.01,
-            decay: 0.0001,
             done: 0.,
         }
     }
@@ -134,7 +135,7 @@ pub fn dqn_system(
 ) {
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
-        dqn.seconds = seconds + 0.25;
+        dqn.seconds = seconds + STEP_DURATION;
         dqn.step += 1;
     } else {
         return;
@@ -164,11 +165,11 @@ pub fn dqn_system(
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
     let progress_delta = car_dqn.prev_progress - progress.meters;
-    let reward: f32 = if crashed {
-        -1000.
-    } else {
-        progress_delta * 10.
-    };
+    let mut reward: f32 = if crashed { -10. } else { progress_delta * 10. };
+    if reward.abs() > 100. {
+        // stabilise things, (issue: progress_delta is too big)
+        reward = 1.
+    }
     let action: usize;
     let use_random = random_number < dqn.eps;
     if use_random {
@@ -182,8 +183,6 @@ pub fn dqn_system(
             .iter()
             .position(|q| *q >= max_q_value);
         if None == some_action {
-            dbg!(some_action);
-            dbg!(max_q_value);
             dbg!(q_values);
             // TODO remove this random. why None == some_action?
             action = rng.gen_range(0..ACTION_SIZE - 1);
@@ -206,7 +205,6 @@ pub fn dqn_system(
             next_states.mut_data()[i] = *next_state;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-
         let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_states);
         let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
         let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
@@ -216,29 +214,26 @@ pub fn dqn_system(
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
 
-        println!(
-            "loss={loss_v:#.3} reward={reward:#.1} d={progress_delta:#.2} e={:?}",
-            dqn.eps
-        );
-        if dqn.step % 10 == 0 {
-            dbg!(dqn.step % 10);
+        if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             println!(
-                "obs={:?} loss={loss_v:#.3} rb_len={:?}",
-                obs.map(|o| o.mul(10.).round().mul(0.1)),
-                dqn.rb.len()
+                "networks sync er={loss_v:#.3} rb={:?} obs={:?}",
+                dqn.rb.len(),
+                obs.map(|o| o.mul(10.).round() / 10.),
             );
             dqn.tqn = dqn.qn.clone();
         }
-    }
-    dqn.eps = if dqn.eps < dqn.min_eps {
-        dqn.min_eps
+        println!(
+            "{:?} a{action:?} R={reward:.1} e={:.2} rnd={use_random:?} er={loss_v:.2} m={:.1}",
+            dqn.step, dqn.eps, progress.meters
+        );
+        dqn.eps = if dqn.eps < dqn.min_eps {
+            dqn.min_eps
+        } else {
+            dqn.max_eps - DECAY * dqn.step as f32
+        };
     } else {
-        dqn.max_eps - dqn.decay * dqn.step as f32
-    };
-    println!(
-        "step={:?} a={action:?} r={reward:?} e={:?} random={use_random:?}",
-        dqn.step, dqn.eps
-    );
+        println!("rb.len={:?}", dqn.rb.len());
+    }
     dqn.rb.store(
         car_dqn.prev_obs,
         car_dqn.prev_action,
