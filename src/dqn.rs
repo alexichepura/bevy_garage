@@ -180,8 +180,9 @@ pub fn dqn_system(
 
             let seconds_round = seconds.round() as i32;
             if seconds_round > dqn.seconds {
-                println!("obs={:?} loss={loss_v:#.3} rb_len={:?}", obs, dqn.rb.len(),);
+                println!("obs={:?} loss={loss_v:#.3} rb_len={:?}", obs, dqn.rb.len());
                 dqn.seconds = seconds_round + 1;
+                dqn.tqn = dqn.qn.clone();
             }
         }
     }
@@ -189,6 +190,8 @@ pub fn dqn_system(
     car_dqn.prev_obs = obs;
     dqn.epsilon =
         dqn.min_epsilon + (dqn.max_epsilon - dqn.min_epsilon) * (-dqn.decay * seconds as f32);
+
+    println!("action={action:?}");
 
     let gas = if action == 0 { 1. } else { 0. };
     let brake = if action == 1 { 1. } else { 0. };
