@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::time::Instant;
 
 const BUFFER_SIZE: usize = 50_000;
 const SENSORS_SIZE: usize = 7;
@@ -34,6 +33,9 @@ impl ReplayBuffer {
             i: 0,
         }
     }
+    pub fn len(&self) -> usize {
+        return self.state.len();
+    }
     pub fn store(
         &mut self,
         state: Observation,
@@ -42,7 +44,7 @@ impl ReplayBuffer {
         next_state: Observation,
     ) {
         let i = self.i % BUFFER_SIZE;
-        if self.state.len() < BUFFER_SIZE {
+        if self.len() < BUFFER_SIZE {
             self.state.push(state);
             self.action.push(action);
             self.reward.push(reward);
@@ -125,7 +127,6 @@ pub fn dqn_system(
     if random_number <= dqn.epsilon {
         action = rng.gen_range(0..3);
     } else {
-        let start = Instant::now();
         let next_q_values: Action1D = dqn.tqn.forward(obs_state_tensor.clone());
         let max_next_q_value = *next_q_values.clone().max_last_dim().data();
         action = next_q_values
@@ -148,7 +149,11 @@ pub fn dqn_system(
         sgd.sgd.update(&mut dqn.qn, gradients);
         let seconds_round = seconds.round() as i32;
         if seconds_round > dqn.seconds {
-            println!("q loss={loss_v:#.3} in {:?}", start.elapsed());
+            println!(
+                "q obs={:?} loss={loss_v:#.3} rb_len={:?}",
+                obs,
+                dqn.rpl.len(),
+            );
             dqn.seconds = seconds_round + 1;
         }
     }
