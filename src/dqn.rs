@@ -15,7 +15,6 @@ type QNetwork = (
     (Linear<32, 32>, ReLU),
     Linear<32, ACTION_SIZE>,
 );
-type Action1D = Tensor1D<ACTION_SIZE>;
 type Observation = [f32; STATE_SIZE];
 
 pub struct ReplayBuffer {
@@ -25,6 +24,7 @@ pub struct ReplayBuffer {
     pub next_state: Vec<Observation>,
     pub i: usize,
 }
+type StateTuple = (Observation, usize, f32, Observation);
 impl ReplayBuffer {
     pub fn new() -> Self {
         Self {
@@ -36,7 +36,17 @@ impl ReplayBuffer {
         }
     }
     pub fn len(&self) -> usize {
-        return self.state.len();
+        self.state.len()
+    }
+    pub fn get_batch(&self, sample_indexes: [usize; BATCH_SIZE]) -> [StateTuple; BATCH_SIZE] {
+        sample_indexes.map(|i| {
+            (
+                self.state[i],
+                self.action[i],
+                self.reward[i],
+                self.next_state[i],
+            )
+        })
     }
     pub fn store(
         &mut self,
@@ -64,7 +74,7 @@ pub struct DqnResource {
     pub seconds: i32,
     pub qn: QNetwork,
     pub tqn: QNetwork,
-    pub rpl: ReplayBuffer,
+    pub rb: ReplayBuffer,
     pub epsilon: f32,
     pub max_epsilon: f32,
     pub min_epsilon: f32,
@@ -80,7 +90,7 @@ impl DqnResource {
             seconds: 0,
             qn: qn.clone(),
             tqn: qn.clone(),
-            rpl: ReplayBuffer::new(),
+            rb: ReplayBuffer::new(),
             epsilon: 1.,
             max_epsilon: 1.,
             min_epsilon: 0.01,
@@ -138,31 +148,40 @@ pub fn dqn_system(
             .position(|q| *q == max_q_value)
             .unwrap();
 
-        let mut rng = StdRng::seed_from_u64(0);
+        let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..BUFFER_SIZE));
+        if dqn.rb.len() > BATCH_SIZE {
+            let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
 
-        let state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::randn(&mut rng);
-        let action: [usize; BATCH_SIZE] = [(); BATCH_SIZE].map(|_| rng.gen_range(0..ACTION_SIZE));
-        let reward: Tensor1D<BATCH_SIZE> = Tensor1D::randn(&mut rng);
-        let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-        let next_state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::randn(&mut rng);
+            let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+            let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
+            let mut rewards: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+            let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+            for (i, (state, action, reward, next_state)) in batch.iter().enumerate() {
+                states.mut_data()[i] = *state;
+                actions[i] = *action;
+                rewards.mut_data()[i] = *reward;
+                next_states.mut_data()[i] = *next_state;
+            }
+            let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
 
-        let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_state.clone());
-        let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
-        let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &reward;
-        let q_values = dqn.qn.forward(state.trace());
-        let loss = mse_loss(q_values.gather_last_dim(&action), &target_q);
-        let loss_v = *loss.data();
-        let gradients = loss.backward();
-        sgd.sgd.update(&mut dqn.qn, gradients);
+            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_states);
+            let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
+            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
+            let q_values = dqn.qn.forward(states.trace());
+            let loss = mse_loss(q_values.gather_last_dim(&actions), &target_q);
+            let loss_v = *loss.data();
+            let gradients = loss.backward();
+            sgd.sgd.update(&mut dqn.qn, gradients);
 
-        let seconds_round = seconds.round() as i32;
-        if seconds_round > dqn.seconds {
-            println!("obs={:?} loss={loss_v:#.3} rb_len={:?}", obs, dqn.rpl.len(),);
-            dqn.seconds = seconds_round + 1;
+            let seconds_round = seconds.round() as i32;
+            if seconds_round > dqn.seconds {
+                println!("obs={:?} loss={loss_v:#.3} rb_len={:?}", obs, dqn.rb.len(),);
+                dqn.seconds = seconds_round + 1;
+            }
         }
     }
     let prev_state = obs; // TODO !!!!!!!!!!!
-    dqn.rpl.store(prev_state, action, reward, obs);
+    dqn.rb.store(prev_state, action, reward, obs);
     dqn.epsilon =
         dqn.min_epsilon + (dqn.max_epsilon - dqn.min_epsilon) * (-dqn.decay * seconds as f32);
 }
