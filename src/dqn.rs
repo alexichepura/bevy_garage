@@ -163,67 +163,71 @@ pub fn dqn_system(
     let obs_state_tensor = Tensor1D::new(obs);
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
-    let mut action: usize = 0;
-
     let progress_delta = car_dqn.prev_progress - progress.meters;
     let reward: f32 = if crashed {
         -1000.
     } else {
         progress_delta * 10.
     };
+    let action: usize;
     let use_random = random_number < dqn.eps;
     if use_random {
-        action = rng.gen_range(0..3);
+        action = rng.gen_range(0..ACTION_SIZE - 1);
     } else {
-        if dqn.rb.len() > BATCH_SIZE + 1 {
-            let q_values = dqn.qn.forward(obs_state_tensor.clone());
-            let max_q_value = *q_values.clone().max_last_dim().data();
-            let some_action = q_values
-                .clone()
-                .data()
-                .iter()
-                .position(|q| *q >= max_q_value);
-            if None == some_action {
-                println!("max_q_value={max_q_value:?} {:?}", q_values);
-            }
+        let q_values = dqn.qn.forward(obs_state_tensor.clone());
+        let max_q_value = *q_values.clone().max_last_dim().data();
+        let some_action = q_values
+            .clone()
+            .data()
+            .iter()
+            .position(|q| *q >= max_q_value);
+        if None == some_action {
+            dbg!(some_action);
+            dbg!(max_q_value);
+            dbg!(q_values);
+            // TODO remove this random. why None == some_action?
+            action = rng.gen_range(0..ACTION_SIZE - 1);
+        } else {
             action = some_action.unwrap();
-            let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-            let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
+        }
+    }
+    if dqn.rb.len() > BATCH_SIZE + 1 {
+        let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
+        let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
 
-            let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
-            let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
-            let mut rewards: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-            let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
-            for (i, (state, action, reward, next_state)) in batch.iter().enumerate() {
-                states.mut_data()[i] = *state;
-                actions[i] = 1 * action;
-                rewards.mut_data()[i] = *reward;
-                next_states.mut_data()[i] = *next_state;
-            }
-            let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+        let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
+        let mut rewards: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+        for (i, (state, action, reward, next_state)) in batch.iter().enumerate() {
+            states.mut_data()[i] = *state;
+            actions[i] = 1 * action;
+            rewards.mut_data()[i] = *reward;
+            next_states.mut_data()[i] = *next_state;
+        }
+        let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
 
-            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_states);
-            let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
-            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
-            let q_values = dqn.qn.forward(states.trace());
-            let loss = mse_loss(q_values.gather_last_dim(&actions), &target_q);
-            let loss_v = *loss.data();
-            let gradients = loss.backward();
-            sgd.sgd.update(&mut dqn.qn, gradients);
+        let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_states);
+        let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
+        let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
+        let q_values = dqn.qn.forward(states.trace());
+        let loss = mse_loss(q_values.gather_last_dim(&actions), &target_q);
+        let loss_v = *loss.data();
+        let gradients = loss.backward();
+        sgd.sgd.update(&mut dqn.qn, gradients);
 
+        println!(
+            "loss={loss_v:#.3} reward={reward:#.1} d={progress_delta:#.2} e={:?}",
+            dqn.eps
+        );
+        if dqn.step % 10 == 0 {
+            dbg!(dqn.step % 10);
             println!(
-                "loss={loss_v:#.3} reward={reward:#.1} d={progress_delta:#.2} e={:?}",
-                dqn.eps
+                "obs={:?} loss={loss_v:#.3} rb_len={:?}",
+                obs.map(|o| o.mul(10.).round().mul(0.1)),
+                dqn.rb.len()
             );
-            if dqn.step % 10 == 0 {
-                dbg!(dqn.step % 10);
-                println!(
-                    "obs={:?} loss={loss_v:#.3} rb_len={:?}",
-                    obs.map(|o| o.mul(10.).round().mul(0.1)),
-                    dqn.rb.len()
-                );
-                dqn.tqn = dqn.qn.clone();
-            }
+            dqn.tqn = dqn.qn.clone();
         }
     }
     dqn.eps = if dqn.eps < dqn.min_eps {
@@ -232,7 +236,7 @@ pub fn dqn_system(
         dqn.max_eps - dqn.decay * dqn.step as f32
     };
     println!(
-        "s={:?} a={action:?} e={:?} random={use_random:?}",
+        "step={:?} a={action:?} r={reward:?} e={:?} random={use_random:?}",
         dqn.step, dqn.eps
     );
     dqn.rb.store(
