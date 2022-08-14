@@ -5,7 +5,6 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::time::Instant;
 
-const SIZE: usize = 64;
 const BUFFER_SIZE: usize = 50_000;
 const SENSORS_SIZE: usize = 7;
 const STATE_SIZE: usize = SENSORS_SIZE + 2;
@@ -19,19 +18,19 @@ type Action1D = Tensor1D<ACTION_SIZE>;
 type Observation = [f32; STATE_SIZE];
 
 pub struct ReplayBuffer {
-    pub state: [Observation; BUFFER_SIZE],
-    pub action: [usize; BUFFER_SIZE],
-    pub reward: [f32; BUFFER_SIZE],
-    pub next_state: [Observation; BUFFER_SIZE],
+    pub state: Vec<Observation>,
+    pub action: Vec<usize>,
+    pub reward: Vec<f32>,
+    pub next_state: Vec<Observation>,
     pub i: usize,
 }
 impl ReplayBuffer {
     pub fn new() -> Self {
         Self {
-            state: [[0.; STATE_SIZE]; BUFFER_SIZE],
-            action: [0; BUFFER_SIZE],
-            reward: [0.; BUFFER_SIZE],
-            next_state: [[0.; STATE_SIZE]; BUFFER_SIZE],
+            state: Vec::new(),
+            action: Vec::new(),
+            reward: Vec::new(),
+            next_state: Vec::new(),
             i: 0,
         }
     }
@@ -42,11 +41,18 @@ impl ReplayBuffer {
         reward: f32,
         next_state: Observation,
     ) {
-        let i = self.i % SIZE;
-        self.state[i] = state;
-        self.action[i] = action;
-        self.reward[i] = reward;
-        self.next_state[i] = next_state;
+        let i = self.i % BUFFER_SIZE;
+        if self.state.len() < BUFFER_SIZE {
+            self.state.push(state);
+            self.action.push(action);
+            self.reward.push(reward);
+            self.next_state.push(next_state);
+        } else {
+            self.state[i] = state;
+            self.action[i] = action;
+            self.reward[i] = reward;
+            self.next_state[i] = next_state;
+        }
         self.i += 1;
     }
 }
@@ -62,9 +68,9 @@ pub struct DqnResource {
     pub done: f32,
 }
 impl DqnResource {
-    pub fn default() -> Self {
+    pub fn new() -> Self {
         let mut rng = StdRng::seed_from_u64(0);
-        let mut qn: QNetwork = Default::default();
+        let mut qn = QNetwork::default();
         qn.reset_params(&mut rng);
         Self {
             seconds: 0,
@@ -83,7 +89,7 @@ pub struct SgdResource {
     pub sgd: Sgd<QNetwork>,
 }
 pub fn dqn_start_system(world: &mut World) {
-    world.insert_non_send_resource(DqnResource::default());
+    world.insert_non_send_resource(DqnResource::new());
     world.insert_non_send_resource(SgdResource {
         sgd: Sgd::new(SgdConfig {
             lr: 1e-1,
@@ -142,8 +148,7 @@ pub fn dqn_system(
         sgd.sgd.update(&mut dqn.qn, gradients);
         let seconds_round = seconds.round() as i32;
         if seconds_round > dqn.seconds {
-            println!("q loss={:#.3} in {:?}", loss_v, start.elapsed());
-            dbg!(dqn.rpl.action);
+            println!("q loss={loss_v:#.3} in {:?}", start.elapsed());
             dqn.seconds = seconds_round + 1;
         }
     }
