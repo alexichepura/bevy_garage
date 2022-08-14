@@ -180,7 +180,7 @@ pub fn dqn_system(
     let obs_state_tensor = Tensor1D::new(obs);
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
-    let progress_delta = car_dqn.prev_progress - progress.meters;
+    let progress_delta = progress.meters - car_dqn.prev_progress;
     let mut reward: f32 = if crashed { -1. } else { progress_delta };
     if reward.abs() > 10. {
         // stabilise things, (issue: progress_delta is too big)
@@ -214,11 +214,11 @@ pub fn dqn_system(
         let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
         let mut rewards: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
         let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
-        for (i, (state, action, reward, next_state)) in batch.iter().enumerate() {
-            states.mut_data()[i] = *state;
-            actions[i] = 1 * action;
-            rewards.mut_data()[i] = *reward;
-            next_states.mut_data()[i] = *next_state;
+        for (i, (s, a, r, s_n)) in batch.iter().enumerate() {
+            states.mut_data()[i] = *s;
+            actions[i] = 1 * a;
+            rewards.mut_data()[i] = *r;
+            next_states.mut_data()[i] = *s_n;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
         let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_states);
@@ -239,7 +239,7 @@ pub fn dqn_system(
             dqn.tqn = dqn.qn.clone();
         }
         println!(
-            "{:?} a{action:?} R={reward:.1} e={:.2} rnd={use_random:?} er={loss_v:.2} m={:.1}",
+            "{:?} a_{action:?} r_{reward:.1} e_{:.2} rnd_{use_random:?} loss_{loss_v:.2} d_{progress_delta:.01} m_{:.1}",
             dqn.step, dqn.eps, progress.meters
         );
         dqn.eps = if dqn.eps < dqn.min_eps {
@@ -248,7 +248,7 @@ pub fn dqn_system(
             dqn.max_eps - DECAY * dqn.step as f32
         };
     } else {
-        println!("rb.len={:?}", dqn.rb.len());
+        println!("rb_{:?}", dqn.rb.len());
     }
     dqn.rb.store(
         car_dqn.prev_obs,
