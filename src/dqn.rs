@@ -4,6 +4,8 @@ use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
+const BATCH_SIZE: usize = 64;
+// const MIN_REPLAY_SIZE: usize = 1000;
 const BUFFER_SIZE: usize = 50_000;
 const SENSORS_SIZE: usize = 7;
 const STATE_SIZE: usize = SENSORS_SIZE + 2;
@@ -127,33 +129,35 @@ pub fn dqn_system(
     if random_number <= dqn.epsilon {
         action = rng.gen_range(0..3);
     } else {
-        let next_q_values: Action1D = dqn.tqn.forward(obs_state_tensor.clone());
-        let max_next_q_value = *next_q_values.clone().max_last_dim().data();
-        action = next_q_values
+        let q_values = dqn.qn.forward(obs_state_tensor.clone());
+        let max_q_value = *q_values.clone().max_last_dim().data();
+        action = q_values
             .clone()
             .data()
             .iter()
-            .position(|q| *q == max_next_q_value)
+            .position(|q| *q == max_q_value)
             .unwrap();
-        // targ_q = R + discount * max(Q(S'))
-        // curr_q = Q(S)[A]
-        // loss = mse(curr_q, targ_q)
-        let target_q = 0.99 * max_next_q_value + reward;
-        let target_q_tensor = Tensor0D::new(target_q);
-        let q_values = dqn.qn.forward(obs_state_tensor.trace());
-        let curr_q = q_values.gather_last_dim(&action);
-        let loss = mse_loss(curr_q, &target_q_tensor);
-        let loss_v = *loss.data();
 
+        let mut rng = StdRng::seed_from_u64(0);
+
+        let state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::randn(&mut rng);
+        let action: [usize; BATCH_SIZE] = [(); BATCH_SIZE].map(|_| rng.gen_range(0..ACTION_SIZE));
+        let reward: Tensor1D<BATCH_SIZE> = Tensor1D::randn(&mut rng);
+        let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        let next_state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::randn(&mut rng);
+
+        let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_state.clone());
+        let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
+        let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &reward;
+        let q_values = dqn.qn.forward(state.trace());
+        let loss = mse_loss(q_values.gather_last_dim(&action), &target_q);
+        let loss_v = *loss.data();
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
+
         let seconds_round = seconds.round() as i32;
         if seconds_round > dqn.seconds {
-            println!(
-                "q obs={:?} loss={loss_v:#.3} rb_len={:?}",
-                obs,
-                dqn.rpl.len(),
-            );
+            println!("obs={:?} loss={loss_v:#.3} rb_len={:?}", obs, dqn.rpl.len(),);
             dqn.seconds = seconds_round + 1;
         }
     }
