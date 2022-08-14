@@ -121,9 +121,9 @@ pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
     mut sgd: NonSendMut<SgdResource>,
-    mut q_car: Query<(&Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
+    mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
 ) {
-    let (car, v, progress, mut car_dqn) = q_car.single_mut();
+    let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
     let obs: Observation = [
         car.sensor_inputs[0],
         car.sensor_inputs[1],
@@ -189,4 +189,12 @@ pub fn dqn_system(
     car_dqn.prev_obs = obs;
     dqn.epsilon =
         dqn.min_epsilon + (dqn.max_epsilon - dqn.min_epsilon) * (-dqn.decay * seconds as f32);
+
+    let gas = if action == 0 { 1. } else { 0. };
+    let brake = if action == 1 { 1. } else { 0. };
+    let left = if action == 2 { 1. } else { 0. };
+    let right = if action == 3 { 1. } else { 0. };
+    car.gas = gas;
+    car.brake = brake;
+    car.steering = -left + right;
 }
