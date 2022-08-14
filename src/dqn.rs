@@ -75,9 +75,9 @@ pub struct DqnResource {
     pub qn: QNetwork,
     pub tqn: QNetwork,
     pub rb: ReplayBuffer,
-    pub epsilon: f32,
-    pub max_epsilon: f32,
-    pub min_epsilon: f32,
+    pub eps: f32,
+    pub max_eps: f32,
+    pub min_eps: f32,
     pub decay: f32,
     pub done: f32,
 }
@@ -91,9 +91,9 @@ impl DqnResource {
             qn: qn.clone(),
             tqn: qn.clone(),
             rb: ReplayBuffer::new(),
-            epsilon: 1.,
-            max_epsilon: 1.,
-            min_epsilon: 0.01,
+            eps: 1.,
+            max_eps: 1.,
+            min_eps: 0.01,
             decay: 0.01,
             done: 0.,
         }
@@ -115,6 +115,7 @@ pub fn dqn_start_system(world: &mut World) {
 #[derive(Component, Debug, Default)]
 pub struct CarDqn {
     pub prev_obs: Observation,
+    pub prev_action: usize,
 }
 
 pub fn dqn_system(
@@ -141,7 +142,7 @@ pub fn dqn_system(
     let random_number = rng.gen_range(0.0..1.0);
     let action: usize;
     let reward = progress.meters;
-    if random_number <= dqn.epsilon {
+    if random_number <= dqn.eps {
         action = rng.gen_range(0..3);
     } else {
         let q_values = dqn.qn.forward(obs_state_tensor.clone());
@@ -186,12 +187,13 @@ pub fn dqn_system(
             }
         }
     }
+    if car_dqn.prev_action != action {
+        println!("action={action:?}");
+    }
     dqn.rb.store(car_dqn.prev_obs, action, reward, obs);
     car_dqn.prev_obs = obs;
-    dqn.epsilon =
-        dqn.min_epsilon + (dqn.max_epsilon - dqn.min_epsilon) * (-dqn.decay * seconds as f32);
-
-    println!("action={action:?}");
+    car_dqn.prev_action = action;
+    dqn.eps = dqn.min_eps + (dqn.max_eps - dqn.min_eps) * (-dqn.decay * seconds as f32);
 
     let gas = if action == 0 { 1. } else { 0. };
     let brake = if action == 1 { 1. } else { 0. };

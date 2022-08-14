@@ -167,6 +167,7 @@ pub fn reset_collider_system(
         Query<(&mut Car, &mut CarBrain, &CarProgress)>,
         Query<(&mut Transform, &mut Car, &mut ExternalForce, &mut Velocity)>,
     )>,
+    config: Res<Config>,
 ) {
     let seconds = time.seconds_since_startup();
     let reset_at = seconds + 1.;
@@ -200,7 +201,7 @@ pub fn reset_collider_system(
         f.force = -v.linvel * 100.;
         f.torque = -v.angvel * 100.;
         if car.reset_at.unwrap_or(seconds) < seconds {
-            car.use_brain = true;
+            car.use_brain = config.use_brain;
             car.reset_at = None;
             *t = car.init_transform;
             *f = ExternalForce::default();
