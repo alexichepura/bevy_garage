@@ -10,10 +10,10 @@ use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
-const DECAY: f32 = 0.001;
+const DECAY: f32 = 0.0001;
 const SYNC_INTERVAL_STEPS: i32 = 200;
-const STEP_DURATION: f64 = 0.5;
-const BATCH_SIZE: usize = 64;
+const STEP_DURATION: f64 = 0.1;
+const BATCH_SIZE: usize = 256;
 // const MIN_REPLAY_SIZE: usize = 1000;
 const BUFFER_SIZE: usize = 50_000;
 const STATE_SIZE: usize = SENSOR_COUNT + 2;
@@ -239,8 +239,11 @@ pub fn dqn_system(
             dqn.tqn = dqn.qn.clone();
         }
         println!(
-            "{:?} a_{action:?} r_{reward:.1} e_{:.2} rnd_{use_random:?} loss_{loss_v:.2} d_{progress_delta:.01} m_{:.1}",
-            dqn.step, dqn.eps, progress.meters
+            "{:?}_{:?}_{:.2}_{:?} d_{progress_delta:.01} r_{reward:.1} loss_{loss_v:.2}",
+            dqn.step,
+            action,
+            dqn.eps,
+            if use_random { 1 } else { 0 },
         );
         dqn.eps = if dqn.eps < dqn.min_eps {
             dqn.min_eps
