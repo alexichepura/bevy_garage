@@ -136,7 +136,9 @@ pub fn dqn_system(
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
         dqn.seconds = seconds + STEP_DURATION;
-        dqn.step += 1;
+        if dqn.rb.len() > BATCH_SIZE {
+            dqn.step += 1;
+        }
     } else {
         return;
     }
