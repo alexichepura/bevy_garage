@@ -7,11 +7,11 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
 const DECAY: f32 = 0.001;
-const SYNC_INTERVAL_STEPS: i32 = 20;
-const STEP_DURATION: f64 = 0.25;
-const BATCH_SIZE: usize = 256;
+const SYNC_INTERVAL_STEPS: i32 = 200;
+const STEP_DURATION: f64 = 0.5;
+const BATCH_SIZE: usize = 128;
 // const MIN_REPLAY_SIZE: usize = 1000;
-const BUFFER_SIZE: usize = 500_000;
+const BUFFER_SIZE: usize = 50_000;
 const SENSORS_SIZE: usize = 7;
 const STATE_SIZE: usize = SENSORS_SIZE + 2;
 const ACTION_SIZE: usize = 4;
