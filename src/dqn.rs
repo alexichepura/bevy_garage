@@ -112,13 +112,18 @@ pub fn dqn_start_system(world: &mut World) {
     });
 }
 
+#[derive(Component, Debug, Default)]
+pub struct CarDqn {
+    pub prev_obs: Observation,
+}
+
 pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
     mut sgd: NonSendMut<SgdResource>,
-    q_car: Query<(&Car, &Velocity, &CarProgress), With<Car>>,
+    mut q_car: Query<(&Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
 ) {
-    let (car, v, progress) = q_car.single();
+    let (car, v, progress, mut car_dqn) = q_car.single_mut();
     let obs: Observation = [
         car.sensor_inputs[0],
         car.sensor_inputs[1],
@@ -180,8 +185,8 @@ pub fn dqn_system(
             }
         }
     }
-    let prev_state = obs; // TODO !!!!!!!!!!!
-    dqn.rb.store(prev_state, action, reward, obs);
+    dqn.rb.store(car_dqn.prev_obs, action, reward, obs);
+    car_dqn.prev_obs = obs;
     dqn.epsilon =
         dqn.min_epsilon + (dqn.max_epsilon - dqn.min_epsilon) * (-dqn.decay * seconds as f32);
 }

@@ -1,4 +1,4 @@
-use crate::{config::Config, mesh::*, progress::CarProgress, track::*, trainer::*};
+use crate::{config::Config, dqn::CarDqn, mesh::*, progress::CarProgress, track::*, trainer::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
@@ -293,6 +293,7 @@ pub fn car_start_system(
 
         commands
             .entity(car)
+            .insert(CarDqn::default())
             .insert(trainer.clone_best_brain_or_get_new());
     }
 }
