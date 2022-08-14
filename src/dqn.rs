@@ -1,17 +1,9 @@
+use crate::{car::Car, progress::CarProgress};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::time::Instant;
-
-use crate::{car::Car, progress::CarProgress};
-
-// https://github.com/coreylowman/dfdx/blob/main/examples/dqn.rs
-// https://alexandervandekleut.github.io/deep-q-learning/
-// https://towardsdatascience.com/a-minimal-working-example-for-deep-q-learning-in-tensorflow-2-0-e0ca8a944d5e
-// https://github.com/mswang12/minDQN/blob/main/minDQN.py
-// https://iq.opengenus.org/deep-q-learning/
-// https://towardsdatascience.com/deep-q-learning-tutorial-mindqn-2a4c855abffc
 
 const SIZE: usize = 64;
 const BUFFER_SIZE: usize = 50_000;
@@ -23,7 +15,6 @@ type QNetwork = (
     (Linear<32, 32>, ReLU),
     Linear<32, ACTION_SIZE>,
 );
-type State1D = Tensor1D<STATE_SIZE>;
 type Action1D = Tensor1D<ACTION_SIZE>;
 type Observation = [f32; STATE_SIZE];
 
@@ -120,12 +111,11 @@ pub fn dqn_system(
         progress.meters,
     ];
     let obs_state_tensor = Tensor1D::new(obs);
-
     let seconds = time.seconds_since_startup();
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
-    let mut action: usize = 0;
-
+    let action: usize;
+    let reward = progress.meters;
     if random_number <= dqn.epsilon {
         action = rng.gen_range(0..3);
     } else {
@@ -138,11 +128,6 @@ pub fn dqn_system(
             .iter()
             .position(|q| *q == max_next_q_value)
             .unwrap();
-        // let max_next_q = mul(max_next_q_values.clone(), &(1.0 - dqn.done));
-        let reward = progress.meters;
-        let prev_state = obs; // TODO !!!!!!!!!!!
-        dqn.rpl.store(prev_state, action, reward, obs);
-
         // targ_q = R + discount * max(Q(S'))
         // curr_q = Q(S)[A]
         // loss = mse(curr_q, targ_q)
@@ -162,6 +147,8 @@ pub fn dqn_system(
             dqn.seconds = seconds_round + 1;
         }
     }
+    let prev_state = obs; // TODO !!!!!!!!!!!
+    dqn.rpl.store(prev_state, action, reward, obs);
     dqn.epsilon =
         dqn.min_epsilon + (dqn.max_epsilon - dqn.min_epsilon) * (-dqn.decay * seconds as f32);
 }
