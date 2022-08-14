@@ -6,9 +6,9 @@ use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
-const BATCH_SIZE: usize = 256;
+const BATCH_SIZE: usize = 32;
 // const MIN_REPLAY_SIZE: usize = 1000;
-const BUFFER_SIZE: usize = 500_000;
+const BUFFER_SIZE: usize = 5_000;
 const SENSORS_SIZE: usize = 7;
 const STATE_SIZE: usize = SENSORS_SIZE + 2;
 const ACTION_SIZE: usize = 4;
@@ -73,7 +73,8 @@ impl ReplayBuffer {
     }
 }
 pub struct DqnResource {
-    pub seconds: i32,
+    pub seconds: f64,
+    pub step: i32,
     pub qn: QNetwork,
     pub tqn: QNetwork,
     pub rb: ReplayBuffer,
@@ -89,14 +90,15 @@ impl DqnResource {
         let mut qn = QNetwork::default();
         qn.reset_params(&mut rng);
         Self {
-            seconds: 0,
+            seconds: 0.,
+            step: 0,
             qn: qn.clone(),
             tqn: qn.clone(),
             rb: ReplayBuffer::new(),
             eps: 1.,
             max_eps: 1.,
             min_eps: 0.01,
-            decay: 0.001,
+            decay: 0.0001,
             done: 0.,
         }
     }
@@ -130,6 +132,14 @@ pub fn dqn_system(
     mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
     mut q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
 ) {
+    let seconds = time.seconds_since_startup();
+    if seconds > dqn.seconds {
+        dqn.seconds = seconds + 0.25;
+        dqn.step += 1;
+    } else {
+        return;
+    }
+
     let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
     let (_p, colliding_entities) = q_colliding_entities.single_mut();
     let mut crashed: bool = false;
@@ -151,7 +161,6 @@ pub fn dqn_system(
         progress.meters,
     ];
     let obs_state_tensor = Tensor1D::new(obs);
-    let seconds = time.seconds_since_startup();
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
     let mut action: usize = 0;
@@ -162,7 +171,8 @@ pub fn dqn_system(
     } else {
         progress_delta * 10.
     };
-    if random_number <= dqn.eps {
+    let use_random = random_number < dqn.eps;
+    if use_random {
         action = rng.gen_range(0..3);
     } else {
         if dqn.rb.len() > BATCH_SIZE + 1 {
@@ -205,22 +215,26 @@ pub fn dqn_system(
                 "loss={loss_v:#.3} reward={reward:#.1} d={progress_delta:#.2} e={:?}",
                 dqn.eps
             );
-            let seconds_round = seconds.round() as i32;
-            if seconds_round > dqn.seconds + 3 {
+            if dqn.step % 10 == 0 {
+                dbg!(dqn.step % 10);
                 println!(
                     "obs={:?} loss={loss_v:#.3} rb_len={:?}",
                     obs.map(|o| o.mul(10.).round().mul(0.1)),
                     dqn.rb.len()
                 );
-                dqn.seconds = seconds_round;
                 dqn.tqn = dqn.qn.clone();
             }
         }
     }
-    if car_dqn.prev_action != action {
-        println!("action={action:?}");
-    }
-    dqn.eps = dqn.min_eps + (dqn.max_eps - dqn.min_eps) * (-dqn.decay * seconds as f32);
+    dqn.eps = if dqn.eps < dqn.min_eps {
+        dqn.min_eps
+    } else {
+        dqn.max_eps - dqn.decay * dqn.step as f32
+    };
+    println!(
+        "s={:?} a={action:?} e={:?} random={use_random:?}",
+        dqn.step, dqn.eps
+    );
     dqn.rb.store(
         car_dqn.prev_obs,
         car_dqn.prev_action,
