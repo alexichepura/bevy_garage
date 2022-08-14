@@ -7,6 +7,8 @@ use bevy_rapier3d::{
 };
 use std::f32::consts::PI;
 
+pub const SENSOR_COUNT: usize = 16;
+
 #[derive(Component)]
 pub struct Wheel {
     pub radius: f32,
@@ -55,7 +57,7 @@ impl Car {
         init_transform: Transform,
     ) -> Self {
         Self {
-            sensor_inputs: vec![0.; 7],
+            sensor_inputs: vec![0.; SENSOR_COUNT],
             gas: 0.,
             brake: 0.,
             steering: 0.,
@@ -84,7 +86,7 @@ pub fn car_start_system(
     let ray_point_mesh = Mesh::from(shape::Cube {
         size: ray_point_size,
     });
-    for _i in 0..config.sensor_count {
+    for _i in 0..SENSOR_COUNT {
         commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
             mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
@@ -260,11 +262,10 @@ pub fn car_start_system(
                     .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(collider_mass);
 
-                let half = config.sensor_count as i8 / 2;
-                for a in -half..(half + 1) {
-                    let far_quat = Quat::from_rotation_y(-a as f32 * PI * 0.02);
+                for a in 0..SENSOR_COUNT {
+                    let far_quat = Quat::from_rotation_y(-(a as f32) * PI / 8.);
                     let dir = Vec3::Z * config.max_toi;
-                    let sensor_pos_on_car = Vec3::new(0., 0.3, car_hl);
+                    let sensor_pos_on_car = Vec3::new(0., 0.3, 0.);
                     children
                         .spawn()
                         .insert(SensorNear)

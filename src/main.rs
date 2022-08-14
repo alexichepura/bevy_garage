@@ -36,16 +36,12 @@ use trainer::*;
 
 fn main() {
     let config = Config::default();
-    let sensor_count = config.sensor_count;
 
     // let dqn = Dqn::default();
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(config)
-        .insert_resource(Trainer {
-            sensor_count,
-            ..default()
-        })
+        .insert_resource(Trainer::default())
         .add_plugins(DefaultPlugins)
         // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         // .add_plugin(bevy_atmosphere::AtmospherePlugin {
@@ -90,7 +86,7 @@ fn main() {
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .add_system(reset_pos_system)
-        // .add_system(reset_collider_system)
+        .add_system(reset_collider_system)
         .add_system(progress_system)
         .add_system(reset_spawn_key_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)

@@ -141,8 +141,8 @@ pub fn car_brain_system(
             }
         }
 
-        let mut inputs: Vec<f32> = vec![0.; config.sensor_count];
-        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; config.sensor_count];
+        let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];
+        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; SENSOR_COUNT];
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];

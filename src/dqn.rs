@@ -1,6 +1,10 @@
 use std::ops::Mul;
 
-use crate::{car::Car, progress::CarProgress, track::ASSET_ROAD};
+use crate::{
+    car::{Car, SENSOR_COUNT},
+    progress::CarProgress,
+    track::ASSET_ROAD,
+};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
@@ -9,11 +13,10 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 200;
 const STEP_DURATION: f64 = 0.5;
-const BATCH_SIZE: usize = 128;
+const BATCH_SIZE: usize = 64;
 // const MIN_REPLAY_SIZE: usize = 1000;
 const BUFFER_SIZE: usize = 50_000;
-const SENSORS_SIZE: usize = 7;
-const STATE_SIZE: usize = SENSORS_SIZE + 2;
+const STATE_SIZE: usize = SENSOR_COUNT + 2;
 const ACTION_SIZE: usize = 4;
 type QNetwork = (
     (Linear<STATE_SIZE, 32>, ReLU),
@@ -152,7 +155,9 @@ pub fn dqn_system(
             crashed = true;
         }
     }
+
     let obs: Observation = [
+        // TODO map
         car.sensor_inputs[0],
         car.sensor_inputs[1],
         car.sensor_inputs[2],
@@ -160,6 +165,15 @@ pub fn dqn_system(
         car.sensor_inputs[4],
         car.sensor_inputs[5],
         car.sensor_inputs[6],
+        car.sensor_inputs[7],
+        car.sensor_inputs[8],
+        car.sensor_inputs[9],
+        car.sensor_inputs[10],
+        car.sensor_inputs[11],
+        car.sensor_inputs[12],
+        car.sensor_inputs[13],
+        car.sensor_inputs[14],
+        car.sensor_inputs[15],
         v.linvel.length(),
         progress.meters,
     ];
@@ -167,10 +181,10 @@ pub fn dqn_system(
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
     let progress_delta = car_dqn.prev_progress - progress.meters;
-    let mut reward: f32 = if crashed { -10. } else { progress_delta * 10. };
-    if reward.abs() > 100. {
+    let mut reward: f32 = if crashed { -1. } else { progress_delta };
+    if reward.abs() > 10. {
         // stabilise things, (issue: progress_delta is too big)
-        reward = 1.
+        reward = 0.
     }
     let action: usize;
     let use_random = random_number < dqn.eps;
