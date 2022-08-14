@@ -17,7 +17,7 @@ const BATCH_SIZE: usize = 256;
 // const MIN_REPLAY_SIZE: usize = 1000;
 const BUFFER_SIZE: usize = 50_000;
 const STATE_SIZE: usize = SENSOR_COUNT + 2;
-const ACTION_SIZE: usize = 4;
+const ACTION_SIZE: usize = 8;
 type QNetwork = (
     (Linear<STATE_SIZE, 32>, ReLU),
     (Linear<32, 32>, ReLU),
@@ -182,9 +182,13 @@ pub fn dqn_system(
     let random_number = rng.gen_range(0.0..1.0);
     let progress_delta = progress.meters - car_dqn.prev_progress;
     let mut reward: f32 = if crashed { -1. } else { progress_delta };
-    if reward.abs() > 10. {
+    if reward < -2. {
         // stabilise things, (issue: progress_delta is too big)
-        reward = 0.
+        reward = -2.
+    }
+    if reward > 2. {
+        // stabilise things, (issue: progress_delta is too big)
+        reward = 2.
     }
     let action: usize;
     let use_random = random_number < dqn.eps;
@@ -263,10 +267,26 @@ pub fn dqn_system(
     car_dqn.prev_action = action;
     car_dqn.prev_reward = reward;
     car_dqn.prev_progress = progress.meters;
-    let gas = if action == 0 { 1. } else { 0. };
-    let brake = if action == 1 { 1. } else { 0. };
-    let left = if action == 2 { 1. } else { 0. };
-    let right = if action == 3 { 1. } else { 0. };
+    let gas = if action == 0 || action == 4 || action == 5 {
+        1.
+    } else {
+        0.
+    };
+    let brake = if action == 1 || action == 6 || action == 7 {
+        1.
+    } else {
+        0.
+    };
+    let left = if action == 2 || action == 4 || action == 6 {
+        1.
+    } else {
+        0.
+    };
+    let right = if action == 3 || action == 5 || action == 7 {
+        1.
+    } else {
+        0.
+    };
     car.gas = gas;
     car.brake = brake;
     car.steering = -left + right;
