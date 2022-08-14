@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use crate::{car::Car, progress::CarProgress};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -116,6 +118,7 @@ pub fn dqn_start_system(world: &mut World) {
 pub struct CarDqn {
     pub prev_obs: Observation,
     pub prev_action: usize,
+    pub prev_reward: f32,
 }
 
 pub fn dqn_system(
@@ -155,7 +158,7 @@ pub fn dqn_system(
             .unwrap();
 
         let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-        if dqn.rb.len() > BATCH_SIZE {
+        if dqn.rb.len() > BATCH_SIZE + 1 {
             let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
 
             let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
@@ -179,9 +182,14 @@ pub fn dqn_system(
             let gradients = loss.backward();
             sgd.sgd.update(&mut dqn.qn, gradients);
 
+            println!("loss={loss_v:#.3}",);
             let seconds_round = seconds.round() as i32;
             if seconds_round > dqn.seconds {
-                println!("obs={:?} loss={loss_v:#.3} rb_len={:?}", obs, dqn.rb.len());
+                println!(
+                    "obs={:?} loss={loss_v:#.3} rb_len={:?}",
+                    obs.map(|o| o.mul(10.).round().mul(0.1)),
+                    dqn.rb.len()
+                );
                 dqn.seconds = seconds_round + 1;
                 dqn.tqn = dqn.qn.clone();
             }
@@ -190,9 +198,15 @@ pub fn dqn_system(
     if car_dqn.prev_action != action {
         println!("action={action:?}");
     }
-    dqn.rb.store(car_dqn.prev_obs, action, reward, obs);
+    dqn.rb.store(
+        car_dqn.prev_obs,
+        car_dqn.prev_action,
+        car_dqn.prev_reward,
+        obs,
+    );
     car_dqn.prev_obs = obs;
     car_dqn.prev_action = action;
+    car_dqn.prev_reward = reward;
     dqn.eps = dqn.min_eps + (dqn.max_eps - dqn.min_eps) * (-dqn.decay * seconds as f32);
 
     let gas = if action == 0 { 1. } else { 0. };
