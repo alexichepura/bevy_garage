@@ -148,7 +148,7 @@ pub fn dqn_system(
             .position(|q| *q == max_q_value)
             .unwrap();
 
-        let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..BUFFER_SIZE));
+        let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
         if dqn.rb.len() > BATCH_SIZE {
             let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
 
