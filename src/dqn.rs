@@ -5,10 +5,10 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
-const DECAY: f32 = 0.01;
-const SYNC_INTERVAL_STEPS: i32 = 50;
-const STEP_DURATION: f64 = 0.5;
-const BATCH_SIZE: usize = 32;
+const DECAY: f32 = 0.005;
+const SYNC_INTERVAL_STEPS: i32 = 100;
+const STEP_DURATION: f64 = 0.2;
+const BATCH_SIZE: usize = 64;
 const BUFFER_SIZE: usize = 50_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
