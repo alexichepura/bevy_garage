@@ -9,6 +9,7 @@ resolver = "2"
 [profile.release]
 codegen-units = 1
 [dependencies]
+dfdx = { version = "0.8" }
 bevy = { version = "0.8" }
 bevy_rapier3d = { version = "0.16" }
 bevy_prototype_debug_lines = { version = "0.8", features = ["3d"] }

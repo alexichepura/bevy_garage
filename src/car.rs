@@ -1,11 +1,14 @@
-use crate::{config::Config, mesh::*, progress::CarProgress, track::*, trainer::*};
+use crate::{config::*, dqn::*, mesh::*, progress::*, track::*};
 use bevy::prelude::*;
+use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
     prelude::*,
     rapier::prelude::{JointAxesMask, JointAxis},
 };
 use std::f32::consts::PI;
+
+pub const SENSOR_COUNT: usize = 32;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -25,15 +28,12 @@ pub struct SensorFar;
 #[derive(Component)]
 pub struct SensorNear;
 #[derive(Component)]
-pub struct RayDir;
-#[derive(Component)]
-pub struct RayOrig;
-#[derive(Component)]
 pub struct RayHit;
 #[derive(Component)]
 pub struct RayLine;
 #[derive(Component, Debug)]
 pub struct Car {
+    pub sensor_inputs: Vec<f32>,
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
@@ -54,6 +54,7 @@ impl Car {
         init_transform: Transform,
     ) -> Self {
         Self {
+            sensor_inputs: vec![0.; SENSOR_COUNT],
             gas: 0.,
             brake: 0.,
             steering: 0.,
@@ -73,7 +74,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
-    trainer: Res<Trainer>,
+    // trainer: Res<Trainer>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -82,20 +83,20 @@ pub fn car_start_system(
     let ray_point_mesh = Mesh::from(shape::Cube {
         size: ray_point_size,
     });
-    for _i in 0..config.sensor_count {
-        commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
-            mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
-            ..default()
-        });
-        commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
-            mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
-            ..default()
-        });
+    for _i in 0..SENSOR_COUNT {
+        // commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
+        //     mesh: meshes.add(ray_point_mesh.clone()),
+        //     material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+        //     ..default()
+        // });
+        // commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
+        //     mesh: meshes.add(ray_point_mesh.clone()),
+        //     material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+        //     ..default()
+        // });
         commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
             mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
+            material: materials.add(Color::rgba(0.95, 0.5, 0.5, 0.9).into()),
             ..default()
         });
     }
@@ -221,6 +222,7 @@ pub fn car_start_system(
             ))
             .insert(CarProgress {
                 meters: 0.,
+                angle: 0.,
                 place: 0,
             })
             .insert(RigidBody::Dynamic)
@@ -258,11 +260,11 @@ pub fn car_start_system(
                     .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(collider_mass);
 
-                let half = config.sensor_count as i8 / 2;
-                for a in -half..(half + 1) {
-                    let far_quat = Quat::from_rotation_y(-a as f32 * PI * 0.02);
+                let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
+                for a in 0..SENSOR_COUNT {
+                    let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
                     let dir = Vec3::Z * config.max_toi;
-                    let sensor_pos_on_car = Vec3::new(0., 0.3, car_hl);
+                    let sensor_pos_on_car = Vec3::new(0., 0.3, 0.);
                     children
                         .spawn()
                         .insert(SensorNear)
@@ -289,10 +291,82 @@ pub fn car_start_system(
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
 
-        if config.use_brain {
-            commands
-                .entity(car)
-                .insert(trainer.clone_best_brain_or_get_new());
+        commands.entity(car).insert(CarDqn::new());
+    }
+}
+
+pub fn car_sensor_system(
+    rapier_context: Res<RapierContext>,
+    config: Res<Config>,
+    mut q_car: Query<(Entity, &mut Car, &Children, &Velocity), With<Car>>,
+    q_near: Query<(&GlobalTransform, With<SensorNear>)>,
+    q_far: Query<(&GlobalTransform, With<SensorFar>)>,
+    mut ray_set: ParamSet<(Query<(&mut Transform, With<RayHit>)>,)>,
+    mut lines: ResMut<DebugLines>,
+) {
+    let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
+
+    let e_hid_car = config.hid_car.unwrap();
+    for (e, mut car, children, v) in q_car.iter_mut() {
+        let is_hid_car = e == e_hid_car;
+        let mut origins: Vec<Vec3> = Vec::new();
+        let mut dirs: Vec<Vec3> = Vec::new();
+
+        for &child in children.iter() {
+            if let Ok((gtrf, _)) = q_near.get(child) {
+                origins.push(gtrf.translation());
+            }
+            if let Ok((gtrf, _)) = q_far.get(child) {
+                dirs.push(gtrf.translation());
+            }
         }
+
+        let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];
+        let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; SENSOR_COUNT];
+        let solid = false;
+        for (i, &ray_dir_pos) in dirs.iter().enumerate() {
+            let ray_pos = origins[i];
+            // if is_hid_car {
+            //     lines.line_colored(
+            //         ray_pos,
+            //         ray_dir_pos,
+            //         0.0,
+            //         Color::rgba(0.25, 0.88, 0.82, 0.1),
+            //     );
+            // }
+            let ray_dir = (ray_dir_pos - ray_pos).normalize();
+            rapier_context.intersections_with_ray(
+                ray_pos,
+                ray_dir,
+                config.max_toi,
+                solid,
+                sensor_filter,
+                |_entity, intersection| {
+                    let toi = intersection.toi;
+                    hit_points[i] = intersection.point;
+                    if toi > 0. {
+                        inputs[i] = 1. - toi / config.max_toi;
+                        if config.show_rays {
+                            lines.line_colored(
+                                ray_pos,
+                                intersection.point,
+                                0.0,
+                                Color::rgba(0.98, 0.5, 0.45, 0.1),
+                            );
+                        }
+                    } else {
+                        inputs[i] = 0.;
+                    }
+                    false
+                },
+            );
+        }
+        if is_hid_car {
+            for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
+                trf.translation = hit_points[i];
+            }
+        }
+        inputs.push(v.linvel.length());
+        car.sensor_inputs = inputs.clone();
     }
 }

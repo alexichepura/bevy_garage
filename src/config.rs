@@ -6,7 +6,6 @@ pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,
     pub cars_count: usize,
-    pub sensor_count: usize,
     pub show_rays: bool,
     pub use_brain: bool,
     pub max_torque: f32,
@@ -24,11 +23,10 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 50,
-            use_brain: true,
-            show_rays: false,
-            sensor_count: 7,
-            max_torque: 800.,
+            cars_count: 1,
+            use_brain: false,
+            show_rays: true,
+            max_torque: 250.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.7, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),

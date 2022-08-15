@@ -11,6 +11,7 @@ use std::io::BufReader;
 #[derive(Component)]
 pub struct CarProgress {
     pub meters: f32,
+    pub angle: f32,
     pub place: usize,
 }
 
@@ -70,9 +71,8 @@ pub fn progress_system(
 ) {
     if let Some(polyline) = &config.polyline {
         let mut board: Vec<(Entity, f32)> = Vec::new();
-        for (transform, mut car_progress, e) in cars.iter_mut() {
-            let tr = transform.translation;
-            let point: Point3<Real> = Point3::new(tr.x, tr.y, tr.z);
+        for (tr, mut car_progress, e) in cars.iter_mut() {
+            let point: Point3<Real> = Point3::from(tr.translation);
             let point_location = polyline.project_local_point_and_get_location(&point, true);
             let (segment_i, segment_location) = point_location.1;
             let segment = polyline.segment(segment_i);
@@ -81,6 +81,9 @@ pub fn progress_system(
                     // println!("vertex_i_{i:?}");
                 }
                 SegmentPointLocation::OnEdge(uv) => {
+                    let line_dir = Vec3::from(segment.direction().unwrap());
+                    let car_dir = tr.rotation.mul_vec3(Vec3::Z);
+                    let angle = line_dir.angle_between(car_dir);
                     let m = uv[1] * segment.length();
                     let mut meters = match segment_i {
                         i if i >= config.segment_i => {
@@ -95,6 +98,7 @@ pub fn progress_system(
                         meters = -(config.meters_total - meters);
                     }
                     car_progress.meters = meters;
+                    car_progress.angle = angle;
                     board.push((e, meters));
                 }
             }

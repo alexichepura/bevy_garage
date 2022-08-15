@@ -1,8 +1,8 @@
-mod brain;
 mod camera;
 mod car;
 mod config;
 mod dash;
+mod dqn;
 mod esp;
 mod gamepad;
 mod input;
@@ -11,18 +11,16 @@ mod mesh;
 mod plain;
 mod progress;
 mod track;
-mod trainer;
-mod util;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
-use brain::*;
 use camera::*;
 use car::*;
 use config::*;
 use dash::*;
+use dqn::*;
 use esp::*;
 use gamepad::*;
 use input::*;
@@ -30,18 +28,12 @@ use light::*;
 use plain::*;
 use progress::*;
 use track::*;
-use trainer::*;
 
 fn main() {
     let config = Config::default();
-    let sensor_count = config.sensor_count;
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(config)
-        .insert_resource(Trainer {
-            sensor_count,
-            ..default()
-        })
         .add_plugins(DefaultPlugins)
         // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         // .add_plugin(bevy_atmosphere::AtmospherePlugin {
@@ -67,6 +59,7 @@ fn main() {
         // .add_plugins(DefaultPickingPlugins)
         // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
+        .add_startup_system(dqn_start_system.exclusive_system())
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
@@ -76,17 +69,15 @@ fn main() {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_system(esp_system)
-        .add_system(car_brain_system)
-        .add_system(trainer_system)
+        .add_system(car_sensor_system)
+        .add_system(dqn_system)
+        .add_system(dqn_dash_update_system)
         .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
-        .add_system(reset_pos_system)
-        .add_system(reset_collider_system)
         .add_system(progress_system)
-        .add_system(reset_spawn_key_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         // .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
