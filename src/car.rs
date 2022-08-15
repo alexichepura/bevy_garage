@@ -28,10 +28,6 @@ pub struct SensorFar;
 #[derive(Component)]
 pub struct SensorNear;
 #[derive(Component)]
-pub struct RayDir;
-#[derive(Component)]
-pub struct RayOrig;
-#[derive(Component)]
 pub struct RayHit;
 #[derive(Component)]
 pub struct RayLine;
@@ -88,19 +84,19 @@ pub fn car_start_system(
         size: ray_point_size,
     });
     for _i in 0..SENSOR_COUNT {
-        commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
-            mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
-            ..default()
-        });
-        commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
-            mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
-            ..default()
-        });
+        // commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
+        //     mesh: meshes.add(ray_point_mesh.clone()),
+        //     material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+        //     ..default()
+        // });
+        // commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
+        //     mesh: meshes.add(ray_point_mesh.clone()),
+        //     material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
+        //     ..default()
+        // });
         commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
             mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.9, 0.9, 0.9, 0.9).into()),
+            material: materials.add(Color::rgba(0.95, 0.5, 0.5, 0.9).into()),
             ..default()
         });
     }
@@ -305,11 +301,7 @@ pub fn car_sensor_system(
     mut q_car: Query<(Entity, &mut Car, &Children, &Velocity), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
-    mut ray_set: ParamSet<(
-        Query<(&mut Transform, With<RayOrig>)>,
-        Query<(&mut Transform, With<RayDir>)>,
-        Query<(&mut Transform, With<RayHit>)>,
-    )>,
+    mut ray_set: ParamSet<(Query<(&mut Transform, With<RayHit>)>,)>,
     mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
@@ -359,7 +351,7 @@ pub fn car_sensor_system(
                                 ray_pos,
                                 intersection.point,
                                 0.0,
-                                Color::rgba(0.98, 0.5, 0.45, 0.9),
+                                Color::rgba(0.98, 0.5, 0.45, 0.1),
                             );
                         }
                     } else {
@@ -371,12 +363,6 @@ pub fn car_sensor_system(
         }
         if is_hid_car {
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
-                trf.translation = origins[i];
-            }
-            for (i, (mut trf, _)) in ray_set.p1().iter_mut().enumerate() {
-                trf.translation = dirs[i];
-            }
-            for (i, (mut trf, _)) in ray_set.p2().iter_mut().enumerate() {
                 trf.translation = hit_points[i];
             }
         }
