@@ -5,25 +5,18 @@ use bevy_rapier3d::prelude::*;
 
 #[derive(Component)]
 pub struct FpsText;
-
 #[derive(Component)]
 pub struct MpsText;
-
 #[derive(Component)]
 pub struct KmphText;
-
 #[derive(Component)]
 pub struct Leaderboard;
-
-#[derive(Component)]
-pub struct TrainerTimingText;
 #[derive(Component)]
 pub struct TrainerRecordDistanceText;
 #[derive(Component)]
 pub struct TrainerGenerationText;
 
 pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     commands
         .spawn_bundle(TextBundle {
@@ -31,7 +24,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    bottom: Val::Px(40.0),
+                    top: Val::Px(40.0),
                     left: Val::Px(2.0),
                     ..default()
                 },
@@ -57,7 +50,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    bottom: Val::Px(20.0),
+                    top: Val::Px(20.0),
                     left: Val::Px(2.0),
                     ..default()
                 },
@@ -83,8 +76,8 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    bottom: Val::Px(40.0),
-                    left: Val::Px(2.0),
+                    top: Val::Px(60.),
+                    left: Val::Px(2.),
                     ..default()
                 },
                 ..default()
@@ -95,45 +88,9 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                     style: TextStyle {
                         font: medium.clone(),
                         font_size: 16.0,
-                        color: Color::GOLD,
+                        color: Color::WHITE,
                     },
                 }],
-                ..default()
-            },
-            ..default()
-        })
-        .insert(TrainerTimingText);
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    bottom: Val::Px(2.0),
-                    left: Val::Px(2.0),
-                    ..default()
-                },
-                ..default()
-            },
-            text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "leaderboard ".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
-                    },
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
-                    },
-                ],
                 ..default()
             },
             ..default()
@@ -152,24 +109,14 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 ..default()
             },
             text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "FPS: ".to_string(),
-                        style: TextStyle {
-                            font: bold.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
+                sections: vec![TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
                     },
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::GOLD,
-                        },
-                    },
-                ],
+                }],
                 ..default()
             },
             ..default()
@@ -186,13 +133,13 @@ pub fn dash_leaderboard_system(
         text_string = text_string + &progress.meters.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
-    text.sections[1].value = text_string;
+    text.sections[0].value = format!("leaderboard {:?}", text_string.as_str());
 }
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
-                text.sections[1].value = format!("{:.1}", average);
+                text.sections[0].value = format!("fps {:.0}", average);
             }
         }
     }
@@ -206,8 +153,8 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    bottom: Val::Px(5.0),
-                    right: Val::Px(15.0),
+                    top: Val::Px(80.),
+                    left: Val::Px(2.),
                     ..default()
                 },
                 ..default()
@@ -232,8 +179,8 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    bottom: Val::Px(25.0),
-                    right: Val::Px(15.0),
+                    top: Val::Px(100.),
+                    left: Val::Px(2.),
                     ..default()
                 },
                 ..default()
@@ -265,8 +212,8 @@ pub fn dash_speed_update_system(
     let (velocity, car, _) = cars.single_mut();
     let mps = velocity.linvel.length();
     let kmph = mps * 3.6;
-    texts.p0().single_mut().sections[0].value = format!("{:.1}mps", mps);
-    texts.p1().single_mut().sections[0].value = format!("{:.1}kmph", kmph);
+    texts.p0().single_mut().sections[0].value = format!("mps {:.1}", mps);
+    texts.p1().single_mut().sections[0].value = format!("kmph {:.1}", kmph);
     let mut v_msg: String = "".to_string();
     let mut f_msg: String = "".to_string();
     for wheel_entity in car.wheels.iter() {
