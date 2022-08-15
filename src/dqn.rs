@@ -3,20 +3,21 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::{ops::Mul, time::Instant};
+use std::{f32::consts::FRAC_PI_2, time::Instant};
 
-const DECAY: f32 = 0.001;
+const DECAY: f32 = 0.01;
 const SYNC_INTERVAL_STEPS: i32 = 50;
 const STEP_DURATION: f64 = 0.5;
-const BATCH_SIZE: usize = 128;
-const BUFFER_SIZE: usize = 500_000;
-const STATE_SIZE_BASE: usize = 2;
+const BATCH_SIZE: usize = 32;
+const BUFFER_SIZE: usize = 50_000;
+const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
+const HIDDEN_SIZE: usize = 64;
 type QNetwork = (
-    (Linear<STATE_SIZE, 256>, ReLU),
-    (Linear<256, 256>, ReLU),
-    Linear<256, ACTION_SIZE>,
+    (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
+    (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
+    Linear<HIDDEN_SIZE, ACTION_SIZE>,
 );
 type Observation = [f32; STATE_SIZE];
 
@@ -165,24 +166,21 @@ pub fn dqn_system(
     for i in 0..obs.len() {
         obs[i] = match i {
             0 => progress.meters,
-            1 => v.linvel.length(),
+            1 => progress.angle,
+            2 => v.linvel.length(),
             _ => car.sensor_inputs[i - STATE_SIZE_BASE],
         };
     }
-
     let obs_state_tensor = Tensor1D::new(obs);
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
-    let progress_delta = progress.meters - car_dqn.prev_progress;
-    let mut reward: f32 = if crashed { -1. } else { progress_delta };
-    if reward < -2. {
-        // stabilise things, (issue: progress_delta is too big)
-        reward = -2.
-    }
-    if reward > 2. {
-        // stabilise things, (issue: progress_delta is too big)
-        reward = 2.
-    }
+    let reward: f32 = if crashed {
+        -1.
+    } else {
+        let progress_reward = progress.meters - car_dqn.prev_progress;
+        let dir_reward = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
+        progress_reward + dir_reward
+    };
     let action: usize;
     let use_random = random_number < dqn.eps;
     if use_random {
@@ -229,11 +227,7 @@ pub fn dqn_system(
         sgd.sgd.update(&mut dqn.qn, gradients);
 
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
-            println!(
-                "networks sync er={loss_v:#.3} rb={:?} obs={:?}",
-                dqn.rb.len(),
-                obs.map(|o| o.mul(10.).round() / 10.),
-            );
+            dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
         }
         println!(

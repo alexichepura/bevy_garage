@@ -226,6 +226,7 @@ pub fn car_start_system(
             ))
             .insert(CarProgress {
                 meters: 0.,
+                angle: 0.,
                 place: 0,
             })
             .insert(RigidBody::Dynamic)
