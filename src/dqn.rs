@@ -5,7 +5,7 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
-const DECAY: f32 = 0.001;
+const DECAY: f32 = 0.0001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 0.1;
 const BATCH_SIZE: usize = 256;
@@ -177,9 +177,22 @@ pub fn dqn_system(
     let reward: f32 = if crashed {
         -1.
     } else {
-        let progress_reward = progress.meters - car_dqn.prev_progress;
-        let dir_reward = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
-        progress_reward * dir_reward
+        let mut positive = 1.;
+        let mut progress_reward = progress.meters - car_dqn.prev_progress;
+        let mut dir_reward = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
+        if progress_reward < 0. || dir_reward < 0. {
+            positive = -1.;
+        };
+
+        progress_reward = progress_reward.abs() * 10.;
+        if progress_reward > 1. {
+            progress_reward = 1.;
+        };
+        dir_reward = dir_reward.abs() * 10.;
+        if dir_reward > 1. {
+            dir_reward = 1.;
+        };
+        positive * progress_reward.abs() * dir_reward.abs()
     };
     let action: usize;
     let use_random = random_number < dqn.eps;
@@ -228,8 +241,8 @@ pub fn dqn_system(
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
         println!(
-            "{:?} {:?} {reward:.2} {loss_v:.3} {:?}",
-            if use_random { 1 } else { 0 },
+            "{:?}{:?} {reward:.2} {loss_v:.3} {:?}",
+            if use_random { "®" } else { " " },
             action,
             start.elapsed().as_millis()
         );
