@@ -5,13 +5,13 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{ops::Mul, time::Instant};
 
-const DECAY: f32 = 0.0001;
-const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.1;
-const BATCH_SIZE: usize = 512;
-// const MIN_REPLAY_SIZE: usize = 1000;
+const DECAY: f32 = 0.001;
+const SYNC_INTERVAL_STEPS: i32 = 50;
+const STEP_DURATION: f64 = 0.5;
+const BATCH_SIZE: usize = 128;
 const BUFFER_SIZE: usize = 500_000;
-const STATE_SIZE: usize = SENSOR_COUNT + 2;
+const STATE_SIZE_BASE: usize = 2;
+const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
 type QNetwork = (
     (Linear<STATE_SIZE, 256>, ReLU),
@@ -151,27 +151,15 @@ pub fn dqn_system(
         }
     }
 
-    let obs: Observation = [
-        // TODO map
-        car.sensor_inputs[0],
-        car.sensor_inputs[1],
-        car.sensor_inputs[2],
-        car.sensor_inputs[3],
-        car.sensor_inputs[4],
-        car.sensor_inputs[5],
-        car.sensor_inputs[6],
-        car.sensor_inputs[7],
-        car.sensor_inputs[8],
-        car.sensor_inputs[9],
-        car.sensor_inputs[10],
-        car.sensor_inputs[11],
-        car.sensor_inputs[12],
-        car.sensor_inputs[13],
-        car.sensor_inputs[14],
-        car.sensor_inputs[15],
-        v.linvel.length(),
-        progress.meters,
-    ];
+    let mut obs: Observation = Observation::default();
+    for i in 0..obs.len() {
+        obs[i] = match i {
+            0 => progress.meters,
+            1 => v.linvel.length(),
+            _ => car.sensor_inputs[i - STATE_SIZE_BASE],
+        };
+    }
+
     let obs_state_tensor = Tensor1D::new(obs);
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
@@ -291,9 +279,9 @@ pub fn dqn_dash_update_system(
 ) {
     let mut q_timing_text = dash_set.p1();
     let mut timing_text = q_timing_text.single_mut();
-    timing_text.sections[0].value = format!("eps_{:?}", dqn.eps.to_string());
+    timing_text.sections[0].value = format!("epsilon: {:.4}", dqn.eps);
 
     let mut q_generation_text = dash_set.p2();
     let mut generation_text = q_generation_text.single_mut();
-    generation_text.sections[0].value = format!("rb_{:?} ", dqn.rb.len().to_string());
+    generation_text.sections[0].value = format!("replay buffer: {:?} ", dqn.rb.len());
 }

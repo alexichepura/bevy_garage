@@ -12,7 +12,6 @@ mod mesh;
 mod plain;
 mod progress;
 mod track;
-mod trainer;
 mod util;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
@@ -32,16 +31,12 @@ use light::*;
 use plain::*;
 use progress::*;
 use track::*;
-use trainer::*;
 
 fn main() {
     let config = Config::default();
-
-    // let dqn = Dqn::default();
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(config)
-        .insert_resource(Trainer::default())
         .add_plugins(DefaultPlugins)
         // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         // .add_plugin(bevy_atmosphere::AtmospherePlugin {
@@ -80,16 +75,12 @@ fn main() {
         .add_system(car_brain_system)
         .add_system(dqn_system)
         .add_system(dqn_dash_update_system)
-        // .add_system(trainer_system)
         .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
-        .add_system(reset_pos_system)
-        .add_system(reset_collider_system)
         .add_system(progress_system)
-        .add_system(reset_spawn_key_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         // .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();

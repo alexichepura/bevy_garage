@@ -1,4 +1,4 @@
-use crate::{config::Config, dqn::CarDqn, mesh::*, progress::CarProgress, track::*, trainer::*};
+use crate::{config::*, dqn::*, mesh::*, progress::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
@@ -77,7 +77,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
-    trainer: Res<Trainer>,
+    // trainer: Res<Trainer>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -292,9 +292,6 @@ pub fn car_start_system(
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
 
-        commands
-            .entity(car)
-            .insert(CarDqn::default())
-            .insert(trainer.clone_best_brain_or_get_new());
+        commands.entity(car).insert(CarDqn::default());
     }
 }

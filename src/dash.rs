@@ -37,7 +37,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    bottom: Val::Px(60.0),
+                    bottom: Val::Px(40.0),
                     left: Val::Px(2.0),
                     ..default()
                 },
@@ -49,7 +49,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                     style: TextStyle {
                         font: medium.clone(),
                         font_size: 16.0,
-                        color: Color::GOLD,
+                        color: Color::WHITE,
                     },
                 }],
                 ..default()
