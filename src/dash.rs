@@ -199,8 +199,6 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
 }
 
 pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // commands.spawn_bundle(UiCameraBundle::default());
-    let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     commands
         .spawn_bundle(TextBundle {
@@ -215,24 +213,14 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                 ..default()
             },
             text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::GOLD,
-                        },
+                sections: vec![TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
                     },
-                    TextSection {
-                        value: "m/s".to_string(),
-                        style: TextStyle {
-                            font: bold.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
-                    },
-                ],
+                }],
                 ..default()
             },
             ..default()
@@ -251,24 +239,14 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                 ..default()
             },
             text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::GOLD,
-                        },
+                sections: vec![TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
                     },
-                    TextSection {
-                        value: "km/h".to_string(),
-                        style: TextStyle {
-                            font: bold.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
-                    },
-                ],
+                }],
                 ..default()
             },
             ..default()
@@ -287,8 +265,8 @@ pub fn dash_speed_update_system(
     let (velocity, car, _) = cars.single_mut();
     let mps = velocity.linvel.length();
     let kmph = mps * 3.6;
-    texts.p0().single_mut().sections[0].value = format!("{:.1}", mps);
-    texts.p1().single_mut().sections[0].value = format!("{:.1}", kmph);
+    texts.p0().single_mut().sections[0].value = format!("{:.1}mps", mps);
+    texts.p1().single_mut().sections[0].value = format!("{:.1}kmph", kmph);
     let mut v_msg: String = "".to_string();
     let mut f_msg: String = "".to_string();
     for wheel_entity in car.wheels.iter() {
