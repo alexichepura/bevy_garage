@@ -5,15 +5,15 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
-const DECAY: f32 = 0.005;
-const SYNC_INTERVAL_STEPS: i32 = 200;
+const DECAY: f32 = 0.001;
+const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 0.1;
-const BATCH_SIZE: usize = 128;
+const BATCH_SIZE: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 128;
+const HIDDEN_SIZE: usize = 256;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -179,11 +179,13 @@ pub fn dqn_system(
     } else {
         let progress_reward = progress.meters - car_dqn.prev_progress;
         let dir_reward = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
-        progress_reward + dir_reward
+        progress_reward * dir_reward
     };
     let action: usize;
     let use_random = random_number < dqn.eps;
-    if use_random {
+    if dqn.rb.len() < 10 {
+        action = 0;
+    } else if use_random {
         action = rng.gen_range(0..ACTION_SIZE - 1);
     } else {
         let q_values = dqn.qn.forward(obs_state_tensor.clone());
@@ -225,17 +227,17 @@ pub fn dqn_system(
         let loss_v = *loss.data();
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
+        println!(
+            "{:?} {:?} {reward:.2} {loss_v:.3} {:?}",
+            if use_random { 1 } else { 0 },
+            action,
+            start.elapsed().as_millis()
+        );
 
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
         }
-        println!(
-            "{:?} {:?} {reward:.2} {loss_v:.3} {:?}",
-            if use_random { 1 } else { 0 },
-            action,
-            start.elapsed()
-        );
         dqn.eps = if dqn.eps < dqn.min_eps {
             dqn.min_eps
         } else {
@@ -291,5 +293,5 @@ pub fn dqn_dash_update_system(
 
     let mut q_timing_text = dash_set.p1();
     let mut timing_text = q_timing_text.single_mut();
-    timing_text.sections[0].value = format!("epsilon {:.4}", dqn.eps);
+    timing_text.sections[0].value = format!("epsilon {:.3}", dqn.eps);
 }
