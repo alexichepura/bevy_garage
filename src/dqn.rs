@@ -188,7 +188,7 @@ pub fn dqn_system(
         if progress_reward > 1. {
             progress_reward = 1.;
         };
-        dir_reward = dir_reward.abs() * 10.;
+        dir_reward = dir_reward.abs() * 1.;
         if dir_reward > 1. {
             dir_reward = 1.;
         };
