@@ -1,27 +1,22 @@
-use std::ops::Mul;
-
-use crate::{
-    car::{Car, SENSOR_COUNT},
-    progress::CarProgress,
-    track::ASSET_ROAD,
-};
+use crate::{car::*, dash::*, progress::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
+use std::{ops::Mul, time::Instant};
 
 const DECAY: f32 = 0.0001;
-const SYNC_INTERVAL_STEPS: i32 = 200;
+const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 0.1;
-const BATCH_SIZE: usize = 256;
+const BATCH_SIZE: usize = 512;
 // const MIN_REPLAY_SIZE: usize = 1000;
-const BUFFER_SIZE: usize = 50_000;
+const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE: usize = SENSOR_COUNT + 2;
 const ACTION_SIZE: usize = 8;
 type QNetwork = (
-    (Linear<STATE_SIZE, 32>, ReLU),
-    (Linear<32, 32>, ReLU),
-    Linear<32, ACTION_SIZE>,
+    (Linear<STATE_SIZE, 256>, ReLU),
+    (Linear<256, 256>, ReLU),
+    Linear<256, ACTION_SIZE>,
 );
 type Observation = [f32; STATE_SIZE];
 
@@ -211,6 +206,7 @@ pub fn dqn_system(
         }
     }
     if dqn.rb.len() > BATCH_SIZE + 1 {
+        let start = Instant::now();
         let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
         let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
 
@@ -243,26 +239,19 @@ pub fn dqn_system(
             dqn.tqn = dqn.qn.clone();
         }
         println!(
-            "{:?}_{:?}_{:.2}_{:?} d_{progress_delta:.01} r_{reward:.1} loss_{loss_v:.2}",
-            dqn.step,
-            action,
-            dqn.eps,
+            "{:?}_{:?} r_{reward:.2} loss_{loss_v:.3} {:?}",
             if use_random { 1 } else { 0 },
+            action,
+            start.elapsed()
         );
         dqn.eps = if dqn.eps < dqn.min_eps {
             dqn.min_eps
         } else {
             dqn.max_eps - DECAY * dqn.step as f32
         };
-    } else {
-        println!("rb_{:?}", dqn.rb.len());
     }
-    dqn.rb.store(
-        car_dqn.prev_obs,
-        car_dqn.prev_action,
-        car_dqn.prev_reward,
-        obs,
-    );
+    dqn.rb
+        .store(car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
     car_dqn.prev_obs = obs;
     car_dqn.prev_action = action;
     car_dqn.prev_reward = reward;
@@ -290,4 +279,21 @@ pub fn dqn_system(
     car.gas = gas;
     car.brake = brake;
     car.steering = -left + right;
+}
+
+pub fn dqn_dash_update_system(
+    mut dash_set: ParamSet<(
+        Query<&mut Text, With<TrainerTimingText>>,
+        Query<&mut Text, With<TrainerRecordDistanceText>>,
+        Query<&mut Text, With<TrainerGenerationText>>,
+    )>,
+    dqn: NonSend<DqnResource>,
+) {
+    let mut q_timing_text = dash_set.p1();
+    let mut timing_text = q_timing_text.single_mut();
+    timing_text.sections[0].value = format!("eps_{:?}", dqn.eps.to_string());
+
+    let mut q_generation_text = dash_set.p2();
+    let mut generation_text = q_generation_text.single_mut();
+    generation_text.sections[0].value = format!("rb_{:?} ", dqn.rb.len().to_string());
 }

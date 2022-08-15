@@ -1,4 +1,4 @@
-use crate::{car::*, progress::*, trainer::*};
+use crate::{car::*, progress::*};
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -21,6 +21,13 @@ pub struct WheelsTorqueText;
 #[derive(Component)]
 pub struct Leaderboard;
 
+#[derive(Component)]
+pub struct TrainerTimingText;
+#[derive(Component)]
+pub struct TrainerRecordDistanceText;
+#[derive(Component)]
+pub struct TrainerGenerationText;
+
 pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let bold: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
@@ -37,24 +44,14 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 ..default()
             },
             text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "generation: ".to_string(),
-                        style: TextStyle {
-                            font: bold.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
+                sections: vec![TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        color: Color::GOLD,
                     },
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::GOLD,
-                        },
-                    },
-                ],
+                }],
                 ..default()
             },
             ..default()
@@ -109,24 +106,14 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 ..default()
             },
             text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "trainer timer: ".to_string(),
-                        style: TextStyle {
-                            font: bold.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
+                sections: vec![TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        color: Color::GOLD,
                     },
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::GOLD,
-                        },
-                    },
-                ],
+                }],
                 ..default()
             },
             ..default()
