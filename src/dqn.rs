@@ -6,14 +6,14 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const DECAY: f32 = 0.005;
-const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.2;
-const BATCH_SIZE: usize = 64;
-const BUFFER_SIZE: usize = 50_000;
+const SYNC_INTERVAL_STEPS: i32 = 200;
+const STEP_DURATION: f64 = 0.1;
+const BATCH_SIZE: usize = 128;
+const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 64;
+const HIDDEN_SIZE: usize = 128;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -231,7 +231,7 @@ pub fn dqn_system(
             dqn.tqn = dqn.qn.clone();
         }
         println!(
-            "{:?}_{:?} r_{reward:.2} loss_{loss_v:.3} {:?}",
+            "{:?} {:?} {reward:.2} {loss_v:.3} {:?}",
             if use_random { 1 } else { 0 },
             action,
             start.elapsed()
