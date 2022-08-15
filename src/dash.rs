@@ -70,24 +70,14 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                 ..default()
             },
             text: Text {
-                sections: vec![
-                    TextSection {
-                        value: "distance record: ".to_string(),
-                        style: TextStyle {
-                            font: bold.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        },
+                sections: vec![TextSection {
+                    value: "".to_string(),
+                    style: TextStyle {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
                     },
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            color: Color::GOLD,
-                        },
-                    },
-                ],
+                }],
                 ..default()
             },
             ..default()
@@ -134,9 +124,9 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
             text: Text {
                 sections: vec![
                     TextSection {
-                        value: "leaderboard: ".to_string(),
+                        value: "leaderboard ".to_string(),
                         style: TextStyle {
-                            font: bold.clone(),
+                            font: medium.clone(),
                             font_size: 16.0,
                             color: Color::WHITE,
                         },
@@ -146,7 +136,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
                         style: TextStyle {
                             font: medium.clone(),
                             font_size: 16.0,
-                            color: Color::GOLD,
+                            color: Color::WHITE,
                         },
                     },
                 ],
