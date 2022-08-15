@@ -1,4 +1,3 @@
-mod brain;
 mod camera;
 mod car;
 mod config;
@@ -12,13 +11,11 @@ mod mesh;
 mod plain;
 mod progress;
 mod track;
-mod util;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
-use brain::*;
 use camera::*;
 use car::*;
 use config::*;
@@ -72,7 +69,7 @@ fn main() {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_system(esp_system)
-        .add_system(car_brain_system)
+        .add_system(car_sensor_system)
         .add_system(dqn_system)
         .add_system(dqn_dash_update_system)
         .add_system(dash_fps_system)
