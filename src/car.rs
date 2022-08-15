@@ -8,7 +8,7 @@ use bevy_rapier3d::{
 };
 use std::f32::consts::PI;
 
-pub const SENSOR_COUNT: usize = 16;
+pub const SENSOR_COUNT: usize = 32;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -263,8 +263,9 @@ pub fn car_start_system(
                     .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(collider_mass);
 
+                let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
                 for a in 0..SENSOR_COUNT {
-                    let far_quat = Quat::from_rotation_y(-(a as f32) * PI / 8.);
+                    let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
                     let dir = Vec3::Z * config.max_toi;
                     let sensor_pos_on_car = Vec3::new(0., 0.3, 0.);
                     children
@@ -293,7 +294,7 @@ pub fn car_start_system(
                 .insert(MultibodyJoint::new(car, joints[i]));
         }
 
-        commands.entity(car).insert(CarDqn::default());
+        commands.entity(car).insert(CarDqn::new());
     }
 }
 
@@ -332,14 +333,14 @@ pub fn car_sensor_system(
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            if is_hid_car {
-                lines.line_colored(
-                    ray_pos,
-                    ray_dir_pos,
-                    0.0,
-                    Color::rgba(0.25, 0.88, 0.82, 0.1),
-                );
-            }
+            // if is_hid_car {
+            //     lines.line_colored(
+            //         ray_pos,
+            //         ray_dir_pos,
+            //         0.0,
+            //         Color::rgba(0.25, 0.88, 0.82, 0.1),
+            //     );
+            // }
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,

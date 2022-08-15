@@ -115,12 +115,22 @@ pub fn dqn_start_system(world: &mut World) {
     });
 }
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Debug)]
 pub struct CarDqn {
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
     pub prev_progress: f32,
+}
+impl CarDqn {
+    pub fn new() -> Self {
+        Self {
+            prev_obs: [0.; STATE_SIZE],
+            prev_action: 0,
+            prev_reward: 0.,
+            prev_progress: 0.,
+        }
+    }
 }
 
 pub fn dqn_system(
@@ -151,7 +161,7 @@ pub fn dqn_system(
         }
     }
 
-    let mut obs: Observation = Observation::default();
+    let mut obs: Observation = [0.; STATE_SIZE];
     for i in 0..obs.len() {
         obs[i] = match i {
             0 => progress.meters,
