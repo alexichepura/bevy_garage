@@ -15,7 +15,7 @@ pub fn esp_system(
     config: Res<Config>,
     time: Res<Time>,
 ) {
-    let delta_seconds = time.delta_seconds();
+    let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
     let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
 
@@ -56,10 +56,14 @@ pub fn esp_system(
                 -car.brake
             }
         };
-        let steering = car.prev_steering + (car.steering - car.prev_steering) * delta_seconds * 8.;
+        let car_torque = pedal * car.wheel_max_torque;
+        let (steering, torque) = (
+            car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 5.,
+            car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 20.,
+        );
         car.prev_steering = steering;
+        car.prev_torque = torque;
 
-        let torque: f32 = pedal * car.wheel_max_torque;
         let angle: f32 = max_angle * steering * (0.1 + 0.9 * steering_speed_x);
         let quat = Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);

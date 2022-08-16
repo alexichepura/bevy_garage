@@ -3,12 +3,12 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::{f32::consts::FRAC_PI_2, time::Instant};
+use std::time::Instant;
 
 const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.0001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.1;
+const STEP_DURATION: f64 = 0.05;
 const BATCH_SIZE: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
@@ -180,28 +180,13 @@ pub fn dqn_system(
     let reward: f32 = if crashed {
         -1.
     } else {
-        let mut sign = 1.;
         let dprogress = progress.meters - car_dqn.prev_progress;
-        let ddir = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward                                             // let mut speed_reward = 1. * linvel;
-        if dprogress < 0. || ddir < 0. {
-            sign = -1.;
-        };
-        // let speed_reward: f32 = match kmh / 10. {
-        //     x if x > 1. => 1.,
-        //     x if x < min_x => 0.,
-        //     x => x,
-        // };
-        let progress_reward: f32 = match dprogress.abs() / STEP_DURATION as f32 {
-            x if x > 1. => 1.,
+        // let ddir = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
+        let progress_reward: f32 = match 0.2 * dprogress.abs() / STEP_DURATION as f32 {
             x if x > -0.1 && x < 0.1 => -0.1,
             x => x,
         };
-        let dir_reward: f32 = match ddir.abs() * 1. {
-            x if x > 1. => 1.,
-            x if x > -0.1 && x < 0.1 => -0.1,
-            x => x,
-        };
-        sign * progress_reward.abs() * dir_reward.abs()
+        progress_reward
     };
     let action: usize;
     let use_random = random_number < dqn.eps;

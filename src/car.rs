@@ -38,6 +38,7 @@ pub struct Car {
     pub brake: f32,
     pub steering: f32,
     pub prev_steering: f32,
+    pub prev_torque: f32,
     pub use_brain: bool,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
@@ -60,6 +61,7 @@ impl Car {
             brake: 0.,
             steering: 0.,
             prev_steering: 0.,
+            prev_torque: 0.,
             use_brain,
             wheels: wheels.clone(),
             wheel_max_torque,
@@ -266,7 +268,7 @@ pub fn car_start_system(
                 for a in 0..SENSOR_COUNT {
                     let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
                     let dir = Vec3::Z * config.max_toi;
-                    let sensor_pos_on_car = Vec3::new(0., 0.3, 0.);
+                    let sensor_pos_on_car = Vec3::new(0., 0.25, 0.);
                     children
                         .spawn()
                         .insert(SensorNear)
