@@ -3,11 +3,12 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::{f32::consts::FRAC_PI_2, time::Instant};
+use std::time::Instant;
 
+const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.0001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.1;
+const STEP_DURATION: f64 = 0.05;
 const BATCH_SIZE: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
@@ -110,7 +111,7 @@ pub fn dqn_start_system(world: &mut World) {
     world.insert_non_send_resource(DqnResource::new());
     world.insert_non_send_resource(SgdResource {
         sgd: Sgd::new(SgdConfig {
-            lr: 1e-1,
+            lr: LEARNING_RATE,
             momentum: Some(Momentum::Nesterov(0.9)),
         }),
     });
@@ -153,6 +154,8 @@ pub fn dqn_system(
     }
 
     let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
+    let mps = v.linvel.length();
+    // let kmh = mps / 1000. * 3600.;
     let (_p, colliding_entities) = q_colliding_entities.single_mut();
     let mut crashed: bool = false;
     for e in colliding_entities.iter() {
@@ -167,7 +170,7 @@ pub fn dqn_system(
         obs[i] = match i {
             0 => progress.meters,
             1 => progress.angle,
-            2 => v.linvel.length(),
+            2 => mps,
             _ => car.sensor_inputs[i - STATE_SIZE_BASE],
         };
     }
@@ -177,28 +180,17 @@ pub fn dqn_system(
     let reward: f32 = if crashed {
         -1.
     } else {
-        let mut positive = 1.;
-        let mut progress_reward = progress.meters - car_dqn.prev_progress;
-        let mut dir_reward = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
-        if progress_reward < 0. || dir_reward < 0. {
-            positive = -1.;
+        let dprogress = progress.meters - car_dqn.prev_progress;
+        // let ddir = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
+        let progress_reward: f32 = match 0.2 * dprogress.abs() / STEP_DURATION as f32 {
+            x if x > -0.1 && x < 0.1 => -0.1,
+            x => x,
         };
-
-        progress_reward = progress_reward.abs() * 10.;
-        if progress_reward > 1. {
-            progress_reward = 1.;
-        };
-        dir_reward = dir_reward.abs() * 1.;
-        if dir_reward > 1. {
-            dir_reward = 1.;
-        };
-        positive * progress_reward.abs() * dir_reward.abs()
+        progress_reward
     };
     let action: usize;
     let use_random = random_number < dqn.eps;
-    if dqn.rb.len() < 10 {
-        action = 0;
-    } else if use_random {
+    if use_random {
         action = rng.gen_range(0..ACTION_SIZE - 1);
     } else {
         let q_values = dqn.qn.forward(obs_state_tensor.clone());
@@ -210,8 +202,7 @@ pub fn dqn_system(
             .position(|q| *q >= max_q_value);
         if None == some_action {
             dbg!(q_values);
-            // TODO remove this random. why None == some_action?
-            action = rng.gen_range(0..ACTION_SIZE - 1);
+            panic!(); // TODO
         } else {
             action = some_action.unwrap();
         }
@@ -240,12 +231,21 @@ pub fn dqn_system(
         let loss_v = *loss.data();
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
-        println!(
-            "{:?}{:?} {reward:.2} {loss_v:.3} {:?}",
-            if use_random { "®" } else { " " },
-            action,
-            start.elapsed().as_millis()
-        );
+
+        let log = [
+            String::from("sgd up "),
+            String::from(if use_random { "?" } else { " " }),
+            action.to_string(),
+            " ".to_string(),
+            String::from(if reward > 0. { "+" } else { "-" }),
+            format!("{:.2}", reward.abs()),
+            " ".to_string(),
+            format!("{:.3}", loss_v.abs()),
+            " ".to_string(),
+            start.elapsed().as_millis().to_string() + "ms",
+        ]
+        .join("");
+        println!("{log:?}");
 
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             dbg!("networks sync");
@@ -256,6 +256,17 @@ pub fn dqn_system(
         } else {
             dqn.max_eps - DECAY * dqn.step as f32
         };
+    } else {
+        let log = [
+            String::from("sgd up "),
+            String::from(if use_random { "?" } else { " " }),
+            action.to_string(),
+            " ".to_string(),
+            String::from(if reward > 0. { "+" } else { "-" }),
+            format!("{:.2}", reward.abs()),
+        ]
+        .join("");
+        println!("{log:?}");
     }
     dqn.rb
         .store(car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
