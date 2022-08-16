@@ -6,15 +6,15 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const LEARNING_RATE: f32 = 0.01;
-const DECAY: f32 = 0.001;
+const DECAY: f32 = 0.0001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.1;
-const BATCH_SIZE: usize = 64;
+const STEP_DURATION: f64 = 0.2;
+const BATCH_SIZE: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 64;
+const HIDDEN_SIZE: usize = 256;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -154,6 +154,8 @@ pub fn dqn_system(
     }
 
     let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
+    let mps = v.linvel.length();
+    let kmh = mps / 1000. * 3600.;
     let (_p, colliding_entities) = q_colliding_entities.single_mut();
     let mut crashed: bool = false;
     for e in colliding_entities.iter() {
@@ -168,7 +170,7 @@ pub fn dqn_system(
         obs[i] = match i {
             0 => progress.meters,
             1 => progress.angle,
-            2 => v.linvel.length(),
+            2 => mps,
             _ => car.sensor_inputs[i - STATE_SIZE_BASE],
         };
     }
@@ -179,27 +181,29 @@ pub fn dqn_system(
         -1.
     } else {
         let mut positive = 1.;
-        let mut progress_reward = progress.meters - car_dqn.prev_progress;
-        let mut dir_reward = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
-        if progress_reward < 0. || dir_reward < 0. {
+        let dprogress = progress.meters - car_dqn.prev_progress;
+        let ddir = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward                                             // let mut speed_reward = 1. * linvel;
+        let speed_reward: f32 = match kmh / 10. {
+            x if x > 1. => 1.,
+            x => x,
+        };
+        if dprogress < 0. || ddir < 0. {
             positive = -1.;
         };
 
-        progress_reward = progress_reward.abs() * 10.;
+        let mut progress_reward = dprogress.abs() / STEP_DURATION as f32;
         if progress_reward > 1. {
             progress_reward = 1.;
         };
-        dir_reward = dir_reward.abs() * 1.;
+        let mut dir_reward = ddir.abs() * 1.;
         if dir_reward > 1. {
             dir_reward = 1.;
         };
-        positive * progress_reward.abs() * dir_reward.abs()
+        positive * progress_reward.abs() * dir_reward.abs() * speed_reward
     };
     let action: usize;
     let use_random = random_number < dqn.eps;
-    if dqn.rb.len() < 10 {
-        action = 0;
-    } else if use_random {
+    if use_random {
         action = rng.gen_range(0..ACTION_SIZE - 1);
     } else {
         let q_values = dqn.qn.forward(obs_state_tensor.clone());
@@ -211,8 +215,7 @@ pub fn dqn_system(
             .position(|q| *q >= max_q_value);
         if None == some_action {
             dbg!(q_values);
-            // TODO remove this random. why None == some_action?
-            action = rng.gen_range(0..ACTION_SIZE - 1);
+            panic!(); // TODO
         } else {
             action = some_action.unwrap();
         }

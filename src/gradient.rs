@@ -23,7 +23,7 @@ pub fn gradient_vis_start_system(
         // multiplied by the base color, so you'll likely want this to be
         // white if using vertex colors.
         material: materials.add(Color::rgb(1., 1., 1.).into()),
-        transform: Transform::from_xyz(5.0, 5., 5.0),
+        transform: Transform::from_xyz(-10.0, 10., -10.0),
         ..default()
     });
 }
