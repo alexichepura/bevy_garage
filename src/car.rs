@@ -187,7 +187,7 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(10.))
+                .insert(Friction::coefficient(2.))
                 .insert(Restitution::coefficient(0.))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
@@ -268,7 +268,7 @@ pub fn car_start_system(
                 for a in 0..SENSOR_COUNT {
                     let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
                     let dir = Vec3::Z * config.max_toi;
-                    let sensor_pos_on_car = Vec3::new(0., 0.25, 0.);
+                    let sensor_pos_on_car = Vec3::new(0., 0.15, 0.);
                     children
                         .spawn()
                         .insert(SensorNear)

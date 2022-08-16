@@ -8,13 +8,13 @@ use std::{f32::consts::FRAC_PI_2, time::Instant};
 const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1.;
-const BATCH_SIZE: usize = 32;
-const BUFFER_SIZE: usize = 500_000;
+const STEP_DURATION: f64 = 0.5;
+const BATCH_SIZE: usize = 64;
+const BUFFER_SIZE: usize = 50_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 32;
+const HIDDEN_SIZE: usize = 64;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -192,8 +192,8 @@ pub fn dqn_system(
             // flip but epsilon is small, need more random
             dqn.eps = dqn.max_eps;
         }
-        let progress_reward: f32 = match 0.2 * dprogress / STEP_DURATION as f32 {
-            x if x > -0.1 && x < 0.1 => -0.1,
+        let progress_reward: f32 = match 0.1 * dprogress / STEP_DURATION as f32 {
+            // x if x > -0.1 && x < 0.1 => -0.1,
             x => x,
         };
         progress_reward
