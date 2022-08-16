@@ -6,10 +6,10 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const LEARNING_RATE: f32 = 0.01;
-const DECAY: f32 = 0.000_5;
+const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.2;
-const BATCH_SIZE: usize = 256;
+const STEP_DURATION: f64 = 1.;
+const BATCH_SIZE: usize = 32;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -233,24 +233,26 @@ pub fn dqn_system(
             next_states.mut_data()[i] = *s_n;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-        let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(next_states);
-        let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
-        let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
-        let q_values = dqn.qn.forward(states.trace());
-        let loss = mse_loss(q_values.gather_last_dim(&actions), &target_q);
-        let loss_v = *loss.data();
-        let gradients = loss.backward();
-        sgd.sgd.update(&mut dqn.qn, gradients);
-
+        println!("training start");
+        for _i_epoch in 0..15 {
+            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
+                dqn.tqn.forward(next_states.clone());
+            let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
+            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
+            let q_values = dqn.qn.forward(states.trace());
+            let loss = mse_loss(q_values.gather_last_dim(&actions), &target_q);
+            let loss_v = *loss.data();
+            let gradients = loss.backward();
+            sgd.sgd.update(&mut dqn.qn, gradients);
+            println!("{:.3}", loss_v.abs());
+        }
         let log = [
-            String::from("sgd up "),
+            String::from("training end "),
             String::from(if use_random { "?" } else { " " }),
             action.to_string(),
             " ".to_string(),
             String::from(if reward > 0. { "+" } else { "-" }),
             format!("{:.2}", reward.abs()),
-            " ".to_string(),
-            format!("{:.3}", loss_v.abs()),
             " ".to_string(),
             start.elapsed().as_millis().to_string() + "ms",
         ]
