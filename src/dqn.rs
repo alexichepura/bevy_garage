@@ -8,9 +8,9 @@ use std::{f32::consts::FRAC_PI_2, time::Instant};
 const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.5;
-const BATCH_SIZE: usize = 64;
-const BUFFER_SIZE: usize = 50_000;
+const STEP_DURATION: f64 = 0.25;
+const BATCH_SIZE: usize = 128;
+const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
@@ -188,11 +188,11 @@ pub fn dqn_system(
             // correct progress velocity vector but wrong car position vector
             dprogress *= -1.;
         }
-        if direction_flip && dqn.eps < dqn.min_eps {
+        if direction_flip && dqn.eps <= dqn.min_eps {
             // flip but epsilon is small, need more random
             dqn.eps = dqn.max_eps;
         }
-        let progress_reward: f32 = match 0.1 * dprogress / STEP_DURATION as f32 {
+        let progress_reward: f32 = match 0.05 * dprogress / STEP_DURATION as f32 {
             // x if x > -0.1 && x < 0.1 => -0.1,
             x => x,
         };
@@ -233,7 +233,6 @@ pub fn dqn_system(
             next_states.mut_data()[i] = *s_n;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-        println!("training start");
         for _i_epoch in 0..15 {
             let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
                 dqn.tqn.forward(next_states.clone());
@@ -247,7 +246,6 @@ pub fn dqn_system(
             println!("{:.3}", loss_v.abs());
         }
         let log = [
-            String::from("training end "),
             String::from(if use_random { "?" } else { " " }),
             action.to_string(),
             " ".to_string(),
