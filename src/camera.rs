@@ -69,6 +69,9 @@ pub fn camera_switch_system(
     input: Res<Input<KeyCode>>,
     query: Query<Entity, With<HID>>,
 ) {
+    if config.camera_follow == None {
+        config.camera_follow = Some(query.single());
+    }
     if input.just_pressed(KeyCode::Key1) {
         config.camera_follow = Some(query.single());
     }

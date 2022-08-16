@@ -5,6 +5,7 @@ mod dash;
 mod dqn;
 mod esp;
 mod gamepad;
+mod gradient;
 mod input;
 mod light;
 mod mesh;
@@ -23,6 +24,7 @@ use dash::*;
 use dqn::*;
 use esp::*;
 use gamepad::*;
+use gradient::*;
 use input::*;
 use light::*;
 use plain::*;
@@ -60,6 +62,7 @@ fn main() {
         // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
         .add_startup_system(dqn_start_system.exclusive_system())
+        .add_startup_system(gradient_vis_start_system)
         .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)

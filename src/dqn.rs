@@ -5,15 +5,16 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
-const DECAY: f32 = 0.0001;
+const LEARNING_RATE: f32 = 0.01;
+const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 0.1;
-const BATCH_SIZE: usize = 256;
+const BATCH_SIZE: usize = 64;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 256;
+const HIDDEN_SIZE: usize = 64;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -110,7 +111,7 @@ pub fn dqn_start_system(world: &mut World) {
     world.insert_non_send_resource(DqnResource::new());
     world.insert_non_send_resource(SgdResource {
         sgd: Sgd::new(SgdConfig {
-            lr: 1e-1,
+            lr: LEARNING_RATE,
             momentum: Some(Momentum::Nesterov(0.9)),
         }),
     });
@@ -240,12 +241,20 @@ pub fn dqn_system(
         let loss_v = *loss.data();
         let gradients = loss.backward();
         sgd.sgd.update(&mut dqn.qn, gradients);
-        println!(
-            "{:?}{:?} {reward:.2} {loss_v:.3} {:?}",
-            if use_random { "®" } else { " " },
-            action,
-            start.elapsed().as_millis()
-        );
+
+        let log = [
+            String::from(if use_random { "?" } else { "-" }),
+            action.to_string(),
+            " ".to_string(),
+            String::from(if reward > 0. { "+" } else { "-" }),
+            format!("{:.2}", reward.abs()),
+            " ".to_string(),
+            format!("{:.3}", loss_v.abs()),
+            " ".to_string(),
+            start.elapsed().as_millis().to_string() + "ms",
+        ]
+        .join("");
+        println!("{log:?}");
 
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             dbg!("networks sync");
