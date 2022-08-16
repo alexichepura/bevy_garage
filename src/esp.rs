@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
 pub fn esp_system(
-    query: Query<(Entity, &Car, &Velocity, &Transform), Changed<Car>>,
+    mut query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
     mut front: Query<(&mut MultibodyJoint, With<WheelFront>)>,
     mut wheel_set: ParamSet<(
         Query<(&Wheel, &mut ExternalForce, &Transform, &Velocity), With<WheelFront>>,
@@ -13,11 +13,13 @@ pub fn esp_system(
     )>,
     mut lines: ResMut<DebugLines>,
     config: Res<Config>,
+    time: Res<Time>,
 ) {
+    let delta_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
     let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
 
-    for (_entity, car, velocity, transform) in query.iter() {
+    for (_entity, mut car, velocity, transform) in query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let delta = velocity.linvel.normalize() - car_vector.normalize();
         let car_angle_slip_rad = Vec3::new(delta.x, 0., delta.z).length();
@@ -54,8 +56,11 @@ pub fn esp_system(
                 -car.brake
             }
         };
+        let steering = car.prev_steering + (car.steering - car.prev_steering) * delta_seconds * 8.;
+        car.prev_steering = steering;
+
         let torque: f32 = pedal * car.wheel_max_torque;
-        let angle: f32 = max_angle * car.steering * (0.1 + 0.9 * steering_speed_x);
+        let angle: f32 = max_angle * steering * (0.1 + 0.9 * steering_speed_x);
         let quat = Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);

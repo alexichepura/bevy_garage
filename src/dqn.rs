@@ -6,10 +6,10 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const LEARNING_RATE: f32 = 0.01;
-const DECAY: f32 = 0.0005;
+const DECAY: f32 = 0.0001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.2;
-const BATCH_SIZE: usize = 128;
+const STEP_DURATION: f64 = 0.1;
+const BATCH_SIZE: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -155,7 +155,7 @@ pub fn dqn_system(
 
     let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
     let mps = v.linvel.length();
-    let kmh = mps / 1000. * 3600.;
+    // let kmh = mps / 1000. * 3600.;
     let (_p, colliding_entities) = q_colliding_entities.single_mut();
     let mut crashed: bool = false;
     for e in colliding_entities.iter() {
@@ -186,24 +186,22 @@ pub fn dqn_system(
         if dprogress < 0. || ddir < 0. {
             sign = -1.;
         };
-        let min_x = 0.1;
-        let min_x_v = -0.1;
-        let speed_reward: f32 = match kmh / 10. {
-            x if x > 1. => 1.,
-            x if x < min_x => 0.,
-            x => x,
-        };
+        // let speed_reward: f32 = match kmh / 10. {
+        //     x if x > 1. => 1.,
+        //     x if x < min_x => 0.,
+        //     x => x,
+        // };
         let progress_reward: f32 = match dprogress.abs() / STEP_DURATION as f32 {
             x if x > 1. => 1.,
-            x if x > -min_x && x < min_x => min_x_v,
+            x if x > -0.1 && x < 0.1 => -0.1,
             x => x,
         };
         let dir_reward: f32 = match ddir.abs() * 1. {
             x if x > 1. => 1.,
-            x if x > -min_x && x < min_x => min_x_v,
+            x if x > -0.1 && x < 0.1 => -0.1,
             x => x,
         };
-        sign * progress_reward.abs() * dir_reward.abs() * speed_reward
+        sign * progress_reward.abs() * dir_reward.abs()
     };
     let action: usize;
     let use_random = random_number < dqn.eps;
@@ -273,6 +271,17 @@ pub fn dqn_system(
         } else {
             dqn.max_eps - DECAY * dqn.step as f32
         };
+    } else {
+        let log = [
+            String::from("sgd up "),
+            String::from(if use_random { "?" } else { " " }),
+            action.to_string(),
+            " ".to_string(),
+            String::from(if reward > 0. { "+" } else { "-" }),
+            format!("{:.2}", reward.abs()),
+        ]
+        .join("");
+        println!("{log:?}");
     }
     dqn.rb
         .store(car_dqn.prev_obs, car_dqn.prev_action, reward, obs);

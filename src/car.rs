@@ -37,6 +37,7 @@ pub struct Car {
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
+    pub prev_steering: f32,
     pub use_brain: bool,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
@@ -58,6 +59,7 @@ impl Car {
             gas: 0.,
             brake: 0.,
             steering: 0.,
+            prev_steering: 0.,
             use_brain,
             wheels: wheels.clone(),
             wheel_max_torque,
@@ -351,7 +353,7 @@ pub fn car_sensor_system(
                                 ray_pos,
                                 intersection.point,
                                 0.0,
-                                Color::rgba(0.98, 0.5, 0.45, 0.1),
+                                Color::rgba(0.5, 0.3, 0.3, 0.5),
                             );
                         }
                     } else {
