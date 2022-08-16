@@ -243,7 +243,8 @@ pub fn dqn_system(
         sgd.sgd.update(&mut dqn.qn, gradients);
 
         let log = [
-            String::from(if use_random { "?" } else { "-" }),
+            String::from("sgd up "),
+            String::from(if use_random { "?" } else { " " }),
             action.to_string(),
             " ".to_string(),
             String::from(if reward > 0. { "+" } else { "-" }),
