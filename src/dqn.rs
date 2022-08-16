@@ -178,7 +178,7 @@ pub fn dqn_system(
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
     let reward: f32 = if crashed {
-        -1.
+        -10.
     } else {
         let mut dprogress = progress.meters - car_dqn.prev_progress;
         // +1 rotated 0deg (forward) .. 0 rotated 90deg .. -1 180deg (backward)
@@ -192,9 +192,11 @@ pub fn dqn_system(
             // flip but epsilon is small, need more random
             dqn.eps = dqn.max_eps;
         }
-        let progress_reward: f32 = match 0.05 * dprogress / STEP_DURATION as f32 {
-            // x if x > -0.1 && x < 0.1 => -0.1,
-            x => x,
+        let progress_reward: f32 = match dprogress / STEP_DURATION as f32 {
+            x if x < 0.2 => 0.,
+            x => x / 4.,
+            // x if x > 0. => x / 4.,
+            // x => x,
         };
         progress_reward
     };
