@@ -1,8 +1,8 @@
-# Blender MTL File: 'track-nb-gp.blend'
-# Material Count: 1
+# Blender 3.3.0 Beta MTL File: 'track-nb-gp.blend'
+# www.blender.org
 
 newmtl Material
-Ns 359.999993
+Ns 360.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.800000 0.800000
 Ks 0.500000 0.500000 0.500000

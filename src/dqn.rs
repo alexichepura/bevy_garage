@@ -3,18 +3,18 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::time::Instant;
+use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const LEARNING_RATE: f32 = 0.01;
-const DECAY: f32 = 0.0001;
+const DECAY: f32 = 0.000_5;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.05;
+const STEP_DURATION: f64 = 0.2;
 const BATCH_SIZE: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 256;
+const HIDDEN_SIZE: usize = 32;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -180,9 +180,19 @@ pub fn dqn_system(
     let reward: f32 = if crashed {
         -1.
     } else {
-        let dprogress = progress.meters - car_dqn.prev_progress;
-        // let ddir = 1. - progress.angle / FRAC_PI_2; // +1 forward, -1 backward
-        let progress_reward: f32 = match 0.2 * dprogress.abs() / STEP_DURATION as f32 {
+        let mut dprogress = progress.meters - car_dqn.prev_progress;
+        // +1 rotated 0deg (forward) .. 0 rotated 90deg .. -1 180deg (backward)
+        let angle_direction_unit = 1. - progress.angle / FRAC_PI_2;
+        let direction_flip = angle_direction_unit < 0.;
+        if dprogress > 0. && direction_flip {
+            // correct progress velocity vector but wrong car position vector
+            dprogress *= -1.;
+        }
+        if direction_flip && dqn.eps < dqn.min_eps {
+            // flip but epsilon is small, need more random
+            dqn.eps = dqn.max_eps;
+        }
+        let progress_reward: f32 = match 0.2 * dprogress / STEP_DURATION as f32 {
             x if x > -0.1 && x < 0.1 => -0.1,
             x => x,
         };
@@ -251,10 +261,10 @@ pub fn dqn_system(
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
         }
-        dqn.eps = if dqn.eps < dqn.min_eps {
+        dqn.eps = if dqn.eps <= dqn.min_eps {
             dqn.min_eps
         } else {
-            dqn.max_eps - DECAY * dqn.step as f32
+            dqn.eps - DECAY
         };
     } else {
         let log = [
