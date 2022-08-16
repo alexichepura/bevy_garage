@@ -8,8 +8,8 @@ use std::{f32::consts::FRAC_PI_2, time::Instant};
 const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.25;
-const BATCH_SIZE: usize = 128;
+const STEP_DURATION: f64 = 0.5;
+const BATCH_SIZE: usize = 64;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -187,16 +187,15 @@ pub fn dqn_system(
         if dprogress > 0. && direction_flip {
             // correct progress velocity vector but wrong car position vector
             dprogress *= -1.;
-        }
+        };
         if direction_flip && dqn.eps <= dqn.min_eps {
             // flip but epsilon is small, need more random
             dqn.eps = dqn.max_eps;
-        }
+        };
         let progress_reward: f32 = match dprogress / STEP_DURATION as f32 {
-            x if x < 0.2 => 0.,
-            x => x / 4.,
-            // x if x > 0. => x / 4.,
-            // x => x,
+            x if x > 0. && x < 0.2 => 0.,
+            x if x > 0. => x / 15.,
+            x => x,
         };
         progress_reward
     };
@@ -235,7 +234,8 @@ pub fn dqn_system(
             next_states.mut_data()[i] = *s_n;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-        for _i_epoch in 0..10 {
+        let mut loss_string: String = String::from("");
+        for _i_epoch in 0..20 {
             let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
                 dqn.tqn.forward(next_states.clone());
             let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
@@ -245,7 +245,9 @@ pub fn dqn_system(
             let loss_v = *loss.data();
             let gradients = loss.backward();
             sgd.sgd.update(&mut dqn.qn, gradients);
-            println!("{:.3}", loss_v.abs());
+            if _i_epoch % 5 == 0 {
+                loss_string.push_str(format!("{:.2} ", loss_v).as_str());
+            }
         }
         let log = [
             String::from(if use_random { "?" } else { " " }),
@@ -255,6 +257,8 @@ pub fn dqn_system(
             format!("{:.2}", reward.abs()),
             " ".to_string(),
             start.elapsed().as_millis().to_string() + "ms",
+            " ".to_string(),
+            loss_string,
         ]
         .join("");
         println!("{log:?}");
