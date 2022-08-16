@@ -233,7 +233,7 @@ pub fn dqn_system(
             next_states.mut_data()[i] = *s_n;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-        for _i_epoch in 0..15 {
+        for _i_epoch in 0..10 {
             let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
                 dqn.tqn.forward(next_states.clone());
             let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
