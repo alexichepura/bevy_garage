@@ -2,7 +2,8 @@ use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
 
 use crate::dqn::{Observation, STATE_SIZE};
 
-pub const BATCH_SIZE: usize = 256;
+pub const BATCH_SIZE: usize = 64;
+pub const BATCH_SIZE_2: usize = 2048;
 const BUFFER_SIZE: usize = 500_000;
 
 type StateTuple = (Observation, usize, f32, Observation);
@@ -12,6 +13,13 @@ type StateTensorsTuple = (
     Tensor1D<BATCH_SIZE>,             // r
     Tensor2D<BATCH_SIZE, STATE_SIZE>, // sn
     Tensor1D<BATCH_SIZE>,             // done
+);
+type StateTensorsTuple2 = (
+    Tensor2D<BATCH_SIZE_2, STATE_SIZE>, // s
+    [usize; BATCH_SIZE_2],              // a
+    Tensor1D<BATCH_SIZE_2>,             // r
+    Tensor2D<BATCH_SIZE_2, STATE_SIZE>, // sn
+    Tensor1D<BATCH_SIZE_2>,             // done
 );
 
 pub struct ReplayBuffer {
@@ -58,6 +66,31 @@ impl ReplayBuffer {
             next_states.mut_data()[i] = *s_n;
         }
         let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        (states, actions, rewards, next_states, done)
+    }
+    pub fn get_batch_2(&self, sample_indexes: [usize; BATCH_SIZE_2]) -> [StateTuple; BATCH_SIZE_2] {
+        sample_indexes.map(|i| {
+            (
+                self.state[i],
+                self.action[i],
+                self.reward[i],
+                self.next_state[i],
+            )
+        })
+    }
+    pub fn get_batch_2_tensors(&self, sample_indexes: [usize; BATCH_SIZE_2]) -> StateTensorsTuple2 {
+        let batch: [StateTuple; BATCH_SIZE_2] = self.get_batch_2(sample_indexes);
+        let mut states: Tensor2D<BATCH_SIZE_2, STATE_SIZE> = Tensor2D::zeros();
+        let mut actions: [usize; BATCH_SIZE_2] = [0; BATCH_SIZE_2];
+        let mut rewards: Tensor1D<BATCH_SIZE_2> = Tensor1D::zeros();
+        let mut next_states: Tensor2D<BATCH_SIZE_2, STATE_SIZE> = Tensor2D::zeros();
+        for (i, (s, a, r, s_n)) in batch.iter().enumerate() {
+            states.mut_data()[i] = *s;
+            actions[i] = 1 * a;
+            rewards.mut_data()[i] = *r;
+            next_states.mut_data()[i] = *s_n;
+        }
+        let done: Tensor1D<BATCH_SIZE_2> = Tensor1D::zeros();
         (states, actions, rewards, next_states, done)
     }
     pub fn store(
