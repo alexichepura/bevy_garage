@@ -1,4 +1,4 @@
-use crate::{car::*, dash::*, progress::*, track::*};
+use crate::{car::*, progress::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
@@ -8,7 +8,7 @@ use std::{f32::consts::FRAC_PI_2, time::Instant};
 const EPOCHS: usize = 60;
 const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.001;
-const SYNC_INTERVAL_STEPS: i32 = 100;
+pub const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 1. / 5.;
 const BATCH_SIZE: usize = 128;
 const BUFFER_SIZE: usize = 500_000;
@@ -323,24 +323,4 @@ pub fn dqn_system(
     car.gas = gas;
     car.brake = brake;
     car.steering = -left + right;
-}
-
-pub fn dqn_dash_update_system(
-    mut dash_set: ParamSet<(
-        Query<&mut Text, With<TrainerRecordDistanceText>>,
-        Query<&mut Text, With<TrainerGenerationText>>,
-    )>,
-    dqn: NonSend<DqnResource>,
-) {
-    let mut q_generation_text = dash_set.p1();
-    let mut generation_text = q_generation_text.single_mut();
-    generation_text.sections[0].value = format!(
-        "rb {:?}, sync {:?}",
-        dqn.rb.len(),
-        (dqn.step / SYNC_INTERVAL_STEPS)
-    );
-
-    let mut q_timing_text = dash_set.p0();
-    let mut timing_text = q_timing_text.single_mut();
-    timing_text.sections[0].value = format!("epsilon {:.3}", dqn.eps);
 }
