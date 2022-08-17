@@ -104,57 +104,50 @@ pub fn dqn_system(
 
     if dqn.rb.len() < BATCH_SIZE {
         log_action_reward(action, reward);
-    } else if dqn.rb.len() > BATCH_SIZE_2 {
-        let start = Instant::now();
-        let batch_indexes = [(); BATCH_SIZE_2].map(|_| rng.gen_range(0..dqn.rb.len()));
-        let (s, a, r, _sn, done) = dqn.rb.get_batch_2_tensors(batch_indexes);
-        let mut loss_string: String = String::from("");
-        let next_state: Tensor2D<BATCH_SIZE_2, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE_2]);
-        for _i_epoch in 0..EPOCHS {
-            let next_q_values: Tensor2D<BATCH_SIZE_2, ACTION_SIZE> =
-                dqn.tqn.forward(next_state.clone());
-            let max_next_q: Tensor1D<BATCH_SIZE_2> = next_q_values.max_last_dim();
-            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
-            let q_values = dqn.qn.forward(s.trace());
-            let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
-            let loss_v = *loss.data();
-            let gradients = loss.backward();
-            dqn.sgd_update(gradients);
-            if _i_epoch % 5 == 0 {
-                loss_string.push_str(format!("{:.2} ", loss_v).as_str());
-            }
-        }
-        log_training(exploration, action, reward, &loss_string, start);
-        if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE_2 * 2 {
-            dbg!("networks sync");
-            dqn.tqn = dqn.qn.clone();
-        }
-        dqn.eps = if dqn.eps <= dqn.min_eps {
-            dqn.min_eps
-        } else {
-            dqn.eps - DECAY
-        };
     } else {
-        let start = Instant::now();
-        let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-        let (s, a, r, _sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
-        let mut loss_string: String = String::from("");
-        let next_state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE]);
-        for _i_epoch in 0..EPOCHS {
-            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
-                dqn.tqn.forward(next_state.clone());
-            let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
-            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
-            let q_values = dqn.qn.forward(s.trace());
-            let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
-            let loss_v = *loss.data();
-            let gradients = loss.backward();
-            dqn.sgd_update(gradients);
-            if _i_epoch % 20 == 0 {
-                loss_string.push_str(format!("{:.2} ", loss_v).as_str());
+        if dqn.rb.len() > BATCH_SIZE_2 {
+            let start = Instant::now();
+            let batch_indexes = [(); BATCH_SIZE_2].map(|_| rng.gen_range(0..dqn.rb.len()));
+            let (s, a, r, _sn, done) = dqn.rb.get_batch_2_tensors(batch_indexes);
+            let mut loss_string: String = String::from("");
+            let next_state: Tensor2D<BATCH_SIZE_2, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE_2]);
+            for _i_epoch in 0..EPOCHS {
+                let next_q_values: Tensor2D<BATCH_SIZE_2, ACTION_SIZE> =
+                    dqn.tqn.forward(next_state.clone());
+                let max_next_q: Tensor1D<BATCH_SIZE_2> = next_q_values.max_last_dim();
+                let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
+                let q_values = dqn.qn.forward(s.trace());
+                let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
+                let loss_v = *loss.data();
+                let gradients = loss.backward();
+                dqn.sgd_update(gradients);
+                if _i_epoch % 5 == 0 {
+                    loss_string.push_str(format!("{:.2} ", loss_v).as_str());
+                }
             }
+            log_training(exploration, action, reward, &loss_string, start);
+        } else {
+            let start = Instant::now();
+            let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
+            let (s, a, r, _sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
+            let mut loss_string: String = String::from("");
+            let next_state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE]);
+            for _i_epoch in 0..EPOCHS {
+                let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
+                    dqn.tqn.forward(next_state.clone());
+                let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
+                let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
+                let q_values = dqn.qn.forward(s.trace());
+                let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
+                let loss_v = *loss.data();
+                let gradients = loss.backward();
+                dqn.sgd_update(gradients);
+                if _i_epoch % 5 == 0 {
+                    loss_string.push_str(format!("{:.2} ", loss_v).as_str());
+                }
+            }
+            log_training(exploration, action, reward, &loss_string, start);
         }
-        log_training(exploration, action, reward, &loss_string, start);
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
