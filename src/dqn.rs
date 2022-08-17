@@ -108,12 +108,11 @@ pub fn dqn_system(
         if dqn.rb.len() > BATCH_SIZE_2 {
             let start = Instant::now();
             let batch_indexes = [(); BATCH_SIZE_2].map(|_| rng.gen_range(0..dqn.rb.len()));
-            let (s, a, r, _sn, done) = dqn.rb.get_batch_2_tensors(batch_indexes);
+            let (s, a, r, sn, done) = dqn.rb.get_batch_2_tensors(batch_indexes);
             let mut loss_string: String = String::from("");
-            let next_state: Tensor2D<BATCH_SIZE_2, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE_2]);
             for _i_epoch in 0..EPOCHS {
                 let next_q_values: Tensor2D<BATCH_SIZE_2, ACTION_SIZE> =
-                    dqn.tqn.forward(next_state.clone());
+                    dqn.tqn.forward(sn.clone());
                 let max_next_q: Tensor1D<BATCH_SIZE_2> = next_q_values.max_last_dim();
                 let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
                 let q_values = dqn.qn.forward(s.trace());
@@ -129,12 +128,10 @@ pub fn dqn_system(
         } else {
             let start = Instant::now();
             let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-            let (s, a, r, _sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
+            let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
             let mut loss_string: String = String::from("");
-            let next_state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE]);
             for _i_epoch in 0..EPOCHS {
-                let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
-                    dqn.tqn.forward(next_state.clone());
+                let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(sn.clone());
                 let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
                 let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
                 let q_values = dqn.qn.forward(s.trace());
