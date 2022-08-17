@@ -19,7 +19,7 @@ const STEP_DURATION: f64 = 1. / 2.;
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 32;
+const HIDDEN_SIZE: usize = 64;
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
