@@ -57,29 +57,10 @@ pub fn dqn_system(
         if crashed {
             return -10.;
         }
-
         // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
-        // 2) Reward shaping: Reward shaping is crucial to help the
-        // network to converge to the optimal set of solutions. Because
-        // in car racing the score is measured at the end of the track it
-        // is much too sparse to train the agents. Instead, a reward is
-        // computed at each frame using metadata information received
-        // from the game. In [13] the reward is computed as a function
-        // of the difference of angle α between the road and car’s
-        // heading and the speed v. Tests exhibit that that it cannot
-        // prevent the car to slide along the guard rail which makes
-        // sense since the latter follows the road angle. Eventually, we
-        // found preferable to add the distance from the middle of the
-        // road d as a penalty:
-        // R = v(cos α − d) (1)
-        // Similarly to [9] our conclusion is that the distance penalty
-        // enables the agent to rapidly learn how to stay in the middle of
-        // the track. Additionally, we propose two other rewards using
-        // the road width as detailed in section IV-C.2.
-        let cosa = progress.angle.cos();
-        let d = 0.; // TODO
-        let reward = v.linvel.length() * (cosa - d);
-        println!("reward {reward:.3}");
+        // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
+        // R = v(cos α − d)
+        let reward = v.linvel.length() * (progress.angle.cos() - 0.); // TODO d
         return reward;
     };
     let reward = reward_shape();
