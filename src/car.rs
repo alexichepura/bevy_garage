@@ -99,7 +99,7 @@ pub fn car_start_system(
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.5; // suspension full up
+    let ride_height = 0.1; // suspension full up
 
     let shift = Vec3::new(
         car_hw - wheel_hw - 0.01,
@@ -176,7 +176,7 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(1.))
+                .insert(Friction::coefficient(5.))
                 .insert(Restitution::coefficient(0.1))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
@@ -255,7 +255,7 @@ pub fn car_start_system(
                 for a in 0..SENSOR_COUNT {
                     let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
                     let dir = Vec3::Z * config.max_toi;
-                    let sensor_pos_on_car = Vec3::new(0., 0.15, 0.);
+                    let sensor_pos_on_car = Vec3::new(0., 0., 0.);
                     children
                         .spawn()
                         .insert(SensorNear)

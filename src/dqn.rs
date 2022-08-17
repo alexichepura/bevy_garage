@@ -8,12 +8,12 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;
-use std::{f32::consts::FRAC_PI_2, time::Instant};
+use std::time::Instant;
 
 const EPOCHS: usize = 60;
 const DECAY: f32 = 0.001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 5.;
+const STEP_DURATION: f64 = 1. / 2.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
