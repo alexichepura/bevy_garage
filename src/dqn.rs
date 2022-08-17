@@ -12,14 +12,14 @@ use rand::Rng;
 use std::time::Instant;
 
 const EPOCHS: usize = 60;
-const DECAY: f32 = 0.001;
+const DECAY: f32 = 0.0001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 2.;
+const STEP_DURATION: f64 = 1. / 5.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 64;
+const HIDDEN_SIZE: usize = 32;
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -41,9 +41,7 @@ pub fn dqn_system(
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
         dqn.seconds = seconds + STEP_DURATION;
-        if dqn.rb.len() > BATCH_SIZE {
-            dqn.step += 1;
-        }
+        dqn.step += 1;
     } else {
         return;
     }
@@ -60,7 +58,7 @@ pub fn dqn_system(
             }
         }
         if crashed {
-            return -10.;
+            return -50.;
         }
         // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
         // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
@@ -106,10 +104,12 @@ pub fn dqn_system(
     if dqn.rb.len() > BATCH_SIZE {
         let start = Instant::now();
         let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-        let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
+        let (s, a, r, _sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
         let mut loss_string: String = String::from("");
+        let next_state: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::new([obs; BATCH_SIZE]);
         for _i_epoch in 0..EPOCHS {
-            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(sn.clone());
+            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
+                dqn.tqn.forward(next_state.clone());
             let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
             let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
             let q_values = dqn.qn.forward(s.trace());
@@ -122,7 +122,7 @@ pub fn dqn_system(
             }
         }
         log_training(exploration, action, reward, &loss_string, start);
-        if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
+        if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
         }
