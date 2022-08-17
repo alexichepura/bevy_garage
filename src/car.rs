@@ -78,7 +78,6 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
-    // trainer: Res<Trainer>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -88,16 +87,6 @@ pub fn car_start_system(
         size: ray_point_size,
     });
     for _i in 0..SENSOR_COUNT {
-        // commands.spawn().insert(RayDir).insert_bundle(PbrBundle {
-        //     mesh: meshes.add(ray_point_mesh.clone()),
-        //     material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
-        //     ..default()
-        // });
-        // commands.spawn().insert(RayOrig).insert_bundle(PbrBundle {
-        //     mesh: meshes.add(ray_point_mesh.clone()),
-        //     material: materials.add(Color::rgba(0.3, 0.9, 0.9, 0.5).into()),
-        //     ..default()
-        // });
         commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
             mesh: meshes.add(ray_point_mesh.clone()),
             material: materials.add(Color::rgba(0.95, 0.5, 0.5, 0.9).into()),
@@ -110,7 +99,7 @@ pub fn car_start_system(
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.25;
+    let ride_height = 0.5; // suspension full up
 
     let shift = Vec3::new(
         car_hw - wheel_hw - 0.01,
@@ -143,7 +132,7 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 10e35 * 300., 10e35 * 10.)
+                .set_motor(JointAxis::Z, 0., 0., 30., 1.)
                 .build();
             joints.push(joint);
 
@@ -187,8 +176,8 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(2.))
-                .insert(Restitution::coefficient(0.))
+                .insert(Friction::coefficient(1.))
+                .insert(Restitution::coefficient(0.1))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
@@ -231,10 +220,8 @@ pub fn car_start_system(
             })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
-            // .insert(ExternalImpulse::default())
             .insert(ExternalForce::default())
             .insert_bundle(TransformBundle::from(car_transform))
-            // .insert_bundle(PickableBundle::default())
             .insert(ReadMassProperties::default())
             .insert_bundle(SceneBundle {
                 scene: car_gl.clone(),
@@ -248,7 +235,7 @@ pub fn car_start_system(
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -car_hh, 0.),
                     mass: 1500.0,
-                    principal_inertia: Vec3::new(2000., 2000., 200.),
+                    principal_inertia: Vec3::new(10_000., 10_000., 1000.),
                     ..default()
                 });
                 children
@@ -330,14 +317,6 @@ pub fn car_sensor_system(
         let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
-            // if is_hid_car {
-            //     lines.line_colored(
-            //         ray_pos,
-            //         ray_dir_pos,
-            //         0.0,
-            //         Color::rgba(0.25, 0.88, 0.82, 0.1),
-            //     );
-            // }
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
             rapier_context.intersections_with_ray(
                 ray_pos,

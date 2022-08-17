@@ -28,7 +28,7 @@ impl Default for Config {
             show_rays: true,
             max_torque: 500.,
             max_toi: 50.,
-            translation: Vec3::new(0., 0.7, 0.),
+            translation: Vec3::new(0., 0.8, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
             hid_car: None,
             camera_follow: None,
