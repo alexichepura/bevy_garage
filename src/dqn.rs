@@ -1,10 +1,6 @@
 use crate::{
     car::*,
-    nn::{
-        action::map_action_to_car,
-        dqn_bevy::{CarDqn, DqnResource},
-        replay::BATCH_SIZE,
-    },
+    nn::{action::*, dqn_bevy::*, log::*, replay::*},
     progress::*,
     track::*,
 };
@@ -145,20 +141,7 @@ pub fn dqn_system(
                 loss_string.push_str(format!("{:.2} ", loss_v).as_str());
             }
         }
-        let log = [
-            String::from(if use_random { "?" } else { " " }),
-            action.to_string(),
-            " ".to_string(),
-            String::from(if reward > 0. { "+" } else { "-" }),
-            format!("{:.2}", reward.abs()),
-            " ".to_string(),
-            start.elapsed().as_millis().to_string() + "ms",
-            " ".to_string(),
-            loss_string,
-        ]
-        .join("");
-        println!("{log:?}");
-
+        log_network_sync(use_random, action, reward, &loss_string, start);
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
@@ -169,16 +152,7 @@ pub fn dqn_system(
             dqn.eps - DECAY
         };
     } else {
-        let log = [
-            String::from("sgd up "),
-            String::from(if use_random { "?" } else { " " }),
-            action.to_string(),
-            " ".to_string(),
-            String::from(if reward > 0. { "+" } else { "-" }),
-            format!("{:.2}", reward.abs()),
-        ]
-        .join("");
-        println!("{log:?}");
+        log_action_reward(action, reward);
     }
     dqn.rb
         .store(car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
