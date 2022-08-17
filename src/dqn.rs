@@ -31,7 +31,7 @@ pub fn dqn_system(
     mut dqn: NonSendMut<DqnResource>,
     q_name: Query<&Name>,
     mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
-    mut q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
+    q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
 ) {
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
@@ -44,17 +44,48 @@ pub fn dqn_system(
     }
 
     let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
+
+    let reward_shape = || -> f32 {
+        let (_p, colliding_entities) = q_colliding_entities.single();
+        let mut crashed: bool = false;
+        for e in colliding_entities.iter() {
+            let colliding_entity = q_name.get(e).unwrap();
+            if !colliding_entity.contains(ASSET_ROAD) {
+                crashed = true;
+            }
+        }
+        if crashed {
+            return -10.;
+        }
+
+        // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
+        // 2) Reward shaping: Reward shaping is crucial to help the
+        // network to converge to the optimal set of solutions. Because
+        // in car racing the score is measured at the end of the track it
+        // is much too sparse to train the agents. Instead, a reward is
+        // computed at each frame using metadata information received
+        // from the game. In [13] the reward is computed as a function
+        // of the difference of angle α between the road and car’s
+        // heading and the speed v. Tests exhibit that that it cannot
+        // prevent the car to slide along the guard rail which makes
+        // sense since the latter follows the road angle. Eventually, we
+        // found preferable to add the distance from the middle of the
+        // road d as a penalty:
+        // R = v(cos α − d) (1)
+        // Similarly to [9] our conclusion is that the distance penalty
+        // enables the agent to rapidly learn how to stay in the middle of
+        // the track. Additionally, we propose two other rewards using
+        // the road width as detailed in section IV-C.2.
+        let cosa = progress.angle.cos();
+        let d = 0.; // TODO
+        let reward = v.linvel.length() * (cosa - d);
+        println!("reward {reward:.3}");
+        return reward;
+    };
+    let reward = reward_shape();
+
     let mps = v.linvel.length();
     // let kmh = mps / 1000. * 3600.;
-    let (_p, colliding_entities) = q_colliding_entities.single_mut();
-    let mut crashed: bool = false;
-    for e in colliding_entities.iter() {
-        let colliding_entity = q_name.get(e).unwrap();
-        if !colliding_entity.contains(ASSET_ROAD) {
-            crashed = true;
-        }
-    }
-
     let mut obs: Observation = [0.; STATE_SIZE];
     for i in 0..obs.len() {
         obs[i] = match i {
@@ -67,31 +98,9 @@ pub fn dqn_system(
     let obs_state_tensor = Tensor1D::new(obs);
     let mut rng = rand::thread_rng();
     let random_number = rng.gen_range(0.0..1.0);
-    let reward: f32 = if crashed {
-        -10.
-    } else {
-        let mut dprogress = progress.meters - car_dqn.prev_progress;
-        // +1 rotated 0deg (forward) .. 0 rotated 90deg .. -1 180deg (backward)
-        let angle_direction_unit = 1. - progress.angle / FRAC_PI_2;
-        let direction_flip = angle_direction_unit < 0.;
-        if dprogress > 0. && direction_flip {
-            // correct progress velocity vector but wrong car position vector
-            dprogress *= -1.;
-        };
-        if direction_flip && dqn.eps <= dqn.min_eps {
-            // flip but epsilon is small, need more random
-            dqn.eps = dqn.max_eps;
-        };
-        let progress_reward: f32 = match dprogress / STEP_DURATION as f32 {
-            x if x > 0. && x < 0.2 => 0.,
-            x if x > 0. => x / 15.,
-            x => x,
-        };
-        progress_reward
-    };
     let action: usize;
-    let use_random = random_number < dqn.eps;
-    if use_random {
+    let exploration = random_number < dqn.eps;
+    if exploration {
         action = rng.gen_range(0..ACTION_SIZE - 1);
     } else {
         let q_values = dqn.qn.forward(obs_state_tensor.clone());
@@ -103,7 +112,7 @@ pub fn dqn_system(
             .position(|q| *q >= max_q_value);
         if None == some_action {
             dbg!(q_values);
-            panic!(); // TODO
+            panic!();
         } else {
             action = some_action.unwrap();
         }
@@ -126,7 +135,7 @@ pub fn dqn_system(
                 loss_string.push_str(format!("{:.2} ", loss_v).as_str());
             }
         }
-        log_training(use_random, action, reward, &loss_string, start);
+        log_training(exploration, action, reward, &loss_string, start);
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();
@@ -144,7 +153,6 @@ pub fn dqn_system(
     car_dqn.prev_obs = obs;
     car_dqn.prev_action = action;
     car_dqn.prev_reward = reward;
-    car_dqn.prev_progress = progress.meters;
     let (gas, brake, left, right) = map_action_to_car(action);
     car.gas = gas;
     car.brake = brake;

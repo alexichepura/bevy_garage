@@ -4,8 +4,6 @@ use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
 
-const LEARNING_RATE: f32 = 0.01;
-
 pub struct DqnResource {
     pub seconds: f64,
     pub step: i32,
@@ -34,7 +32,7 @@ impl DqnResource {
             min_eps: 0.01,
             done: 0.,
             sgd: Sgd::new(SgdConfig {
-                lr: LEARNING_RATE,
+                lr: 0.02,
                 momentum: Some(Momentum::Nesterov(0.9)),
             }),
         }
@@ -53,7 +51,6 @@ pub struct CarDqn {
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
-    pub prev_progress: f32,
 }
 impl CarDqn {
     pub fn new() -> Self {
@@ -61,7 +58,6 @@ impl CarDqn {
             prev_obs: [0.; STATE_SIZE],
             prev_action: 0,
             prev_reward: 0.,
-            prev_progress: 0.,
         }
     }
 }
