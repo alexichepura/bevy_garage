@@ -1,13 +1,17 @@
 use crate::{
     car::*,
-    nn::rb::{ReplayBuffer, BATCH_SIZE},
+    nn::{
+        action::map_action_to_car,
+        dqn_bevy::{CarDqn, DqnResource},
+        replay::BATCH_SIZE,
+    },
     progress::*,
     track::*,
 };
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::Rng;
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const EPOCHS: usize = 60;
@@ -20,42 +24,13 @@ const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
 const HIDDEN_SIZE: usize = 32;
-type QNetwork = (
+pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
     Linear<HIDDEN_SIZE, ACTION_SIZE>,
 );
 pub type Observation = [f32; STATE_SIZE];
 
-pub struct DqnResource {
-    pub seconds: f64,
-    pub step: i32,
-    pub qn: QNetwork,
-    pub tqn: QNetwork,
-    pub rb: ReplayBuffer,
-    pub eps: f32,
-    pub max_eps: f32,
-    pub min_eps: f32,
-    pub done: f32,
-}
-impl DqnResource {
-    pub fn new() -> Self {
-        let mut rng = StdRng::seed_from_u64(0);
-        let mut qn = QNetwork::default();
-        qn.reset_params(&mut rng);
-        Self {
-            seconds: 0.,
-            step: 0,
-            qn: qn.clone(),
-            tqn: qn.clone(),
-            rb: ReplayBuffer::new(),
-            eps: 1.,
-            max_eps: 1.,
-            min_eps: 0.01,
-            done: 0.,
-        }
-    }
-}
 pub struct SgdResource {
     pub sgd: Sgd<QNetwork>,
 }
@@ -67,24 +42,6 @@ pub fn dqn_start_system(world: &mut World) {
             momentum: Some(Momentum::Nesterov(0.9)),
         }),
     });
-}
-
-#[derive(Component, Debug)]
-pub struct CarDqn {
-    pub prev_obs: Observation,
-    pub prev_action: usize,
-    pub prev_reward: f32,
-    pub prev_progress: f32,
-}
-impl CarDqn {
-    pub fn new() -> Self {
-        Self {
-            prev_obs: [0.; STATE_SIZE],
-            prev_action: 0,
-            prev_reward: 0.,
-            prev_progress: 0.,
-        }
-    }
 }
 
 pub fn dqn_system(
@@ -229,26 +186,7 @@ pub fn dqn_system(
     car_dqn.prev_action = action;
     car_dqn.prev_reward = reward;
     car_dqn.prev_progress = progress.meters;
-    let gas = if action == 0 || action == 4 || action == 5 {
-        1.
-    } else {
-        0.
-    };
-    let brake = if action == 1 || action == 6 || action == 7 {
-        1.
-    } else {
-        0.
-    };
-    let left = if action == 2 || action == 4 || action == 6 {
-        1.
-    } else {
-        0.
-    };
-    let right = if action == 3 || action == 5 || action == 7 {
-        1.
-    } else {
-        0.
-    };
+    let (gas, brake, left, right) = map_action_to_car(action);
     car.gas = gas;
     car.brake = brake;
     car.steering = -left + right;

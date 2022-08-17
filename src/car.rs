@@ -1,4 +1,4 @@
-use crate::{config::*, dqn::*, mesh::*, progress::*, track::*};
+use crate::{config::*, mesh::*, nn::dqn_bevy::CarDqn, progress::*, track::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{

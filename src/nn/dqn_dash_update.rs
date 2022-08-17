@@ -1,8 +1,7 @@
-use crate::{
-    dash::*,
-    dqn::{DqnResource, SYNC_INTERVAL_STEPS},
-};
+use crate::{dash::*, dqn::SYNC_INTERVAL_STEPS};
 use bevy::prelude::*;
+
+use super::dqn_bevy::DqnResource;
 
 pub fn dqn_dash_update_system(
     mut dash_set: ParamSet<(
