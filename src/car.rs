@@ -8,7 +8,7 @@ use bevy_rapier3d::{
 };
 use std::f32::consts::PI;
 
-pub const SENSOR_COUNT: usize = 32;
+pub const SENSOR_COUNT: usize = 16;
 
 #[derive(Component)]
 pub struct Wheel {

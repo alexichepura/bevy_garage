@@ -5,16 +5,17 @@ use dfdx::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
+const EPOCHS: usize = 60;
 const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.001;
 const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 0.5;
-const BATCH_SIZE: usize = 64;
+const STEP_DURATION: f64 = 1. / 5.;
+const BATCH_SIZE: usize = 128;
 const BUFFER_SIZE: usize = 500_000;
 const STATE_SIZE_BASE: usize = 3;
 const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 const ACTION_SIZE: usize = 8;
-const HIDDEN_SIZE: usize = 64;
+const HIDDEN_SIZE: usize = 32;
 type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -30,6 +31,13 @@ pub struct ReplayBuffer {
     pub i: usize,
 }
 type StateTuple = (Observation, usize, f32, Observation);
+type StateTensorsTuple = (
+    Tensor2D<BATCH_SIZE, STATE_SIZE>, // s
+    [usize; BATCH_SIZE],              // a
+    Tensor1D<BATCH_SIZE>,             // r
+    Tensor2D<BATCH_SIZE, STATE_SIZE>, // sn
+    Tensor1D<BATCH_SIZE>,             // done
+);
 impl ReplayBuffer {
     pub fn new() -> Self {
         Self {
@@ -52,6 +60,21 @@ impl ReplayBuffer {
                 self.next_state[i],
             )
         })
+    }
+    pub fn get_batch_tensors(&self, sample_indexes: [usize; BATCH_SIZE]) -> StateTensorsTuple {
+        let batch: [StateTuple; BATCH_SIZE] = self.get_batch(sample_indexes);
+        let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+        let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
+        let mut rewards: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+        for (i, (s, a, r, s_n)) in batch.iter().enumerate() {
+            states.mut_data()[i] = *s;
+            actions[i] = 1 * a;
+            rewards.mut_data()[i] = *r;
+            next_states.mut_data()[i] = *s_n;
+        }
+        let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        (states, actions, rewards, next_states, done)
     }
     pub fn store(
         &mut self,
@@ -218,34 +241,21 @@ pub fn dqn_system(
             action = some_action.unwrap();
         }
     }
-    if dqn.rb.len() > BATCH_SIZE + 1 {
+    if dqn.rb.len() > BATCH_SIZE {
         let start = Instant::now();
         let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-        let batch: [StateTuple; BATCH_SIZE] = dqn.rb.get_batch(batch_indexes);
-
-        let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
-        let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
-        let mut rewards: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
-        let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
-        for (i, (s, a, r, s_n)) in batch.iter().enumerate() {
-            states.mut_data()[i] = *s;
-            actions[i] = 1 * a;
-            rewards.mut_data()[i] = *r;
-            next_states.mut_data()[i] = *s_n;
-        }
-        let done: Tensor1D<BATCH_SIZE> = Tensor1D::zeros();
+        let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
         let mut loss_string: String = String::from("");
-        for _i_epoch in 0..20 {
-            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> =
-                dqn.tqn.forward(next_states.clone());
+        for _i_epoch in 0..EPOCHS {
+            let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(sn.clone());
             let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
-            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &rewards;
-            let q_values = dqn.qn.forward(states.trace());
-            let loss = mse_loss(q_values.gather_last_dim(&actions), &target_q);
+            let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
+            let q_values = dqn.qn.forward(s.trace());
+            let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
             let loss_v = *loss.data();
             let gradients = loss.backward();
             sgd.sgd.update(&mut dqn.qn, gradients);
-            if _i_epoch % 5 == 0 {
+            if _i_epoch % 20 == 0 {
                 loss_string.push_str(format!("{:.2} ", loss_v).as_str());
             }
         }
