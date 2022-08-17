@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-pub fn log_network_sync(
+pub fn log_training(
     use_random: bool,
     action: usize,
     reward: f32,

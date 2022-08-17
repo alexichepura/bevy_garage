@@ -11,7 +11,6 @@ use rand::Rng;
 use std::{f32::consts::FRAC_PI_2, time::Instant};
 
 const EPOCHS: usize = 60;
-const LEARNING_RATE: f32 = 0.01;
 const DECAY: f32 = 0.001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 1. / 5.;
@@ -27,23 +26,9 @@ pub type QNetwork = (
 );
 pub type Observation = [f32; STATE_SIZE];
 
-pub struct SgdResource {
-    pub sgd: Sgd<QNetwork>,
-}
-pub fn dqn_start_system(world: &mut World) {
-    world.insert_non_send_resource(DqnResource::new());
-    world.insert_non_send_resource(SgdResource {
-        sgd: Sgd::new(SgdConfig {
-            lr: LEARNING_RATE,
-            momentum: Some(Momentum::Nesterov(0.9)),
-        }),
-    });
-}
-
 pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
-    mut sgd: NonSendMut<SgdResource>,
     q_name: Query<&Name>,
     mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
     mut q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
@@ -136,12 +121,12 @@ pub fn dqn_system(
             let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
             let loss_v = *loss.data();
             let gradients = loss.backward();
-            sgd.sgd.update(&mut dqn.qn, gradients);
+            dqn.sgd_update(gradients);
             if _i_epoch % 20 == 0 {
                 loss_string.push_str(format!("{:.2} ", loss_v).as_str());
             }
         }
-        log_network_sync(use_random, action, reward, &loss_string, start);
+        log_training(use_random, action, reward, &loss_string, start);
         if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 {
             dbg!("networks sync");
             dqn.tqn = dqn.qn.clone();

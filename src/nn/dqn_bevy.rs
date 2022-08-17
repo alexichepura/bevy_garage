@@ -1,8 +1,10 @@
 use super::replay::ReplayBuffer;
 use crate::dqn::{Observation, QNetwork, STATE_SIZE};
 use bevy::prelude::*;
-use dfdx::prelude::ResetParams;
+use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
+
+const LEARNING_RATE: f32 = 0.01;
 
 pub struct DqnResource {
     pub seconds: f64,
@@ -14,6 +16,7 @@ pub struct DqnResource {
     pub max_eps: f32,
     pub min_eps: f32,
     pub done: f32,
+    pub sgd: Sgd<QNetwork>,
 }
 impl DqnResource {
     pub fn new() -> Self {
@@ -30,8 +33,19 @@ impl DqnResource {
             max_eps: 1.,
             min_eps: 0.01,
             done: 0.,
+            sgd: Sgd::new(SgdConfig {
+                lr: LEARNING_RATE,
+                momentum: Some(Momentum::Nesterov(0.9)),
+            }),
         }
     }
+    pub fn sgd_update(&mut self, gradients: Gradients) {
+        self.sgd.update(&mut self.qn, gradients);
+    }
+}
+
+pub fn dqn_start_system(world: &mut World) {
+    world.insert_non_send_resource(DqnResource::new());
 }
 
 #[derive(Component, Debug)]
