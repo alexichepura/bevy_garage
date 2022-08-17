@@ -11,7 +11,7 @@ use std::io::BufReader;
 #[derive(Component)]
 pub struct CarProgress {
     pub meters: f32,
-    pub angle: f32,
+    pub line_dir: Vec3,
     pub place: usize,
 }
 
@@ -81,9 +81,6 @@ pub fn progress_system(
                     // println!("vertex_i_{i:?}");
                 }
                 SegmentPointLocation::OnEdge(uv) => {
-                    let line_dir = Vec3::from(segment.direction().unwrap());
-                    let car_dir = tr.rotation.mul_vec3(Vec3::Z);
-                    let angle = line_dir.angle_between(car_dir);
                     let m = uv[1] * segment.length();
                     let mut meters = match segment_i {
                         i if i >= config.segment_i => {
@@ -97,8 +94,8 @@ pub fn progress_system(
                     if meters - car_progress.meters > 1000. {
                         meters = -(config.meters_total - meters);
                     }
-                    car_progress.meters = meters;
-                    car_progress.angle = angle;
+                    let line_dir = Vec3::from(segment.direction().unwrap());
+                    car_progress.line_dir = line_dir;
                     board.push((e, meters));
                 }
             }

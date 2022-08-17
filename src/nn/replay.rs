@@ -2,8 +2,8 @@ use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
 
 use crate::dqn::{Observation, STATE_SIZE};
 
-pub const BATCH_SIZE: usize = 64;
-pub const BATCH_SIZE_2: usize = 2048;
+pub const BATCH_SIZE: usize = 32;
+pub const BATCH_SIZE_2: usize = 256;
 const BUFFER_SIZE: usize = 500_000;
 
 type StateTuple = (Observation, usize, f32, Observation);

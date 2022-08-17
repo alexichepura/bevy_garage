@@ -8,7 +8,7 @@ use bevy_rapier3d::{
 };
 use std::f32::consts::PI;
 
-pub const SENSOR_COUNT: usize = 16;
+pub const SENSOR_COUNT: usize = 8;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -203,8 +203,8 @@ pub fn car_start_system(
             .insert(Car::new(&wheels, config.max_torque, car_transform))
             .insert(CarProgress {
                 meters: 0.,
-                angle: 0.,
                 place: 0,
+                line_dir: Vec3::ZERO,
             })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())

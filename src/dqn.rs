@@ -11,10 +11,10 @@ use dfdx::prelude::*;
 use rand::Rng;
 use std::time::Instant;
 
-const EPOCHS: usize = 15;
-const DECAY: f32 = 0.0001;
-pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 10.;
+const EPOCHS: usize = 20;
+const DECAY: f32 = 0.001;
+pub const SYNC_INTERVAL_STEPS: i32 = 50;
+const STEP_DURATION: f64 = 1. / 2.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -31,13 +31,10 @@ pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
     q_name: Query<&Name>,
-    mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
+    mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn, &Transform), With<CarDqn>>,
     q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
     config: Res<Config>,
 ) {
-    if !config.use_brain {
-        return;
-    }
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
         dqn.seconds = seconds + STEP_DURATION;
@@ -46,7 +43,10 @@ pub fn dqn_system(
         return;
     }
 
-    let (mut car, v, progress, mut car_dqn) = q_car.single_mut();
+    let (mut car, v, progress, mut car_dqn, tr) = q_car.single_mut();
+    let vel_angle = progress.line_dir.angle_between(v.linvel);
+    let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
+    let pos_angle = progress.line_dir.angle_between(pos_dir);
 
     let shape_reward = || -> f32 {
         let (_p, colliding_entities) = q_colliding_entities.single();
@@ -58,15 +58,25 @@ pub fn dqn_system(
             }
         }
         if crashed {
-            return -100.;
+            return -10.;
         }
         // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
         // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
-        // R = v(cos α − d)
-        let reward = v.linvel.length() * (progress.angle.cos() - 0.); // TODO d
+        // R = v(cos α − d) // TODO d
+        let mut reward = v.linvel.length() * vel_angle.cos();
+        if vel_angle.cos().is_sign_positive() && pos_angle.cos().is_sign_negative() {
+            reward = -reward;
+        }
+        if reward.is_nan() {
+            return 0.;
+        }
         return reward;
     };
     let reward = shape_reward();
+    if !config.use_brain {
+        println!("reward {reward:.2}");
+        return;
+    }
 
     let mps = v.linvel.length();
     // let kmh = mps / 1000. * 3600.;
@@ -74,7 +84,7 @@ pub fn dqn_system(
     for i in 0..obs.len() {
         obs[i] = match i {
             0 => progress.meters,
-            1 => progress.angle,
+            1 => vel_angle,
             2 => mps,
             _ => car.sensor_inputs[i - STATE_SIZE_BASE],
         };
