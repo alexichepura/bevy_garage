@@ -73,6 +73,7 @@ fn main() {
         .add_startup_system(car_start_system)
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
+        .add_startup_system(rapier_config_start_system)
         .add_system(esp_system)
         .add_system(car_sensor_system)
         .add_system(dqn_system)
@@ -87,6 +88,20 @@ fn main() {
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         // .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
+}
+
+fn rapier_config_start_system(mut context: ResMut<RapierContext>) {
+    dbg!(context.integration_parameters);
+    // prediction_distance is most important for stable suspension
+    context.integration_parameters.prediction_distance = 0.00001;
+    // context.integration_parameters.dt = 1.0 / 120.0;
+    // context.integration_parameters.min_ccd_dt = 1.0 / 120.0 / 100.0;
+    // context.integration_parameters.min_island_size = 32;
+    // context.integration_parameters.erp = 1.;
+    // context.integration_parameters.allowed_linear_error = 0.0001;
+    // context.integration_parameters.max_ccd_substeps = 16;
+    context.integration_parameters.damping_ratio = 1.;
+    dbg!(context.integration_parameters);
 }
 
 // fn display_events_system(

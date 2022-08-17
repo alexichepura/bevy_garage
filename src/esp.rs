@@ -32,12 +32,12 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 3.,
-            _ => match car_kmh / 150. {
+            _ => match car_kmh / 180. {
                 x if x >= 1. => 0.,
                 x => 1. - x,
             },
         };
-        let steering_speed_x: f32 = match car_kmh / 120. {
+        let steering_speed_x: f32 = match car_kmh / 140. {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
@@ -57,8 +57,8 @@ pub fn esp_system(
         };
         let car_torque = pedal * car.wheel_max_torque;
         let (steering, torque) = (
-            car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 5.,
-            car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 20.,
+            car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 4.,
+            car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 4.,
         );
         car.prev_steering = steering;
         car.prev_torque = torque;

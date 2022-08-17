@@ -20,5 +20,5 @@ pub fn dqn_dash_update_system(
 
     let mut q_timing_text = dash_set.p0();
     let mut timing_text = q_timing_text.single_mut();
-    timing_text.sections[0].value = format!("epsilon {:.3}", dqn.eps);
+    timing_text.sections[0].value = format!("epsilon {:.4}", dqn.eps);
 }

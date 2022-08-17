@@ -117,8 +117,11 @@ pub fn car_start_system(
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
-            let joint_mask =
-                JointAxesMask::X | JointAxesMask::Y | JointAxesMask::ANG_Y | JointAxesMask::ANG_Z;
+            let joint_mask = JointAxesMask::X
+                | JointAxesMask::Y
+                // | JointAxesMask::Z
+                | JointAxesMask::ANG_Y
+                | JointAxesMask::ANG_Z;
 
             let joint = GenericJointBuilder::new(joint_mask)
                 .local_axis1(Vec3::X)
@@ -150,7 +153,7 @@ pub fn car_start_system(
             let wheel_collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::ZERO,
                 mass: 15.,
-                principal_inertia: Vec3::ONE * 0.5,
+                principal_inertia: Vec3::ONE * 0.35,
                 ..default()
             });
             let wheel = Wheel {
@@ -169,8 +172,8 @@ pub fn car_start_system(
                 .insert(collider)
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(5.))
-                .insert(Restitution::coefficient(0.1))
+                .insert(Friction::coefficient(10.))
+                .insert(Restitution::coefficient(0.0))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
@@ -223,7 +226,7 @@ pub fn car_start_system(
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -car_hh, 0.),
                     mass: 1500.0,
-                    principal_inertia: Vec3::new(10_000., 10_000., 1000.),
+                    principal_inertia: Vec3::new(10., 10., 5.),
                     ..default()
                 });
                 children
