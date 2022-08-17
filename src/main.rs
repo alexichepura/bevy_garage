@@ -76,6 +76,7 @@ fn main() {
         .add_system(esp_system)
         .add_system(car_sensor_system)
         .add_system(dqn_system)
+        .add_system(dqn_switch_system)
         .add_system(dqn_dash_update_system)
         .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)

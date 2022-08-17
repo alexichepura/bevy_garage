@@ -1,5 +1,6 @@
 use crate::{
     car::*,
+    config::Config,
     nn::{action::*, dqn_bevy::*, log::*, replay::*},
     progress::*,
     track::*,
@@ -32,7 +33,11 @@ pub fn dqn_system(
     q_name: Query<&Name>,
     mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn), With<CarDqn>>,
     q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
+    config: Res<Config>,
 ) {
+    if !config.use_brain {
+        return;
+    }
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
         dqn.seconds = seconds + STEP_DURATION;

@@ -39,7 +39,6 @@ pub struct Car {
     pub steering: f32,
     pub prev_steering: f32,
     pub prev_torque: f32,
-    pub use_brain: bool,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
     pub init_transform: Transform,
@@ -49,12 +48,7 @@ pub struct Car {
 pub struct HID;
 
 impl Car {
-    pub fn new(
-        wheels: &Vec<Entity>,
-        use_brain: bool,
-        wheel_max_torque: f32,
-        init_transform: Transform,
-    ) -> Self {
+    pub fn new(wheels: &Vec<Entity>, wheel_max_torque: f32, init_transform: Transform) -> Self {
         Self {
             sensor_inputs: vec![0.; SENSOR_COUNT],
             gas: 0.,
@@ -62,7 +56,6 @@ impl Car {
             steering: 0.,
             prev_steering: 0.,
             prev_torque: 0.,
-            use_brain,
             wheels: wheels.clone(),
             wheel_max_torque,
             init_transform,
@@ -132,7 +125,7 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 30., 1.)
+                .set_motor(JointAxis::Z, 0., 0., 10., 0.1)
                 .build();
             joints.push(joint);
 
@@ -207,12 +200,7 @@ pub fn car_start_system(
             .insert(Name::new("car"))
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
-            .insert(Car::new(
-                &wheels,
-                config.use_brain,
-                config.max_torque,
-                car_transform,
-            ))
+            .insert(Car::new(&wheels, config.max_torque, car_transform))
             .insert(CarProgress {
                 meters: 0.,
                 angle: 0.,

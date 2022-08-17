@@ -1,5 +1,8 @@
 use super::replay::ReplayBuffer;
-use crate::dqn::{Observation, QNetwork, STATE_SIZE};
+use crate::{
+    config::Config,
+    dqn::{Observation, QNetwork, STATE_SIZE},
+};
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
@@ -59,5 +62,11 @@ impl CarDqn {
             prev_action: 0,
             prev_reward: 0.,
         }
+    }
+}
+
+pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
+    if input.just_pressed(KeyCode::N) {
+        config.use_brain = !config.use_brain;
     }
 }
