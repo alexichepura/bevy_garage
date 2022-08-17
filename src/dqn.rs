@@ -14,7 +14,7 @@ use std::time::Instant;
 const EPOCHS: usize = 20;
 const DECAY: f32 = 0.001;
 pub const SYNC_INTERVAL_STEPS: i32 = 50;
-const STEP_DURATION: f64 = 1. / 2.;
+const STEP_DURATION: f64 = 1. / 5.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -58,7 +58,7 @@ pub fn dqn_system(
             }
         }
         if crashed {
-            return -10.;
+            return -50.;
         }
         // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
         // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
@@ -83,9 +83,10 @@ pub fn dqn_system(
     let mut obs: Observation = [0.; STATE_SIZE];
     for i in 0..obs.len() {
         obs[i] = match i {
-            0 => progress.meters,
+            // 0 => progress.meters,
+            0 => mps,
             1 => vel_angle,
-            2 => mps,
+            2 => pos_angle,
             _ => car.sensor_inputs[i - STATE_SIZE_BASE],
         };
     }
