@@ -14,7 +14,7 @@ use std::time::Instant;
 const EPOCHS: usize = 30;
 const DECAY: f32 = 0.0001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 20.;
+const STEP_DURATION: f64 = 1. / 1.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -35,10 +35,6 @@ pub fn dqn_system(
     q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
     config: Res<Config>,
 ) {
-    if !config.use_brain {
-        // println!("reward {reward:.2}");
-        return;
-    }
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
         dqn.seconds = seconds + STEP_DURATION;
@@ -48,7 +44,10 @@ pub fn dqn_system(
     }
 
     let (mut car, v, progress, mut car_dqn, tr) = q_car.single_mut();
-    let vel_angle = progress.line_dir.angle_between(v.linvel);
+    let mut vel_angle = progress.line_dir.angle_between(v.linvel);
+    if vel_angle.is_nan() {
+        vel_angle = 0.;
+    }
     let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
     let pos_angle = progress.line_dir.angle_between(pos_dir);
 
@@ -79,16 +78,22 @@ pub fn dqn_system(
     let reward = shape_reward();
 
     let mps = v.linvel.length();
-    // let kmh = mps / 1000. * 3600.;
+    let kmh = mps / 1000. * 3600.;
     let mut obs: Observation = [0.; STATE_SIZE];
     for i in 0..obs.len() {
         obs[i] = match i {
-            // 0 => progress.meters,
-            0 => mps,
-            1 => vel_angle,
-            2 => pos_angle,
+            0 => kmh / 200.,
+            1 => vel_angle.cos(),
+            2 => pos_angle.cos(),
             _ => car.sensor_inputs[i - STATE_SIZE_BASE],
         };
+    }
+    if !config.use_brain {
+        println!(
+            "dqn {reward:.2} {:.?}",
+            obs.map(|o| { (o * 10.).round() / 10. })
+        );
+        return;
     }
     let obs_state_tensor = Tensor1D::new(obs);
     let mut rng = rand::thread_rng();

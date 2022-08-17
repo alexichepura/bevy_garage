@@ -128,19 +128,20 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 10., 0.1)
+                .set_motor(JointAxis::Z, 0., 0., 1., 0.01)
                 .build();
             joints.push(joint);
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let mesh = bevy_mesh(wheel_cylinder.to_trimesh(50));
-            let wheel_border_radius = 0.05;
-            let collider = Collider::round_cylinder(
-                wheel_hw,
-                wheel_r - wheel_border_radius,
-                wheel_border_radius,
-            );
+            let wheel_border_radius = 0.0;
+            // let collider = Collider::round_cylinder(
+            //     wheel_hw,
+            //     wheel_r - wheel_border_radius,
+            //     wheel_border_radius,
+            // );
+            let collider = Collider::cylinder(wheel_hw, wheel_r - wheel_border_radius);
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
@@ -153,7 +154,7 @@ pub fn car_start_system(
             let wheel_collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::ZERO,
                 mass: 15.,
-                principal_inertia: Vec3::ONE * 0.35,
+                principal_inertia: Vec3::ONE * 1.,
                 ..default()
             });
             let wheel = Wheel {
@@ -226,7 +227,7 @@ pub fn car_start_system(
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -car_hh, 0.),
                     mass: 1500.0,
-                    principal_inertia: Vec3::new(10., 10., 5.),
+                    principal_inertia: Vec3::new(5000., 5000., 5000.),
                     ..default()
                 });
                 children
@@ -236,7 +237,7 @@ pub fn car_start_system(
                     .insert(Collider::cuboid(car_hw, car_hh, car_hl))
                     .insert(ColliderScale::Absolute(Vec3::ONE))
                     .insert(Friction::coefficient(0.0001))
-                    .insert(Restitution::coefficient(0.))
+                    .insert(Restitution::coefficient(0.0))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(CollidingEntities::default())
                     .insert(ActiveEvents::COLLISION_EVENTS)

@@ -76,7 +76,7 @@ pub fn track_start_system(
             false => 0.3,
         };
         let restitution = match is_road {
-            true => 0.1,
+            true => 0.0,
             false => 0.1,
         };
         let friction = match is_road {
