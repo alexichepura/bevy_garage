@@ -109,8 +109,7 @@ pub fn esp_system(
                 }
             }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
-                let axis = quat.mul_vec3(Vec3::X);
-                joint.data.set_local_axis1(axis);
+                joint.data.set_local_basis1(quat);
             }
         }
     }
