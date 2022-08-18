@@ -64,8 +64,33 @@ impl Default for CameraController {
     }
 }
 
+pub enum CameraFollowMode {
+    // Bumper,
+    // Hood,
+    // Driver,
+    // Near,
+    Mid,
+    // Far,
+    // Front,
+    // Left,
+    // Right,
+}
+
+pub struct CameraConfig {
+    pub mode: CameraFollowMode,
+    pub camera_follow: Option<Entity>,
+}
+
+impl Default for CameraConfig {
+    fn default() -> Self {
+        Self {
+            mode: CameraFollowMode::Mid,
+            camera_follow: None,
+        }
+    }
+}
 pub fn camera_switch_system(
-    mut config: ResMut<Config>,
+    mut config: ResMut<CameraConfig>,
     input: Res<Input<KeyCode>>,
     query: Query<Entity, With<HID>>,
 ) {
@@ -82,26 +107,25 @@ pub fn camera_switch_system(
 
 pub fn camera_controller_system(
     time: Res<Time>,
-    config: Res<Config>,
+    config: Res<CameraConfig>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
-    mut transforms: ParamSet<(
+    mut pset: ParamSet<(
         Query<(&mut Transform, &mut CameraController), With<Camera>>,
         Query<&Transform, With<HID>>,
     )>,
 ) {
     if let Some(e) = config.camera_follow {
-        let p1 = transforms.p1();
-        let car_transform = p1.get(e);
-        if let Ok(car_transform) = car_transform {
-            let mut tf = Transform::from_matrix(car_transform.compute_matrix());
+        let p1 = pset.p1();
+        if let Ok(car_transform) = p1.get(e) {
+            let mut tf = car_transform.clone();
             let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 4., -15.));
             tf.translation.x = tf.translation.x + shift_vec.x;
             tf.translation.y = tf.translation.y + shift_vec.y;
             tf.translation.z = tf.translation.z + shift_vec.z;
             tf.rotate(Quat::from_rotation_y(-PI));
             tf.look_at(car_transform.translation + Vec3::new(0., 2.5, 0.), Vec3::Y);
-            for (mut cam_transform, _) in transforms.p0().iter_mut() {
+            for (mut cam_transform, _) in pset.p0().iter_mut() {
                 *cam_transform = tf;
             }
         }
@@ -115,7 +139,7 @@ pub fn camera_controller_system(
         mouse_delta += mouse_event.delta;
     }
 
-    for (mut transform, mut options) in transforms.p0().iter_mut() {
+    for (mut transform, mut options) in pset.p0().iter_mut() {
         if !options.enabled {
             continue;
         }

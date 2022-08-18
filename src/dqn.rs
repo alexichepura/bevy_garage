@@ -14,7 +14,7 @@ use std::time::Instant;
 const EPOCHS: usize = 30;
 const DECAY: f32 = 0.0001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 1.;
+const STEP_DURATION: f64 = 1. / 20.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
