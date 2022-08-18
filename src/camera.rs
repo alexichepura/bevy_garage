@@ -65,15 +65,9 @@ impl Default for CameraController {
 }
 
 pub enum CameraFollowMode {
-    // Bumper,
-    // Hood,
-    // Driver,
-    // Near,
+    Near,
     Mid,
-    // Far,
-    // Front,
-    // Left,
-    // Right,
+    Far,
 }
 
 pub struct CameraConfig {
@@ -94,11 +88,17 @@ pub fn camera_switch_system(
     input: Res<Input<KeyCode>>,
     query: Query<Entity, With<HID>>,
 ) {
-    // if config.camera_follow == None {
-    //     config.camera_follow = Some(query.single());
-    // }
     if input.just_pressed(KeyCode::Key1) {
         config.camera_follow = Some(query.single());
+        config.mode = CameraFollowMode::Near;
+    }
+    if input.just_pressed(KeyCode::Key2) {
+        config.camera_follow = Some(query.single());
+        config.mode = CameraFollowMode::Mid;
+    }
+    if input.just_pressed(KeyCode::Key3) {
+        config.camera_follow = Some(query.single());
+        config.mode = CameraFollowMode::Far;
     }
     if input.just_pressed(KeyCode::Key0) {
         config.camera_follow = None;
@@ -117,19 +117,25 @@ pub fn camera_controller_system(
 ) {
     if let Some(e) = config.camera_follow {
         let p1 = pset.p1();
-        if let Ok(car_transform) = p1.get(e) {
-            let mut tf = car_transform.clone();
-            let shift_vec: Vec3 = tf.rotation.mul_vec3(Vec3::new(0., 4., -15.));
-            tf.translation.x = tf.translation.x + shift_vec.x;
-            tf.translation.y = tf.translation.y + shift_vec.y;
-            tf.translation.z = tf.translation.z + shift_vec.z;
+        if let Ok(car_tf) = p1.get(e) {
+            let look_from = match config.mode {
+                CameraFollowMode::Near => Vec3::new(0., 2., -5.),
+                CameraFollowMode::Mid => Vec3::new(0., 3., -10.),
+                CameraFollowMode::Far => Vec3::new(0., 5., -20.),
+            };
+            let look_at = match config.mode {
+                CameraFollowMode::Near => Vec3::new(0., 1.5, 0.),
+                CameraFollowMode::Mid => Vec3::new(0., 2., 0.),
+                CameraFollowMode::Far => Vec3::new(0., 3., 0.),
+            };
+            let mut tf = car_tf.clone();
+            tf.translation += tf.rotation.mul_vec3(look_from);
             tf.rotate(Quat::from_rotation_y(-PI));
-            tf.look_at(car_transform.translation + Vec3::new(0., 2.5, 0.), Vec3::Y);
-            for (mut cam_transform, _) in pset.p0().iter_mut() {
-                *cam_transform = tf;
-            }
+            tf.look_at(car_tf.translation + look_at, Vec3::Y);
+            let mut p0 = pset.p0();
+            let (mut camera_tf, _) = p0.single_mut();
+            *camera_tf = tf;
         }
-
         return;
     }
     let dt = time.delta_seconds();
@@ -139,62 +145,63 @@ pub fn camera_controller_system(
         mouse_delta += mouse_event.delta;
     }
 
-    for (mut transform, mut options) in pset.p0().iter_mut() {
-        if !options.enabled {
-            continue;
-        }
+    let mut p0 = pset.p0();
+    let (mut transform, mut options) = p0.single_mut();
 
-        let mut axis_input = Vec3::ZERO;
-        if key_input.pressed(options.key_forward) {
-            axis_input.z += 1.0;
-        }
-        if key_input.pressed(options.key_back) {
-            axis_input.z -= 1.0;
-        }
-        if key_input.pressed(options.key_right) {
-            axis_input.x += 1.0;
-        }
-        if key_input.pressed(options.key_left) {
-            axis_input.x -= 1.0;
-        }
-        if key_input.pressed(options.key_up) {
-            axis_input.y += 1.0;
-        }
-        if key_input.pressed(options.key_down) {
-            axis_input.y -= 1.0;
-        }
+    if !options.enabled {
+        return;
+    }
 
-        if axis_input != Vec3::ZERO {
-            let max_speed = if key_input.pressed(options.key_run) {
-                options.run_speed
-            } else {
-                options.walk_speed
-            };
-            options.velocity = axis_input.normalize() * max_speed;
+    let mut axis_input = Vec3::ZERO;
+    if key_input.pressed(options.key_forward) {
+        axis_input.z += 1.0;
+    }
+    if key_input.pressed(options.key_back) {
+        axis_input.z -= 1.0;
+    }
+    if key_input.pressed(options.key_right) {
+        axis_input.x += 1.0;
+    }
+    if key_input.pressed(options.key_left) {
+        axis_input.x -= 1.0;
+    }
+    if key_input.pressed(options.key_up) {
+        axis_input.y += 1.0;
+    }
+    if key_input.pressed(options.key_down) {
+        axis_input.y -= 1.0;
+    }
+
+    if axis_input != Vec3::ZERO {
+        let max_speed = if key_input.pressed(options.key_run) {
+            options.run_speed
         } else {
-            let friction = options.friction.clamp(0.0, 1.0);
-            options.velocity *= 1.0 - friction;
-            if options.velocity.length_squared() < 1e-6 {
-                options.velocity = Vec3::ZERO;
-            }
+            options.walk_speed
+        };
+        options.velocity = axis_input.normalize() * max_speed;
+    } else {
+        let friction = options.friction.clamp(0.0, 1.0);
+        options.velocity *= 1.0 - friction;
+        if options.velocity.length_squared() < 1e-6 {
+            options.velocity = Vec3::ZERO;
         }
-        let forward = transform.forward();
-        let right = transform.right();
-        transform.translation += options.velocity.x * dt * right
-            + options.velocity.y * dt * Vec3::Y
-            + options.velocity.z * dt * forward;
+    }
+    let forward = transform.forward();
+    let right = transform.right();
+    transform.translation += options.velocity.x * dt * right
+        + options.velocity.y * dt * Vec3::Y
+        + options.velocity.z * dt * forward;
 
-        if mouse_delta != Vec2::ZERO {
-            let (pitch, yaw) = (
-                (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt).clamp(
-                    -0.99 * std::f32::consts::FRAC_PI_2,
-                    0.99 * std::f32::consts::FRAC_PI_2,
-                ),
-                options.yaw - mouse_delta.x * options.sensitivity * dt,
-            );
-            transform.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, yaw, pitch);
-            options.pitch = pitch;
-            options.yaw = yaw;
-        }
+    if mouse_delta != Vec2::ZERO {
+        let (pitch, yaw) = (
+            (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt).clamp(
+                -0.99 * std::f32::consts::FRAC_PI_2,
+                0.99 * std::f32::consts::FRAC_PI_2,
+            ),
+            options.yaw - mouse_delta.x * options.sensitivity * dt,
+        );
+        transform.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, yaw, pitch);
+        options.pitch = pitch;
+        options.yaw = yaw;
     }
 }
