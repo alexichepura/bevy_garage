@@ -128,7 +128,7 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 1., 0.01)
+                .set_motor(JointAxis::Z, 0., 0., 0.29, 0.02)
                 .build();
             joints.push(joint);
 

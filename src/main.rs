@@ -49,15 +49,15 @@ fn main() {
         .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(RapierDebugRenderPlugin {
-        //     // | DebugRenderMode::COLLIDER_AABBS
-        //     mode: DebugRenderMode::COLLIDER_SHAPES
-        //         | DebugRenderMode::RIGID_BODY_AXES
-        //         | DebugRenderMode::JOINTS
-        //         | DebugRenderMode::CONTACTS
-        //         | DebugRenderMode::SOLVER_CONTACTS,
-        //     ..default()
-        // })
+        .add_plugin(RapierDebugRenderPlugin {
+            // | DebugRenderMode::COLLIDER_AABBS
+            mode: DebugRenderMode::COLLIDER_SHAPES
+                | DebugRenderMode::RIGID_BODY_AXES
+                | DebugRenderMode::JOINTS
+                | DebugRenderMode::CONTACTS
+                | DebugRenderMode::SOLVER_CONTACTS,
+            ..default()
+        })
         // .add_plugin(PolylinePlugin)
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         // .add_plugins(DefaultPickingPlugins)

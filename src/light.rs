@@ -27,7 +27,7 @@ pub fn light_start_system(mut commands: Commands) {
                 far: HSIZE,
                 ..default()
             },
-            shadows_enabled: true,
+            shadows_enabled: false,
             ..default()
         },
         transform: Transform {
