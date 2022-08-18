@@ -65,6 +65,7 @@ impl Default for CameraController {
 }
 
 pub enum CameraFollowMode {
+    FrontWheel,
     Near,
     Mid,
     Far,
@@ -100,6 +101,10 @@ pub fn camera_switch_system(
         config.camera_follow = Some(query.single());
         config.mode = CameraFollowMode::Far;
     }
+    if input.just_pressed(KeyCode::Key4) {
+        config.camera_follow = Some(query.single());
+        config.mode = CameraFollowMode::FrontWheel;
+    }
     if input.just_pressed(KeyCode::Key0) {
         config.camera_follow = None;
     }
@@ -122,11 +127,13 @@ pub fn camera_controller_system(
                 CameraFollowMode::Near => Vec3::new(0., 2., -5.),
                 CameraFollowMode::Mid => Vec3::new(0., 3., -10.),
                 CameraFollowMode::Far => Vec3::new(0., 5., -20.),
+                CameraFollowMode::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
             };
             let look_at = match config.mode {
                 CameraFollowMode::Near => Vec3::new(0., 1.5, 0.),
                 CameraFollowMode::Mid => Vec3::new(0., 2., 0.),
                 CameraFollowMode::Far => Vec3::new(0., 3., 0.),
+                CameraFollowMode::FrontWheel => Vec3::new(0., -0.2, 1.),
             };
             let mut tf = car_tf.clone();
             tf.translation += tf.rotation.mul_vec3(look_from);
