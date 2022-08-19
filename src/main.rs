@@ -49,20 +49,20 @@ fn main() {
         .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierDebugRenderPlugin {
-            style: DebugRenderStyle {
-                rigid_body_axes_length: 0.5,
-                subdivisions: 50,
-                ..default()
-            },
-            // | DebugRenderMode::COLLIDER_AABBS
-            mode: DebugRenderMode::COLLIDER_SHAPES
-                | DebugRenderMode::RIGID_BODY_AXES
-                | DebugRenderMode::JOINTS
-                | DebugRenderMode::CONTACTS
-                | DebugRenderMode::SOLVER_CONTACTS,
-            ..default()
-        })
+        // .add_plugin(RapierDebugRenderPlugin {
+        //     style: DebugRenderStyle {
+        //         rigid_body_axes_length: 0.5,
+        //         subdivisions: 50,
+        //         ..default()
+        //     },
+        //     // | DebugRenderMode::COLLIDER_AABBS
+        //     mode: DebugRenderMode::COLLIDER_SHAPES
+        //         | DebugRenderMode::RIGID_BODY_AXES
+        //         | DebugRenderMode::JOINTS
+        //         | DebugRenderMode::CONTACTS
+        //         | DebugRenderMode::SOLVER_CONTACTS,
+        //     ..default()
+        // })
         // .add_plugin(PolylinePlugin)
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         // .add_plugins(DefaultPickingPlugins)
