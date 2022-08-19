@@ -92,7 +92,7 @@ pub fn car_start_system(
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.1; // suspension full up
+    let ride_height = 0.4; // suspension full up
 
     let shift = Vec3::new(
         car_hw - wheel_hw - 0.01,
@@ -117,31 +117,28 @@ pub fn car_start_system(
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
-            let joint_mask = JointAxesMask::X
-                | JointAxesMask::Y
-                // | JointAxesMask::Z
-                | JointAxesMask::ANG_Y
-                | JointAxesMask::ANG_Z;
+            let joint_mask = JointAxesMask::X | JointAxesMask::ANG_Y | JointAxesMask::ANG_Z;
 
             let joint = GenericJointBuilder::new(joint_mask)
                 .local_axis1(Vec3::X)
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Z, 0., 0., 0.29, 0.02)
+                .set_motor(JointAxis::Y, 0., 0., 1., 0.85)
+                .set_motor(JointAxis::Z, 0., 0., 1., 0.85)
                 .build();
             joints.push(joint);
 
             let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
             let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
             let mesh = bevy_mesh(wheel_cylinder.to_trimesh(50));
-            let wheel_border_radius = 0.0;
-            // let collider = Collider::round_cylinder(
-            //     wheel_hw,
-            //     wheel_r - wheel_border_radius,
-            //     wheel_border_radius,
-            // );
-            let collider = Collider::cylinder(wheel_hw, wheel_r - wheel_border_radius);
+            let wheel_border_radius = 0.01;
+            let collider = Collider::round_cylinder(
+                wheel_hw - wheel_border_radius,
+                wheel_r - wheel_border_radius,
+                wheel_border_radius,
+            );
+            // let collider = Collider::cylinder(wheel_hw, wheel_r - wheel_border_radius);
             let wheel_pbr = PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
@@ -174,7 +171,7 @@ pub fn car_start_system(
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction::coefficient(10.))
-                .insert(Restitution::coefficient(0.0))
+                .insert(Restitution::coefficient(0.))
                 .insert(wheel_collider_mass)
                 .insert(wheel)
                 .insert(ExternalForce::default())
@@ -227,7 +224,8 @@ pub fn car_start_system(
                 let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -car_hh, 0.),
                     mass: 1500.0,
-                    principal_inertia: Vec3::new(5000., 5000., 5000.),
+                    // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
+                    principal_inertia: Vec3::new(5000., 5000., 2000.),
                     ..default()
                 });
                 children

@@ -50,6 +50,11 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin {
+            style: DebugRenderStyle {
+                rigid_body_axes_length: 0.5,
+                subdivisions: 50,
+                ..default()
+            },
             // | DebugRenderMode::COLLIDER_AABBS
             mode: DebugRenderMode::COLLIDER_SHAPES
                 | DebugRenderMode::RIGID_BODY_AXES
@@ -73,7 +78,7 @@ fn main() {
         .add_startup_system(car_start_system)
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
-        // .add_startup_system(rapier_config_start_system)
+        .add_startup_system(rapier_config_start_system)
         .add_system(esp_system)
         .add_system(car_sensor_system)
         .add_system(dqn_system)
@@ -90,21 +95,23 @@ fn main() {
         .run();
 }
 
-// fn rapier_config_start_system(mut context: ResMut<RapierContext>) {
-// dbg!(context.integration_parameters);
-// prediction_distance is most important for stable suspension
-// context.integration_parameters.prediction_distance = 0.00001;
-// context.integration_parameters.dt = 1.0 / 120.0;
-// context.integration_parameters.min_ccd_dt = 1.0 / 120.0 / 100.0;
-// context.integration_parameters.min_island_size = 32;
-// context.integration_parameters.erp = 1.;
-// context.integration_parameters.allowed_linear_error = 0.01;
-// context.integration_parameters.max_velocity_iterations = 16;
-// context.integration_parameters.max_ccd_substeps = 16;
-// context.integration_parameters.joint_damping_ratio = 5.;
-// context.integration_parameters.damping_ratio = 5.;
-// dbg!(context.integration_parameters);
-// }
+// const ITERATIONS: usize = 16;
+fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
+    // c.integration_parameters.dt = 1.0 / 240.0;
+    // c.integration_parameters.min_ccd_dt = 1.0 / 240.0 / 100.0;
+    // c.integration_parameters.min_island_size = 128;
+    // c.integration_parameters.joint_damping_ratio = 5.;
+    // c.integration_parameters.damping_ratio = 5.;
+    // c.integration_parameters.prediction_distance = 0.000_1;
+    // c.integration_parameters.allowed_linear_error = 0.000_001;
+    c.integration_parameters.erp = 1.0;
+    // c.integration_parameters.max_velocity_iterations = ITERATIONS;
+    // c.integration_parameters.max_ccd_substeps = ITERATIONS;
+    // c.integration_parameters.max_velocity_iterations = ITERATIONS;
+    // c.integration_parameters.max_velocity_friction_iterations = ITERATIONS;
+    // c.integration_parameters.max_stabilization_iterations = ITERATIONS;
+    dbg!(c.integration_parameters);
+}
 
 // fn display_events_system(
 //     mut e_collision: EventReader<CollisionEvent>,

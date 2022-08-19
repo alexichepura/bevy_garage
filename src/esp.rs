@@ -32,12 +32,12 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 3.,
-            _ => match car_kmh / 180. {
+            _ => match car_kmh / 150. {
                 x if x >= 1. => 0.,
                 x => 1. - x,
             },
         };
-        let steering_speed_x: f32 = match car_kmh / 140. {
+        let steering_speed_x: f32 = match car_kmh / 160. {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
@@ -57,8 +57,8 @@ pub fn esp_system(
         };
         let car_torque = pedal * car.wheel_max_torque;
         let (steering, torque) = (
-            car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 4.,
-            car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 4.,
+            car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 6.,
+            car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 6.,
         );
         car.prev_steering = steering;
         car.prev_torque = torque;
@@ -75,7 +75,7 @@ pub fn esp_system(
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                let max_slip = 0.5;
+                let max_slip = 10.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
@@ -94,7 +94,7 @@ pub fn esp_system(
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                let max_slip = 0.3;
+                let max_slip = 10.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
@@ -109,10 +109,7 @@ pub fn esp_system(
                 }
             }
             if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
-                // joint.data.set_local_basis1(quat);
-
-                let axis = quat.mul_vec3(Vec3::X);
-                joint.data.set_local_axis1(axis);
+                joint.data.set_local_basis1(quat);
             }
         }
     }

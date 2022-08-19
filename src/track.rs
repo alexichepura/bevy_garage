@@ -63,39 +63,33 @@ pub fn track_start_system(
             .map(|idx| [idx[0] as u32, idx[1] as u32, idx[2] as u32])
             .collect();
 
-        let collider = Collider::from(ColliderShape::trimesh(vertices, indices));
-
-        let pbr = PbrBundle {
-            mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
-            ..default()
-        };
-
         let h = match is_road {
-            true => 0.01,
+            true => 0.1,
             false => 0.3,
-        };
-        let restitution = match is_road {
-            true => 0.0,
-            false => 0.1,
-        };
-        let friction = match is_road {
-            true => 1.,
-            false => 0.01,
         };
         commands
             .spawn()
-            .insert_bundle(pbr)
             .insert(Name::new(obj_path))
-            .insert(collider)
-            .insert(ColliderScale::Absolute(Vec3::ONE))
-            .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
             .insert(RigidBody::Fixed)
-            .insert(Friction::coefficient(friction))
-            .insert(Restitution::coefficient(restitution))
             .insert_bundle(TransformBundle::from_transform(Transform {
                 translation: Vec3::new(0., h, 0.),
                 ..default()
+            }))
+            .insert_bundle(PbrBundle {
+                mesh: meshes.add(mesh),
+                material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
+                ..default()
+            })
+            .insert(Collider::from(ColliderShape::trimesh(vertices, indices)))
+            .insert(ColliderScale::Absolute(Vec3::ONE))
+            .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
+            .insert(Friction::coefficient(match is_road {
+                true => 1.,
+                false => 0.01,
+            }))
+            .insert(Restitution::coefficient(match is_road {
+                true => 0.,
+                false => 0.1,
             }));
     }
 }
