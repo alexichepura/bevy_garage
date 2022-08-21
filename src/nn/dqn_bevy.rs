@@ -41,7 +41,9 @@ impl DqnResource {
         }
     }
     pub fn sgd_update(&mut self, gradients: Gradients) {
-        self.sgd.update(&mut self.qn, gradients);
+        self.sgd
+            .update(&mut self.qn, gradients)
+            .expect("Unused params");
     }
 }
 

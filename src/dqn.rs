@@ -104,7 +104,7 @@ pub fn dqn_system(
         action = rng.gen_range(0..ACTION_SIZE - 1);
     } else {
         let q_values = dqn.qn.forward(obs_state_tensor.clone());
-        let max_q_value = *q_values.clone().max_last_dim().data();
+        let max_q_value = *q_values.clone().max_axis::<-1>().data();
         let some_action = q_values
             .clone()
             .data()
@@ -126,14 +126,21 @@ pub fn dqn_system(
             let batch_indexes = [(); BATCH_SIZE_2].map(|_| rng.gen_range(0..dqn.rb.len()));
             let (s, a, r, sn, done) = dqn.rb.get_batch_2_tensors(batch_indexes);
             let mut loss_string: String = String::from("");
+            // https://github.com/coreylowman/dfdx/blob/main/examples/dqn.rs
+            // targ_q = R + discount * max(Q(S'))
+            // curr_q = Q(S)[A]
+            // loss = mse(curr_q, targ_q)
             for _i_epoch in 0..EPOCHS {
                 let next_q_values: Tensor2D<BATCH_SIZE_2, ACTION_SIZE> =
                     dqn.tqn.forward(sn.clone());
-                let max_next_q: Tensor1D<BATCH_SIZE_2> = next_q_values.max_last_dim();
+                let max_next_q: Tensor1D<BATCH_SIZE_2> = next_q_values.max_axis::<-1>();
                 let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
+                // forward through model, computing gradients
                 let q_values = dqn.qn.forward(s.trace());
-                let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
+                let action_qs: Tensor1D<BATCH_SIZE_2, OwnedTape> = q_values.select(&a);
+                let loss = mse_loss(action_qs, &target_q);
                 let loss_v = *loss.data();
+                // run backprop
                 let gradients = loss.backward();
                 dqn.sgd_update(gradients);
                 if _i_epoch % 5 == 0 {
@@ -148,11 +155,15 @@ pub fn dqn_system(
             let mut loss_string: String = String::from("");
             for _i_epoch in 0..EPOCHS {
                 let next_q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE> = dqn.tqn.forward(sn.clone());
-                let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_last_dim();
+                let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_axis::<-1>();
                 let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
-                let q_values = dqn.qn.forward(s.trace());
-                let loss = mse_loss(q_values.gather_last_dim(&a), &target_q);
+                // forward through model, computing gradients
+                let q_values: Tensor2D<BATCH_SIZE, ACTION_SIZE, OwnedTape> =
+                    dqn.qn.forward(s.trace());
+                let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
+                let loss = mse_loss(action_qs, &target_q);
                 let loss_v = *loss.data();
+                // run backprop
                 let gradients = loss.backward();
                 dqn.sgd_update(gradients);
                 if _i_epoch % 5 == 0 {
