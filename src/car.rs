@@ -129,51 +129,45 @@ pub fn car_start_system(
                 .build();
             joints.push(joint);
 
-            let wheel_transform = config.translation + config.quat.mul_vec3(car_anchors[i]);
-            let wheel_cylinder = Cylinder::new(wheel_hw, wheel_r);
-            let mesh = bevy_mesh(wheel_cylinder.to_trimesh(50));
             let wheel_border_radius = 0.01;
-            let collider = Collider::round_cylinder(
-                wheel_hw - wheel_border_radius,
-                wheel_r - wheel_border_radius,
-                wheel_border_radius,
-            );
-            // let collider = Collider::cylinder(wheel_hw, wheel_r - wheel_border_radius);
-            let wheel_pbr = PbrBundle {
-                mesh: meshes.add(mesh),
-                material: materials.add(Color::rgba(0.2, 0.2, 0.2, 0.5).into()),
-                ..default()
-            };
-            let wheel_transform = TransformBundle::from(
-                Transform::from_translation(wheel_transform)
-                    .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
-            );
-            let wheel_collider_mass = ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::ZERO,
-                mass: 15.,
-                principal_inertia: Vec3::ONE * 1.,
-                ..default()
-            });
-            let wheel = Wheel {
-                radius: wheel_r,
-                width: wheel_hw * 2.,
-            };
             let wheel_id = commands
                 .spawn()
                 .insert(Name::new("wheel"))
                 .insert(Sleeping::disabled())
-                .insert_bundle(wheel_pbr)
-                .insert_bundle(wheel_transform)
+                .insert_bundle(PbrBundle {
+                    mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
+                    material: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.8).into()),
+                    ..default()
+                })
+                .insert_bundle(TransformBundle::from(
+                    Transform::from_translation(
+                        config.translation + config.quat.mul_vec3(car_anchors[i]),
+                    )
+                    .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
+                ))
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert(Velocity::zero())
-                .insert(collider)
+                // .insert(Collider::cylinder(wheel_hw, wheel_r - wheel_border_radius))
+                .insert(Collider::round_cylinder(
+                    wheel_hw - wheel_border_radius,
+                    wheel_r - wheel_border_radius,
+                    wheel_border_radius,
+                ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction::coefficient(10.))
                 .insert(Restitution::coefficient(0.))
-                .insert(wheel_collider_mass)
-                .insert(wheel)
+                .insert(ColliderMassProperties::MassProperties(MassProperties {
+                    local_center_of_mass: Vec3::ZERO,
+                    mass: 15.,
+                    principal_inertia: Vec3::ONE * 1.,
+                    ..default()
+                }))
+                .insert(Wheel {
+                    radius: wheel_r,
+                    width: wheel_hw * 2.,
+                })
                 .insert(ExternalForce::default())
                 .insert(ExternalImpulse::default())
                 .id();
