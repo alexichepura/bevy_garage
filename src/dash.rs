@@ -18,27 +18,35 @@ pub struct TrainerGenerationText;
 
 pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(40.0),
-                    left: Val::Px(2.0),
-                    ..default()
-                },
+    let text_style = TextStyle {
+        font: medium.clone(),
+        font_size: 16.0,
+        color: Color::BLACK,
+    };
+    let text_section = TextSection {
+        value: "".to_string(),
+        style: text_style.clone(),
+    };
+    let sections = vec![text_section.clone()];
+
+    let get_style = |top: f32| -> Style {
+        return Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            position: UiRect {
+                top: Val::Px(top),
+                left: Val::Px(2.0),
                 ..default()
             },
+            ..default()
+        };
+    };
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: get_style(40.),
             text: Text {
-                sections: vec![TextSection {
-                    value: "".to_string(),
-                    style: TextStyle {
-                        font: medium.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    },
-                }],
+                sections: sections.clone(),
                 ..default()
             },
             ..default()
@@ -46,25 +54,9 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(TrainerGenerationText);
     commands
         .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(20.0),
-                    left: Val::Px(2.0),
-                    ..default()
-                },
-                ..default()
-            },
+            style: get_style(20.),
             text: Text {
-                sections: vec![TextSection {
-                    value: "".to_string(),
-                    style: TextStyle {
-                        font: medium.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    },
-                }],
+                sections: sections.clone(),
                 ..default()
             },
             ..default()
@@ -72,24 +64,11 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(TrainerRecordDistanceText);
     commands
         .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(60.),
-                    left: Val::Px(2.),
-                    ..default()
-                },
-                ..default()
-            },
+            style: get_style(60.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
-                    style: TextStyle {
-                        font: medium.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    },
+                    style: text_style.clone(),
                 }],
                 ..default()
             },
@@ -98,24 +77,11 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(Leaderboard);
     commands
         .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(2.0),
-                    left: Val::Px(2.0),
-                    ..default()
-                },
-                ..default()
-            },
+            style: get_style(2.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
-                    style: TextStyle {
-                        font: medium.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    },
+                    style: text_style.clone(),
                 }],
                 ..default()
             },
@@ -147,26 +113,30 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
 
 pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(80.),
-                    left: Val::Px(2.),
-                    ..default()
-                },
+    let style = TextStyle {
+        font: medium.clone(),
+        font_size: 16.0,
+        color: Color::BLACK,
+    };
+    let get_style = |top: f32| -> Style {
+        return Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            position: UiRect {
+                top: Val::Px(top),
+                left: Val::Px(2.0),
                 ..default()
             },
+            ..default()
+        };
+    };
+    commands
+        .spawn_bundle(TextBundle {
+            style: get_style(80.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
-                    style: TextStyle {
-                        font: medium.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    },
+                    style: style.clone(),
                 }],
                 ..default()
             },
@@ -175,24 +145,11 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
         .insert(MpsText);
     commands
         .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(100.),
-                    left: Val::Px(2.),
-                    ..default()
-                },
-                ..default()
-            },
+            style: get_style(100.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
-                    style: TextStyle {
-                        font: medium.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    },
+                    style: style.clone(),
                 }],
                 ..default()
             },
