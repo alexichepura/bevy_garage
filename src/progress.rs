@@ -96,6 +96,7 @@ pub fn progress_system(
                     }
                     let line_dir = Vec3::from(segment.direction().unwrap());
                     car_progress.line_dir = line_dir;
+                    car_progress.meters = meters;
                     board.push((e, meters));
                 }
             }
