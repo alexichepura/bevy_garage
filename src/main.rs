@@ -15,6 +15,7 @@ mod progress;
 mod track;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy_atmosphere::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
@@ -39,6 +40,7 @@ fn main() {
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
         .add_plugins(DefaultPlugins)
+        .add_plugin(AtmospherePlugin)
         // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         // .add_plugin(bevy_atmosphere::AtmospherePlugin {
         //     dynamic: false,
@@ -49,20 +51,20 @@ fn main() {
         .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(RapierDebugRenderPlugin {
-        //     style: DebugRenderStyle {
-        //         rigid_body_axes_length: 0.5,
-        //         subdivisions: 50,
-        //         ..default()
-        //     },
-        //     // | DebugRenderMode::COLLIDER_AABBS
-        //     mode: DebugRenderMode::COLLIDER_SHAPES
-        //         | DebugRenderMode::RIGID_BODY_AXES
-        //         | DebugRenderMode::JOINTS
-        //         | DebugRenderMode::CONTACTS
-        //         | DebugRenderMode::SOLVER_CONTACTS,
-        //     ..default()
-        // })
+        .add_plugin(RapierDebugRenderPlugin {
+            style: DebugRenderStyle {
+                rigid_body_axes_length: 0.5,
+                subdivisions: 50,
+                ..default()
+            },
+            // | DebugRenderMode::COLLIDER_AABBS
+            mode: DebugRenderMode::COLLIDER_SHAPES
+                | DebugRenderMode::RIGID_BODY_AXES
+                | DebugRenderMode::JOINTS
+                | DebugRenderMode::CONTACTS
+                | DebugRenderMode::SOLVER_CONTACTS,
+            ..default()
+        })
         // .add_plugin(PolylinePlugin)
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         // .add_plugins(DefaultPickingPlugins)

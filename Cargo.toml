@@ -11,10 +11,9 @@ codegen-units = 1
 [dependencies]
 dfdx = { version = "0.8" }
 bevy = { version = "0.8" }
-# bevy_rapier3d = { version = "0.16" }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier"}
+bevy_rapier3d = { version = "0.16.1" }
 bevy_prototype_debug_lines = { version = "0.8", features = ["3d"] }
-# bevy_atmosphere = "0.3.1"
+bevy_atmosphere = "0.4"
 parry3d = "0.9"
 obj-rs = { version =  "0.7", default-features = false }
 serde = { version = "1", features = ["derive"] }

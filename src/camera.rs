@@ -2,6 +2,7 @@ use crate::car::HID;
 use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
+use bevy_atmosphere::prelude::AtmosphereCamera;
 use core::f32::consts::PI;
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
@@ -13,6 +14,7 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
             .looking_at(Vec3::Y * 6., config.translation),
             ..default()
         })
+        .insert(AtmosphereCamera(None))
         .insert(CameraController::default());
     println!(
         "Controls:

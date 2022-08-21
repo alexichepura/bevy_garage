@@ -78,8 +78,8 @@ pub fn track_start_system(
             .insert_bundle(PbrBundle {
                 mesh: meshes.add(mesh),
                 material: materials.add(match is_road {
-                    true => Color::rgb(0.1, 0.1, 0.2).into(),
-                    false => Color::rgb(0.3, 0.1, 0.1).into(),
+                    true => Color::rgb(0.1, 0.1, 0.15).into(),
+                    false => Color::rgb(0.15, 0.1, 0.1).into(),
                 }),
                 ..default()
             })
