@@ -14,7 +14,7 @@ use std::time::Instant;
 const EPOCHS: usize = 15;
 const DECAY: f32 = 0.0001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 5.;
+const STEP_DURATION: f64 = 1. / 10.;
 
 const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
@@ -73,6 +73,9 @@ pub fn dqn_system(
         if reward.is_nan() {
             return 0.;
         }
+        // if reward.is_sign_negative() {
+        //     reward *= 2.; // TODO test negative reward multiplication
+        // }
         return reward;
     };
     let reward = shape_reward();

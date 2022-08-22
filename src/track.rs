@@ -64,8 +64,8 @@ pub fn track_start_system(
             .collect();
 
         let h = match is_road {
-            true => 0.005,
-            false => 0.3,
+            true => 0.001,
+            false => 0.,
         };
         let id = commands
             .spawn()
