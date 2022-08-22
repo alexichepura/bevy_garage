@@ -97,14 +97,14 @@ pub fn car_start_system(
     }
 
     let wheel_r: f32 = 0.45;
-    let wheel_hw: f32 = 0.15;
-    let car_hw: f32 = 1.15;
+    let wheel_hw: f32 = 0.25;
+    let car_hw: f32 = 1.;
     let car_hh: f32 = 0.3;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.08; // suspension full up
+    let ride_height = 0.08;
 
     let shift = Vec3::new(
-        car_hw - wheel_hw - 0.23,
+        car_hw - wheel_hw - 0.1,
         -car_hh + wheel_r - ride_height,
         car_hl - wheel_r - 0.5,
     );
@@ -117,12 +117,8 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let car_transform = Transform::from_translation(
-            // config.translation + config.quat.mul_vec3(-Vec3::Z * 5. * i as f32),
-            config.translation,
-        )
-        .with_rotation(config.quat);
-
+        let (car_translation, car_quat) = config.get_start_position(0.);
+        let car_transform = Transform::from_translation(car_translation).with_rotation(car_quat);
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
@@ -150,7 +146,7 @@ pub fn car_start_system(
                 })
                 .insert_bundle(TransformBundle::from(
                     Transform::from_translation(
-                        config.translation + config.quat.mul_vec3(car_anchors[i]),
+                        car_transform.translation + car_transform.rotation.mul_vec3(car_anchors[i]),
                     )
                     .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
                 ))

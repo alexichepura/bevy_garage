@@ -75,7 +75,7 @@ pub fn esp_system(
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                let max_slip = 20.;
+                let max_slip = 50.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
@@ -94,7 +94,7 @@ pub fn esp_system(
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                let max_slip = 20.;
+                let max_slip = 50.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,

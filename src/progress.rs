@@ -44,7 +44,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
     config.meters_total = meters;
 
     println!(
-        "track length: {meters:.1} shift: {:.1}",
+        "track length: {meters:.1} polyline shift: {:.1}",
         config.meters_shift
     );
 
