@@ -95,13 +95,51 @@ pub fn track_start_system(
                 false => 0.1,
             }));
     }
+
+    let num_rows: usize = 120;
+    let num_cols: usize = 80;
+    let scale = 10.;
+    let hx = num_cols as f32 * scale;
+    let hy = 0.5;
+    let hz = num_rows as f32 * scale;
+    let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
+    let heights: Vec<Real> = vec![hy; num_rows * num_cols];
+    commands
+        .spawn()
+        .insert(Name::new("road-heightfield"))
+        .insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box {
+                max_x: hx,
+                min_x: -hx,
+                max_y: hy,
+                min_y: -hy,
+                max_z: hz,
+                min_z: -hz,
+            })),
+            material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
+            ..default()
+        })
+        .insert(RigidBody::Fixed)
+        .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
+            -600., -hy, 800.,
+        )))
+        .insert(Collider::heightfield(
+            heights,
+            num_rows,
+            num_cols,
+            ground_size.into(),
+        ))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
+        .insert(Friction::coefficient(1.))
+        .insert(Restitution::coefficient(0.));
 }
 
 pub const ASSET_ROAD: &str = "assets/road.obj";
 
 fn models() -> Vec<String> {
     vec![
-        ASSET_ROAD.to_string(),
+        // ASSET_ROAD.to_string(),
         "assets/border-left.obj".to_string(),
         "assets/border-right.obj".to_string(),
     ]

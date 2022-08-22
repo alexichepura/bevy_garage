@@ -10,7 +10,6 @@ mod input;
 mod light;
 mod mesh;
 mod nn;
-mod plain;
 mod progress;
 mod track;
 
@@ -30,7 +29,6 @@ use gradient::*;
 use input::*;
 use light::*;
 use nn::{dqn_bevy::*, dqn_dash_update::*};
-use plain::*;
 use progress::*;
 use track::*;
 
@@ -41,11 +39,6 @@ fn main() {
         .insert_resource(CameraConfig::default())
         .add_plugins(DefaultPlugins)
         .add_plugin(AtmospherePlugin)
-        // .insert_resource(bevy_atmosphere::AtmosphereMat::default())
-        // .add_plugin(bevy_atmosphere::AtmospherePlugin {
-        //     dynamic: false,
-        //     sky_radius: 1000.0,
-        // })
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
         .add_system(camera_switch_system)
@@ -65,14 +58,10 @@ fn main() {
                 | DebugRenderMode::SOLVER_CONTACTS,
             ..default()
         })
-        // .add_plugin(PolylinePlugin)
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
-        // .add_plugins(DefaultPickingPlugins)
-        // .add_plugin(DebugCursorPickingPlugin)
         .init_resource::<GamepadLobby>()
         .add_startup_system(dqn_start_system.exclusive_system())
         .add_startup_system(gradient_vis_start_system)
-        .add_startup_system(plain_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
@@ -92,6 +81,7 @@ fn main() {
         // .add_system(gamepad_input_system)
         .add_system(arrow_input_system)
         .add_system(progress_system)
+        .add_system(debug_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         // .add_system_to_stage(CoreStage::PostUpdate, display_events_system)
         .run();
@@ -99,7 +89,7 @@ fn main() {
 
 // const ITERATIONS: usize = 16;
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    // c.integration_parameters.dt = 1.0 / 240.0;
+    c.integration_parameters.dt = 1.0 / 240.0;
     // c.integration_parameters.min_ccd_dt = 1.0 / 240.0 / 100.0;
     // c.integration_parameters.min_island_size = 128;
     // c.integration_parameters.joint_damping_ratio = 5.;
@@ -113,6 +103,12 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     // c.integration_parameters.max_velocity_friction_iterations = ITERATIONS;
     // c.integration_parameters.max_stabilization_iterations = ITERATIONS;
     dbg!(c.integration_parameters);
+}
+
+fn debug_system(mut debug_ctx: ResMut<DebugRenderContext>, input: Res<Input<KeyCode>>) {
+    if input.just_pressed(KeyCode::D) {
+        debug_ctx.enabled = !debug_ctx.enabled;
+    }
 }
 
 // fn display_events_system(

@@ -92,7 +92,7 @@ pub fn car_start_system(
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.4; // suspension full up
+    let ride_height = 0.1; // suspension full up
 
     let shift = Vec3::new(
         car_hw - wheel_hw - 0.01,
@@ -124,8 +124,8 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 0.85)
-                .set_motor(JointAxis::Z, 0., 0., 1., 0.85)
+                .set_motor(JointAxis::Y, 0., 0., 1., 0.05)
+                .set_motor(JointAxis::Z, 0., 0., 1., 0.05)
                 .build();
             joints.push(joint);
 
