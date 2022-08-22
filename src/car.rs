@@ -92,10 +92,10 @@ pub fn car_start_system(
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.4;
     let car_hl: f32 = 2.2;
-    let ride_height = 0.1; // suspension full up
+    let ride_height = 0.08; // suspension full up
 
     let shift = Vec3::new(
-        car_hw - wheel_hw - 0.01,
+        car_hw - wheel_hw - 0.02,
         -car_hh + wheel_r - ride_height,
         car_hl - wheel_r - 0.5,
     );
@@ -124,8 +124,8 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 0.05)
-                .set_motor(JointAxis::Z, 0., 0., 1., 0.05)
+                .set_motor(JointAxis::Y, 0., 0., 1., 1.)
+                .set_motor(JointAxis::Z, 0., 0., 1., 1.)
                 .build();
             joints.push(joint);
 
@@ -156,7 +156,7 @@ pub fn car_start_system(
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(10.))
+                .insert(Friction::coefficient(5.))
                 .insert(Restitution::coefficient(0.))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,

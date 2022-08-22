@@ -65,7 +65,7 @@ pub fn track_start_system(
 
         let h = match is_road {
             true => 0.1,
-            false => 0.3,
+            false => 0.5,
         };
         commands
             .spawn()
@@ -86,19 +86,27 @@ pub fn track_start_system(
             .insert(Collider::from(ColliderShape::trimesh(vertices, indices)))
             .insert(ColliderScale::Absolute(Vec3::ONE))
             .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
-            .insert(Friction::coefficient(match is_road {
-                true => 1.,
-                false => 0.01,
-            }))
+            .insert(Friction {
+                combine_rule: (match is_road {
+                    true => CoefficientCombineRule::Max,
+                    false => CoefficientCombineRule::Min,
+                }),
+                coefficient: (match is_road {
+                    true => 2.,
+                    false => 0.,
+                }),
+            })
             .insert(Restitution::coefficient(match is_road {
                 true => 0.,
                 false => 0.1,
             }));
     }
 
-    let num_rows: usize = 120;
-    let num_cols: usize = 80;
-    let scale = 10.;
+    // let num_rows: usize = 12;
+    // let num_cols: usize = 8;
+    let num_rows: usize = 2;
+    let num_cols: usize = 2;
+    let scale = 500.;
     let hx = num_cols as f32 * scale;
     let hy = 0.5;
     let hz = num_rows as f32 * scale;
@@ -116,7 +124,8 @@ pub fn track_start_system(
                 max_z: hz,
                 min_z: -hz,
             })),
-            material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
+            // material: materials.add(Color::rgba(0.2, 0.35, 0.2, 1.).into()),
+            material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
             ..default()
         })
         .insert(RigidBody::Fixed)
