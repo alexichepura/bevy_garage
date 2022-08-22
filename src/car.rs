@@ -129,8 +129,8 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 1.)
-                .set_motor(JointAxis::Z, 0., 0., 1., 1.)
+                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 10.)
+                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 10.)
                 .build();
             joints.push(joint);
 
@@ -239,6 +239,7 @@ pub fn car_start_system(
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(CollidingEntities::default())
                     .insert(ActiveEvents::COLLISION_EVENTS)
+                    .insert(ContactForceEventThreshold(0.1))
                     .insert(collider_mass);
 
                 let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
