@@ -2,7 +2,6 @@ use crate::{
     car::*,
     config::Config,
     nn::{action::*, dqn_bevy::*, log::*, replay::*},
-    progress::*,
     track::*,
 };
 use bevy::prelude::*;
@@ -31,7 +30,7 @@ pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
     q_name: Query<&Name>,
-    mut q_car: Query<(&mut Car, &Velocity, &CarProgress, &mut CarDqn, &Transform), With<CarDqn>>,
+    mut q_car: Query<(&mut Car, &Velocity, &mut CarDqn, &Transform), With<CarDqn>>,
     q_colliding_entities: Query<(&Parent, &CollidingEntities), With<CollidingEntities>>,
     config: Res<Config>,
 ) {
@@ -43,13 +42,13 @@ pub fn dqn_system(
         return;
     }
 
-    let (mut car, v, progress, mut car_dqn, tr) = q_car.single_mut();
-    let mut vel_angle = progress.line_dir.angle_between(v.linvel);
+    let (mut car, v, mut car_dqn, tr) = q_car.single_mut();
+    let mut vel_angle = car.line_dir.angle_between(v.linvel);
     if vel_angle.is_nan() {
         vel_angle = 0.;
     }
     let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
-    let pos_angle = progress.line_dir.angle_between(pos_dir);
+    let pos_angle = car.line_dir.angle_between(pos_dir);
 
     let shape_reward = || -> f32 {
         let (_p, colliding_entities) = q_colliding_entities.single();

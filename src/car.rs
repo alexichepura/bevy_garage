@@ -1,4 +1,4 @@
-use crate::{config::*, mesh::*, nn::dqn_bevy::CarDqn, progress::*, track::*};
+use crate::{config::*, mesh::*, nn::dqn_bevy::CarDqn, track::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
@@ -31,6 +31,9 @@ pub struct SensorNear;
 pub struct RayHit;
 #[derive(Component)]
 pub struct RayLine;
+#[derive(Component)]
+pub struct HID;
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub sensor_inputs: Vec<f32>,
@@ -43,9 +46,11 @@ pub struct Car {
     pub wheel_max_torque: f32,
     pub init_transform: Transform,
     pub reset_at: Option<f64>,
+
+    pub meters: f32,
+    pub line_dir: Vec3,
+    pub place: usize,
 }
-#[derive(Component)]
-pub struct HID;
 
 impl Car {
     pub fn new(wheels: &Vec<Entity>, wheel_max_torque: f32, init_transform: Transform) -> Self {
@@ -60,6 +65,10 @@ impl Car {
             wheel_max_torque,
             init_transform,
             reset_at: None,
+
+            meters: 0.,
+            place: 0,
+            line_dir: Vec3::ZERO,
         }
     }
 }
@@ -196,11 +205,6 @@ pub fn car_start_system(
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
             .insert(Car::new(&wheels, config.max_torque, car_transform))
-            .insert(CarProgress {
-                meters: 0.,
-                place: 0,
-                line_dir: Vec3::ZERO,
-            })
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
             .insert(ExternalForce::default())

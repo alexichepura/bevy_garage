@@ -1,4 +1,4 @@
-use crate::{car::*, progress::*};
+use crate::car::*;
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -91,12 +91,12 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
 }
 
 pub fn dash_leaderboard_system(
-    q_cars: Query<&CarProgress, With<CarProgress>>,
+    q_cars: Query<&Car>,
     mut q_leaderboard: Query<&mut Text, With<Leaderboard>>,
 ) {
     let mut text_string: String = "".to_string();
-    for progress in q_cars.iter() {
-        text_string = text_string + &progress.meters.round().to_string() + " ";
+    for car in q_cars.iter() {
+        text_string = text_string + &car.meters.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
     text.sections[0].value = format!("leaderboard {:?}", text_string.as_str());
