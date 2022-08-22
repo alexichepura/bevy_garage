@@ -64,18 +64,16 @@ pub fn track_start_system(
             .collect();
 
         let h = match is_road {
-            true => 0.1,
-            false => 0.5,
+            true => 0.005,
+            false => 0.3,
         };
-        commands
+        let id = commands
             .spawn()
             .insert(Name::new(obj_path))
             .insert(RigidBody::Fixed)
-            .insert_bundle(TransformBundle::from_transform(Transform {
-                translation: Vec3::new(0., h, 0.),
-                ..default()
-            }))
+            // .insert_bundle(TransformBundle::from_transform(Transform::from_translation(Vec3::new(0., h, 0.))))
             .insert_bundle(PbrBundle {
+                transform: Transform::from_translation(Vec3::new(0., h, 0.)),
                 mesh: meshes.add(mesh),
                 material: materials.add(match is_road {
                     true => Color::rgb(0.1, 0.1, 0.15).into(),
@@ -83,30 +81,24 @@ pub fn track_start_system(
                 }),
                 ..default()
             })
-            .insert(Collider::from(ColliderShape::trimesh(vertices, indices)))
-            .insert(ColliderScale::Absolute(Vec3::ONE))
-            .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
-            .insert(Friction {
-                combine_rule: (match is_road {
-                    true => CoefficientCombineRule::Max,
-                    false => CoefficientCombineRule::Min,
-                }),
-                coefficient: (match is_road {
-                    true => 2.,
-                    false => 0.,
-                }),
-            })
-            .insert(Restitution::coefficient(match is_road {
-                true => 0.,
-                false => 0.1,
-            }));
+            .id();
+        if !is_road {
+            commands
+                .entity(id)
+                .insert(Collider::from(ColliderShape::trimesh(vertices, indices)))
+                .insert(ColliderScale::Absolute(Vec3::ONE))
+                .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
+                .insert(Friction {
+                    combine_rule: CoefficientCombineRule::Average,
+                    coefficient: 0.1,
+                    ..default()
+                })
+                .insert(Restitution::coefficient(0.));
+        }
     }
-
-    // let num_rows: usize = 12;
-    // let num_cols: usize = 8;
-    let num_rows: usize = 2;
     let num_cols: usize = 2;
-    let scale = 600.;
+    let num_rows: usize = 3;
+    let scale = 400.;
     let hx = num_cols as f32 * scale;
     let hy = 0.5;
     let hz = num_rows as f32 * scale;
@@ -124,8 +116,8 @@ pub fn track_start_system(
                 max_z: hz,
                 min_z: -hz,
             })),
-            // material: materials.add(Color::rgba(0.2, 0.35, 0.2, 1.).into()),
-            material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
+            material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
+            // material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
             ..default()
         })
         .insert(RigidBody::Fixed)
@@ -148,7 +140,7 @@ pub const ASSET_ROAD: &str = "assets/road.obj";
 
 fn models() -> Vec<String> {
     vec![
-        // ASSET_ROAD.to_string(),
+        ASSET_ROAD.to_string(),
         "assets/border-left.obj".to_string(),
         "assets/border-right.obj".to_string(),
     ]

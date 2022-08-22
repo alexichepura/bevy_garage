@@ -8,7 +8,7 @@ use bevy_rapier3d::{
 };
 use std::f32::consts::PI;
 
-pub const SENSOR_COUNT: usize = 16;
+pub const SENSOR_COUNT: usize = 32;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -87,15 +87,15 @@ pub fn car_start_system(
         });
     }
 
-    let wheel_r: f32 = 0.4;
+    let wheel_r: f32 = 0.45;
     let wheel_hw: f32 = 0.15;
-    let car_hw: f32 = 1.;
-    let car_hh: f32 = 0.4;
+    let car_hw: f32 = 1.15;
+    let car_hh: f32 = 0.3;
     let car_hl: f32 = 2.2;
     let ride_height = 0.08; // suspension full up
 
     let shift = Vec3::new(
-        car_hw - wheel_hw - 0.02,
+        car_hw - wheel_hw - 0.23,
         -car_hh + wheel_r - ride_height,
         car_hl - wheel_r - 0.5,
     );
@@ -156,7 +156,7 @@ pub fn car_start_system(
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(5.))
+                .insert(Friction::coefficient(10.))
                 .insert(Restitution::coefficient(0.))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
@@ -222,13 +222,19 @@ pub fn car_start_system(
                     principal_inertia: Vec3::new(5000., 5000., 2000.),
                     ..default()
                 });
+                let car_bradius = 0.05;
                 children
                     .spawn()
                     .insert(Name::new("car_collider"))
                     .insert(Ccd::enabled())
-                    .insert(Collider::cuboid(car_hw, car_hh, car_hl))
+                    .insert(Collider::round_cuboid(
+                        car_hw - car_bradius,
+                        car_hh - car_bradius,
+                        car_hl - car_bradius,
+                        car_bradius,
+                    ))
                     .insert(ColliderScale::Absolute(Vec3::ONE))
-                    .insert(Friction::coefficient(0.0001))
+                    .insert(Friction::coefficient(0.1))
                     .insert(Restitution::coefficient(0.0))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(CollidingEntities::default())

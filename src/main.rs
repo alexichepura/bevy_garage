@@ -87,16 +87,16 @@ fn main() {
         .run();
 }
 
-const ITERATIONS: usize = 512;
+const ITERATIONS: usize = 2048;
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.dt = 1.0 / 240.0;
+    // c.integration_parameters.dt = 1.0 / 480.0;
     // c.integration_parameters.min_ccd_dt = 1.0 / 240.0 / 100.0;
     // c.integration_parameters.min_island_size = 128;
     // c.integration_parameters.joint_damping_ratio = 5.;
     // c.integration_parameters.damping_ratio = 5.;
     // c.integration_parameters.prediction_distance = 0.000_001;
     // c.integration_parameters.allowed_linear_error = 0.000_001;
-    c.integration_parameters.erp = 0.9;
+    c.integration_parameters.erp = 0.99;
     c.integration_parameters.max_ccd_substeps = ITERATIONS;
     c.integration_parameters.max_velocity_iterations = ITERATIONS;
     // c.integration_parameters.max_velocity_friction_iterations = ITERATIONS;
