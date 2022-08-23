@@ -99,7 +99,7 @@ pub fn dash_leaderboard_system(
         text_string = text_string + &car.meters.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
-    text.sections[0].value = format!("leaderboard {:?}", text_string.as_str());
+    text.sections[0].value = format!("distances {:?}", text_string.as_str().trim_end());
 }
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {

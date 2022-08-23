@@ -96,10 +96,9 @@ pub fn track_start_system(
                 .insert(Restitution::coefficient(0.));
         }
     }
-    let x: usize = 10;
-    let num_cols: usize = 2 * x;
-    let num_rows: usize = 3 * x;
-    let scale = 380. / x as f32;
+    let num_cols: usize = 19 * 3;
+    let num_rows: usize = 30 * 3;
+    let scale = 28. / 3.;
     let hx = num_cols as f32 * scale;
     let hy = 0.5;
     let hz = num_rows as f32 * scale;
@@ -123,7 +122,7 @@ pub fn track_start_system(
         })
         .insert(RigidBody::Fixed)
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
-            -600., -hy, 800.,
+            -350., -hy, 570.,
         )))
         .insert(Collider::heightfield(
             heights,

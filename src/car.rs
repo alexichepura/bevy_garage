@@ -100,7 +100,7 @@ pub fn car_start_system(
     let wheel_r: f32 = 0.4;
     let wheel_hw: f32 = 0.2;
     let car_hw: f32 = 1.;
-    let car_hh: f32 = 0.3;
+    let car_hh: f32 = 0.35;
     let car_hl: f32 = 2.2;
     let ride_height = 0.08;
 
@@ -130,8 +130,8 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 10.)
-                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 10.)
+                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 15.)
+                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 15.)
                 .build();
             joints.push(joint);
 
@@ -162,7 +162,7 @@ pub fn car_start_system(
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(10.))
+                .insert(Friction::coefficient(5.))
                 .insert(Restitution::coefficient(0.))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
@@ -223,7 +223,7 @@ pub fn car_start_system(
                     principal_inertia: Vec3::new(5000., 5000., 2000.),
                     ..default()
                 });
-                let car_bradius = 0.05;
+                let car_bradius = 0.25;
                 children
                     .spawn()
                     .insert(Name::new("car_collider"))
