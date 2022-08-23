@@ -20,7 +20,7 @@ pub struct Config {
 }
 impl Config {
     pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat, f32) {
-        let meters = i as f32 * 250.;
+        let meters = i as f32 * 0.;
         let (tr, quat) = self.get_transform_by_meter(meters);
         return (tr, quat, meters);
     }
@@ -56,7 +56,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 20,
+            cars_count: 10,
             use_brain: false,
             show_rays: true,
             max_torque: 800.,

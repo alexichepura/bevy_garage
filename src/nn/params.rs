@@ -4,7 +4,7 @@ use crate::car::SENSOR_COUNT;
 pub const BATCH_SIZE: usize = 32;
 pub const BUFFER_SIZE: usize = 10_000_000;
 
-pub const EPOCHS: usize = 30;
+pub const EPOCHS: usize = 50;
 pub const DECAY: f32 = 0.00001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
 pub const STEP_DURATION: f64 = 1. / 4.;
