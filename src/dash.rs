@@ -64,7 +64,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(TrainerRecordDistanceText);
     commands
         .spawn_bundle(TextBundle {
-            style: get_style(60.),
+            style: get_style(2.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
@@ -77,7 +77,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(Leaderboard);
     commands
         .spawn_bundle(TextBundle {
-            style: get_style(2.),
+            style: get_style(60.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),

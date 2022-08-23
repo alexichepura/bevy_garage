@@ -12,7 +12,7 @@ use rand::Rng;
 use std::time::Instant;
 
 const EPOCHS: usize = 20;
-const DECAY: f32 = 0.0001;
+const DECAY: f32 = 0.00001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 1. / 4.;
 
