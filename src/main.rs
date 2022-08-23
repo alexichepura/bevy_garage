@@ -37,6 +37,7 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
+        .insert_resource(AtmosphereSettings { resolution: 1024 })
         .add_plugins(DefaultPlugins)
         .add_plugin(AtmospherePlugin)
         .add_startup_system(camera_start_system)

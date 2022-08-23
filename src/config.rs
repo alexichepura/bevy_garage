@@ -19,7 +19,10 @@ pub struct Config {
     pub track_length: f32,
 }
 impl Config {
-    pub fn get_start_position(&self, meters: f32) -> (Vec3, Quat) {
+    pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat) {
+        return self.get_transform_by_meter(i as f32 * 250.);
+    }
+    pub fn get_transform_by_meter(&self, meters: f32) -> (Vec3, Quat) {
         let polyline = self.polyline.as_ref().unwrap();
         let mut seg_meters = 0.;
         let mut shift = meters + self.meters_shift;
@@ -54,7 +57,7 @@ impl Default for Config {
             cars_count: 20,
             use_brain: false,
             show_rays: true,
-            max_torque: 1000.,
+            max_torque: 500.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.8, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),

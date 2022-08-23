@@ -4,6 +4,9 @@ use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
+pub const SPEED_LIMIT_KMH: f32 = 50.;
+pub const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
+
 pub fn esp_system(
     mut query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
     mut front: Query<(&mut MultibodyJoint, With<WheelFront>)>,
@@ -32,12 +35,12 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 3.,
-            _ => match car_kmh / 120. {
+            _ => match car_kmh / SPEED_LIMIT_KMH {
                 x if x >= 1. => 0.,
                 x => 1. - x,
             },
         };
-        let steering_speed_x: f32 = match car_kmh / 120. {
+        let steering_speed_x: f32 = match car_kmh / 100. {
             x if x >= 1. => 0.,
             x => 1. - x,
         }

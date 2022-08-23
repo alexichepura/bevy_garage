@@ -1,4 +1,4 @@
-use crate::{config::*, mesh::*, nn::dqn_bevy::DqnResource, track::*};
+use crate::{config::*, mesh::*, nn::dqn_bevy::*, track::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
@@ -80,7 +80,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
-    mut dqn_res: NonSendMut<DqnResource>,
+    mut cars_dqn: NonSendMut<CarDqnResources>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -118,7 +118,7 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let (car_translation, car_quat) = config.get_start_position(i as f32 * 20.);
+        let (car_translation, car_quat) = config.get_transform_by_index(i);
         let car_transform = Transform::from_translation(car_translation).with_rotation(car_quat);
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
@@ -274,7 +274,7 @@ pub fn car_start_system(
                 .insert(MultibodyJoint::new(car_id, joints[i]));
         }
 
-        dqn_res.add_car(car_id);
+        cars_dqn.add_car(car_id);
     }
 }
 

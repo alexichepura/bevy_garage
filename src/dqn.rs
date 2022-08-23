@@ -1,6 +1,7 @@
 use crate::{
     car::*,
     config::Config,
+    esp::SPEED_LIMIT_MPS,
     nn::{action::*, dqn_bevy::*, log::*, replay::*},
     track::*,
 };
@@ -29,6 +30,7 @@ pub type Observation = [f32; STATE_SIZE];
 pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
+    mut cars_dqn: NonSendMut<CarDqnResources>,
     q_name: Query<&Name>,
     mut q_car: Query<(&mut Car, &Velocity, &Transform, &Children, Entity)>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
@@ -70,7 +72,7 @@ pub fn dqn_system(
             // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
             // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
             // R = v(cos α − d) // TODO d
-            let mut reward = 0.01 * v.linvel.length() * vel_angle.cos();
+            let mut reward = v.linvel.length() / SPEED_LIMIT_MPS * vel_angle.cos();
             if vel_angle.cos().is_sign_positive() && pos_angle.cos().is_sign_negative() {
                 reward = -reward;
             }
@@ -101,6 +103,7 @@ pub fn dqn_system(
             // );
             return;
         }
+
         let obs_state_tensor = Tensor1D::new(obs);
         let mut rng = rand::thread_rng();
         let random_number = rng.gen_range(0.0..1.0);
@@ -109,7 +112,8 @@ pub fn dqn_system(
         if exploration {
             action = rng.gen_range(0..ACTIONS - 1);
         } else {
-            let q_values = dqn.qn.forward(obs_state_tensor.clone());
+            let car_dqn = cars_dqn.cars.get(&e).unwrap();
+            let q_values = car_dqn.qn.forward(obs_state_tensor.clone());
             let max_q_value = *q_values.clone().max_axis::<-1>().data();
             let some_action = q_values
                 .clone()
@@ -123,6 +127,8 @@ pub fn dqn_system(
                 action = some_action.unwrap();
             }
         }
+
+        let mut car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
         if dqn.rb.len() < BATCHES {
             log_action_reward(action, reward);
         } else {
@@ -131,17 +137,19 @@ pub fn dqn_system(
             let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
             let mut loss_string: String = String::from("");
             for _i_epoch in 0..EPOCHS {
-                let next_q_values: Tensor2D<BATCHES, ACTIONS> = dqn.tqn.forward(sn.clone());
+                let next_q_values: Tensor2D<BATCHES, ACTIONS> = car_dqn.tqn.forward(sn.clone());
                 let max_next_q: Tensor1D<BATCHES> = next_q_values.max_axis::<-1>();
                 let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
                 // forward through model, computing gradients
-                let q_values: Tensor2D<BATCHES, ACTIONS, OwnedTape> = dqn.qn.forward(s.trace());
+                let q_values: Tensor2D<BATCHES, ACTIONS, OwnedTape> = car_dqn.qn.forward(s.trace());
                 let action_qs: Tensor1D<BATCHES, OwnedTape> = q_values.select(&a);
                 let loss = huber_loss(action_qs, &target_q, 1.);
                 let loss_v = *loss.data();
                 // run backprop
                 let gradients = loss.backward();
-                dqn.sgd_update(gradients);
+                dqn.sgd
+                    .update(&mut car_dqn.qn, gradients)
+                    .expect("Unused params");
                 if _i_epoch % 5 == 0 {
                     loss_string.push_str(format!("{:.2} ", loss_v).as_str());
                 }
@@ -149,7 +157,7 @@ pub fn dqn_system(
             log_training(exploration, action, reward, &loss_string, start);
             if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCHES * 2 {
                 dbg!("networks sync");
-                dqn.tqn = dqn.qn.clone();
+                car_dqn.tqn = car_dqn.qn.clone();
             }
             dqn.eps = if dqn.eps <= dqn.min_eps {
                 dqn.min_eps
@@ -158,14 +166,13 @@ pub fn dqn_system(
             };
         }
 
-        let car_dqn = dqn.cars.get(&e).unwrap();
         let s = car_dqn.prev_obs;
         let a = car_dqn.prev_action;
         let r = reward;
         let sn = obs;
         dqn.rb.store(s, a, r, sn);
 
-        let mut car_dqn = dqn.cars.get_mut(&e).unwrap();
+        let mut car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
         car_dqn.prev_obs = obs;
         car_dqn.prev_action = action;
         car_dqn.prev_reward = reward;

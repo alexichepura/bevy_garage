@@ -13,42 +13,55 @@ pub struct CarDqnResource {
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
+    pub qn: QNetwork,
+    pub tqn: QNetwork,
 }
 
 impl CarDqnResource {
     pub fn new() -> Self {
+        let mut rng = StdRng::seed_from_u64(0);
+        let mut qn = QNetwork::default();
+        qn.reset_params(&mut rng);
         Self {
             prev_obs: [0.; STATE_SIZE],
             prev_action: 0,
             prev_reward: 0.,
+
+            qn: qn.clone(),
+            tqn: qn.clone(),
         }
+    }
+}
+
+pub struct CarDqnResources {
+    pub cars: HashMap<Entity, CarDqnResource>,
+}
+impl CarDqnResources {
+    pub fn new() -> Self {
+        Self {
+            cars: HashMap::new(),
+        }
+    }
+    pub fn add_car(&mut self, car_id: Entity) {
+        self.cars.insert(car_id, CarDqnResource::new());
     }
 }
 
 pub struct DqnResource {
     pub seconds: f64,
     pub step: i32,
-    pub qn: QNetwork,
-    pub tqn: QNetwork,
     pub rb: ReplayBuffer,
     pub eps: f32,
     pub max_eps: f32,
     pub min_eps: f32,
     pub done: f32,
     pub sgd: Sgd<QNetwork>,
-
-    pub cars: HashMap<Entity, CarDqnResource>,
 }
 impl DqnResource {
     pub fn new() -> Self {
-        let mut rng = StdRng::seed_from_u64(0);
-        let mut qn = QNetwork::default();
-        qn.reset_params(&mut rng);
         Self {
             seconds: 0.,
             step: 0,
-            qn: qn.clone(),
-            tqn: qn.clone(),
             rb: ReplayBuffer::new(),
             eps: 1.,
             max_eps: 1.,
@@ -58,21 +71,13 @@ impl DqnResource {
                 lr: 0.005,
                 momentum: Some(Momentum::Nesterov(0.9)),
             }),
-            cars: HashMap::new(),
         }
-    }
-    pub fn add_car(&mut self, car_id: Entity) {
-        self.cars.insert(car_id, CarDqnResource::new());
-    }
-    pub fn sgd_update(&mut self, gradients: Gradients) {
-        self.sgd
-            .update(&mut self.qn, gradients)
-            .expect("Unused params");
     }
 }
 
 pub fn dqn_start_system(world: &mut World) {
     world.insert_non_send_resource(DqnResource::new());
+    world.insert_non_send_resource(CarDqnResources::new());
 }
 pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
     if input.just_pressed(KeyCode::N) {
