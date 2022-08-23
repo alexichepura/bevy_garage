@@ -24,7 +24,14 @@ pub fn dqn_system(
     mut dqn: NonSendMut<DqnResource>,
     mut cars_dqn: NonSendMut<CarDqnResources>,
     q_name: Query<&Name>,
-    mut q_car: Query<(&mut Car, &Velocity, &Transform, &Children, Entity)>,
+    mut q_car: Query<(
+        &mut Car,
+        &Velocity,
+        &Transform,
+        &Children,
+        Entity,
+        Option<&HID>,
+    )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     config: Res<Config>,
 ) {
@@ -36,7 +43,7 @@ pub fn dqn_system(
         return;
     }
 
-    for (mut car, v, tr, children, e) in q_car.iter_mut() {
+    for (mut car, v, tr, children, e, hid) in q_car.iter_mut() {
         // let (mut car, v, mut car_dqn, tr) = q_car.single_mut();
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
@@ -104,8 +111,8 @@ pub fn dqn_system(
         if exploration {
             action = rng.gen_range(0..ACTIONS - 1);
         } else {
-            let car_dqn = cars_dqn.cars.get(&e).unwrap();
-            let q_values = car_dqn.qn.forward(obs_state_tensor.clone());
+            // let car_dqn = cars_dqn.cars.get(&e).unwrap();
+            let q_values = cars_dqn.qn.forward(obs_state_tensor.clone());
             let max_q_value = *q_values.clone().max_axis::<-1>().data();
             let some_action = q_values
                 .clone()
@@ -120,45 +127,48 @@ pub fn dqn_system(
             }
         }
 
-        let mut car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
-        if dqn.rb.len() < BATCH_SIZE {
-            log_action_reward(action, reward);
-        } else {
-            let start = Instant::now();
-            let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-            let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
-            let mut loss_string: String = String::from("");
-            for _i_epoch in 0..EPOCHS {
-                let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> = car_dqn.tqn.forward(sn.clone());
-                let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_axis::<-1>();
-                let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
-                // forward through model, computing gradients
-                let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
-                    car_dqn.qn.forward(s.trace());
-                let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
-                let loss = huber_loss(action_qs, &target_q, 1.);
-                let loss_v = *loss.data();
-                // run backprop
-                let gradients = loss.backward();
-                dqn.sgd
-                    .update(&mut car_dqn.qn, gradients)
-                    .expect("Unused params");
-                if _i_epoch % 5 == 0 {
-                    loss_string.push_str(format!("{:.2} ", loss_v).as_str());
-                }
-            }
-            log_training(exploration, action, reward, &loss_string, start);
-            if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
-                dbg!("networks sync");
-                car_dqn.tqn = car_dqn.qn.clone();
-            }
-            dqn.eps = if dqn.eps <= dqn.min_eps {
-                dqn.min_eps
+        if let Some(_hid) = hid {
+            if dqn.rb.len() < BATCH_SIZE {
+                log_action_reward(action, reward);
             } else {
-                dqn.eps - DECAY
-            };
+                let start = Instant::now();
+                let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
+                let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
+                let mut loss_string: String = String::from("");
+                for _i_epoch in 0..EPOCHS {
+                    let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
+                        cars_dqn.tqn.forward(sn.clone());
+                    let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_axis::<-1>();
+                    let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
+                    // forward through model, computing gradients
+                    let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
+                        cars_dqn.qn.forward(s.trace());
+                    let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
+                    let loss = huber_loss(action_qs, &target_q, 1.);
+                    let loss_v = *loss.data();
+                    // run backprop
+                    let gradients = loss.backward();
+                    dqn.sgd
+                        .update(&mut cars_dqn.qn, gradients)
+                        .expect("Unused params");
+                    if _i_epoch % 5 == 0 {
+                        loss_string.push_str(format!("{:.2} ", loss_v).as_str());
+                    }
+                }
+                log_training(exploration, action, reward, &loss_string, start);
+                if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
+                    dbg!("networks sync");
+                    cars_dqn.tqn = cars_dqn.qn.clone();
+                }
+                dqn.eps = if dqn.eps <= dqn.min_eps {
+                    dqn.min_eps
+                } else {
+                    dqn.eps - DECAY
+                };
+            }
         }
 
+        let car_dqn = cars_dqn.cars.get(&e).unwrap();
         let s = car_dqn.prev_obs;
         let a = car_dqn.prev_action;
         let r = reward;
@@ -169,6 +179,7 @@ pub fn dqn_system(
         car_dqn.prev_obs = obs;
         car_dqn.prev_action = action;
         car_dqn.prev_reward = reward;
+
         let (gas, brake, left, right) = map_action_to_car(action);
         car.gas = gas;
         car.brake = brake;

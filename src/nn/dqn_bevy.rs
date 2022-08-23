@@ -9,33 +9,32 @@ pub struct CarDqnResource {
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
-    pub qn: QNetwork,
-    pub tqn: QNetwork,
 }
 
 impl CarDqnResource {
     pub fn new() -> Self {
-        let mut rng = StdRng::seed_from_u64(0);
-        let mut qn = QNetwork::default();
-        qn.reset_params(&mut rng);
         Self {
             prev_obs: [0.; STATE_SIZE],
             prev_action: 0,
             prev_reward: 0.,
-
-            qn: qn.clone(),
-            tqn: qn.clone(),
         }
     }
 }
 
 pub struct CarDqnResources {
     pub cars: HashMap<Entity, CarDqnResource>,
+    pub qn: QNetwork,
+    pub tqn: QNetwork,
 }
 impl CarDqnResources {
     pub fn new() -> Self {
+        let mut rng = StdRng::seed_from_u64(0);
+        let mut qn = QNetwork::default();
+        qn.reset_params(&mut rng);
         Self {
             cars: HashMap::new(),
+            qn: qn.clone(),
+            tqn: qn.clone(),
         }
     }
     pub fn add_car(&mut self, car_id: Entity) {

@@ -18,9 +18,29 @@ pub struct Config {
     pub meters_shift: f32,
     pub track_length: f32,
 }
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            cars_count: 20,
+            use_brain: false,
+            show_rays: true,
+            max_torque: 500.,
+            max_toi: 50.,
+            translation: Vec3::new(0., 0.8, 0.),
+            quat: Quat::from_rotation_y(-PI * 0.225),
+            hid_car: None,
+            polyline: None,
+            segment_i: 0,
+            segment_m: 0.,
+            meters: vec![],
+            meters_shift: 0.,
+            track_length: 0.,
+        }
+    }
+}
 impl Config {
     pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat, f32) {
-        let meters = i as f32 * 0.;
+        let meters = i as f32 * self.track_length / self.cars_count as f32;
         let (tr, quat) = self.get_transform_by_meter(meters);
         return (tr, quat, meters);
     }
@@ -50,26 +70,5 @@ impl Config {
             }
         }
         panic!();
-    }
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            cars_count: 10,
-            use_brain: false,
-            show_rays: true,
-            max_torque: 800.,
-            max_toi: 50.,
-            translation: Vec3::new(0., 0.8, 0.),
-            quat: Quat::from_rotation_y(-PI * 0.225),
-            hid_car: None,
-            polyline: None,
-            segment_i: 0,
-            segment_m: 0.,
-            meters: vec![],
-            meters_shift: 0.,
-            track_length: 0.,
-        }
     }
 }
