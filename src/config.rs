@@ -16,21 +16,31 @@ pub struct Config {
     pub segment_m: f32,
     pub meters: Vec<f32>,
     pub meters_shift: f32,
-    pub meters_total: f32,
+    pub track_length: f32,
 }
 impl Config {
-    pub fn get_start_position(&self, meters: f32) -> (Vec3, Quat) {
+    pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat, f32) {
+        let meters = i as f32 * 0.;
+        let (tr, quat) = self.get_transform_by_meter(meters);
+        return (tr, quat, meters);
+    }
+    pub fn get_transform_by_meter(&self, meters: f32) -> (Vec3, Quat) {
         let polyline = self.polyline.as_ref().unwrap();
         let mut seg_meters = 0.;
-        let shifted_meters = meters + self.meters_shift;
+        let mut shift = meters + self.meters_shift;
+        if shift > self.track_length {
+            shift = shift - self.track_length * (shift / self.track_length).floor();
+        }
+
         for segment in polyline.segments() {
             let new_seg_meters: f32 = seg_meters + segment.length();
-            if new_seg_meters < shifted_meters {
+            if new_seg_meters < shift {
+                println!("{shift:.1} {new_seg_meters:.1}");
                 seg_meters = new_seg_meters;
             } else {
                 let a: Vec3 = segment.a.into();
                 let dir: Vec3 = segment.direction().unwrap().into();
-                let mut pos: Vec3 = a + dir * (shifted_meters - seg_meters);
+                let mut pos: Vec3 = a + dir * (shift - seg_meters);
                 pos.y = self.translation.y;
 
                 return (
@@ -46,10 +56,10 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 1,
+            cars_count: 10,
             use_brain: false,
             show_rays: true,
-            max_torque: 1000.,
+            max_torque: 800.,
             max_toi: 50.,
             translation: Vec3::new(0., 0.8, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
@@ -59,7 +69,7 @@ impl Default for Config {
             segment_m: 0.,
             meters: vec![],
             meters_shift: 0.,
-            meters_total: 0.,
+            track_length: 0.,
         }
     }
 }

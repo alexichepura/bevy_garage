@@ -41,7 +41,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
         meters += s.length();
     }
     config.meters_shift = config.meters[config.segment_i as usize];
-    config.meters_total = meters;
+    config.track_length = meters;
 
     println!(
         "track length: {meters:.1} polyline shift: {:.1}",
@@ -64,7 +64,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
 pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Car, Entity)>) {
     let polyline = config.polyline.as_ref().unwrap();
     let mut board: Vec<(Entity, f32)> = Vec::new();
-    for (tr, mut car_progress, e) in cars.iter_mut() {
+    for (tr, mut car, e) in cars.iter_mut() {
         let point: Point3<Real> = Point3::from(tr.translation);
         let point_location = polyline.project_local_point_and_get_location(&point, true);
         let (segment_i, segment_location) = point_location.1;
@@ -80,16 +80,16 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
                         m + config.meters[segment_i as usize] - config.meters_shift
                     }
                     _ => {
-                        m + config.meters[segment_i as usize] + config.meters_total
+                        m + config.meters[segment_i as usize] + config.track_length
                             - config.meters_shift
                     }
                 };
-                if meters - car_progress.meters > 1000. {
-                    meters = -(config.meters_total - meters);
+                if meters - car.meters > config.track_length - 10. {
+                    meters = -(config.track_length - meters);
                 }
                 let line_dir = Vec3::from(segment.direction().unwrap());
-                car_progress.line_dir = line_dir;
-                car_progress.meters = meters;
+                car.line_dir = line_dir;
+                car.meters = meters;
                 board.push((e, meters));
             }
         }

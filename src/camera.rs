@@ -2,12 +2,17 @@ use crate::car::HID;
 use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
+use bevy::render::camera::Projection;
 use bevy_atmosphere::prelude::AtmosphereCamera;
 use core::f32::consts::PI;
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
         .spawn_bundle(Camera3dBundle {
+            projection: Projection::from(PerspectiveProjection {
+                far: 2500.,
+                ..default()
+            }),
             transform: Transform::from_translation(
                 config.translation + Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
             )

@@ -1,4 +1,4 @@
-use crate::{config::*, mesh::*, nn::dqn_bevy::CarDqn, track::*};
+use crate::{config::*, mesh::*, nn::dqn_bevy::*, track::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
@@ -47,13 +47,20 @@ pub struct Car {
     pub init_transform: Transform,
     pub reset_at: Option<f64>,
 
+    pub init_meters: f32,
     pub meters: f32,
+    pub lap: usize,
     pub line_dir: Vec3,
     pub place: usize,
 }
 
 impl Car {
-    pub fn new(wheels: &Vec<Entity>, wheel_max_torque: f32, init_transform: Transform) -> Self {
+    pub fn new(
+        wheels: &Vec<Entity>,
+        wheel_max_torque: f32,
+        init_transform: Transform,
+        init_meters: f32,
+    ) -> Self {
         Self {
             sensor_inputs: vec![0.; SENSOR_COUNT],
             gas: 0.,
@@ -66,8 +73,10 @@ impl Car {
             init_transform,
             reset_at: None,
 
+            init_meters,
             meters: 0.,
             place: 0,
+            lap: 0,
             line_dir: Vec3::ZERO,
         }
     }
@@ -80,6 +89,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
+    mut cars_dqn: NonSendMut<CarDqnResources>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -99,7 +109,7 @@ pub fn car_start_system(
     let wheel_r: f32 = 0.4;
     let wheel_hw: f32 = 0.2;
     let car_hw: f32 = 1.;
-    let car_hh: f32 = 0.3;
+    let car_hh: f32 = 0.35;
     let car_hl: f32 = 2.2;
     let ride_height = 0.08;
 
@@ -117,7 +127,7 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let (car_translation, car_quat) = config.get_start_position(0.);
+        let (car_translation, car_quat, car_init_meters) = config.get_transform_by_index(i);
         let car_transform = Transform::from_translation(car_translation).with_rotation(car_quat);
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
@@ -129,12 +139,12 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 10.)
-                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 10.)
+                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 15.)
+                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 15.)
                 .build();
             joints.push(joint);
 
-            let wheel_border_radius = 0.01;
+            let wheel_border_radius = 0.05;
             let wheel_id = commands
                 .spawn()
                 .insert(Name::new("wheel"))
@@ -161,7 +171,7 @@ pub fn car_start_system(
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(10.))
+                .insert(Friction::coefficient(4.))
                 .insert(Restitution::coefficient(0.))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
@@ -195,12 +205,17 @@ pub fn car_start_system(
             }
         }
 
-        let car = commands
+        let car_id = commands
             .spawn()
             .insert(Name::new("car"))
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
-            .insert(Car::new(&wheels, config.max_torque, car_transform))
+            .insert(Car::new(
+                &wheels,
+                config.max_torque,
+                car_transform,
+                car_init_meters,
+            ))
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
             .insert(ExternalForce::default())
@@ -222,7 +237,7 @@ pub fn car_start_system(
                     principal_inertia: Vec3::new(5000., 5000., 2000.),
                     ..default()
                 });
-                let car_bradius = 0.05;
+                let car_bradius = 0.25;
                 children
                     .spawn()
                     .insert(Name::new("car_collider"))
@@ -264,16 +279,16 @@ pub fn car_start_system(
             .id();
 
         if is_hid {
-            config.hid_car = Some(car);
-            commands.entity(car).insert(HID);
+            config.hid_car = Some(car_id);
+            commands.entity(car_id).insert(HID);
         }
         for (i, wheel_id) in wheels.iter().enumerate() {
             commands
                 .entity(*wheel_id)
-                .insert(MultibodyJoint::new(car, joints[i]));
+                .insert(MultibodyJoint::new(car_id, joints[i]));
         }
 
-        commands.entity(car).insert(CarDqn::new());
+        cars_dqn.add_car(car_id);
     }
 }
 

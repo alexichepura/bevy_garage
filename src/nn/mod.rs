@@ -1,5 +1,5 @@
-pub mod action;
+pub mod dqn;
 pub mod dqn_bevy;
-pub mod dqn_dash_update;
-pub mod log;
+pub mod params;
 pub mod replay;
+pub mod util;

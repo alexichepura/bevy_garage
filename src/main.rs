@@ -2,7 +2,6 @@ mod camera;
 mod car;
 mod config;
 mod dash;
-mod dqn;
 mod esp;
 mod gamepad;
 mod gradient;
@@ -22,13 +21,12 @@ use camera::*;
 use car::*;
 use config::*;
 use dash::*;
-use dqn::*;
 use esp::*;
 use gamepad::*;
 use gradient::*;
 use input::*;
 use light::*;
-use nn::{dqn_bevy::*, dqn_dash_update::*};
+use nn::{dqn::dqn_system, dqn_bevy::*};
 use progress::*;
 use track::*;
 
@@ -37,6 +35,7 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
+        .insert_resource(AtmosphereSettings { resolution: 1024 })
         .add_plugins(DefaultPlugins)
         .add_plugin(AtmospherePlugin)
         .add_startup_system(camera_start_system)
@@ -65,8 +64,8 @@ fn main() {
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
+        .add_startup_system(car_start_system.after(track_polyline_start_system))
         .add_startup_system(light_start_system)
-        .add_startup_system(car_start_system)
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         // .add_startup_system(rapier_config_start_system)

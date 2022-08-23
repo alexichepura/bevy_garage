@@ -64,7 +64,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(TrainerRecordDistanceText);
     commands
         .spawn_bundle(TextBundle {
-            style: get_style(60.),
+            style: get_style(2.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
@@ -77,7 +77,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         .insert(Leaderboard);
     commands
         .spawn_bundle(TextBundle {
-            style: get_style(2.),
+            style: get_style(60.),
             text: Text {
                 sections: vec![TextSection {
                     value: "".to_string(),
@@ -96,10 +96,13 @@ pub fn dash_leaderboard_system(
 ) {
     let mut text_string: String = "".to_string();
     for car in q_cars.iter() {
-        text_string = text_string + &car.meters.round().to_string() + " ";
+        let distance = match car.meters {
+            x => x - car.init_meters,
+        };
+        text_string = text_string + &distance.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
-    text.sections[0].value = format!("leaderboard {:?}", text_string.as_str());
+    text.sections[0].value = format!("distances {:?}", text_string.as_str().trim_end());
 }
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {

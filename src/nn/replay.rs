@@ -1,10 +1,5 @@
+use super::{dqn::*, params::*};
 use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
-
-use crate::dqn::{Observation, STATE_SIZE};
-
-// https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/
-pub const BATCH_SIZE: usize = 32;
-const BUFFER_SIZE: usize = 10_000_000;
 
 type StateTuple = (Observation, usize, f32, Observation);
 type StateTensorsTuple = (
