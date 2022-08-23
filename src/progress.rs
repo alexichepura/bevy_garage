@@ -84,7 +84,7 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
                             - config.meters_shift
                     }
                 };
-                if meters - car.meters > 1000. {
+                if meters - car.meters > config.track_length - 10. {
                     meters = -(config.track_length - meters);
                 }
                 let line_dir = Vec3::from(segment.direction().unwrap());

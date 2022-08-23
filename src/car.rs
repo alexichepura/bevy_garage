@@ -47,13 +47,20 @@ pub struct Car {
     pub init_transform: Transform,
     pub reset_at: Option<f64>,
 
+    pub init_meters: f32,
     pub meters: f32,
+    pub lap: usize,
     pub line_dir: Vec3,
     pub place: usize,
 }
 
 impl Car {
-    pub fn new(wheels: &Vec<Entity>, wheel_max_torque: f32, init_transform: Transform) -> Self {
+    pub fn new(
+        wheels: &Vec<Entity>,
+        wheel_max_torque: f32,
+        init_transform: Transform,
+        init_meters: f32,
+    ) -> Self {
         Self {
             sensor_inputs: vec![0.; SENSOR_COUNT],
             gas: 0.,
@@ -66,8 +73,10 @@ impl Car {
             init_transform,
             reset_at: None,
 
+            init_meters,
             meters: 0.,
             place: 0,
+            lap: 0,
             line_dir: Vec3::ZERO,
         }
     }
@@ -118,7 +127,7 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let (car_translation, car_quat) = config.get_transform_by_index(i);
+        let (car_translation, car_quat, car_init_meters) = config.get_transform_by_index(i);
         let car_transform = Transform::from_translation(car_translation).with_rotation(car_quat);
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
@@ -201,7 +210,12 @@ pub fn car_start_system(
             .insert(Name::new("car"))
             .insert(Sleeping::disabled())
             .insert(Name::new("Car"))
-            .insert(Car::new(&wheels, config.max_torque, car_transform))
+            .insert(Car::new(
+                &wheels,
+                config.max_torque,
+                car_transform,
+                car_init_meters,
+            ))
             .insert(RigidBody::Dynamic)
             .insert(Velocity::zero())
             .insert(ExternalForce::default())

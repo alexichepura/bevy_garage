@@ -96,7 +96,10 @@ pub fn dash_leaderboard_system(
 ) {
     let mut text_string: String = "".to_string();
     for car in q_cars.iter() {
-        text_string = text_string + &car.meters.round().to_string() + " ";
+        let distance = match car.meters {
+            x => x - car.init_meters,
+        };
+        text_string = text_string + &distance.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
     text.sections[0].value = format!("distances {:?}", text_string.as_str().trim_end());

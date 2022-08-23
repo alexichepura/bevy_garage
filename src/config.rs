@@ -19,8 +19,10 @@ pub struct Config {
     pub track_length: f32,
 }
 impl Config {
-    pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat) {
-        return self.get_transform_by_meter(i as f32 * 250.);
+    pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat, f32) {
+        let meters = i as f32 * 250.;
+        let (tr, quat) = self.get_transform_by_meter(meters);
+        return (tr, quat, meters);
     }
     pub fn get_transform_by_meter(&self, meters: f32) -> (Vec3, Quat) {
         let polyline = self.polyline.as_ref().unwrap();
