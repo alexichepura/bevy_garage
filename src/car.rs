@@ -1,4 +1,4 @@
-use crate::{config::*, mesh::*, nn::dqn_bevy::CarDqn, track::*};
+use crate::{config::*, mesh::*, nn::dqn_bevy::DqnResource, track::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
@@ -80,6 +80,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
+    mut dqn_res: NonSendMut<DqnResource>,
 ) {
     let car_gl = asset_server.load("car-race.glb#Scene0");
 
@@ -195,7 +196,7 @@ pub fn car_start_system(
             }
         }
 
-        let car = commands
+        let car_id = commands
             .spawn()
             .insert(Name::new("car"))
             .insert(Sleeping::disabled())
@@ -264,16 +265,16 @@ pub fn car_start_system(
             .id();
 
         if is_hid {
-            config.hid_car = Some(car);
-            commands.entity(car).insert(HID);
+            config.hid_car = Some(car_id);
+            commands.entity(car_id).insert(HID);
         }
         for (i, wheel_id) in wheels.iter().enumerate() {
             commands
                 .entity(*wheel_id)
-                .insert(MultibodyJoint::new(car, joints[i]));
+                .insert(MultibodyJoint::new(car_id, joints[i]));
         }
 
-        commands.entity(car).insert(CarDqn::new());
+        dqn_res.add_car(car_id);
     }
 }
 

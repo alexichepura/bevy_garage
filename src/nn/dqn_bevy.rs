@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::replay::ReplayBuffer;
 use crate::{
     config::Config,
@@ -6,6 +8,22 @@ use crate::{
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
+
+pub struct CarDqnResource {
+    pub prev_obs: Observation,
+    pub prev_action: usize,
+    pub prev_reward: f32,
+}
+
+impl CarDqnResource {
+    pub fn new() -> Self {
+        Self {
+            prev_obs: [0.; STATE_SIZE],
+            prev_action: 0,
+            prev_reward: 0.,
+        }
+    }
+}
 
 pub struct DqnResource {
     pub seconds: f64,
@@ -18,6 +36,8 @@ pub struct DqnResource {
     pub min_eps: f32,
     pub done: f32,
     pub sgd: Sgd<QNetwork>,
+
+    pub cars: HashMap<Entity, CarDqnResource>,
 }
 impl DqnResource {
     pub fn new() -> Self {
@@ -38,7 +58,11 @@ impl DqnResource {
                 lr: 0.005,
                 momentum: Some(Momentum::Nesterov(0.9)),
             }),
+            cars: HashMap::new(),
         }
+    }
+    pub fn add_car(&mut self, car_id: Entity) {
+        self.cars.insert(car_id, CarDqnResource::new());
     }
     pub fn sgd_update(&mut self, gradients: Gradients) {
         self.sgd
@@ -50,23 +74,6 @@ impl DqnResource {
 pub fn dqn_start_system(world: &mut World) {
     world.insert_non_send_resource(DqnResource::new());
 }
-
-#[derive(Component, Debug)]
-pub struct CarDqn {
-    pub prev_obs: Observation,
-    pub prev_action: usize,
-    pub prev_reward: f32,
-}
-impl CarDqn {
-    pub fn new() -> Self {
-        Self {
-            prev_obs: [0.; STATE_SIZE],
-            prev_action: 0,
-            prev_reward: 0.,
-        }
-    }
-}
-
 pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
     if input.just_pressed(KeyCode::N) {
         config.use_brain = !config.use_brain;

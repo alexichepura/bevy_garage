@@ -30,7 +30,7 @@ pub fn dqn_system(
     time: Res<Time>,
     mut dqn: NonSendMut<DqnResource>,
     q_name: Query<&Name>,
-    mut q_car: Query<(&mut Car, &Velocity, &mut CarDqn, &Transform, &Children), With<CarDqn>>,
+    mut q_car: Query<(&mut Car, &Velocity, &Transform, &Children, Entity)>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     config: Res<Config>,
 ) {
@@ -42,7 +42,7 @@ pub fn dqn_system(
         return;
     }
 
-    for (mut car, v, mut car_dqn, tr, children) in q_car.iter_mut() {
+    for (mut car, v, tr, children, e) in q_car.iter_mut() {
         // let (mut car, v, mut car_dqn, tr) = q_car.single_mut();
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
@@ -157,8 +157,15 @@ pub fn dqn_system(
                 dqn.eps - DECAY
             };
         }
-        dqn.rb
-            .store(car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
+
+        let car_dqn = dqn.cars.get(&e).unwrap();
+        let s = car_dqn.prev_obs;
+        let a = car_dqn.prev_action;
+        let r = reward;
+        let sn = obs;
+        dqn.rb.store(s, a, r, sn);
+
+        let mut car_dqn = dqn.cars.get_mut(&e).unwrap();
         car_dqn.prev_obs = obs;
         car_dqn.prev_action = action;
         car_dqn.prev_reward = reward;
