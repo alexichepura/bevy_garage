@@ -118,7 +118,7 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let (car_translation, car_quat) = config.get_start_position(0.);
+        let (car_translation, car_quat) = config.get_start_position(i as f32 * 20.);
         let car_transform = Transform::from_translation(car_translation).with_rotation(car_quat);
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];

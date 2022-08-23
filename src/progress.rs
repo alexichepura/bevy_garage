@@ -41,7 +41,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
         meters += s.length();
     }
     config.meters_shift = config.meters[config.segment_i as usize];
-    config.meters_total = meters;
+    config.track_length = meters;
 
     println!(
         "track length: {meters:.1} polyline shift: {:.1}",
@@ -80,12 +80,12 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
                         m + config.meters[segment_i as usize] - config.meters_shift
                     }
                     _ => {
-                        m + config.meters[segment_i as usize] + config.meters_total
+                        m + config.meters[segment_i as usize] + config.track_length
                             - config.meters_shift
                     }
                 };
                 if meters - car_progress.meters > 1000. {
-                    meters = -(config.meters_total - meters);
+                    meters = -(config.track_length - meters);
                 }
                 let line_dir = Vec3::from(segment.direction().unwrap());
                 car_progress.line_dir = line_dir;

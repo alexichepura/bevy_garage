@@ -96,9 +96,10 @@ pub fn track_start_system(
                 .insert(Restitution::coefficient(0.));
         }
     }
-    let num_cols: usize = 2;
-    let num_rows: usize = 3;
-    let scale = 400.;
+    let x: usize = 10;
+    let num_cols: usize = 2 * x;
+    let num_rows: usize = 3 * x;
+    let scale = 400. / x as f32;
     let hx = num_cols as f32 * scale;
     let hy = 0.5;
     let hz = num_rows as f32 * scale;
