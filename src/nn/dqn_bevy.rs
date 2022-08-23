@@ -68,7 +68,7 @@ impl DqnResource {
             min_eps: 0.01,
             done: 0.,
             sgd: Sgd::new(SgdConfig {
-                lr: 0.005,
+                lr: 0.01,
                 momentum: Some(Momentum::Nesterov(0.9)),
             }),
         }
@@ -83,4 +83,26 @@ pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>)
     if input.just_pressed(KeyCode::N) {
         config.use_brain = !config.use_brain;
     }
+}
+
+use crate::{dash::*, dqn::SYNC_INTERVAL_STEPS};
+
+pub fn dqn_dash_update_system(
+    mut dash_set: ParamSet<(
+        Query<&mut Text, With<TrainerRecordDistanceText>>,
+        Query<&mut Text, With<TrainerGenerationText>>,
+    )>,
+    dqn: NonSend<DqnResource>,
+) {
+    let mut q_generation_text = dash_set.p1();
+    let mut generation_text = q_generation_text.single_mut();
+    generation_text.sections[0].value = format!(
+        "rb {:?}, sync {:?}",
+        dqn.rb.len(),
+        (dqn.step / SYNC_INTERVAL_STEPS)
+    );
+
+    let mut q_timing_text = dash_set.p0();
+    let mut timing_text = q_timing_text.single_mut();
+    timing_text.sections[0].value = format!("epsilon {:.4}", dqn.eps);
 }

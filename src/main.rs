@@ -28,7 +28,7 @@ use gamepad::*;
 use gradient::*;
 use input::*;
 use light::*;
-use nn::{dqn_bevy::*, dqn_dash_update::*};
+use nn::dqn_bevy::*;
 use progress::*;
 use track::*;
 

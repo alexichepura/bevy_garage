@@ -2,7 +2,7 @@ use crate::{
     car::*,
     config::Config,
     esp::SPEED_LIMIT_MPS,
-    nn::{action::*, dqn_bevy::*, log::*, replay::*},
+    nn::{dqn_bevy::*, replay::*, util::*},
     track::*,
 };
 use bevy::prelude::*;
@@ -11,7 +11,7 @@ use dfdx::prelude::*;
 use rand::Rng;
 use std::time::Instant;
 
-const EPOCHS: usize = 20;
+const EPOCHS: usize = 30;
 const DECAY: f32 = 0.00001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
 const STEP_DURATION: f64 = 1. / 4.;
