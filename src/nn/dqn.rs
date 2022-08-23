@@ -1,8 +1,9 @@
+use super::params::*;
 use crate::{
     car::*,
     config::Config,
     esp::SPEED_LIMIT_MPS,
-    nn::{dqn_bevy::*, replay::*, util::*},
+    nn::{dqn_bevy::*, util::*},
     track::*,
 };
 use bevy::prelude::*;
@@ -11,15 +12,6 @@ use dfdx::prelude::*;
 use rand::Rng;
 use std::time::Instant;
 
-const EPOCHS: usize = 30;
-const DECAY: f32 = 0.00001;
-pub const SYNC_INTERVAL_STEPS: i32 = 100;
-const STEP_DURATION: f64 = 1. / 4.;
-
-const STATE_SIZE_BASE: usize = 3;
-pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
-const ACTIONS: usize = 8;
-const HIDDEN_SIZE: usize = 16;
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
@@ -129,20 +121,21 @@ pub fn dqn_system(
         }
 
         let mut car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
-        if dqn.rb.len() < BATCHES {
+        if dqn.rb.len() < BATCH_SIZE {
             log_action_reward(action, reward);
         } else {
             let start = Instant::now();
-            let batch_indexes = [(); BATCHES].map(|_| rng.gen_range(0..dqn.rb.len()));
+            let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
             let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
             let mut loss_string: String = String::from("");
             for _i_epoch in 0..EPOCHS {
-                let next_q_values: Tensor2D<BATCHES, ACTIONS> = car_dqn.tqn.forward(sn.clone());
-                let max_next_q: Tensor1D<BATCHES> = next_q_values.max_axis::<-1>();
+                let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> = car_dqn.tqn.forward(sn.clone());
+                let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_axis::<-1>();
                 let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
                 // forward through model, computing gradients
-                let q_values: Tensor2D<BATCHES, ACTIONS, OwnedTape> = car_dqn.qn.forward(s.trace());
-                let action_qs: Tensor1D<BATCHES, OwnedTape> = q_values.select(&a);
+                let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
+                    car_dqn.qn.forward(s.trace());
+                let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
                 let loss = huber_loss(action_qs, &target_q, 1.);
                 let loss_v = *loss.data();
                 // run backprop
@@ -155,7 +148,7 @@ pub fn dqn_system(
                 }
             }
             log_training(exploration, action, reward, &loss_string, start);
-            if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCHES * 2 {
+            if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
                 dbg!("networks sync");
                 car_dqn.tqn = car_dqn.qn.clone();
             }

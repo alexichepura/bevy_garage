@@ -1,9 +1,5 @@
-use super::replay::ReplayBuffer;
-use crate::{
-    config::Config,
-    nn::dqn::{Observation, QNetwork, STATE_SIZE},
-};
-use crate::{dash::*, nn::dqn::SYNC_INTERVAL_STEPS};
+use super::{params::*, replay::ReplayBuffer};
+use crate::{config::Config, dash::*, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
