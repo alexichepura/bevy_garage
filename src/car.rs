@@ -144,7 +144,7 @@ pub fn car_start_system(
                 .build();
             joints.push(joint);
 
-            let wheel_border_radius = 0.01;
+            let wheel_border_radius = 0.05;
             let wheel_id = commands
                 .spawn()
                 .insert(Name::new("wheel"))
