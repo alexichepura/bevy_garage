@@ -1,13 +1,13 @@
-use std::collections::HashMap;
-
 use super::replay::ReplayBuffer;
 use crate::{
     config::Config,
-    dqn::{Observation, QNetwork, STATE_SIZE},
+    nn::dqn::{Observation, QNetwork, STATE_SIZE},
 };
+use crate::{dash::*, nn::dqn::SYNC_INTERVAL_STEPS};
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
+use std::collections::HashMap;
 
 pub struct CarDqnResource {
     pub prev_obs: Observation,
@@ -84,8 +84,6 @@ pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>)
         config.use_brain = !config.use_brain;
     }
 }
-
-use crate::{dash::*, dqn::SYNC_INTERVAL_STEPS};
 
 pub fn dqn_dash_update_system(
     mut dash_set: ParamSet<(

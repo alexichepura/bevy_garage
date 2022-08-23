@@ -1,6 +1,5 @@
+use super::dqn::{Observation, STATE_SIZE};
 use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
-
-use crate::dqn::{Observation, STATE_SIZE};
 
 // https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/
 pub const BATCHES: usize = 32;
