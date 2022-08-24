@@ -63,7 +63,7 @@ impl DqnResource {
             min_eps: 0.01,
             done: 0.,
             sgd: Sgd::new(SgdConfig {
-                lr: 0.01,
+                lr: LEARNING_RATE,
                 momentum: Some(Momentum::Nesterov(0.9)),
             }),
         }

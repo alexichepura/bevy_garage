@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use parry3d::shape::Polyline;
 use std::f32::consts::PI;
 
+use crate::nn::params::{CARS_COUNT, MAX_TORQUE};
+
 pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,
@@ -21,10 +23,10 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            cars_count: 20,
+            cars_count: CARS_COUNT,
             use_brain: false,
             show_rays: true,
-            max_torque: 800.,
+            max_torque: MAX_TORQUE,
             max_toi: 50.,
             translation: Vec3::new(0., 0.8, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
