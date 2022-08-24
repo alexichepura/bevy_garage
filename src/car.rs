@@ -181,7 +181,7 @@ pub fn car_start_system(
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction {
                     combine_rule: CoefficientCombineRule::Max,
-                    coefficient: 2.0,
+                    coefficient: 5.0,
                     ..default()
                 })
                 .insert(Restitution::coefficient(0.))

@@ -1,8 +1,7 @@
 use super::params::*;
 use crate::{
     car::*,
-    config::Config,
-    esp::SPEED_LIMIT_MPS,
+    config::*,
     nn::{dqn_bevy::*, util::*},
     track::*,
 };

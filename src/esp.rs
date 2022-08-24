@@ -1,11 +1,8 @@
-use crate::{car::*, config::*};
+use crate::{car::*, config::*, nn::params::*};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
-
-pub const SPEED_LIMIT_KMH: f32 = 70.;
-pub const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
 
 pub fn esp_system(
     mut query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
@@ -57,7 +54,7 @@ pub fn esp_system(
                 x => 1. - x,
             },
         };
-        let steering_speed_x: f32 = match car_kmh / SPEED_LIMIT_KMH {
+        let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
