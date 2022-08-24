@@ -75,13 +75,15 @@ pub fn esp_system(
                 -car.brake
             }
         };
-        let car_torque = pedal * car.wheel_max_torque;
-        let (steering, torque) = (
+        let dir = pedal.signum();
+        let car_torque = pedal.abs() * car.wheel_max_torque;
+        let (steering, mut torque) = (
             car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 4.,
             car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 4.,
         );
         car.prev_steering = steering;
         car.prev_torque = torque;
+        torque = dir * torque;
 
         let angle: f32 = max_angle * steering * (0.1 + 0.9 * steering_speed_x);
         let quat = -Quat::from_axis_angle(Vec3::Y, -angle);

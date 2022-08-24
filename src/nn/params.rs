@@ -2,9 +2,9 @@ use crate::car::SENSOR_COUNT;
 
 pub const BATCH_SIZE: usize = 64;
 pub const BUFFER_SIZE: usize = 10_000_000;
-pub const EPOCHS: usize = 50;
-pub const LEARNING_RATE: f32 = 0.001;
-pub const DECAY: f32 = 0.0005;
+pub const EPOCHS: usize = 60;
+pub const LEARNING_RATE: f32 = 0.002;
+pub const DECAY: f32 = 0.0001;
 pub const SYNC_INTERVAL_STEPS: i32 = 100;
 pub const STEP_DURATION: f64 = 1. / 10.;
 pub const STATE_SIZE_BASE: usize = 3;
