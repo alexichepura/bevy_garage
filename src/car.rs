@@ -132,15 +132,21 @@ pub fn car_start_system(
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
-            let joint_mask = JointAxesMask::X | JointAxesMask::ANG_Y | JointAxesMask::ANG_Z;
+            let joint_mask = JointAxesMask::X
+                // | JointAxesMask::Y 
+                // | JointAxesMask::Z
+                // | JointAxesMask::ANG_X
+                | JointAxesMask::ANG_Y
+                | JointAxesMask::ANG_Z;
 
             let joint = GenericJointBuilder::new(joint_mask)
                 .local_axis1(Vec3::X)
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 15.)
-                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 15.)
+                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 20.)
+                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 5.)
+                // .motor_velocity(JointAxis::AngX, 100., 0.)
                 .build();
             joints.push(joint);
 
@@ -151,7 +157,7 @@ pub fn car_start_system(
                 .insert(Sleeping::disabled())
                 .insert_bundle(PbrBundle {
                     mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
-                    material: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.8).into()),
+                    material: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.7).into()),
                     ..default()
                 })
                 .insert_bundle(TransformBundle::from(
@@ -171,7 +177,11 @@ pub fn car_start_system(
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(Friction::coefficient(4.))
+                .insert(Friction {
+                    combine_rule: CoefficientCombineRule::Max,
+                    coefficient: 2.0,
+                    ..default()
+                })
                 .insert(Restitution::coefficient(0.))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
@@ -188,20 +198,22 @@ pub fn car_start_system(
                 .id();
             wheels.push(wheel_id);
 
-            if i == 0 {
-                commands
-                    .entity(wheel_id)
-                    .insert(WheelFrontRight)
-                    .insert(WheelFront);
-            } else if i == 1 {
-                commands
-                    .entity(wheel_id)
-                    .insert(WheelFrontLeft)
-                    .insert(WheelFront);
-            } else if i == 2 {
-                commands.entity(wheel_id).insert(WheelBack);
-            } else if i == 3 {
-                commands.entity(wheel_id).insert(WheelBack);
+            match i {
+                0 => {
+                    commands
+                        .entity(wheel_id)
+                        .insert(WheelFrontRight)
+                        .insert(WheelFront);
+                }
+                1 => {
+                    commands
+                        .entity(wheel_id)
+                        .insert(WheelFrontLeft)
+                        .insert(WheelFront);
+                }
+                _ => {
+                    commands.entity(wheel_id).insert(WheelBack);
+                }
             }
         }
 

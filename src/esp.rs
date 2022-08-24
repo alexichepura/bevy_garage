@@ -4,15 +4,32 @@ use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
-pub const SPEED_LIMIT_KMH: f32 = 50.;
+pub const SPEED_LIMIT_KMH: f32 = 70.;
 pub const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
 
 pub fn esp_system(
     mut query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
-    mut front: Query<(&mut MultibodyJoint, With<WheelFront>)>,
     mut wheel_set: ParamSet<(
-        Query<(&Wheel, &mut ExternalForce, &Transform, &Velocity), With<WheelFront>>,
-        Query<(&Wheel, &mut ExternalForce, &Transform, &Velocity), With<WheelBack>>,
+        Query<
+            (
+                &Wheel,
+                &mut ExternalForce,
+                &Transform,
+                &Velocity,
+                &mut MultibodyJoint,
+            ),
+            With<WheelFront>,
+        >,
+        Query<
+            (
+                &Wheel,
+                &mut ExternalForce,
+                &Transform,
+                &Velocity,
+                &mut MultibodyJoint,
+            ),
+            With<WheelBack>,
+        >,
     )>,
     mut lines: ResMut<DebugLines>,
     config: Res<Config>,
@@ -40,7 +57,7 @@ pub fn esp_system(
                 x => 1. - x,
             },
         };
-        let steering_speed_x: f32 = match car_kmh / 100. {
+        let steering_speed_x: f32 = match car_kmh / SPEED_LIMIT_KMH {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
@@ -67,14 +84,14 @@ pub fn esp_system(
         car.prev_torque = torque;
 
         let angle: f32 = max_angle * steering * (0.1 + 0.9 * steering_speed_x);
-        let quat = Quat::from_axis_angle(Vec3::Y, -angle);
+        let quat = -Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);
 
         for (_i, wheel_entity) in car.wheels.iter().enumerate() {
             let mut q_front_wheels = wheel_set.p0();
             let wheel_result = q_front_wheels.get_mut(*wheel_entity);
-            if let Ok((wheel, mut f, transform, v)) = wheel_result {
+            if let Ok((wheel, mut f, transform, v, mut j)) = wheel_result {
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
@@ -91,9 +108,10 @@ pub fn esp_system(
                     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
                 }
+                j.data.set_local_basis1(quat);
             }
 
-            if let Ok((wheel, mut f, transform, v)) = wheel_set.p1().get_mut(*wheel_entity) {
+            if let Ok((wheel, mut f, transform, v, mut j)) = wheel_set.p1().get_mut(*wheel_entity) {
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
@@ -110,9 +128,8 @@ pub fn esp_system(
                     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
                 }
-            }
-            if let Ok((mut joint, _)) = front.get_mut(*wheel_entity) {
-                joint.data.set_local_basis1(quat);
+                let quat_back = -Quat::from_axis_angle(Vec3::Y, 0.);
+                j.data.set_local_basis1(quat_back);
             }
         }
     }
