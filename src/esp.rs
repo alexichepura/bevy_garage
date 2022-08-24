@@ -76,13 +76,18 @@ pub fn esp_system(
             }
         };
         let dir = pedal.signum();
+        let is_same_dir = car.prev_dir == dir;
         let car_torque = pedal.abs() * car.wheel_max_torque;
+        let prev_torque = if is_same_dir { car.prev_torque } else { 0. };
+        let prev_steering = car.prev_steering;
         let (steering, mut torque) = (
-            car.prev_steering + (car.steering - car.prev_steering) * d_seconds * 4.,
-            car.prev_torque + (car_torque - car.prev_torque) * d_seconds * 4.,
+            prev_steering + (car.steering - prev_steering) * d_seconds * 4.,
+            prev_torque + (car_torque - prev_torque) * d_seconds * 4.,
         );
         car.prev_steering = steering;
         car.prev_torque = torque;
+        car.prev_dir = dir;
+
         torque = dir * torque;
 
         let angle: f32 = max_angle * steering * (0.1 + 0.9 * steering_speed_x);
