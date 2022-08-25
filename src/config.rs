@@ -57,7 +57,6 @@ impl Config {
         for segment in polyline.segments() {
             let new_seg_meters: f32 = seg_meters + segment.length();
             if new_seg_meters < shift {
-                println!("{shift:.1} {new_seg_meters:.1}");
                 seg_meters = new_seg_meters;
             } else {
                 let a: Vec3 = segment.a.into();

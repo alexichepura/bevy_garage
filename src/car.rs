@@ -146,9 +146,13 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 20.)
-                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 5.)
+                .set_motor(JointAxis::Y, 0., 0., 40000., 150.)
+                .set_motor(JointAxis::Z, 0., 0., 50000., 100.)
+                // .set_motor(JointAxis::Y, 0., 0., 1., 1. / 20.)
+                // .set_motor(JointAxis::Z, 0., 0., 1., 1. / 5.)
                 // .motor_velocity(JointAxis::AngX, 100., 0.)
+                // .motor_velocity(JointAxis::AngY, 1., 1. / 100.)
+                // .motor_velocity(JointAxis::AngZ, 1., 1. / 100.)
                 .build();
             joints.push(joint);
 
@@ -188,7 +192,7 @@ pub fn car_start_system(
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
                     mass: 15.,
-                    principal_inertia: Vec3::ONE * 1.,
+                    principal_inertia: Vec3::ONE * 0.3,
                     ..default()
                 }))
                 .insert(Wheel {
@@ -251,7 +255,7 @@ pub fn car_start_system(
                     principal_inertia: Vec3::new(5000., 5000., 2000.),
                     ..default()
                 });
-                let car_bradius = 0.25;
+                let car_bradius = 0.05;
                 children
                     .spawn()
                     .insert(Name::new("car_collider"))
@@ -299,10 +303,11 @@ pub fn car_start_system(
         for (i, wheel_id) in wheels.iter().enumerate() {
             commands
                 .entity(*wheel_id)
-                .insert(MultibodyJoint::new(car_id, joints[i]));
+                .insert(ImpulseJoint::new(car_id, joints[i]));
         }
 
         cars_dqn.add_car(car_id);
+        println!("car log: {car_id:?} {:?}", wheels);
     }
 }
 

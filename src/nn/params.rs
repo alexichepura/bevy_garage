@@ -12,8 +12,8 @@ pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 pub const ACTIONS: usize = 8;
 pub const HIDDEN_SIZE: usize = 32;
 
-pub const MAX_TORQUE: f32 = 500.;
-pub const CARS_COUNT: usize = 20;
-pub const SPEED_LIMIT_KMH: f32 = 50.;
+pub const MAX_TORQUE: f32 = 1500.;
+pub const CARS_COUNT: usize = 1;
+pub const SPEED_LIMIT_KMH: f32 = 150.;
 pub const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
 pub const STEERING_SPEEDLIMIT_KMH: f32 = 150.;
