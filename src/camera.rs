@@ -11,6 +11,7 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
         .spawn_bundle(Camera3dBundle {
             projection: Projection::from(PerspectiveProjection {
                 far: 2500.,
+                near: 0.01,
                 ..default()
             }),
             transform: Transform::from_translation(

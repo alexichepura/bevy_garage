@@ -169,17 +169,18 @@ pub fn dash_speed_update_system(
     mut cars: Query<(&Velocity, &Car, With<HID>)>,
     wheels: Query<(&Velocity, &ExternalForce), With<Wheel>>,
 ) {
-    let (velocity, car, _) = cars.single_mut();
-    let mps = velocity.linvel.length();
-    let kmph = mps * 3.6;
-    texts.p0().single_mut().sections[0].value = format!("mps {:.1}", mps);
-    texts.p1().single_mut().sections[0].value = format!("kmph {:.1}", kmph);
-    let mut v_msg: String = "".to_string();
-    let mut f_msg: String = "".to_string();
-    for wheel_entity in car.wheels.iter() {
-        if let Ok((v, f)) = wheels.get(*wheel_entity) {
-            v_msg = v_msg + &format!("{:.1} ", v.angvel.length());
-            f_msg = f_msg + &format!("{:.1} ", f.torque.length());
+    for (velocity, car, _) in cars.iter_mut() {
+        let mps = velocity.linvel.length();
+        let kmph = mps * 3.6;
+        texts.p0().single_mut().sections[0].value = format!("mps {:.1}", mps);
+        texts.p1().single_mut().sections[0].value = format!("kmph {:.1}", kmph);
+        let mut v_msg: String = "".to_string();
+        let mut f_msg: String = "".to_string();
+        for wheel_entity in car.wheels.iter() {
+            if let Ok((v, f)) = wheels.get(*wheel_entity) {
+                v_msg = v_msg + &format!("{:.1} ", v.angvel.length());
+                f_msg = f_msg + &format!("{:.1} ", f.torque.length());
+            }
         }
     }
 }

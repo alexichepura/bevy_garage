@@ -108,17 +108,19 @@ pub fn car_start_system(
         });
     }
 
-    let wheel_r: f32 = 0.4;
-    let wheel_hw: f32 = 0.2;
+    let wheel_front_r: f32 = 0.4;
+    let wheel_back_r: f32 = 0.401;
+    let wheel_front_hw: f32 = 0.2;
+    let wheel_back_hw: f32 = 0.25;
     let car_hw: f32 = 1.;
     let car_hh: f32 = 0.35;
     let car_hl: f32 = 2.2;
     let ride_height = 0.08;
 
     let shift = Vec3::new(
-        car_hw - wheel_hw - 0.1,
-        -car_hh + wheel_r - ride_height,
-        car_hl - wheel_r - 0.5,
+        car_hw - wheel_front_hw - 0.1,
+        -car_hh + wheel_front_r - ride_height,
+        car_hl - wheel_front_r - 0.5,
     );
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
@@ -134,21 +136,38 @@ pub fn car_start_system(
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
-            let joint_mask = JointAxesMask::X
-                // | JointAxesMask::Y 
-                // | JointAxesMask::Z
-                // | JointAxesMask::ANG_X
-                | JointAxesMask::ANG_Y
-                | JointAxesMask::ANG_Z;
+            let (is_front, _is_left): (bool, bool) = match i {
+                0 => (true, false),
+                1 => (true, true),
+                2 => (false, false),
+                _ => (false, true),
+            };
+            let wheel_hw = match is_front {
+                true => wheel_front_hw,
+                false => wheel_back_hw,
+            };
+            let wheel_r = match is_front {
+                true => wheel_front_r,
+                false => wheel_back_r,
+            };
+            let joint_mask = // JointAxesMask::X
+            // | JointAxesMask::Y // vertical suspension
+            // | JointAxesMask::Z // tire suspension along car
+            // | JointAxesMask::ANG_X // wheel main axis
+            JointAxesMask::ANG_Y
+            | JointAxesMask::ANG_Z;
 
             let joint = GenericJointBuilder::new(joint_mask)
                 .local_axis1(Vec3::X)
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 1., 1. / 20.)
-                .set_motor(JointAxis::Z, 0., 0., 1., 1. / 5.)
+                .set_motor(JointAxis::X, 0., 0., 10e10, 1.)
+                .set_motor(JointAxis::Y, 0., 0., 50_000., 1.)
+                .set_motor(JointAxis::Z, 0., 0., 10e10, 1.)
                 // .motor_velocity(JointAxis::AngX, 100., 0.)
+                // .motor_position(JointAxis::AngY, 0., 10e34, 10e30)
+                // .motor_position(JointAxis::AngZ, 0., 10e34, 10e33)
                 .build();
             joints.push(joint);
 
@@ -171,7 +190,6 @@ pub fn car_start_system(
                 .insert(RigidBody::Dynamic)
                 .insert(Ccd::enabled())
                 .insert(Velocity::zero())
-                // .insert(Collider::cylinder(wheel_hw, wheel_r - wheel_border_radius))
                 .insert(Collider::round_cylinder(
                     wheel_hw - wheel_border_radius,
                     wheel_r - wheel_border_radius,
@@ -181,14 +199,18 @@ pub fn car_start_system(
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction {
                     combine_rule: CoefficientCombineRule::Max,
-                    coefficient: 5.0,
+                    coefficient: 10.0,
                     ..default()
                 })
                 .insert(Restitution::coefficient(0.))
+                .insert(Damping {
+                    linear_damping: 0.05,
+                    angular_damping: 0.05,
+                })
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
                     mass: 15.,
-                    principal_inertia: Vec3::ONE * 1.,
+                    principal_inertia: Vec3::ONE * 0.3,
                     ..default()
                 }))
                 .insert(Wheel {
@@ -200,30 +222,27 @@ pub fn car_start_system(
                 .id();
             wheels.push(wheel_id);
 
-            match i {
-                0 => {
+            if is_front {
+                if is_front {
+                    commands
+                        .entity(wheel_id)
+                        .insert(WheelFrontLeft)
+                        .insert(WheelFront);
+                } else {
                     commands
                         .entity(wheel_id)
                         .insert(WheelFrontRight)
                         .insert(WheelFront);
                 }
-                1 => {
-                    commands
-                        .entity(wheel_id)
-                        .insert(WheelFrontLeft)
-                        .insert(WheelFront);
-                }
-                _ => {
-                    commands.entity(wheel_id).insert(WheelBack);
-                }
-            }
+            } else {
+                commands.entity(wheel_id).insert(WheelBack);
+            };
         }
 
         let car_id = commands
             .spawn()
             .insert(Name::new("car"))
             .insert(Sleeping::disabled())
-            .insert(Name::new("Car"))
             .insert(Car::new(
                 &wheels,
                 config.max_torque,
@@ -231,6 +250,10 @@ pub fn car_start_system(
                 car_init_meters,
             ))
             .insert(RigidBody::Dynamic)
+            .insert(Damping {
+                linear_damping: 0.05,
+                angular_damping: 20.0,
+            })
             .insert(Velocity::zero())
             .insert(ExternalForce::default())
             .insert_bundle(TransformBundle::from(car_transform))
@@ -251,7 +274,7 @@ pub fn car_start_system(
                     principal_inertia: Vec3::new(5000., 5000., 2000.),
                     ..default()
                 });
-                let car_bradius = 0.25;
+                let car_bradius = 0.05;
                 children
                     .spawn()
                     .insert(Name::new("car_collider"))
@@ -263,8 +286,8 @@ pub fn car_start_system(
                         car_bradius,
                     ))
                     .insert(ColliderScale::Absolute(Vec3::ONE))
-                    .insert(Friction::coefficient(0.1))
-                    .insert(Restitution::coefficient(0.0))
+                    .insert(Friction::coefficient(10.))
+                    .insert(Restitution::coefficient(0.))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(CollidingEntities::default())
                     .insert(ActiveEvents::COLLISION_EVENTS)
@@ -299,12 +322,23 @@ pub fn car_start_system(
         for (i, wheel_id) in wheels.iter().enumerate() {
             commands
                 .entity(*wheel_id)
-                .insert(MultibodyJoint::new(car_id, joints[i]));
+                .insert(ImpulseJoint::new(car_id, joints[i]));
         }
 
         cars_dqn.add_car(car_id);
+        println!("car log: {car_id:?} {:?}", wheels);
     }
 }
+
+// pub fn spawn_car(
+//     mut commands: Commands,
+//     mut meshes: ResMut<Assets<Mesh>>,
+//     mut materials: ResMut<Assets<StandardMaterial>>,
+//     mut config: ResMut<Config>,
+//     asset_server: Res<AssetServer>,
+//     mut cars_dqn: NonSendMut<CarDqnResources>,
+// ) {
+// }
 
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,

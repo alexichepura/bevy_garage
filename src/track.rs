@@ -96,14 +96,15 @@ pub fn track_start_system(
                 .insert(Restitution::coefficient(0.));
         }
     }
-    let num_cols: usize = 19 * 3;
-    let num_rows: usize = 30 * 3;
-    let scale = 28. / 3.;
+    let multiplier: usize = 1;
+    let scale = 280. / multiplier as f32;
+    let num_cols: usize = 2 * multiplier;
+    let num_rows: usize = 3 * multiplier;
     let hx = num_cols as f32 * scale;
     let hy = 0.5;
     let hz = num_rows as f32 * scale;
-    let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
-    let heights: Vec<Real> = vec![hy; num_rows * num_cols];
+    // let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
+    // let heights: Vec<Real> = vec![hy; num_rows * num_cols];
     commands
         .spawn()
         .insert(Name::new("road-heightfield"))
@@ -124,12 +125,13 @@ pub fn track_start_system(
         .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
             -350., -hy, 570.,
         )))
-        .insert(Collider::heightfield(
-            heights,
-            num_rows,
-            num_cols,
-            ground_size.into(),
-        ))
+        // .insert(Collider::heightfield(
+        //     heights,
+        //     num_rows,
+        //     num_cols,
+        //     ground_size.into(),
+        // ))
+        .insert(Collider::cuboid(hx, hy, hz))
         .insert(ColliderScale::Absolute(Vec3::ONE))
         .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
         .insert(Friction::coefficient(1.))
