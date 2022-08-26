@@ -40,6 +40,9 @@ impl CarDqnResources {
     pub fn add_car(&mut self, car_id: Entity) {
         self.cars.insert(car_id, CarDqnResource::new());
     }
+    pub fn del_car(&mut self, car_id: &Entity) {
+        self.cars.remove(&car_id);
+    }
 }
 
 pub struct DqnResource {

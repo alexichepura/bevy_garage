@@ -33,7 +33,12 @@ pub fn dqn_system(
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     config: Res<Config>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
+    let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let seconds = time.seconds_since_startup();
     if seconds > dqn.seconds {
         dqn.seconds = seconds + STEP_DURATION;
@@ -42,7 +47,7 @@ pub fn dqn_system(
         return;
     }
 
-    for (mut car, v, tr, children, e, hid) in q_car.iter_mut() {
+    for (i, (mut car, v, tr, children, e, hid)) in q_car.iter_mut().enumerate() {
         // let (mut car, v, mut car_dqn, tr) = q_car.single_mut();
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
@@ -83,6 +88,27 @@ pub fn dqn_system(
             return reward;
         };
         let reward = shape_reward();
+        if reward == -1. {
+            commands.entity(e).despawn_recursive();
+            cars_dqn.del_car(&e);
+            car.despawn_wheels(&mut commands);
+
+            let is_hid = i == 0;
+            let (transform, init_meters) = config.get_transform_by_index(i);
+            let new_car_id = spawn_car(
+                &mut commands,
+                &mut meshes,
+                &mut materials,
+                &car_gl,
+                is_hid,
+                transform,
+                init_meters,
+                config.max_toi,
+                config.max_torque,
+            );
+            cars_dqn.add_car(new_car_id);
+            return;
+        }
         let mps = v.linvel.length();
         let kmh = mps / 1000. * 3600.;
         let mut obs: Observation = [0.; STATE_SIZE];

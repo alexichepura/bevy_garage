@@ -82,6 +82,11 @@ impl Car {
             line_dir: Vec3::ZERO,
         }
     }
+    pub fn despawn_wheels(&mut self, commands: &mut Commands) {
+        for e in self.wheels.iter() {
+            commands.entity(*e).despawn_recursive();
+        }
+    }
 }
 
 pub const CAR_TRAINING_GROUP: u32 = 0b001;
@@ -357,9 +362,9 @@ pub fn car_sensor_system(
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
 
-    let e_hid_car = q_hid.single();
+    let e_hid_car = q_hid.get_single();
     for (e, mut car, children, v) in q_car.iter_mut() {
-        let is_hid_car = e == e_hid_car;
+        let is_hid_car = e_hid_car.is_ok() && e == q_hid.single();
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
