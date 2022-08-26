@@ -107,6 +107,33 @@ pub fn car_start_system(
         });
     }
 
+    for i in 0..config.cars_count {
+        let is_hid = i == 0;
+        let (car_transform, car_init_meters) = config.get_transform_by_index(i);
+        let car_id = spawn_car(
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+            &mut config,
+            &car_gl,
+            is_hid,
+            car_transform,
+            car_init_meters,
+        );
+        cars_dqn.add_car(car_id);
+    }
+}
+
+pub fn spawn_car(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    config: &mut ResMut<Config>,
+    car_gl: &Handle<Scene>,
+    is_hid: bool,
+    car_transform: Transform,
+    car_init_meters: f32,
+) -> Entity {
     let wheel_front_r: f32 = 0.4;
     let wheel_back_r: f32 = 0.401;
     let wheel_front_hw: f32 = 0.2;
@@ -115,7 +142,6 @@ pub fn car_start_system(
     let car_hh: f32 = 0.35;
     let car_hl: f32 = 2.2;
     let ride_height = 0.08;
-
     let shift = Vec3::new(
         car_hw - wheel_front_hw - 0.1,
         -car_hh + wheel_front_r - ride_height,
@@ -128,51 +154,6 @@ pub fn car_start_system(
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
 
-    for i in 0..config.cars_count {
-        let is_hid = i == 0;
-        let (car_transform, car_init_meters) = config.get_transform_by_index(i);
-        spawn_car(
-            &mut commands,
-            &mut meshes,
-            &mut materials,
-            &mut config,
-            &car_gl,
-            &mut cars_dqn,
-            is_hid,
-            car_transform,
-            car_init_meters,
-            car_anchors,
-            car_hw,
-            car_hh,
-            car_hl,
-            wheel_front_r,
-            wheel_back_r,
-            wheel_front_hw,
-            wheel_back_hw,
-        );
-        // println!("car log: {car_id:?} {:?}", wheels);
-    }
-}
-
-pub fn spawn_car(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    config: &mut ResMut<Config>,
-    car_gl: &Handle<Scene>,
-    cars_dqn: &mut NonSendMut<CarDqnResources>,
-    is_hid: bool,
-    car_transform: Transform,
-    car_init_meters: f32,
-    car_anchors: [Vec3; 4],
-    car_hw: f32,
-    car_hh: f32,
-    car_hl: f32,
-    wheel_front_r: f32,
-    wheel_back_r: f32,
-    wheel_front_hw: f32,
-    wheel_back_hw: f32,
-) {
     let mut wheels: Vec<Entity> = vec![];
     let mut joints: Vec<GenericJoint> = vec![];
     for i in 0..4 {
@@ -364,9 +345,8 @@ pub fn spawn_car(
             .entity(*wheel_id)
             .insert(ImpulseJoint::new(car_id, joints[i]));
     }
-
-    cars_dqn.add_car(car_id);
     println!("car log: {car_id:?} {:?}", wheels);
+    return car_id;
 }
 
 pub fn car_sensor_system(
