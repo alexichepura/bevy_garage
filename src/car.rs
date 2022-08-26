@@ -109,15 +109,15 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let (car_transform, car_init_meters) = config.get_transform_by_index(i);
+        let (transform, init_meters) = config.get_transform_by_index(i);
         let car_id = spawn_car(
             &mut commands,
             &mut meshes,
             &mut materials,
             &car_gl,
             is_hid,
-            car_transform,
-            car_init_meters,
+            transform,
+            init_meters,
             config.max_toi,
             config.max_torque,
         );
@@ -131,8 +131,8 @@ pub fn spawn_car(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     car_gl: &Handle<Scene>,
     is_hid: bool,
-    car_transform: Transform,
-    car_init_meters: f32,
+    transform: Transform,
+    init_meters: f32,
     max_toi: f32,
     max_torque: f32,
 ) -> Entity {
@@ -206,7 +206,7 @@ pub fn spawn_car(
             })
             .insert_bundle(TransformBundle::from(
                 Transform::from_translation(
-                    car_transform.translation + car_transform.rotation.mul_vec3(car_anchors[i]),
+                    transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
                 )
                 .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
             ))
@@ -266,12 +266,7 @@ pub fn spawn_car(
         .spawn()
         .insert(Name::new("car"))
         .insert(Sleeping::disabled())
-        .insert(Car::new(
-            &wheels,
-            max_torque,
-            car_transform,
-            car_init_meters,
-        ))
+        .insert(Car::new(&wheels, max_torque, transform, init_meters))
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 0.05,
@@ -279,11 +274,11 @@ pub fn spawn_car(
         })
         .insert(Velocity::zero())
         .insert(ExternalForce::default())
-        .insert_bundle(TransformBundle::from(car_transform))
+        .insert_bundle(TransformBundle::from(transform))
         .insert(ReadMassProperties::default())
         .insert_bundle(SceneBundle {
             scene: car_gl.clone(),
-            transform: car_transform,
+            transform,
             // .with_translation(Vec3::new(0., -0.75, 0.2))
             // .with_rotation(Quat::from_rotation_y(PI))
             // .with_scale(Vec3::ONE * 1.7),
