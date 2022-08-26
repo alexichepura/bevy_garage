@@ -286,7 +286,7 @@ pub fn car_start_system(
                         car_bradius,
                     ))
                     .insert(ColliderScale::Absolute(Vec3::ONE))
-                    .insert(Friction::coefficient(1.))
+                    .insert(Friction::coefficient(10.))
                     .insert(Restitution::coefficient(0.))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(CollidingEntities::default())
