@@ -163,7 +163,7 @@ pub fn car_start_system(
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
                 .set_motor(JointAxis::X, 0., 0., 10e10, 1.)
-                .set_motor(JointAxis::Y, 0., 0., 10000., 1.)
+                .set_motor(JointAxis::Y, 0., 0., 50_000., 1.)
                 .set_motor(JointAxis::Z, 0., 0., 10e10, 1.)
                 // .motor_velocity(JointAxis::AngX, 100., 0.)
                 // .motor_position(JointAxis::AngY, 0., 10e34, 10e30)
@@ -252,7 +252,7 @@ pub fn car_start_system(
             .insert(RigidBody::Dynamic)
             .insert(Damping {
                 linear_damping: 0.05,
-                angular_damping: 10.0,
+                angular_damping: 20.0,
             })
             .insert(Velocity::zero())
             .insert(ExternalForce::default())
