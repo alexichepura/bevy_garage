@@ -146,10 +146,8 @@ pub fn car_start_system(
                 .local_axis2(Vec3::Y)
                 .local_anchor1(car_anchors[i])
                 .local_anchor2(Vec3::ZERO)
-                .set_motor(JointAxis::Y, 0., 0., 40000., 150.)
-                .set_motor(JointAxis::Z, 0., 0., 50000., 100.)
-                // .set_motor(JointAxis::Y, 0., 0., 1., 1. / 20.)
-                // .set_motor(JointAxis::Z, 0., 0., 1., 1. / 5.)
+                .set_motor(JointAxis::Y, 0., 0., 100000., 1.)
+                .set_motor(JointAxis::Z, 0., 0., 20000., 1.)
                 // .motor_velocity(JointAxis::AngX, 100., 0.)
                 // .motor_velocity(JointAxis::AngY, 1., 1. / 100.)
                 // .motor_velocity(JointAxis::AngZ, 1., 1. / 100.)
@@ -185,14 +183,14 @@ pub fn car_start_system(
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(Friction {
                     combine_rule: CoefficientCombineRule::Max,
-                    coefficient: 5.0,
+                    coefficient: 10.0,
                     ..default()
                 })
                 .insert(Restitution::coefficient(0.))
                 .insert(ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
-                    mass: 15.,
-                    principal_inertia: Vec3::ONE * 0.3,
+                    mass: 15.,                          // 15.
+                    principal_inertia: Vec3::ONE * 0.3, // 0.3
                     ..default()
                 }))
                 .insert(Wheel {
@@ -227,7 +225,6 @@ pub fn car_start_system(
             .spawn()
             .insert(Name::new("car"))
             .insert(Sleeping::disabled())
-            .insert(Name::new("Car"))
             .insert(Car::new(
                 &wheels,
                 config.max_torque,
@@ -267,8 +264,8 @@ pub fn car_start_system(
                         car_bradius,
                     ))
                     .insert(ColliderScale::Absolute(Vec3::ONE))
-                    .insert(Friction::coefficient(0.1))
-                    .insert(Restitution::coefficient(0.0))
+                    .insert(Friction::coefficient(1.))
+                    .insert(Restitution::coefficient(0.))
                     .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                     .insert(CollidingEntities::default())
                     .insert(ActiveEvents::COLLISION_EVENTS)

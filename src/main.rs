@@ -11,7 +11,7 @@ mod nn;
 mod progress;
 mod track;
 
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::PresentMode};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_atmosphere::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
@@ -32,8 +32,8 @@ fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             title: "car sim + DQN".to_string(),
-            width: 640.,
-            height: 480.,
+            width: 1024.,
+            height: 768.,
             // present_mode: PresentMode::AutoVsync,
             ..default()
         })
@@ -95,13 +95,13 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     c.integration_parameters.dt = 1. / 60. / 2.;
     c.integration_parameters.min_ccd_dt = 1. / 60. / 100. / 2.;
     // c.integration_parameters.min_island_size = 128;
-    c.integration_parameters.joint_damping_ratio = 2. * 50.;
-    c.integration_parameters.damping_ratio = 0.25 * 4.;
+    c.integration_parameters.joint_damping_ratio = 2. * 1000.;
+    c.integration_parameters.damping_ratio = 0.25 * 1000.;
     // c.integration_parameters.prediction_distance = 0.000_001;
-    c.integration_parameters.allowed_linear_error = 0.001 * 0.001;
-    c.integration_parameters.erp = 1.;
+    c.integration_parameters.allowed_linear_error = 0.001 / 1000.;
+    // c.integration_parameters.erp = 1.;
     c.integration_parameters.max_ccd_substeps = 1 * 16;
-    let x = 256;
+    let x = 1024;
     c.integration_parameters.max_velocity_iterations = 4 * x; // joint related
     c.integration_parameters.max_velocity_friction_iterations = 8 * x; // joint related
     c.integration_parameters.max_stabilization_iterations = 1 * x; // joint related
