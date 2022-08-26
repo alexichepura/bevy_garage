@@ -136,7 +136,7 @@ pub fn car_start_system(
         let mut wheels: Vec<Entity> = vec![];
         let mut joints: Vec<GenericJoint> = vec![];
         for i in 0..4 {
-            let (is_front, is_left): (bool, bool) = match i {
+            let (is_front, _is_left): (bool, bool) = match i {
                 0 => (true, false),
                 1 => (true, true),
                 2 => (false, false),
@@ -329,6 +329,16 @@ pub fn car_start_system(
         println!("car log: {car_id:?} {:?}", wheels);
     }
 }
+
+// pub fn spawn_car(
+//     mut commands: Commands,
+//     mut meshes: ResMut<Assets<Mesh>>,
+//     mut materials: ResMut<Assets<StandardMaterial>>,
+//     mut config: ResMut<Config>,
+//     asset_server: Res<AssetServer>,
+//     mut cars_dqn: NonSendMut<CarDqnResources>,
+// ) {
+// }
 
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,

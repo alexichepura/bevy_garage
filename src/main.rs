@@ -92,19 +92,8 @@ fn main() {
 }
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    // c.integration_parameters.dt = 1. / 60. / 2.;
-    // c.integration_parameters.min_ccd_dt = 1. / 60. / 100. / 2.;
-    // c.integration_parameters.min_island_size = 128;
-    // c.integration_parameters.joint_damping_ratio = 2. * 1000.;
-    // c.integration_parameters.damping_ratio = 0.25 * 1000.;
-    // c.integration_parameters.prediction_distance = 0.000_001;
-    // c.integration_parameters.allowed_linear_error = 0.001 / 1000.;
-    // c.integration_parameters.erp = 0.7;
-    // c.integration_parameters.max_ccd_substeps = 1 * 16;
-
-    // THESE 3 ARE VERY IMPORTANT FOR STABLE WHEELS JOINTS
     c.integration_parameters.max_velocity_iterations = 4 * 256;
-    c.integration_parameters.max_velocity_friction_iterations = 8 * 8;
+    c.integration_parameters.max_velocity_friction_iterations = 8 * 32;
     c.integration_parameters.max_stabilization_iterations = 1 * 1024;
     dbg!(c.integration_parameters);
 }
@@ -115,23 +104,16 @@ fn debug_system(mut debug_ctx: ResMut<DebugRenderContext>, input: Res<Input<KeyC
     }
 }
 fn despawn_system(
-    mut rctx: ResMut<RapierContext>,
     input: Res<Input<KeyCode>>,
-    mut q_car: Query<Entity, With<Car>>,
-    mut q_wheel: Query<Entity, With<Wheel>>,
+    q_car: Query<Entity, With<Car>>,
+    q_wheel: Query<Entity, With<Wheel>>,
     mut commands: Commands,
 ) {
     if input.just_pressed(KeyCode::Space) {
         for e in q_wheel.iter() {
-            // .remove(&e);
-            // if let Some(handle) = rctx.entity2multibody_joint.remove(&e) {
-            //     // context.multibody_joints.remove(handle, true);
-            // }
-            // commands.entity(e).remove::<ImpulseJoint>();
             commands.entity(e).despawn_recursive();
         }
-        for e in q_car.iter_mut() {
-            // commands.entity(e).remove::<ImpulseJoint>();
+        for e in q_car.iter() {
             commands.entity(e).despawn_recursive();
         }
     }
