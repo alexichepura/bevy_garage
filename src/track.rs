@@ -96,7 +96,7 @@ pub fn track_start_system(
                 .insert(Restitution::coefficient(0.));
         }
     }
-    let multiplier: usize = 2;
+    let multiplier: usize = 10;
     let scale = 280. / multiplier as f32;
     let num_cols: usize = 2 * multiplier;
     let num_rows: usize = 3 * multiplier;

@@ -48,7 +48,7 @@ pub fn esp_system(
         let car_mps = velocity.linvel.length();
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
-            true => 3.,
+            true => 2.,
             _ => match car_kmh / SPEED_LIMIT_KMH {
                 x if x >= 1. => 0.,
                 x => 1. - x,

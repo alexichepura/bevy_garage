@@ -16,4 +16,4 @@ pub const MAX_TORQUE: f32 = 2000.;
 pub const CARS_COUNT: usize = 1;
 pub const SPEED_LIMIT_KMH: f32 = 200.;
 pub const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-pub const STEERING_SPEEDLIMIT_KMH: f32 = 180.;
+pub const STEERING_SPEEDLIMIT_KMH: f32 = 200.;

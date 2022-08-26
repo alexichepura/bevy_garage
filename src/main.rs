@@ -101,7 +101,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     c.integration_parameters.allowed_linear_error = 0.001 / 1000.;
     // c.integration_parameters.erp = 1.;
     c.integration_parameters.max_ccd_substeps = 1 * 16;
-    let x = 1024;
+    let x = 2048;
     c.integration_parameters.max_velocity_iterations = 4 * x; // joint related
     c.integration_parameters.max_velocity_friction_iterations = 8 * x; // joint related
     c.integration_parameters.max_stabilization_iterations = 1 * x; // joint related
