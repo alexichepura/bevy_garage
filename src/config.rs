@@ -41,10 +41,11 @@ impl Default for Config {
     }
 }
 impl Config {
-    pub fn get_transform_by_index(&self, i: usize) -> (Vec3, Quat, f32) {
+    pub fn get_transform_by_index(&self, i: usize) -> (Transform, f32) {
         let meters = i as f32 * self.track_length / self.cars_count as f32;
-        let (tr, quat) = self.get_transform_by_meter(meters);
-        return (tr, quat, meters);
+        let (translate, quat) = self.get_transform_by_meter(meters);
+        let transform = Transform::from_translation(translate).with_rotation(quat);
+        return (transform, meters);
     }
     pub fn get_transform_by_meter(&self, meters: f32) -> (Vec3, Quat) {
         let polyline = self.polyline.as_ref().unwrap();
