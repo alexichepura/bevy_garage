@@ -89,7 +89,7 @@ pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut config: ResMut<Config>,
+    config: Res<Config>,
     asset_server: Res<AssetServer>,
     mut cars_dqn: NonSendMut<CarDqnResources>,
 ) {
@@ -114,11 +114,12 @@ pub fn car_start_system(
             &mut commands,
             &mut meshes,
             &mut materials,
-            &mut config,
             &car_gl,
             is_hid,
             car_transform,
             car_init_meters,
+            config.max_toi,
+            config.max_torque,
         );
         cars_dqn.add_car(car_id);
     }
@@ -128,11 +129,12 @@ pub fn spawn_car(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
-    config: &mut ResMut<Config>,
     car_gl: &Handle<Scene>,
     is_hid: bool,
     car_transform: Transform,
     car_init_meters: f32,
+    max_toi: f32,
+    max_torque: f32,
 ) -> Entity {
     let wheel_front_r: f32 = 0.4;
     let wheel_back_r: f32 = 0.401;
@@ -266,7 +268,7 @@ pub fn spawn_car(
         .insert(Sleeping::disabled())
         .insert(Car::new(
             &wheels,
-            config.max_torque,
+            max_torque,
             car_transform,
             car_init_meters,
         ))
@@ -318,7 +320,7 @@ pub fn spawn_car(
             let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
             for a in 0..SENSOR_COUNT {
                 let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
-                let dir = Vec3::Z * config.max_toi;
+                let dir = Vec3::Z * max_toi;
                 let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
                 children
                     .spawn()
@@ -337,7 +339,6 @@ pub fn spawn_car(
         .id();
 
     if is_hid {
-        config.hid_car = Some(car_id);
         commands.entity(car_id).insert(HID);
     }
     for (i, wheel_id) in wheels.iter().enumerate() {
@@ -352,6 +353,7 @@ pub fn spawn_car(
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
+    q_hid: Query<Entity, With<HID>>,
     mut q_car: Query<(Entity, &mut Car, &Children, &Velocity), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
@@ -360,7 +362,7 @@ pub fn car_sensor_system(
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
 
-    let e_hid_car = config.hid_car.unwrap();
+    let e_hid_car = q_hid.single();
     for (e, mut car, children, v) in q_car.iter_mut() {
         let is_hid_car = e == e_hid_car;
         let mut origins: Vec<Vec3> = Vec::new();
