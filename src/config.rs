@@ -28,7 +28,7 @@ impl Default for Config {
             show_rays: true,
             max_torque: MAX_TORQUE,
             max_toi: 50.,
-            translation: Vec3::new(0., 0.8, 0.),
+            translation: Vec3::new(0., 0.5, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
             hid_car: None,
             polyline: None,
@@ -63,12 +63,9 @@ impl Config {
                 let a: Vec3 = segment.a.into();
                 let dir: Vec3 = segment.direction().unwrap().into();
                 let mut pos: Vec3 = a + dir * (shift - seg_meters);
-                pos.y = self.translation.y;
+                pos.y = 0.4;
 
-                return (
-                    self.translation + pos,
-                    Quat::from_rotation_arc(Vec3::Z, dir),
-                );
+                return (pos, Quat::from_rotation_arc(Vec3::Z, dir));
             }
         }
         panic!();

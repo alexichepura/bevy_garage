@@ -48,6 +48,7 @@ pub struct Car {
     pub init_transform: Transform,
     pub reset_at: Option<f64>,
 
+    pub index: usize,
     pub init_meters: f32,
     pub meters: f32,
     pub lap: usize,
@@ -61,6 +62,7 @@ impl Car {
         wheel_max_torque: f32,
         init_transform: Transform,
         init_meters: f32,
+        index: usize,
     ) -> Self {
         Self {
             sensor_inputs: vec![0.; SENSOR_COUNT],
@@ -75,6 +77,7 @@ impl Car {
             init_transform,
             reset_at: None,
 
+            index,
             init_meters,
             meters: 0.,
             place: 0,
@@ -122,6 +125,7 @@ pub fn car_start_system(
             &car_gl,
             is_hid,
             transform,
+            i,
             init_meters,
             config.max_toi,
             config.max_torque,
@@ -137,6 +141,7 @@ pub fn spawn_car(
     car_gl: &Handle<Scene>,
     is_hid: bool,
     transform: Transform,
+    index: usize,
     init_meters: f32,
     max_toi: f32,
     max_torque: f32,
@@ -271,7 +276,7 @@ pub fn spawn_car(
         .spawn()
         .insert(Name::new("car"))
         .insert(Sleeping::disabled())
-        .insert(Car::new(&wheels, max_torque, transform, init_meters))
+        .insert(Car::new(&wheels, max_torque, transform, init_meters, index))
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 0.05,

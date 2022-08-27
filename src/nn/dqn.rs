@@ -47,29 +47,30 @@ pub fn dqn_system(
         return;
     }
 
-    for (i, (mut car, v, tr, children, e, hid)) in q_car.iter_mut().enumerate() {
+    for (mut car, v, tr, children, e, hid) in q_car.iter_mut() {
         // let (mut car, v, mut car_dqn, tr) = q_car.single_mut();
+        let is_hid = hid.is_some();
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
             vel_angle = 0.;
         }
         let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
         let pos_angle = car.line_dir.angle_between(pos_dir);
-        let shape_reward = || -> f32 {
-            // let (_p, colliding_entities) = q_colliding_entities.single();
-            let mut crashed: bool = false;
-            for &child in children.iter() {
-                let colliding_entities = q_colliding_entities.get(child);
-                if let Ok(colliding_entities) = colliding_entities {
-                    for e in colliding_entities.iter() {
-                        let colliding_entity = q_name.get(e).unwrap();
-                        if !colliding_entity.contains(ASSET_ROAD) {
-                            crashed = true;
-                        }
+        let mut crash: bool = false;
+        for &child in children.iter() {
+            let colliding_entities = q_colliding_entities.get(child);
+            if let Ok(colliding_entities) = colliding_entities {
+                for e in colliding_entities.iter() {
+                    let colliding_entity = q_name.get(e).unwrap();
+                    if !colliding_entity.contains(ASSET_ROAD) {
+                        crash = true;
                     }
                 }
             }
-            if crashed {
+        }
+        let shape_reward = || -> f32 {
+            // let (_p, colliding_entities) = q_colliding_entities.single();
+            if crash {
                 return -1.;
             }
             // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
@@ -88,27 +89,6 @@ pub fn dqn_system(
             return reward;
         };
         let reward = shape_reward();
-        if reward == -1. {
-            commands.entity(e).despawn_recursive();
-            cars_dqn.del_car(&e);
-            car.despawn_wheels(&mut commands);
-
-            let is_hid = i == 0;
-            let (transform, init_meters) = config.get_transform_by_index(i);
-            let new_car_id = spawn_car(
-                &mut commands,
-                &mut meshes,
-                &mut materials,
-                &car_gl,
-                is_hid,
-                transform,
-                init_meters,
-                config.max_toi,
-                config.max_torque,
-            );
-            cars_dqn.add_car(new_car_id);
-            return;
-        }
         let mps = v.linvel.length();
         let kmh = mps / 1000. * 3600.;
         let mut obs: Observation = [0.; STATE_SIZE];
@@ -120,11 +100,41 @@ pub fn dqn_system(
                 _ => car.sensor_inputs[i - STATE_SIZE_BASE],
             };
         }
+
         if !config.use_brain {
             // println!(
             //     "dqn {reward:.2} {:.?}",
             //     obs.map(|o| { (o * 10.).round() / 10. })
             // );
+            return;
+        }
+
+        let car_dqn = cars_dqn.cars.get(&e).unwrap();
+        let (s, a, r, sn) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
+        dqn.rb.store(s, a, r, sn);
+
+        if crash {
+            println!(
+                "crash!!! e_{e:?} i_{:?} r_{reward:.2} m_{:.2}",
+                car.index, car.meters
+            );
+            commands.entity(e).despawn_recursive();
+            cars_dqn.del_car(&e);
+            car.despawn_wheels(&mut commands);
+            let (transform, init_meters) = config.get_transform_by_index(car.index);
+            let new_car_id = spawn_car(
+                &mut commands,
+                &mut meshes,
+                &mut materials,
+                &car_gl,
+                is_hid,
+                transform,
+                car.index,
+                init_meters,
+                config.max_toi,
+                config.max_torque,
+            );
+            cars_dqn.add_car(new_car_id);
             return;
         }
 
@@ -154,7 +164,7 @@ pub fn dqn_system(
 
         if let Some(_hid) = hid {
             if dqn.rb.len() < BATCH_SIZE {
-                log_action_reward(action, reward);
+                log_action_reward(car_dqn.prev_action, reward);
             } else {
                 let start = Instant::now();
                 let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
@@ -192,13 +202,6 @@ pub fn dqn_system(
                 };
             }
         }
-
-        let car_dqn = cars_dqn.cars.get(&e).unwrap();
-        let s = car_dqn.prev_obs;
-        let a = car_dqn.prev_action;
-        let r = reward;
-        let sn = obs;
-        dqn.rb.store(s, a, r, sn);
 
         let mut car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
         car_dqn.prev_obs = obs;
