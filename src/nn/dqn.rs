@@ -42,15 +42,34 @@ pub fn dqn_system(
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let seconds = time.seconds_since_startup();
-    if seconds > dqn.seconds {
+    let should_act: bool = seconds > dqn.seconds;
+    if should_act {
         dqn.seconds = seconds + STEP_DURATION;
         dqn.step += 1;
-    } else {
-        return;
     }
 
     for (mut car, v, tr, children, e, hid) in q_car.iter_mut() {
-        // let (mut car, v, mut car_dqn, tr) = q_car.single_mut();
+        let car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
+        let mut crash: bool = car_dqn.crash;
+        if !crash {
+            for &child in children.iter() {
+                let colliding_entities = q_colliding_entities.get(child);
+                if let Ok(colliding_entities) = colliding_entities {
+                    for e in colliding_entities.iter() {
+                        let colliding_entity = q_name.get(e).unwrap();
+                        if !colliding_entity.contains(ASSET_ROAD) {
+                            crash = true;
+                        }
+                    }
+                }
+            }
+        }
+        if crash {
+            car_dqn.crash = true;
+        }
+        if !should_act {
+            return;
+        }
         let is_hid = hid.is_some();
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
@@ -58,18 +77,6 @@ pub fn dqn_system(
         }
         let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
         let pos_angle = car.line_dir.angle_between(pos_dir);
-        let mut crash: bool = false;
-        for &child in children.iter() {
-            let colliding_entities = q_colliding_entities.get(child);
-            if let Ok(colliding_entities) = colliding_entities {
-                for e in colliding_entities.iter() {
-                    let colliding_entity = q_name.get(e).unwrap();
-                    if !colliding_entity.contains(ASSET_ROAD) {
-                        crash = true;
-                    }
-                }
-            }
-        }
         let shape_reward = || -> f32 {
             // let (_p, colliding_entities) = q_colliding_entities.single();
             if crash {
