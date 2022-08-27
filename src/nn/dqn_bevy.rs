@@ -47,7 +47,8 @@ impl CarDqnResources {
 
 pub struct DqnResource {
     pub seconds: f64,
-    pub step: i32,
+    pub step: usize,
+    pub crashes: usize,
     pub rb: ReplayBuffer,
     pub eps: f32,
     pub max_eps: f32,
@@ -60,6 +61,7 @@ impl DqnResource {
         Self {
             seconds: 0.,
             step: 0,
+            crashes: 0,
             rb: ReplayBuffer::new(),
             eps: 1.,
             max_eps: 1.,
@@ -93,9 +95,10 @@ pub fn dqn_dash_update_system(
     let mut q_generation_text = dash_set.p1();
     let mut generation_text = q_generation_text.single_mut();
     generation_text.sections[0].value = format!(
-        "rb {:?}, sync {:?}",
+        "rb {:?}, sync {:?}, crashes {:?}",
         dqn.rb.len(),
-        (dqn.step / SYNC_INTERVAL_STEPS)
+        (dqn.step / SYNC_INTERVAL_STEPS),
+        dqn.crashes
     );
 
     let mut q_timing_text = dash_set.p0();

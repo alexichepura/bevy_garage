@@ -1,6 +1,6 @@
 use super::params::*;
 use crate::{
-    camera::{CameraConfig, CameraFollowMode},
+    camera::CameraConfig,
     car::*,
     config::*,
     nn::{dqn_bevy::*, util::*},
@@ -120,10 +120,11 @@ pub fn dqn_system(
                 "crash!!! e_{e:?} i_{:?} r_{reward:.2} m_{:.2}",
                 car.index, car.meters
             );
+            dqn.crashes += 1;
             commands.entity(e).despawn_recursive();
             cars_dqn.del_car(&e);
             car.despawn_wheels(&mut commands);
-            let (transform, init_meters) = config.get_transform_by_index(car.index);
+            let (transform, init_meters) = config.get_transform_random();
             let new_car_id = spawn_car(
                 &mut commands,
                 &mut meshes,
@@ -196,7 +197,7 @@ pub fn dqn_system(
                     }
                 }
                 log_training(exploration, action, reward, &loss_string, start);
-                if dqn.step % SYNC_INTERVAL_STEPS as i32 == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
+                if dqn.step % SYNC_INTERVAL_STEPS == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
                     dbg!("networks sync");
                     cars_dqn.tqn = cars_dqn.qn.clone();
                 }

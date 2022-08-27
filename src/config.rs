@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use parry3d::shape::Polyline;
+use rand::Rng;
 use std::f32::consts::PI;
 
 use crate::nn::params::{CARS_COUNT, MAX_TORQUE};
@@ -43,6 +44,13 @@ impl Default for Config {
 impl Config {
     pub fn get_transform_by_index(&self, i: usize) -> (Transform, f32) {
         let meters = i as f32 * self.track_length / self.cars_count as f32;
+        let (translate, quat) = self.get_transform_by_meter(meters);
+        let transform = Transform::from_translation(translate).with_rotation(quat);
+        return (transform, meters);
+    }
+    pub fn get_transform_random(&self) -> (Transform, f32) {
+        let mut rng = rand::thread_rng();
+        let meters = rng.gen_range(0.0..self.track_length);
         let (translate, quat) = self.get_transform_by_meter(meters);
         let transform = Transform::from_translation(translate).with_rotation(quat);
         return (transform, meters);
