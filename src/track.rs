@@ -93,7 +93,7 @@ pub fn track_start_system(
                     coefficient: 0.1,
                     ..default()
                 })
-                .insert(Restitution::coefficient(0.));
+                .insert(Restitution::coefficient(0.5));
         }
     }
     let multiplier: usize = 1;

@@ -1,4 +1,9 @@
-use crate::{config::*, mesh::*, nn::dqn_bevy::*, track::*};
+use crate::{
+    config::*,
+    mesh::*,
+    nn::{dqn_bevy::*, params::SENSOR_COUNT},
+    track::*,
+};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
@@ -7,8 +12,6 @@ use bevy_rapier3d::{
     rapier::prelude::{JointAxesMask, JointAxis},
 };
 use std::f32::consts::PI;
-
-pub const SENSOR_COUNT: usize = 12;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -232,7 +235,7 @@ pub fn spawn_car(
             .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
             .insert(Friction {
                 combine_rule: CoefficientCombineRule::Max,
-                coefficient: 10.0,
+                coefficient: 5.0,
                 ..default()
             })
             .insert(Restitution::coefficient(0.))
@@ -314,8 +317,8 @@ pub fn spawn_car(
                     car_bradius,
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
-                .insert(Friction::coefficient(10.))
-                .insert(Restitution::coefficient(0.))
+                .insert(Friction::coefficient(0.5))
+                .insert(Restitution::coefficient(0.8))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(CollidingEntities::default())
                 .insert(ActiveEvents::COLLISION_EVENTS)

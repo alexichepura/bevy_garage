@@ -3,7 +3,7 @@ use parry3d::shape::Polyline;
 use rand::Rng;
 use std::f32::consts::PI;
 
-use crate::nn::params::{CARS_COUNT, MAX_TORQUE};
+use crate::nn::params::{CARS_COUNT, MAX_TOI, MAX_TORQUE};
 
 pub struct Config {
     pub translation: Vec3,
@@ -28,7 +28,7 @@ impl Default for Config {
             use_brain: false,
             show_rays: true,
             max_torque: MAX_TORQUE,
-            max_toi: 50.,
+            max_toi: MAX_TOI,
             translation: Vec3::new(0., 0.5, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
             hid_car: None,
