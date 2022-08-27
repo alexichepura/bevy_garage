@@ -1,5 +1,6 @@
 use super::params::*;
 use crate::{
+    camera::{CameraConfig, CameraFollowMode},
     car::*,
     config::*,
     nn::{dqn_bevy::*, util::*},
@@ -37,6 +38,7 @@ pub fn dqn_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
+    mut camera_config: ResMut<CameraConfig>,
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let seconds = time.seconds_since_startup();
@@ -111,7 +113,7 @@ pub fn dqn_system(
 
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
         let (s, a, r, sn) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
-        dqn.rb.store(s, a, r, sn);
+        dqn.rb.store(s, a, r, sn, crash); // crash is done
 
         if crash {
             println!(
@@ -135,6 +137,9 @@ pub fn dqn_system(
                 config.max_torque,
             );
             cars_dqn.add_car(new_car_id);
+            if camera_config.mode.not_none() && is_hid {
+                camera_config.camera_follow = Some(new_car_id);
+            }
             return;
         }
 
