@@ -102,7 +102,7 @@ pub fn car_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     config: Res<Config>,
     asset_server: Res<AssetServer>,
-    mut cars_dqn: NonSendMut<CarDqnResources>,
+    mut cars_dqn: NonSendMut<CarsDqnResource>,
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let ray_point_half = 0.05;

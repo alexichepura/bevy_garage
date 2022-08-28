@@ -6,6 +6,9 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 [workspace]
 resolver = "2"
+members = [
+    "prisma-cli",
+]
 [profile.release]
 codegen-units = 1
 [dependencies]
@@ -19,6 +22,9 @@ obj-rs = { version =  "0.7.0", default-features = false }
 serde = { version = "1.0.144", features = ["derive"] }
 serde_json = "1.0.85"
 rand = "0.8.5"
+tokio = { version = "1.20.1", features = ["full"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.5.3" }
+
 # [profile.dev.package.bevy_rapier3d]
 # opt-level = 3
 # [profile.dev.package.rapier3d]

@@ -1,5 +1,5 @@
 use super::{params::*, replay::ReplayBuffer};
-use crate::{config::Config, dash::*, nn::dqn::*};
+use crate::{dash::*, db::rb, db_client::DbClientResource, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
@@ -23,12 +23,12 @@ impl CarDqnResource {
     }
 }
 
-pub struct CarDqnResources {
+pub struct CarsDqnResource {
     pub cars: HashMap<Entity, CarDqnResource>,
     pub qn: QNetwork,
     pub tqn: QNetwork,
 }
-impl CarDqnResources {
+impl CarsDqnResource {
     pub fn new() -> Self {
         let mut rng = StdRng::seed_from_u64(0);
         let mut qn = QNetwork::default();
@@ -56,10 +56,9 @@ pub struct DqnResource {
     pub max_eps: f32,
     pub min_eps: f32,
     pub done: f32,
-    pub sgd: Sgd<QNetwork>,
 }
 impl DqnResource {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             seconds: 0.,
             step: 0,
@@ -69,6 +68,15 @@ impl DqnResource {
             max_eps: 1.,
             min_eps: 0.01,
             done: 0.,
+        }
+    }
+}
+pub struct SgdResource {
+    pub sgd: Sgd<QNetwork>,
+}
+impl SgdResource {
+    pub fn new() -> Self {
+        Self {
             sgd: Sgd::new(SgdConfig {
                 lr: LEARNING_RATE,
                 momentum: Some(Momentum::Nesterov(0.9)),
@@ -77,14 +85,14 @@ impl DqnResource {
     }
 }
 
-pub fn dqn_start_system(world: &mut World) {
-    world.insert_non_send_resource(DqnResource::new());
-    world.insert_non_send_resource(CarDqnResources::new());
+pub fn dqn_exclusive_start_system(world: &mut World) {
+    world.insert_non_send_resource(SgdResource::new());
+    world.insert_non_send_resource(CarsDqnResource::new());
 }
-pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
-    if input.just_pressed(KeyCode::N) {
-        config.use_brain = !config.use_brain;
-    }
+#[tokio::main]
+pub async fn dqn_start_system(dbres: Res<DbClientResource>) {
+    let rb: Vec<rb::Data> = dbres.client.rb().find_many(vec![]).exec().await.unwrap();
+    dbg!(rb);
 }
 
 pub fn dqn_dash_update_system(

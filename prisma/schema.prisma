@@ -1,0 +1,39 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:../dev.db"
+}
+
+generator client {
+  provider = "cargo prisma"
+  output   = "../src/db.rs"
+}
+
+model Rb {
+  id         String      @id @default(cuid())
+  created_at DateTime    @default(now())
+  state      State[]
+  action     Int
+  reward     Float
+  next_state NextState[]
+  done       Boolean
+}
+
+model State {
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  value      Float
+  rb_id      String
+  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
+}
+
+model NextState {
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  value      Float
+  rb_id      String
+  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
+}
+
+// model Net {
+//   id String @id @default(cuid())
+// }

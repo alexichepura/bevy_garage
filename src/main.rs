@@ -2,6 +2,8 @@ mod camera;
 mod car;
 mod config;
 mod dash;
+mod db;
+mod db_client;
 mod esp;
 mod gamepad;
 mod input;
@@ -20,18 +22,22 @@ use camera::*;
 use car::*;
 use config::*;
 use dash::*;
+use db_client::DbClientResource;
 use esp::*;
 use gamepad::*;
 use input::*;
 use light::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
+
 use progress::*;
 use track::*;
 
 fn main() {
     App::new()
+        .insert_resource(DbClientResource::default())
+        .insert_resource(DqnResource::default())
         .insert_resource(WindowDescriptor {
-            title: "car sim + DQN".to_string(),
+            title: "car sim deep learning".to_string(),
             width: 1024.,
             height: 768.,
             // present_mode: PresentMode::AutoVsync,
@@ -64,7 +70,8 @@ fn main() {
         })
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .init_resource::<GamepadLobby>()
-        .add_startup_system(dqn_start_system.exclusive_system())
+        .add_startup_system(dqn_exclusive_start_system.exclusive_system())
+        .add_startup_system(dqn_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
@@ -76,17 +83,13 @@ fn main() {
         .add_system(esp_system)
         .add_system(car_sensor_system)
         .add_system(dqn_system)
-        .add_system(dqn_switch_system)
         .add_system(dqn_dash_update_system)
         .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
-        .add_system(arrow_input_system)
+        .add_system(keyboard_input_system)
         .add_system(progress_system)
-        .add_system(debug_system)
-        .add_system(despawn_system)
-        .add_system_to_stage(CoreStage::PostUpdate, despawn_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .run();
 }
@@ -94,29 +97,8 @@ fn main() {
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     c.integration_parameters.max_velocity_iterations = 4 * 256;
     c.integration_parameters.max_velocity_friction_iterations = 8 * 64;
-    c.integration_parameters.max_stabilization_iterations = 1 * 2048;
+    c.integration_parameters.max_stabilization_iterations = 1 * 1024;
     dbg!(c.integration_parameters);
-}
-
-fn debug_system(mut debug_ctx: ResMut<DebugRenderContext>, input: Res<Input<KeyCode>>) {
-    if input.just_pressed(KeyCode::R) {
-        debug_ctx.enabled = !debug_ctx.enabled;
-    }
-}
-fn despawn_system(
-    input: Res<Input<KeyCode>>,
-    q_car: Query<Entity, With<Car>>,
-    q_wheel: Query<Entity, With<Wheel>>,
-    mut commands: Commands,
-) {
-    if input.just_pressed(KeyCode::Space) {
-        for e in q_wheel.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-        for e in q_car.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-    }
 }
 
 // fn display_events_system(
