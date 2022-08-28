@@ -3,6 +3,8 @@ use crate::{
     camera::CameraConfig,
     car::*,
     config::*,
+    db::rb,
+    db_client::DbClientResource,
     nn::{dqn_bevy::*, util::*},
     track::*,
 };
@@ -19,10 +21,12 @@ pub type QNetwork = (
 );
 pub type Observation = [f32; STATE_SIZE];
 
-pub fn dqn_system(
+#[tokio::main]
+pub async fn dqn_system(
     time: Res<Time>,
-    mut dqn: NonSendMut<DqnResource>,
-    mut cars_dqn: NonSendMut<CarDqnResources>,
+    mut dqn: ResMut<DqnResource>,
+    mut sgd_res: NonSendMut<SgdResource>,
+    mut cars_dqn: NonSendMut<CarsDqnResource>,
     q_name: Query<&Name>,
     mut q_car: Query<(
         &mut Car,
@@ -39,6 +43,7 @@ pub fn dqn_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
     mut camera_config: ResMut<CameraConfig>,
+    dbres: Res<DbClientResource>,
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let seconds = time.seconds_since_startup();
@@ -119,9 +124,22 @@ pub fn dqn_system(
         }
 
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
-        let (s, a, r, sn) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
-        dqn.rb.store(s, a, r, sn, crash); // crash is done
-                                          // cars_dqn.qn.0 .0 .0.bias;
+        let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
+        dqn.rb.store(s, a, r, sn, done);
+
+        let created = dbres
+            .client
+            .rb()
+            .create(
+                rb::action::set(a as i32),
+                rb::reward::set(r as f64),
+                rb::done::set(done),
+                vec![],
+            )
+            .exec()
+            .await;
+        dbg!(created);
+
         if crash {
             println!(
                 "crash!!! e_{e:?} i_{:?} r_{reward:.2} m_{:.2}",
@@ -196,7 +214,8 @@ pub fn dqn_system(
                     let loss_v = *loss.data();
                     // run backprop
                     let gradients = loss.backward();
-                    dqn.sgd
+                    sgd_res
+                        .sgd
                         .update(&mut cars_dqn.qn, gradients)
                         .expect("Unused params");
                     if _i_epoch % 5 == 0 {

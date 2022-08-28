@@ -22,19 +22,31 @@ use camera::*;
 use car::*;
 use config::*;
 use dash::*;
+use db::rb;
 use db_client::DbClientResource;
 use esp::*;
 use gamepad::*;
 use input::*;
 use light::*;
-use nn::{db::db_start_system, dqn::dqn_system, dqn_bevy::*};
+use nn::{dqn::dqn_system, dqn_bevy::*};
 
 use progress::*;
 use track::*;
 
 fn main() {
+    let db_client_res = DbClientResource::default();
+    let rb: Vec<rb::Data> = Vec::new();
+    // let rb: Vec<rb::Data> = db_client_res
+    //     .client
+    //     .rb()
+    //     .find_many(vec![])
+    //     .exec()
+    //     .await
+    //     .unwrap();
+
     App::new()
-        .insert_resource(DbClientResource::default())
+        .insert_resource(db_client_res)
+        .insert_resource(DqnResource::default(rb))
         .insert_resource(WindowDescriptor {
             title: "car sim + DQN".to_string(),
             width: 1024.,
@@ -69,7 +81,8 @@ fn main() {
         })
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .init_resource::<GamepadLobby>()
-        .add_startup_system(dqn_start_system.exclusive_system())
+        .add_startup_system(dqn_exclusive_start_system.exclusive_system())
+        .add_startup_system(dqn_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
@@ -78,7 +91,6 @@ fn main() {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
-        .add_startup_system(db_start_system)
         .add_system(esp_system)
         .add_system(car_sensor_system)
         .add_system(dqn_system)
