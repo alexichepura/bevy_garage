@@ -95,9 +95,9 @@ fn main() {
 }
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 4 * 256;
-    c.integration_parameters.max_velocity_friction_iterations = 8 * 64;
-    c.integration_parameters.max_stabilization_iterations = 1 * 1024;
+    c.integration_parameters.max_velocity_iterations = 4 * 128;
+    c.integration_parameters.max_velocity_friction_iterations = 8 * 64 * 2;
+    c.integration_parameters.max_stabilization_iterations = 1 * 1024 * 2;
     dbg!(c.integration_parameters);
 }
 

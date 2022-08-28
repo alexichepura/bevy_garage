@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:../dev.db"
+  provider = "postgres"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -9,29 +9,13 @@ generator client {
 }
 
 model Rb {
-  id         String      @id @default(cuid())
-  created_at DateTime    @default(now())
-  state      State[]
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  state      Float[]
   action     Int
   reward     Float
-  next_state NextState[]
+  next_state Float[]
   done       Boolean
-}
-
-model State {
-  id         String   @id @default(cuid())
-  created_at DateTime @default(now())
-  value      Float
-  rb_id      String
-  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
-}
-
-model NextState {
-  id         String   @id @default(cuid())
-  created_at DateTime @default(now())
-  value      Float
-  rb_id      String
-  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
 }
 
 // model Net {
