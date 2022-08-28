@@ -60,27 +60,20 @@ impl ReplayBuffer {
         }
         (states, actions, rewards, next_states, done)
     }
-    pub fn store(
-        &mut self,
-        state: Observation,
-        action: usize,
-        reward: f32,
-        next_state: Observation,
-        done: bool,
-    ) {
+    pub fn store(&mut self, s: Observation, a: usize, r: f32, sn: Observation, done: bool) {
         let done_float = if done { 1. } else { 0. };
         let i = self.i % BUFFER_SIZE;
         if self.len() < BUFFER_SIZE {
-            self.state.push(state);
-            self.action.push(action);
-            self.reward.push(reward);
-            self.next_state.push(next_state);
+            self.state.push(s);
+            self.action.push(a);
+            self.reward.push(r);
+            self.next_state.push(sn);
             self.done.push(done_float);
         } else {
-            self.state[i] = state;
-            self.action[i] = action;
-            self.reward[i] = reward;
-            self.next_state[i] = next_state;
+            self.state[i] = s;
+            self.action[i] = a;
+            self.reward[i] = r;
+            self.next_state[i] = sn;
             self.done[i] = done_float;
         }
         self.i += 1;
