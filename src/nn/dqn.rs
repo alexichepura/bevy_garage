@@ -20,6 +20,7 @@ pub type QNetwork = (
     Linear<HIDDEN_SIZE, ACTIONS>,
 );
 pub type Observation = [f32; STATE_SIZE];
+pub const OBSERVATION_ZERO: Observation = [0.; STATE_SIZE];
 
 #[tokio::main]
 pub async fn dqn_system(
@@ -127,7 +128,7 @@ pub async fn dqn_system(
         let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
         dqn.rb.store(s, a, r, sn, done);
 
-        let created = dbres
+        dbres
             .client
             .rb()
             .create(
@@ -137,8 +138,8 @@ pub async fn dqn_system(
                 vec![],
             )
             .exec()
-            .await;
-        dbg!(created);
+            .await
+            .unwrap();
 
         if crash {
             println!(

@@ -1,5 +1,5 @@
 use super::{params::*, replay::ReplayBuffer};
-use crate::{config::Config, dash::*, db::rb, db_client::DbClientResource, nn::dqn::*};
+use crate::{dash::*, db::rb, db_client::DbClientResource, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
@@ -58,12 +58,12 @@ pub struct DqnResource {
     pub done: f32,
 }
 impl DqnResource {
-    pub fn default(b: Vec<rb::Data>) -> Self {
+    pub fn default() -> Self {
         Self {
             seconds: 0.,
             step: 0,
             crashes: 0,
-            rb: ReplayBuffer::new(b),
+            rb: ReplayBuffer::new(),
             eps: 1.,
             max_eps: 1.,
             min_eps: 0.01,
@@ -93,11 +93,6 @@ pub fn dqn_exclusive_start_system(world: &mut World) {
 pub async fn dqn_start_system(dbres: Res<DbClientResource>) {
     let rb: Vec<rb::Data> = dbres.client.rb().find_many(vec![]).exec().await.unwrap();
     dbg!(rb);
-}
-pub fn dqn_switch_system(mut config: ResMut<Config>, input: Res<Input<KeyCode>>) {
-    if input.just_pressed(KeyCode::N) {
-        config.use_brain = !config.use_brain;
-    }
 }
 
 pub fn dqn_dash_update_system(

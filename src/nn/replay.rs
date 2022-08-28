@@ -1,5 +1,3 @@
-use crate::db::rb;
-
 use super::{dqn::*, params::*};
 use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
 
@@ -22,8 +20,7 @@ pub struct ReplayBuffer {
 }
 
 impl ReplayBuffer {
-    pub fn new(b: Vec<rb::Data>) -> Self {
-        dbg!(b);
+    pub fn new() -> Self {
         Self {
             state: Vec::new(),
             action: Vec::new(),
