@@ -121,7 +121,7 @@ pub fn dqn_system(
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
         let (s, a, r, sn) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs);
         dqn.rb.store(s, a, r, sn, crash); // crash is done
-
+                                          // cars_dqn.qn.0 .0 .0.bias;
         if crash {
             println!(
                 "crash!!! e_{e:?} i_{:?} r_{reward:.2} m_{:.2}",

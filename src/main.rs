@@ -2,6 +2,8 @@ mod camera;
 mod car;
 mod config;
 mod dash;
+mod db;
+mod db_client;
 mod esp;
 mod gamepad;
 mod input;
@@ -20,16 +22,19 @@ use camera::*;
 use car::*;
 use config::*;
 use dash::*;
+use db_client::DbClientResource;
 use esp::*;
 use gamepad::*;
 use input::*;
 use light::*;
-use nn::{dqn::dqn_system, dqn_bevy::*};
+use nn::{db::db_start_system, dqn::dqn_system, dqn_bevy::*};
+
 use progress::*;
 use track::*;
 
 fn main() {
     App::new()
+        .insert_resource(DbClientResource::default())
         .insert_resource(WindowDescriptor {
             title: "car sim + DQN".to_string(),
             width: 1024.,
@@ -73,6 +78,7 @@ fn main() {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
+        .add_startup_system(db_start_system)
         .add_system(esp_system)
         .add_system(car_sensor_system)
         .add_system(dqn_system)

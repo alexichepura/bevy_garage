@@ -19,7 +19,7 @@ pub use prisma_client_rust::{queries::Error as QueryError, NewClientError};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::Arc;
-static DATAMODEL_STR : & 'static str = "datasource db {\n  provider = \"sqlite\"\n  url      = \"file:../dev.db\"\n}\n\ngenerator client {\n  provider = \"cargo prisma\"\n  output   = \"../src/db.rs\"\n}\n\nmodel User {\n  id          String @id\n  displayName String\n  posts       Post[]\n}\n\nmodel Post {\n  id      String @id\n  content String\n  user    User   @relation(fields: [userId], references: [id])\n  userId  String\n}\n" ;
+static DATAMODEL_STR : & 'static str = "datasource db {\n  provider = \"sqlite\"\n  url      = \"file:../dev.db\"\n}\n\ngenerator client {\n  provider = \"cargo prisma\"\n  output   = \"../src/db.rs\"\n}\n\nmodel Rb {\n  id         String      @id @default(cuid())\n  created_at DateTime    @default(now())\n  state      State[]\n  action     Int\n  reward     Float\n  next_state NextState[]\n  done       Boolean\n}\n\nmodel State {\n  id         String   @id @default(cuid())\n  created_at DateTime @default(now())\n  value      Float\n  rb_id      String\n  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)\n}\n\nmodel NextState {\n  id         String   @id @default(cuid())\n  created_at DateTime @default(now())\n  value      Float\n  rb_id      String\n  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)\n}\n\n// model Net {\n//   id String @id @default(cuid())\n// }\n" ;
 static DATABASE_STR: &'static str = "sqlite";
 pub async fn new_client() -> Result<_prisma::PrismaClient, NewClientError> {
     let config = parse_configuration(DATAMODEL_STR)?.subject;
@@ -65,7 +65,7 @@ pub async fn new_client_with_url(url: &str) -> Result<_prisma::PrismaClient, New
     executor.primary_connector().get_connection().await?;
     Ok(PrismaClient::_new(executor, query_schema))
 }
-pub mod user {
+pub mod rb {
     use super::_prisma::*;
     use super::*;
     pub mod id {
@@ -121,78 +121,69 @@ pub mod user {
             }
         }
     }
-    pub mod display_name {
+    pub mod created_at {
         use super::super::*;
         use super::_prisma::*;
         use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
-        pub fn set<T: From<Set>>(value: String) -> T {
+        pub fn set<T: From<Set>>(value: chrono::DateTime<chrono::FixedOffset>) -> T {
             Set(value).into()
         }
-        pub fn equals(value: String) -> WhereParam {
-            WhereParam::DisplayNameEquals(value).into()
+        pub fn equals(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtEquals(value).into()
         }
         pub fn order(direction: Direction) -> OrderByParam {
-            OrderByParam::DisplayName(direction)
+            OrderByParam::CreatedAt(direction)
         }
-        pub fn in_vec(value: Vec<String>) -> WhereParam {
-            WhereParam::DisplayNameInVec(value)
+        pub fn in_vec(value: Vec<chrono::DateTime<chrono::FixedOffset>>) -> WhereParam {
+            WhereParam::CreatedAtInVec(value)
         }
-        pub fn not_in_vec(value: Vec<String>) -> WhereParam {
-            WhereParam::DisplayNameNotInVec(value)
+        pub fn not_in_vec(value: Vec<chrono::DateTime<chrono::FixedOffset>>) -> WhereParam {
+            WhereParam::CreatedAtNotInVec(value)
         }
-        pub fn lt(value: String) -> WhereParam {
-            WhereParam::DisplayNameLt(value)
+        pub fn lt(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtLt(value)
         }
-        pub fn lte(value: String) -> WhereParam {
-            WhereParam::DisplayNameLte(value)
+        pub fn lte(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtLte(value)
         }
-        pub fn gt(value: String) -> WhereParam {
-            WhereParam::DisplayNameGt(value)
+        pub fn gt(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtGt(value)
         }
-        pub fn gte(value: String) -> WhereParam {
-            WhereParam::DisplayNameGte(value)
+        pub fn gte(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtGte(value)
         }
-        pub fn contains(value: String) -> WhereParam {
-            WhereParam::DisplayNameContains(value)
+        pub fn not(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtNot(value)
         }
-        pub fn starts_with(value: String) -> WhereParam {
-            WhereParam::DisplayNameStartsWith(value)
-        }
-        pub fn ends_with(value: String) -> WhereParam {
-            WhereParam::DisplayNameEndsWith(value)
-        }
-        pub fn not(value: String) -> WhereParam {
-            WhereParam::DisplayNameNot(value)
-        }
-        pub struct Set(String);
+        pub struct Set(chrono::DateTime<chrono::FixedOffset>);
         impl From<Set> for SetParam {
             fn from(value: Set) -> Self {
-                Self::SetDisplayName(value.0)
+                Self::SetCreatedAt(value.0)
             }
         }
     }
-    pub mod posts {
+    pub mod state {
         use super::super::*;
         use super::_prisma::*;
         use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
-        pub fn some(value: Vec<post::WhereParam>) -> WhereParam {
-            WhereParam::PostsSome(value)
+        pub fn some(value: Vec<state::WhereParam>) -> WhereParam {
+            WhereParam::StateSome(value)
         }
-        pub fn every(value: Vec<post::WhereParam>) -> WhereParam {
-            WhereParam::PostsEvery(value)
+        pub fn every(value: Vec<state::WhereParam>) -> WhereParam {
+            WhereParam::StateEvery(value)
         }
-        pub fn none(value: Vec<post::WhereParam>) -> WhereParam {
-            WhereParam::PostsNone(value)
+        pub fn none(value: Vec<state::WhereParam>) -> WhereParam {
+            WhereParam::StateNone(value)
         }
         pub struct Fetch {
-            args: post::ManyArgs,
+            args: state::ManyArgs,
         }
         impl Fetch {
-            pub fn with(mut self, params: impl Into<post::WithParam>) -> Self {
+            pub fn with(mut self, params: impl Into<state::WithParam>) -> Self {
                 self.args = self.args.with(params.into());
                 self
             }
-            pub fn order_by(mut self, param: post::OrderByParam) -> Self {
+            pub fn order_by(mut self, param: state::OrderByParam) -> Self {
                 self.args = self.args.order_by(param);
                 self
             }
@@ -204,36 +195,223 @@ pub mod user {
                 self.args = self.args.take(value);
                 self
             }
-            pub fn cursor(mut self, value: impl Into<post::Cursor>) -> Self {
+            pub fn cursor(mut self, value: impl Into<state::Cursor>) -> Self {
                 self.args = self.args.cursor(value.into());
                 self
             }
         }
         impl From<Fetch> for WithParam {
             fn from(fetch: Fetch) -> Self {
-                WithParam::Posts(fetch.args)
+                WithParam::State(fetch.args)
             }
         }
-        pub fn fetch(params: Vec<post::WhereParam>) -> Fetch {
+        pub fn fetch(params: Vec<state::WhereParam>) -> Fetch {
             Fetch {
-                args: post::ManyArgs::new(params),
+                args: state::ManyArgs::new(params),
             }
         }
-        pub fn link<T: From<Link>>(params: Vec<post::UniqueWhereParam>) -> T {
+        pub fn link<T: From<Link>>(params: Vec<state::UniqueWhereParam>) -> T {
             Link(params).into()
         }
-        pub fn unlink(params: Vec<post::UniqueWhereParam>) -> SetParam {
-            SetParam::UnlinkPosts(params)
+        pub fn unlink(params: Vec<state::UniqueWhereParam>) -> SetParam {
+            SetParam::UnlinkState(params)
         }
-        pub struct Link(Vec<post::UniqueWhereParam>);
+        pub struct Link(Vec<state::UniqueWhereParam>);
         impl From<Link> for SetParam {
             fn from(value: Link) -> Self {
-                Self::LinkPosts(value.0)
+                Self::LinkState(value.0)
+            }
+        }
+    }
+    pub mod action {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: i32) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: i32) -> WhereParam {
+            WhereParam::ActionEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::Action(direction)
+        }
+        pub fn in_vec(value: Vec<i32>) -> WhereParam {
+            WhereParam::ActionInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<i32>) -> WhereParam {
+            WhereParam::ActionNotInVec(value)
+        }
+        pub fn lt(value: i32) -> WhereParam {
+            WhereParam::ActionLt(value)
+        }
+        pub fn lte(value: i32) -> WhereParam {
+            WhereParam::ActionLte(value)
+        }
+        pub fn gt(value: i32) -> WhereParam {
+            WhereParam::ActionGt(value)
+        }
+        pub fn gte(value: i32) -> WhereParam {
+            WhereParam::ActionGte(value)
+        }
+        pub fn not(value: i32) -> WhereParam {
+            WhereParam::ActionNot(value)
+        }
+        pub fn increment(value: i32) -> SetParam {
+            SetParam::IncrementAction(value)
+        }
+        pub fn decrement(value: i32) -> SetParam {
+            SetParam::DecrementAction(value)
+        }
+        pub fn multiply(value: i32) -> SetParam {
+            SetParam::MultiplyAction(value)
+        }
+        pub fn divide(value: i32) -> SetParam {
+            SetParam::DivideAction(value)
+        }
+        pub struct Set(i32);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetAction(value.0)
+            }
+        }
+    }
+    pub mod reward {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: f64) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: f64) -> WhereParam {
+            WhereParam::RewardEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::Reward(direction)
+        }
+        pub fn in_vec(value: Vec<f64>) -> WhereParam {
+            WhereParam::RewardInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<f64>) -> WhereParam {
+            WhereParam::RewardNotInVec(value)
+        }
+        pub fn lt(value: f64) -> WhereParam {
+            WhereParam::RewardLt(value)
+        }
+        pub fn lte(value: f64) -> WhereParam {
+            WhereParam::RewardLte(value)
+        }
+        pub fn gt(value: f64) -> WhereParam {
+            WhereParam::RewardGt(value)
+        }
+        pub fn gte(value: f64) -> WhereParam {
+            WhereParam::RewardGte(value)
+        }
+        pub fn not(value: f64) -> WhereParam {
+            WhereParam::RewardNot(value)
+        }
+        pub fn increment(value: f64) -> SetParam {
+            SetParam::IncrementReward(value)
+        }
+        pub fn decrement(value: f64) -> SetParam {
+            SetParam::DecrementReward(value)
+        }
+        pub fn multiply(value: f64) -> SetParam {
+            SetParam::MultiplyReward(value)
+        }
+        pub fn divide(value: f64) -> SetParam {
+            SetParam::DivideReward(value)
+        }
+        pub struct Set(f64);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetReward(value.0)
+            }
+        }
+    }
+    pub mod next_state {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn some(value: Vec<next_state::WhereParam>) -> WhereParam {
+            WhereParam::NextStateSome(value)
+        }
+        pub fn every(value: Vec<next_state::WhereParam>) -> WhereParam {
+            WhereParam::NextStateEvery(value)
+        }
+        pub fn none(value: Vec<next_state::WhereParam>) -> WhereParam {
+            WhereParam::NextStateNone(value)
+        }
+        pub struct Fetch {
+            args: next_state::ManyArgs,
+        }
+        impl Fetch {
+            pub fn with(mut self, params: impl Into<next_state::WithParam>) -> Self {
+                self.args = self.args.with(params.into());
+                self
+            }
+            pub fn order_by(mut self, param: next_state::OrderByParam) -> Self {
+                self.args = self.args.order_by(param);
+                self
+            }
+            pub fn skip(mut self, value: i64) -> Self {
+                self.args = self.args.skip(value);
+                self
+            }
+            pub fn take(mut self, value: i64) -> Self {
+                self.args = self.args.take(value);
+                self
+            }
+            pub fn cursor(mut self, value: impl Into<next_state::Cursor>) -> Self {
+                self.args = self.args.cursor(value.into());
+                self
+            }
+        }
+        impl From<Fetch> for WithParam {
+            fn from(fetch: Fetch) -> Self {
+                WithParam::NextState(fetch.args)
+            }
+        }
+        pub fn fetch(params: Vec<next_state::WhereParam>) -> Fetch {
+            Fetch {
+                args: next_state::ManyArgs::new(params),
+            }
+        }
+        pub fn link<T: From<Link>>(params: Vec<next_state::UniqueWhereParam>) -> T {
+            Link(params).into()
+        }
+        pub fn unlink(params: Vec<next_state::UniqueWhereParam>) -> SetParam {
+            SetParam::UnlinkNextState(params)
+        }
+        pub struct Link(Vec<next_state::UniqueWhereParam>);
+        impl From<Link> for SetParam {
+            fn from(value: Link) -> Self {
+                Self::LinkNextState(value.0)
+            }
+        }
+    }
+    pub mod done {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: bool) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: bool) -> WhereParam {
+            WhereParam::DoneEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::Done(direction)
+        }
+        pub struct Set(bool);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetDone(value.0)
             }
         }
     }
     pub fn _outputs() -> Vec<Selection> {
-        ["id", "displayName"]
+        ["id", "created_at", "action", "reward", "done"]
             .into_iter()
             .map(|o| {
                 let builder = Selection::builder(o);
@@ -245,29 +423,52 @@ pub mod user {
     pub struct Data {
         #[serde(rename = "id")]
         pub id: String,
-        #[serde(rename = "displayName")]
-        pub display_name: String,
-        #[serde(rename = "posts")]
-        pub posts: Option<Vec<super::post::Data>>,
+        #[serde(rename = "created_at")]
+        pub created_at: chrono::DateTime<chrono::FixedOffset>,
+        #[serde(rename = "state")]
+        pub state: Option<Vec<super::state::Data>>,
+        #[serde(rename = "action")]
+        pub action: i32,
+        #[serde(rename = "reward")]
+        pub reward: f64,
+        #[serde(rename = "next_state")]
+        pub next_state: Option<Vec<super::next_state::Data>>,
+        #[serde(rename = "done")]
+        pub done: bool,
     }
     impl Data {
-        pub fn posts(&self) -> Result<&Vec<super::post::Data>, &'static str> {
-            self.posts
+        pub fn state(&self) -> Result<&Vec<super::state::Data>, &'static str> {
+            self.state
                 .as_ref()
-                .ok_or("Attempted to access 'posts' but did not fetch it using the .with() syntax")
+                .ok_or("Attempted to access 'state' but did not fetch it using the .with() syntax")
+        }
+        pub fn next_state(&self) -> Result<&Vec<super::next_state::Data>, &'static str> {
+            self.next_state.as_ref().ok_or(
+                "Attempted to access 'next_state' but did not fetch it using the .with() syntax",
+            )
         }
     }
     #[derive(Clone)]
     pub enum WithParam {
-        Posts(super::post::ManyArgs),
+        State(super::state::ManyArgs),
+        NextState(super::next_state::ManyArgs),
     }
     impl Into<Selection> for WithParam {
         fn into(self) -> Selection {
             match self {
-                Self::Posts(args) => {
+                Self::State(args) => {
                     let (arguments, mut nested_selections) = args.to_graphql();
-                    nested_selections.extend(super::post::_outputs());
-                    let mut builder = Selection::builder("posts");
+                    nested_selections.extend(super::state::_outputs());
+                    let mut builder = Selection::builder("state");
+                    builder
+                        .nested_selections(nested_selections)
+                        .set_arguments(arguments);
+                    builder.build()
+                }
+                Self::NextState(args) => {
+                    let (arguments, mut nested_selections) = args.to_graphql();
+                    nested_selections.extend(super::next_state::_outputs());
+                    let mut builder = Selection::builder("next_state");
                     builder
                         .nested_selections(nested_selections)
                         .set_arguments(arguments);
@@ -279,50 +480,176 @@ pub mod user {
     #[derive(Clone)]
     pub enum SetParam {
         SetId(String),
-        SetDisplayName(String),
-        LinkPosts(Vec<super::post::UniqueWhereParam>),
-        UnlinkPosts(Vec<super::post::UniqueWhereParam>),
+        SetCreatedAt(chrono::DateTime<chrono::FixedOffset>),
+        LinkState(Vec<super::state::UniqueWhereParam>),
+        UnlinkState(Vec<super::state::UniqueWhereParam>),
+        SetAction(i32),
+        IncrementAction(i32),
+        DecrementAction(i32),
+        MultiplyAction(i32),
+        DivideAction(i32),
+        SetReward(f64),
+        IncrementReward(f64),
+        DecrementReward(f64),
+        MultiplyReward(f64),
+        DivideReward(f64),
+        LinkNextState(Vec<super::next_state::UniqueWhereParam>),
+        UnlinkNextState(Vec<super::next_state::UniqueWhereParam>),
+        SetDone(bool),
     }
     impl Into<(String, PrismaValue)> for SetParam {
         fn into(self) -> (String, PrismaValue) {
             match self {
                 SetParam::SetId(value) => ("id".to_string(), PrismaValue::String(value)),
-                SetParam::SetDisplayName(value) => {
-                    ("displayName".to_string(), PrismaValue::String(value))
+                SetParam::SetCreatedAt(value) => {
+                    ("created_at".to_string(), PrismaValue::DateTime(value))
                 }
-                SetParam::LinkPosts(where_params) => (
-                    "posts".to_string(),
+                SetParam::LinkState(where_params) => (
+                    "state".to_string(),
                     PrismaValue::Object(vec![(
                         "connect".to_string(),
                         PrismaValue::Object(transform_equals(
                             where_params
                                 .into_iter()
-                                .map(Into::<super::post::WhereParam>::into),
+                                .map(Into::<super::state::WhereParam>::into),
                         )),
                     )]),
                 ),
-                SetParam::UnlinkPosts(where_params) => (
-                    "posts".to_string(),
+                SetParam::UnlinkState(where_params) => (
+                    "state".to_string(),
                     PrismaValue::Object(vec![(
                         "disconnect".to_string(),
                         PrismaValue::Object(
                             transform_equals(
                                 where_params
                                     .into_iter()
-                                    .map(Into::<super::post::WhereParam>::into),
+                                    .map(Into::<super::state::WhereParam>::into),
                             )
                             .into_iter()
                             .collect(),
                         ),
                     )]),
                 ),
+                SetParam::SetAction(value) => {
+                    ("action".to_string(), PrismaValue::Int(value as i64))
+                }
+                SetParam::IncrementAction(value) => (
+                    "action".to_string(),
+                    PrismaValue::Object(vec![(
+                        "increment".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                SetParam::DecrementAction(value) => (
+                    "action".to_string(),
+                    PrismaValue::Object(vec![(
+                        "decrement".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                SetParam::MultiplyAction(value) => (
+                    "action".to_string(),
+                    PrismaValue::Object(vec![(
+                        "multiply".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                SetParam::DivideAction(value) => (
+                    "action".to_string(),
+                    PrismaValue::Object(vec![(
+                        "divide".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                SetParam::SetReward(value) => (
+                    "reward".to_string(),
+                    PrismaValue::Float(
+                        bigdecimal::BigDecimal::from_f64(value)
+                            .unwrap()
+                            .normalized(),
+                    ),
+                ),
+                SetParam::IncrementReward(value) => (
+                    "reward".to_string(),
+                    PrismaValue::Object(vec![(
+                        "increment".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::DecrementReward(value) => (
+                    "reward".to_string(),
+                    PrismaValue::Object(vec![(
+                        "decrement".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::MultiplyReward(value) => (
+                    "reward".to_string(),
+                    PrismaValue::Object(vec![(
+                        "multiply".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::DivideReward(value) => (
+                    "reward".to_string(),
+                    PrismaValue::Object(vec![(
+                        "divide".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::LinkNextState(where_params) => (
+                    "next_state".to_string(),
+                    PrismaValue::Object(vec![(
+                        "connect".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            where_params
+                                .into_iter()
+                                .map(Into::<super::next_state::WhereParam>::into),
+                        )),
+                    )]),
+                ),
+                SetParam::UnlinkNextState(where_params) => (
+                    "next_state".to_string(),
+                    PrismaValue::Object(vec![(
+                        "disconnect".to_string(),
+                        PrismaValue::Object(
+                            transform_equals(
+                                where_params
+                                    .into_iter()
+                                    .map(Into::<super::next_state::WhereParam>::into),
+                            )
+                            .into_iter()
+                            .collect(),
+                        ),
+                    )]),
+                ),
+                SetParam::SetDone(value) => ("done".to_string(), PrismaValue::Boolean(value)),
             }
         }
     }
     #[derive(Clone)]
     pub enum OrderByParam {
         Id(Direction),
-        DisplayName(Direction),
+        CreatedAt(Direction),
+        Action(Direction),
+        Reward(Direction),
+        Done(Direction),
     }
     impl Into<(String, PrismaValue)> for OrderByParam {
         fn into(self) -> (String, PrismaValue) {
@@ -330,8 +657,20 @@ pub mod user {
                 Self::Id(direction) => {
                     ("id".to_string(), PrismaValue::String(direction.to_string()))
                 }
-                Self::DisplayName(direction) => (
-                    "displayName".to_string(),
+                Self::CreatedAt(direction) => (
+                    "created_at".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+                Self::Action(direction) => (
+                    "action".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+                Self::Reward(direction) => (
+                    "reward".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+                Self::Done(direction) => (
+                    "done".to_string(),
                     PrismaValue::String(direction.to_string()),
                 ),
             }
@@ -364,20 +703,37 @@ pub mod user {
         IdStartsWith(String),
         IdEndsWith(String),
         IdNot(String),
-        DisplayNameEquals(String),
-        DisplayNameInVec(Vec<String>),
-        DisplayNameNotInVec(Vec<String>),
-        DisplayNameLt(String),
-        DisplayNameLte(String),
-        DisplayNameGt(String),
-        DisplayNameGte(String),
-        DisplayNameContains(String),
-        DisplayNameStartsWith(String),
-        DisplayNameEndsWith(String),
-        DisplayNameNot(String),
-        PostsSome(Vec<super::post::WhereParam>),
-        PostsEvery(Vec<super::post::WhereParam>),
-        PostsNone(Vec<super::post::WhereParam>),
+        CreatedAtEquals(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtInVec(Vec<chrono::DateTime<chrono::FixedOffset>>),
+        CreatedAtNotInVec(Vec<chrono::DateTime<chrono::FixedOffset>>),
+        CreatedAtLt(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtLte(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtGt(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtGte(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtNot(chrono::DateTime<chrono::FixedOffset>),
+        StateSome(Vec<super::state::WhereParam>),
+        StateEvery(Vec<super::state::WhereParam>),
+        StateNone(Vec<super::state::WhereParam>),
+        ActionEquals(i32),
+        ActionInVec(Vec<i32>),
+        ActionNotInVec(Vec<i32>),
+        ActionLt(i32),
+        ActionLte(i32),
+        ActionGt(i32),
+        ActionGte(i32),
+        ActionNot(i32),
+        RewardEquals(f64),
+        RewardInVec(Vec<f64>),
+        RewardNotInVec(Vec<f64>),
+        RewardLt(f64),
+        RewardLte(f64),
+        RewardGt(f64),
+        RewardGte(f64),
+        RewardNot(f64),
+        NextStateSome(Vec<super::next_state::WhereParam>),
+        NextStateEvery(Vec<super::next_state::WhereParam>),
+        NextStateNone(Vec<super::next_state::WhereParam>),
+        DoneEquals(bool),
     }
     impl Into<SerializedWhere> for WhereParam {
         fn into(self) -> SerializedWhere {
@@ -490,89 +846,74 @@ pub mod user {
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::DisplayNameEquals(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtEquals(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "equals".to_string(),
-                        PrismaValue::String(value),
+                        PrismaValue::DateTime(value),
                     )]),
                 ),
-                Self::DisplayNameInVec(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtInVec(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "in".to_string(),
                         PrismaValue::List(
-                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::DateTime(v))
+                                .collect(),
                         ),
                     )]),
                 ),
-                Self::DisplayNameNotInVec(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtNotInVec(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "notIn".to_string(),
                         PrismaValue::List(
-                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::DateTime(v))
+                                .collect(),
                         ),
                     )]),
                 ),
-                Self::DisplayNameLt(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtLt(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "lt".to_string(),
-                        PrismaValue::String(value),
+                        PrismaValue::DateTime(value),
                     )]),
                 ),
-                Self::DisplayNameLte(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtLte(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "lte".to_string(),
-                        PrismaValue::String(value),
+                        PrismaValue::DateTime(value),
                     )]),
                 ),
-                Self::DisplayNameGt(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtGt(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "gt".to_string(),
-                        PrismaValue::String(value),
+                        PrismaValue::DateTime(value),
                     )]),
                 ),
-                Self::DisplayNameGte(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtGte(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "gte".to_string(),
-                        PrismaValue::String(value),
+                        PrismaValue::DateTime(value),
                     )]),
                 ),
-                Self::DisplayNameContains(value) => (
-                    "displayName".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "contains".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::DisplayNameStartsWith(value) => (
-                    "displayName".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "startsWith".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::DisplayNameEndsWith(value) => (
-                    "displayName".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "endsWith".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::DisplayNameNot(value) => (
-                    "displayName".to_string(),
+                Self::CreatedAtNot(value) => (
+                    "created_at".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "not".to_string(),
-                        PrismaValue::String(value),
+                        PrismaValue::DateTime(value),
                     )]),
                 ),
-                Self::PostsSome(value) => (
-                    "posts".to_string(),
+                Self::StateSome(value) => (
+                    "state".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "some".to_string(),
                         PrismaValue::Object(transform_equals(
@@ -580,8 +921,8 @@ pub mod user {
                         )),
                     )]),
                 ),
-                Self::PostsEvery(value) => (
-                    "posts".to_string(),
+                Self::StateEvery(value) => (
+                    "state".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "every".to_string(),
                         PrismaValue::Object(transform_equals(
@@ -589,13 +930,211 @@ pub mod user {
                         )),
                     )]),
                 ),
-                Self::PostsNone(value) => (
-                    "posts".to_string(),
+                Self::StateNone(value) => (
+                    "state".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "none".to_string(),
                         PrismaValue::Object(transform_equals(
                             value.into_iter().map(Into::<SerializedWhere>::into),
                         )),
+                    )]),
+                ),
+                Self::ActionEquals(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                Self::ActionInVec(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::Int(v as i64))
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::ActionNotInVec(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::Int(v as i64))
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::ActionLt(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                Self::ActionLte(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                Self::ActionGt(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                Self::ActionGte(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                Self::ActionNot(value) => (
+                    "action".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::Int(value as i64),
+                    )]),
+                ),
+                Self::RewardEquals(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RewardInVec(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| {
+                                    PrismaValue::Float(
+                                        bigdecimal::BigDecimal::from_f64(v).unwrap().normalized(),
+                                    )
+                                })
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::RewardNotInVec(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| {
+                                    PrismaValue::Float(
+                                        bigdecimal::BigDecimal::from_f64(v).unwrap().normalized(),
+                                    )
+                                })
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::RewardLt(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RewardLte(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RewardGt(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RewardGte(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RewardNot(value) => (
+                    "reward".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::NextStateSome(value) => (
+                    "next_state".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "some".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            value.into_iter().map(Into::<SerializedWhere>::into),
+                        )),
+                    )]),
+                ),
+                Self::NextStateEvery(value) => (
+                    "next_state".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "every".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            value.into_iter().map(Into::<SerializedWhere>::into),
+                        )),
+                    )]),
+                ),
+                Self::NextStateNone(value) => (
+                    "next_state".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "none".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            value.into_iter().map(Into::<SerializedWhere>::into),
+                        )),
+                    )]),
+                ),
+                Self::DoneEquals(value) => (
+                    "done".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::Boolean(value),
                     )]),
                 ),
             }
@@ -648,51 +1187,54 @@ pub mod user {
     impl<'a> Actions<'a> {
         pub fn create(
             self,
-            id: id::Set,
-            display_name: display_name::Set,
+            action: action::Set,
+            reward: reward::Set,
+            done: done::Set,
             mut _params: Vec<SetParam>,
         ) -> Create<'a> {
-            _params.push(id.into());
-            _params.push(display_name.into());
+            _params.push(action.into());
+            _params.push(reward.into());
+            _params.push(done.into());
             Create::new(
                 self.client._new_query_context(),
-                QueryInfo::new("User", _outputs()),
+                QueryInfo::new("Rb", _outputs()),
                 _params,
             )
         }
         pub fn find_unique(self, param: UniqueWhereParam) -> FindUnique<'a> {
             FindUnique::new(
                 self.client._new_query_context(),
-                QueryInfo::new("User", _outputs()),
+                QueryInfo::new("Rb", _outputs()),
                 param.into(),
             )
         }
         pub fn find_first(self, params: Vec<WhereParam>) -> FindFirst<'a> {
             FindFirst::new(
                 self.client._new_query_context(),
-                QueryInfo::new("User", _outputs()),
+                QueryInfo::new("Rb", _outputs()),
                 params,
             )
         }
         pub fn find_many(self, params: Vec<WhereParam>) -> FindMany<'a> {
             FindMany::new(
                 self.client._new_query_context(),
-                QueryInfo::new("User", _outputs()),
+                QueryInfo::new("Rb", _outputs()),
                 params,
             )
         }
         pub fn upsert(
             self,
             _where: UniqueWhereParam,
-            _create: (id::Set, display_name::Set, Vec<SetParam>),
+            _create: (action::Set, reward::Set, done::Set, Vec<SetParam>),
             _update: Vec<SetParam>,
         ) -> Upsert<'a> {
-            let (id, display_name, mut _params) = _create;
-            _params.push(id.into());
-            _params.push(display_name.into());
+            let (action, reward, done, mut _params) = _create;
+            _params.push(action.into());
+            _params.push(reward.into());
+            _params.push(done.into());
             Upsert::new(
                 self.client._new_query_context(),
-                QueryInfo::new("User", _outputs()),
+                QueryInfo::new("Rb", _outputs()),
                 _where.into(),
                 _params,
                 _update,
@@ -700,7 +1242,7 @@ pub mod user {
         }
     }
 }
-pub mod post {
+pub mod state {
     use super::_prisma::*;
     use super::*;
     pub mod id {
@@ -756,7 +1298,101 @@ pub mod post {
             }
         }
     }
-    pub mod content {
+    pub mod created_at {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: chrono::DateTime<chrono::FixedOffset>) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::CreatedAt(direction)
+        }
+        pub fn in_vec(value: Vec<chrono::DateTime<chrono::FixedOffset>>) -> WhereParam {
+            WhereParam::CreatedAtInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<chrono::DateTime<chrono::FixedOffset>>) -> WhereParam {
+            WhereParam::CreatedAtNotInVec(value)
+        }
+        pub fn lt(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtLt(value)
+        }
+        pub fn lte(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtLte(value)
+        }
+        pub fn gt(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtGt(value)
+        }
+        pub fn gte(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtGte(value)
+        }
+        pub fn not(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtNot(value)
+        }
+        pub struct Set(chrono::DateTime<chrono::FixedOffset>);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetCreatedAt(value.0)
+            }
+        }
+    }
+    pub mod value {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: f64) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: f64) -> WhereParam {
+            WhereParam::ValueEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::Value(direction)
+        }
+        pub fn in_vec(value: Vec<f64>) -> WhereParam {
+            WhereParam::ValueInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<f64>) -> WhereParam {
+            WhereParam::ValueNotInVec(value)
+        }
+        pub fn lt(value: f64) -> WhereParam {
+            WhereParam::ValueLt(value)
+        }
+        pub fn lte(value: f64) -> WhereParam {
+            WhereParam::ValueLte(value)
+        }
+        pub fn gt(value: f64) -> WhereParam {
+            WhereParam::ValueGt(value)
+        }
+        pub fn gte(value: f64) -> WhereParam {
+            WhereParam::ValueGte(value)
+        }
+        pub fn not(value: f64) -> WhereParam {
+            WhereParam::ValueNot(value)
+        }
+        pub fn increment(value: f64) -> SetParam {
+            SetParam::IncrementValue(value)
+        }
+        pub fn decrement(value: f64) -> SetParam {
+            SetParam::DecrementValue(value)
+        }
+        pub fn multiply(value: f64) -> SetParam {
+            SetParam::MultiplyValue(value)
+        }
+        pub fn divide(value: f64) -> SetParam {
+            SetParam::DivideValue(value)
+        }
+        pub struct Set(f64);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetValue(value.0)
+            }
+        }
+    }
+    pub mod rb_id {
         use super::super::*;
         use super::_prisma::*;
         use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
@@ -764,139 +1400,89 @@ pub mod post {
             Set(value).into()
         }
         pub fn equals(value: String) -> WhereParam {
-            WhereParam::ContentEquals(value).into()
+            WhereParam::RbIdEquals(value).into()
         }
         pub fn order(direction: Direction) -> OrderByParam {
-            OrderByParam::Content(direction)
+            OrderByParam::RbId(direction)
         }
         pub fn in_vec(value: Vec<String>) -> WhereParam {
-            WhereParam::ContentInVec(value)
+            WhereParam::RbIdInVec(value)
         }
         pub fn not_in_vec(value: Vec<String>) -> WhereParam {
-            WhereParam::ContentNotInVec(value)
+            WhereParam::RbIdNotInVec(value)
         }
         pub fn lt(value: String) -> WhereParam {
-            WhereParam::ContentLt(value)
+            WhereParam::RbIdLt(value)
         }
         pub fn lte(value: String) -> WhereParam {
-            WhereParam::ContentLte(value)
+            WhereParam::RbIdLte(value)
         }
         pub fn gt(value: String) -> WhereParam {
-            WhereParam::ContentGt(value)
+            WhereParam::RbIdGt(value)
         }
         pub fn gte(value: String) -> WhereParam {
-            WhereParam::ContentGte(value)
+            WhereParam::RbIdGte(value)
         }
         pub fn contains(value: String) -> WhereParam {
-            WhereParam::ContentContains(value)
+            WhereParam::RbIdContains(value)
         }
         pub fn starts_with(value: String) -> WhereParam {
-            WhereParam::ContentStartsWith(value)
+            WhereParam::RbIdStartsWith(value)
         }
         pub fn ends_with(value: String) -> WhereParam {
-            WhereParam::ContentEndsWith(value)
+            WhereParam::RbIdEndsWith(value)
         }
         pub fn not(value: String) -> WhereParam {
-            WhereParam::ContentNot(value)
+            WhereParam::RbIdNot(value)
         }
         pub struct Set(String);
         impl From<Set> for SetParam {
             fn from(value: Set) -> Self {
-                Self::SetContent(value.0)
+                Self::SetRbId(value.0)
             }
         }
     }
-    pub mod user {
+    pub mod rb {
         use super::super::*;
         use super::_prisma::*;
         use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
-        pub fn is(value: Vec<user::WhereParam>) -> WhereParam {
-            WhereParam::UserIs(value)
+        pub fn is(value: Vec<rb::WhereParam>) -> WhereParam {
+            WhereParam::RbIs(value)
         }
-        pub fn is_not(value: Vec<user::WhereParam>) -> WhereParam {
-            WhereParam::UserIsNot(value)
+        pub fn is_not(value: Vec<rb::WhereParam>) -> WhereParam {
+            WhereParam::RbIsNot(value)
         }
         pub struct Fetch {
-            args: user::UniqueArgs,
+            args: rb::UniqueArgs,
         }
         impl Fetch {
-            pub fn with(mut self, params: impl Into<user::WithParam>) -> Self {
+            pub fn with(mut self, params: impl Into<rb::WithParam>) -> Self {
                 self.args = self.args.with(params.into());
                 self
             }
         }
         impl From<Fetch> for WithParam {
             fn from(fetch: Fetch) -> Self {
-                WithParam::User(fetch.args)
+                WithParam::Rb(fetch.args)
             }
         }
         pub fn fetch() -> Fetch {
             Fetch {
-                args: user::UniqueArgs::new(),
+                args: rb::UniqueArgs::new(),
             }
         }
-        pub fn link<T: From<Link>>(value: user::UniqueWhereParam) -> T {
+        pub fn link<T: From<Link>>(value: rb::UniqueWhereParam) -> T {
             Link(value).into()
         }
-        pub struct Link(user::UniqueWhereParam);
+        pub struct Link(rb::UniqueWhereParam);
         impl From<Link> for SetParam {
             fn from(value: Link) -> Self {
-                Self::LinkUser(value.0)
-            }
-        }
-    }
-    pub mod user_id {
-        use super::super::*;
-        use super::_prisma::*;
-        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
-        pub fn set<T: From<Set>>(value: String) -> T {
-            Set(value).into()
-        }
-        pub fn equals(value: String) -> WhereParam {
-            WhereParam::UserIdEquals(value).into()
-        }
-        pub fn order(direction: Direction) -> OrderByParam {
-            OrderByParam::UserId(direction)
-        }
-        pub fn in_vec(value: Vec<String>) -> WhereParam {
-            WhereParam::UserIdInVec(value)
-        }
-        pub fn not_in_vec(value: Vec<String>) -> WhereParam {
-            WhereParam::UserIdNotInVec(value)
-        }
-        pub fn lt(value: String) -> WhereParam {
-            WhereParam::UserIdLt(value)
-        }
-        pub fn lte(value: String) -> WhereParam {
-            WhereParam::UserIdLte(value)
-        }
-        pub fn gt(value: String) -> WhereParam {
-            WhereParam::UserIdGt(value)
-        }
-        pub fn gte(value: String) -> WhereParam {
-            WhereParam::UserIdGte(value)
-        }
-        pub fn contains(value: String) -> WhereParam {
-            WhereParam::UserIdContains(value)
-        }
-        pub fn starts_with(value: String) -> WhereParam {
-            WhereParam::UserIdStartsWith(value)
-        }
-        pub fn ends_with(value: String) -> WhereParam {
-            WhereParam::UserIdEndsWith(value)
-        }
-        pub fn not(value: String) -> WhereParam {
-            WhereParam::UserIdNot(value)
-        }
-        pub struct Set(String);
-        impl From<Set> for SetParam {
-            fn from(value: Set) -> Self {
-                Self::SetUserId(value.0)
+                Self::LinkRb(value.0)
             }
         }
     }
     pub fn _outputs() -> Vec<Selection> {
-        ["id", "content", "userId"]
+        ["id", "created_at", "value", "rb_id"]
             .into_iter()
             .map(|o| {
                 let builder = Selection::builder(o);
@@ -908,32 +1494,34 @@ pub mod post {
     pub struct Data {
         #[serde(rename = "id")]
         pub id: String,
-        #[serde(rename = "content")]
-        pub content: String,
-        #[serde(rename = "user")]
-        pub user: Option<Box<super::user::Data>>,
-        #[serde(rename = "userId")]
-        pub user_id: String,
+        #[serde(rename = "created_at")]
+        pub created_at: chrono::DateTime<chrono::FixedOffset>,
+        #[serde(rename = "value")]
+        pub value: f64,
+        #[serde(rename = "rb_id")]
+        pub rb_id: String,
+        #[serde(rename = "rb")]
+        pub rb: Option<Box<super::rb::Data>>,
     }
     impl Data {
-        pub fn user(&self) -> Result<&super::user::Data, &'static str> {
-            self.user
+        pub fn rb(&self) -> Result<&super::rb::Data, &'static str> {
+            self.rb
                 .as_ref()
-                .ok_or("Attempted to access 'user' but did not fetch it using the .with() syntax")
+                .ok_or("Attempted to access 'rb' but did not fetch it using the .with() syntax")
                 .map(|v| v.as_ref())
         }
     }
     #[derive(Clone)]
     pub enum WithParam {
-        User(super::user::UniqueArgs),
+        Rb(super::rb::UniqueArgs),
     }
     impl Into<Selection> for WithParam {
         fn into(self) -> Selection {
             match self {
-                Self::User(args) => {
-                    let mut selections = super::user::_outputs();
+                Self::Rb(args) => {
+                    let mut selections = super::rb::_outputs();
                     selections.extend(args.with_params.into_iter().map(Into::<Selection>::into));
-                    let mut builder = Selection::builder("user");
+                    let mut builder = Selection::builder("rb");
                     builder.nested_selections(selections);
                     builder.build()
                 }
@@ -943,33 +1531,93 @@ pub mod post {
     #[derive(Clone)]
     pub enum SetParam {
         SetId(String),
-        SetContent(String),
-        LinkUser(super::user::UniqueWhereParam),
-        SetUserId(String),
+        SetCreatedAt(chrono::DateTime<chrono::FixedOffset>),
+        SetValue(f64),
+        IncrementValue(f64),
+        DecrementValue(f64),
+        MultiplyValue(f64),
+        DivideValue(f64),
+        SetRbId(String),
+        LinkRb(super::rb::UniqueWhereParam),
     }
     impl Into<(String, PrismaValue)> for SetParam {
         fn into(self) -> (String, PrismaValue) {
             match self {
                 SetParam::SetId(value) => ("id".to_string(), PrismaValue::String(value)),
-                SetParam::SetContent(value) => ("content".to_string(), PrismaValue::String(value)),
-                SetParam::LinkUser(where_param) => (
-                    "user".to_string(),
+                SetParam::SetCreatedAt(value) => {
+                    ("created_at".to_string(), PrismaValue::DateTime(value))
+                }
+                SetParam::SetValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Float(
+                        bigdecimal::BigDecimal::from_f64(value)
+                            .unwrap()
+                            .normalized(),
+                    ),
+                ),
+                SetParam::IncrementValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "increment".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::DecrementValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "decrement".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::MultiplyValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "multiply".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::DivideValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "divide".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::SetRbId(value) => ("rb_id".to_string(), PrismaValue::String(value)),
+                SetParam::LinkRb(where_param) => (
+                    "rb".to_string(),
                     PrismaValue::Object(vec![(
                         "connect".to_string(),
                         PrismaValue::Object(transform_equals(
-                            vec![Into::<super::user::WhereParam>::into(where_param)].into_iter(),
+                            vec![Into::<super::rb::WhereParam>::into(where_param)].into_iter(),
                         )),
                     )]),
                 ),
-                SetParam::SetUserId(value) => ("userId".to_string(), PrismaValue::String(value)),
             }
         }
     }
     #[derive(Clone)]
     pub enum OrderByParam {
         Id(Direction),
-        Content(Direction),
-        UserId(Direction),
+        CreatedAt(Direction),
+        Value(Direction),
+        RbId(Direction),
     }
     impl Into<(String, PrismaValue)> for OrderByParam {
         fn into(self) -> (String, PrismaValue) {
@@ -977,12 +1625,16 @@ pub mod post {
                 Self::Id(direction) => {
                     ("id".to_string(), PrismaValue::String(direction.to_string()))
                 }
-                Self::Content(direction) => (
-                    "content".to_string(),
+                Self::CreatedAt(direction) => (
+                    "created_at".to_string(),
                     PrismaValue::String(direction.to_string()),
                 ),
-                Self::UserId(direction) => (
-                    "userId".to_string(),
+                Self::Value(direction) => (
+                    "value".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+                Self::RbId(direction) => (
+                    "rb_id".to_string(),
                     PrismaValue::String(direction.to_string()),
                 ),
             }
@@ -1015,30 +1667,35 @@ pub mod post {
         IdStartsWith(String),
         IdEndsWith(String),
         IdNot(String),
-        ContentEquals(String),
-        ContentInVec(Vec<String>),
-        ContentNotInVec(Vec<String>),
-        ContentLt(String),
-        ContentLte(String),
-        ContentGt(String),
-        ContentGte(String),
-        ContentContains(String),
-        ContentStartsWith(String),
-        ContentEndsWith(String),
-        ContentNot(String),
-        UserIs(Vec<super::user::WhereParam>),
-        UserIsNot(Vec<super::user::WhereParam>),
-        UserIdEquals(String),
-        UserIdInVec(Vec<String>),
-        UserIdNotInVec(Vec<String>),
-        UserIdLt(String),
-        UserIdLte(String),
-        UserIdGt(String),
-        UserIdGte(String),
-        UserIdContains(String),
-        UserIdStartsWith(String),
-        UserIdEndsWith(String),
-        UserIdNot(String),
+        CreatedAtEquals(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtInVec(Vec<chrono::DateTime<chrono::FixedOffset>>),
+        CreatedAtNotInVec(Vec<chrono::DateTime<chrono::FixedOffset>>),
+        CreatedAtLt(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtLte(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtGt(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtGte(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtNot(chrono::DateTime<chrono::FixedOffset>),
+        ValueEquals(f64),
+        ValueInVec(Vec<f64>),
+        ValueNotInVec(Vec<f64>),
+        ValueLt(f64),
+        ValueLte(f64),
+        ValueGt(f64),
+        ValueGte(f64),
+        ValueNot(f64),
+        RbIdEquals(String),
+        RbIdInVec(Vec<String>),
+        RbIdNotInVec(Vec<String>),
+        RbIdLt(String),
+        RbIdLte(String),
+        RbIdGt(String),
+        RbIdGte(String),
+        RbIdContains(String),
+        RbIdStartsWith(String),
+        RbIdEndsWith(String),
+        RbIdNot(String),
+        RbIs(Vec<super::rb::WhereParam>),
+        RbIsNot(Vec<super::rb::WhereParam>),
     }
     impl Into<SerializedWhere> for WhereParam {
         fn into(self) -> SerializedWhere {
@@ -1151,15 +1808,179 @@ pub mod post {
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentEquals(value) => (
-                    "content".to_string(),
+                Self::CreatedAtEquals(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtInVec(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::DateTime(v))
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::CreatedAtNotInVec(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::DateTime(v))
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::CreatedAtLt(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtLte(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtGt(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtGte(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtNot(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::ValueEquals(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueInVec(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| {
+                                    PrismaValue::Float(
+                                        bigdecimal::BigDecimal::from_f64(v).unwrap().normalized(),
+                                    )
+                                })
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::ValueNotInVec(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| {
+                                    PrismaValue::Float(
+                                        bigdecimal::BigDecimal::from_f64(v).unwrap().normalized(),
+                                    )
+                                })
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::ValueLt(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueLte(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueGt(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueGte(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueNot(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RbIdEquals(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "equals".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentInVec(value) => (
-                    "content".to_string(),
+                Self::RbIdInVec(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "in".to_string(),
                         PrismaValue::List(
@@ -1167,8 +1988,8 @@ pub mod post {
                         ),
                     )]),
                 ),
-                Self::ContentNotInVec(value) => (
-                    "content".to_string(),
+                Self::RbIdNotInVec(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "notIn".to_string(),
                         PrismaValue::List(
@@ -1176,64 +1997,64 @@ pub mod post {
                         ),
                     )]),
                 ),
-                Self::ContentLt(value) => (
-                    "content".to_string(),
+                Self::RbIdLt(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "lt".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentLte(value) => (
-                    "content".to_string(),
+                Self::RbIdLte(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "lte".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentGt(value) => (
-                    "content".to_string(),
+                Self::RbIdGt(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "gt".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentGte(value) => (
-                    "content".to_string(),
+                Self::RbIdGte(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "gte".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentContains(value) => (
-                    "content".to_string(),
+                Self::RbIdContains(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "contains".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentStartsWith(value) => (
-                    "content".to_string(),
+                Self::RbIdStartsWith(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "startsWith".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentEndsWith(value) => (
-                    "content".to_string(),
+                Self::RbIdEndsWith(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "endsWith".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::ContentNot(value) => (
-                    "content".to_string(),
+                Self::RbIdNot(value) => (
+                    "rb_id".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "not".to_string(),
                         PrismaValue::String(value),
                     )]),
                 ),
-                Self::UserIs(value) => (
-                    "user".to_string(),
+                Self::RbIs(value) => (
+                    "rb".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "is".to_string(),
                         PrismaValue::Object(transform_equals(
@@ -1241,94 +2062,13 @@ pub mod post {
                         )),
                     )]),
                 ),
-                Self::UserIsNot(value) => (
-                    "user".to_string(),
+                Self::RbIsNot(value) => (
+                    "rb".to_string(),
                     SerializedWhereValue::Object(vec![(
                         "isNot".to_string(),
                         PrismaValue::Object(transform_equals(
                             value.into_iter().map(Into::<SerializedWhere>::into),
                         )),
-                    )]),
-                ),
-                Self::UserIdEquals(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "equals".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdInVec(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "in".to_string(),
-                        PrismaValue::List(
-                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
-                        ),
-                    )]),
-                ),
-                Self::UserIdNotInVec(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "notIn".to_string(),
-                        PrismaValue::List(
-                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
-                        ),
-                    )]),
-                ),
-                Self::UserIdLt(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "lt".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdLte(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "lte".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdGt(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "gt".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdGte(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "gte".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdContains(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "contains".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdStartsWith(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "startsWith".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdEndsWith(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "endsWith".to_string(),
-                        PrismaValue::String(value),
-                    )]),
-                ),
-                Self::UserIdNot(value) => (
-                    "userId".to_string(),
-                    SerializedWhereValue::Object(vec![(
-                        "not".to_string(),
-                        PrismaValue::String(value),
                     )]),
                 ),
             }
@@ -1381,54 +2121,982 @@ pub mod post {
     impl<'a> Actions<'a> {
         pub fn create(
             self,
-            id: id::Set,
-            content: content::Set,
-            user: user::Link,
+            value: value::Set,
+            rb: rb::Link,
             mut _params: Vec<SetParam>,
         ) -> Create<'a> {
-            _params.push(id.into());
-            _params.push(content.into());
-            _params.push(user.into());
+            _params.push(value.into());
+            _params.push(rb.into());
             Create::new(
                 self.client._new_query_context(),
-                QueryInfo::new("Post", _outputs()),
+                QueryInfo::new("State", _outputs()),
                 _params,
             )
         }
         pub fn find_unique(self, param: UniqueWhereParam) -> FindUnique<'a> {
             FindUnique::new(
                 self.client._new_query_context(),
-                QueryInfo::new("Post", _outputs()),
+                QueryInfo::new("State", _outputs()),
                 param.into(),
             )
         }
         pub fn find_first(self, params: Vec<WhereParam>) -> FindFirst<'a> {
             FindFirst::new(
                 self.client._new_query_context(),
-                QueryInfo::new("Post", _outputs()),
+                QueryInfo::new("State", _outputs()),
                 params,
             )
         }
         pub fn find_many(self, params: Vec<WhereParam>) -> FindMany<'a> {
             FindMany::new(
                 self.client._new_query_context(),
-                QueryInfo::new("Post", _outputs()),
+                QueryInfo::new("State", _outputs()),
                 params,
             )
         }
         pub fn upsert(
             self,
             _where: UniqueWhereParam,
-            _create: (id::Set, content::Set, user::Link, Vec<SetParam>),
+            _create: (value::Set, rb::Link, Vec<SetParam>),
             _update: Vec<SetParam>,
         ) -> Upsert<'a> {
-            let (id, content, user, mut _params) = _create;
-            _params.push(id.into());
-            _params.push(content.into());
-            _params.push(user.into());
+            let (value, rb, mut _params) = _create;
+            _params.push(value.into());
+            _params.push(rb.into());
             Upsert::new(
                 self.client._new_query_context(),
-                QueryInfo::new("Post", _outputs()),
+                QueryInfo::new("State", _outputs()),
+                _where.into(),
+                _params,
+                _update,
+            )
+        }
+    }
+}
+pub mod next_state {
+    use super::_prisma::*;
+    use super::*;
+    pub mod id {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: String) -> T {
+            Set(value).into()
+        }
+        pub fn equals<T: From<UniqueWhereParam>>(value: String) -> T {
+            UniqueWhereParam::IdEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::Id(direction)
+        }
+        pub fn cursor(cursor: String) -> Cursor {
+            Cursor::Id(cursor)
+        }
+        pub fn in_vec(value: Vec<String>) -> WhereParam {
+            WhereParam::IdInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<String>) -> WhereParam {
+            WhereParam::IdNotInVec(value)
+        }
+        pub fn lt(value: String) -> WhereParam {
+            WhereParam::IdLt(value)
+        }
+        pub fn lte(value: String) -> WhereParam {
+            WhereParam::IdLte(value)
+        }
+        pub fn gt(value: String) -> WhereParam {
+            WhereParam::IdGt(value)
+        }
+        pub fn gte(value: String) -> WhereParam {
+            WhereParam::IdGte(value)
+        }
+        pub fn contains(value: String) -> WhereParam {
+            WhereParam::IdContains(value)
+        }
+        pub fn starts_with(value: String) -> WhereParam {
+            WhereParam::IdStartsWith(value)
+        }
+        pub fn ends_with(value: String) -> WhereParam {
+            WhereParam::IdEndsWith(value)
+        }
+        pub fn not(value: String) -> WhereParam {
+            WhereParam::IdNot(value)
+        }
+        pub struct Set(String);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetId(value.0)
+            }
+        }
+    }
+    pub mod created_at {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: chrono::DateTime<chrono::FixedOffset>) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::CreatedAt(direction)
+        }
+        pub fn in_vec(value: Vec<chrono::DateTime<chrono::FixedOffset>>) -> WhereParam {
+            WhereParam::CreatedAtInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<chrono::DateTime<chrono::FixedOffset>>) -> WhereParam {
+            WhereParam::CreatedAtNotInVec(value)
+        }
+        pub fn lt(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtLt(value)
+        }
+        pub fn lte(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtLte(value)
+        }
+        pub fn gt(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtGt(value)
+        }
+        pub fn gte(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtGte(value)
+        }
+        pub fn not(value: chrono::DateTime<chrono::FixedOffset>) -> WhereParam {
+            WhereParam::CreatedAtNot(value)
+        }
+        pub struct Set(chrono::DateTime<chrono::FixedOffset>);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetCreatedAt(value.0)
+            }
+        }
+    }
+    pub mod value {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: f64) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: f64) -> WhereParam {
+            WhereParam::ValueEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::Value(direction)
+        }
+        pub fn in_vec(value: Vec<f64>) -> WhereParam {
+            WhereParam::ValueInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<f64>) -> WhereParam {
+            WhereParam::ValueNotInVec(value)
+        }
+        pub fn lt(value: f64) -> WhereParam {
+            WhereParam::ValueLt(value)
+        }
+        pub fn lte(value: f64) -> WhereParam {
+            WhereParam::ValueLte(value)
+        }
+        pub fn gt(value: f64) -> WhereParam {
+            WhereParam::ValueGt(value)
+        }
+        pub fn gte(value: f64) -> WhereParam {
+            WhereParam::ValueGte(value)
+        }
+        pub fn not(value: f64) -> WhereParam {
+            WhereParam::ValueNot(value)
+        }
+        pub fn increment(value: f64) -> SetParam {
+            SetParam::IncrementValue(value)
+        }
+        pub fn decrement(value: f64) -> SetParam {
+            SetParam::DecrementValue(value)
+        }
+        pub fn multiply(value: f64) -> SetParam {
+            SetParam::MultiplyValue(value)
+        }
+        pub fn divide(value: f64) -> SetParam {
+            SetParam::DivideValue(value)
+        }
+        pub struct Set(f64);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetValue(value.0)
+            }
+        }
+    }
+    pub mod rb_id {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn set<T: From<Set>>(value: String) -> T {
+            Set(value).into()
+        }
+        pub fn equals(value: String) -> WhereParam {
+            WhereParam::RbIdEquals(value).into()
+        }
+        pub fn order(direction: Direction) -> OrderByParam {
+            OrderByParam::RbId(direction)
+        }
+        pub fn in_vec(value: Vec<String>) -> WhereParam {
+            WhereParam::RbIdInVec(value)
+        }
+        pub fn not_in_vec(value: Vec<String>) -> WhereParam {
+            WhereParam::RbIdNotInVec(value)
+        }
+        pub fn lt(value: String) -> WhereParam {
+            WhereParam::RbIdLt(value)
+        }
+        pub fn lte(value: String) -> WhereParam {
+            WhereParam::RbIdLte(value)
+        }
+        pub fn gt(value: String) -> WhereParam {
+            WhereParam::RbIdGt(value)
+        }
+        pub fn gte(value: String) -> WhereParam {
+            WhereParam::RbIdGte(value)
+        }
+        pub fn contains(value: String) -> WhereParam {
+            WhereParam::RbIdContains(value)
+        }
+        pub fn starts_with(value: String) -> WhereParam {
+            WhereParam::RbIdStartsWith(value)
+        }
+        pub fn ends_with(value: String) -> WhereParam {
+            WhereParam::RbIdEndsWith(value)
+        }
+        pub fn not(value: String) -> WhereParam {
+            WhereParam::RbIdNot(value)
+        }
+        pub struct Set(String);
+        impl From<Set> for SetParam {
+            fn from(value: Set) -> Self {
+                Self::SetRbId(value.0)
+            }
+        }
+    }
+    pub mod rb {
+        use super::super::*;
+        use super::_prisma::*;
+        use super::{Cursor, OrderByParam, SetParam, UniqueWhereParam, WhereParam, WithParam};
+        pub fn is(value: Vec<rb::WhereParam>) -> WhereParam {
+            WhereParam::RbIs(value)
+        }
+        pub fn is_not(value: Vec<rb::WhereParam>) -> WhereParam {
+            WhereParam::RbIsNot(value)
+        }
+        pub struct Fetch {
+            args: rb::UniqueArgs,
+        }
+        impl Fetch {
+            pub fn with(mut self, params: impl Into<rb::WithParam>) -> Self {
+                self.args = self.args.with(params.into());
+                self
+            }
+        }
+        impl From<Fetch> for WithParam {
+            fn from(fetch: Fetch) -> Self {
+                WithParam::Rb(fetch.args)
+            }
+        }
+        pub fn fetch() -> Fetch {
+            Fetch {
+                args: rb::UniqueArgs::new(),
+            }
+        }
+        pub fn link<T: From<Link>>(value: rb::UniqueWhereParam) -> T {
+            Link(value).into()
+        }
+        pub struct Link(rb::UniqueWhereParam);
+        impl From<Link> for SetParam {
+            fn from(value: Link) -> Self {
+                Self::LinkRb(value.0)
+            }
+        }
+    }
+    pub fn _outputs() -> Vec<Selection> {
+        ["id", "created_at", "value", "rb_id"]
+            .into_iter()
+            .map(|o| {
+                let builder = Selection::builder(o);
+                builder.build()
+            })
+            .collect()
+    }
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct Data {
+        #[serde(rename = "id")]
+        pub id: String,
+        #[serde(rename = "created_at")]
+        pub created_at: chrono::DateTime<chrono::FixedOffset>,
+        #[serde(rename = "value")]
+        pub value: f64,
+        #[serde(rename = "rb_id")]
+        pub rb_id: String,
+        #[serde(rename = "rb")]
+        pub rb: Option<Box<super::rb::Data>>,
+    }
+    impl Data {
+        pub fn rb(&self) -> Result<&super::rb::Data, &'static str> {
+            self.rb
+                .as_ref()
+                .ok_or("Attempted to access 'rb' but did not fetch it using the .with() syntax")
+                .map(|v| v.as_ref())
+        }
+    }
+    #[derive(Clone)]
+    pub enum WithParam {
+        Rb(super::rb::UniqueArgs),
+    }
+    impl Into<Selection> for WithParam {
+        fn into(self) -> Selection {
+            match self {
+                Self::Rb(args) => {
+                    let mut selections = super::rb::_outputs();
+                    selections.extend(args.with_params.into_iter().map(Into::<Selection>::into));
+                    let mut builder = Selection::builder("rb");
+                    builder.nested_selections(selections);
+                    builder.build()
+                }
+            }
+        }
+    }
+    #[derive(Clone)]
+    pub enum SetParam {
+        SetId(String),
+        SetCreatedAt(chrono::DateTime<chrono::FixedOffset>),
+        SetValue(f64),
+        IncrementValue(f64),
+        DecrementValue(f64),
+        MultiplyValue(f64),
+        DivideValue(f64),
+        SetRbId(String),
+        LinkRb(super::rb::UniqueWhereParam),
+    }
+    impl Into<(String, PrismaValue)> for SetParam {
+        fn into(self) -> (String, PrismaValue) {
+            match self {
+                SetParam::SetId(value) => ("id".to_string(), PrismaValue::String(value)),
+                SetParam::SetCreatedAt(value) => {
+                    ("created_at".to_string(), PrismaValue::DateTime(value))
+                }
+                SetParam::SetValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Float(
+                        bigdecimal::BigDecimal::from_f64(value)
+                            .unwrap()
+                            .normalized(),
+                    ),
+                ),
+                SetParam::IncrementValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "increment".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::DecrementValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "decrement".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::MultiplyValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "multiply".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::DivideValue(value) => (
+                    "value".to_string(),
+                    PrismaValue::Object(vec![(
+                        "divide".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                SetParam::SetRbId(value) => ("rb_id".to_string(), PrismaValue::String(value)),
+                SetParam::LinkRb(where_param) => (
+                    "rb".to_string(),
+                    PrismaValue::Object(vec![(
+                        "connect".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            vec![Into::<super::rb::WhereParam>::into(where_param)].into_iter(),
+                        )),
+                    )]),
+                ),
+            }
+        }
+    }
+    #[derive(Clone)]
+    pub enum OrderByParam {
+        Id(Direction),
+        CreatedAt(Direction),
+        Value(Direction),
+        RbId(Direction),
+    }
+    impl Into<(String, PrismaValue)> for OrderByParam {
+        fn into(self) -> (String, PrismaValue) {
+            match self {
+                Self::Id(direction) => {
+                    ("id".to_string(), PrismaValue::String(direction.to_string()))
+                }
+                Self::CreatedAt(direction) => (
+                    "created_at".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+                Self::Value(direction) => (
+                    "value".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+                Self::RbId(direction) => (
+                    "rb_id".to_string(),
+                    PrismaValue::String(direction.to_string()),
+                ),
+            }
+        }
+    }
+    #[derive(Clone)]
+    pub enum Cursor {
+        Id(String),
+    }
+    impl Into<(String, PrismaValue)> for Cursor {
+        fn into(self) -> (String, PrismaValue) {
+            match self {
+                Self::Id(cursor) => ("id".to_string(), PrismaValue::String(cursor)),
+            }
+        }
+    }
+    #[derive(Clone)]
+    pub enum WhereParam {
+        Not(Vec<WhereParam>),
+        Or(Vec<WhereParam>),
+        And(Vec<WhereParam>),
+        IdEquals(String),
+        IdInVec(Vec<String>),
+        IdNotInVec(Vec<String>),
+        IdLt(String),
+        IdLte(String),
+        IdGt(String),
+        IdGte(String),
+        IdContains(String),
+        IdStartsWith(String),
+        IdEndsWith(String),
+        IdNot(String),
+        CreatedAtEquals(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtInVec(Vec<chrono::DateTime<chrono::FixedOffset>>),
+        CreatedAtNotInVec(Vec<chrono::DateTime<chrono::FixedOffset>>),
+        CreatedAtLt(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtLte(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtGt(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtGte(chrono::DateTime<chrono::FixedOffset>),
+        CreatedAtNot(chrono::DateTime<chrono::FixedOffset>),
+        ValueEquals(f64),
+        ValueInVec(Vec<f64>),
+        ValueNotInVec(Vec<f64>),
+        ValueLt(f64),
+        ValueLte(f64),
+        ValueGt(f64),
+        ValueGte(f64),
+        ValueNot(f64),
+        RbIdEquals(String),
+        RbIdInVec(Vec<String>),
+        RbIdNotInVec(Vec<String>),
+        RbIdLt(String),
+        RbIdLte(String),
+        RbIdGt(String),
+        RbIdGte(String),
+        RbIdContains(String),
+        RbIdStartsWith(String),
+        RbIdEndsWith(String),
+        RbIdNot(String),
+        RbIs(Vec<super::rb::WhereParam>),
+        RbIsNot(Vec<super::rb::WhereParam>),
+    }
+    impl Into<SerializedWhere> for WhereParam {
+        fn into(self) -> SerializedWhere {
+            match self {
+                Self::Not(value) => (
+                    "NOT".to_string(),
+                    SerializedWhereValue::List(
+                        value
+                            .into_iter()
+                            .map(|v| PrismaValue::Object(transform_equals(vec![v].into_iter())))
+                            .collect(),
+                    ),
+                ),
+                Self::Or(value) => (
+                    "OR".to_string(),
+                    SerializedWhereValue::List(
+                        value
+                            .into_iter()
+                            .map(|v| PrismaValue::Object(transform_equals(vec![v].into_iter())))
+                            .collect(),
+                    ),
+                ),
+                Self::And(value) => (
+                    "AND".to_string(),
+                    SerializedWhereValue::List(
+                        value
+                            .into_iter()
+                            .map(|v| PrismaValue::Object(transform_equals(vec![v].into_iter())))
+                            .collect(),
+                    ),
+                ),
+                Self::IdEquals(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdInVec(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
+                        ),
+                    )]),
+                ),
+                Self::IdNotInVec(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
+                        ),
+                    )]),
+                ),
+                Self::IdLt(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdLte(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdGt(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdGte(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdContains(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "contains".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdStartsWith(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "startsWith".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdEndsWith(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "endsWith".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::IdNot(value) => (
+                    "id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::CreatedAtEquals(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtInVec(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::DateTime(v))
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::CreatedAtNotInVec(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| PrismaValue::DateTime(v))
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::CreatedAtLt(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtLte(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtGt(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtGte(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::CreatedAtNot(value) => (
+                    "created_at".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::DateTime(value),
+                    )]),
+                ),
+                Self::ValueEquals(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueInVec(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| {
+                                    PrismaValue::Float(
+                                        bigdecimal::BigDecimal::from_f64(v).unwrap().normalized(),
+                                    )
+                                })
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::ValueNotInVec(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value
+                                .into_iter()
+                                .map(|v| {
+                                    PrismaValue::Float(
+                                        bigdecimal::BigDecimal::from_f64(v).unwrap().normalized(),
+                                    )
+                                })
+                                .collect(),
+                        ),
+                    )]),
+                ),
+                Self::ValueLt(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueLte(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueGt(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueGte(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::ValueNot(value) => (
+                    "value".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::Float(
+                            bigdecimal::BigDecimal::from_f64(value)
+                                .unwrap()
+                                .normalized(),
+                        ),
+                    )]),
+                ),
+                Self::RbIdEquals(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "equals".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdInVec(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "in".to_string(),
+                        PrismaValue::List(
+                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
+                        ),
+                    )]),
+                ),
+                Self::RbIdNotInVec(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "notIn".to_string(),
+                        PrismaValue::List(
+                            value.into_iter().map(|v| PrismaValue::String(v)).collect(),
+                        ),
+                    )]),
+                ),
+                Self::RbIdLt(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lt".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdLte(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "lte".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdGt(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gt".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdGte(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "gte".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdContains(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "contains".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdStartsWith(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "startsWith".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdEndsWith(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "endsWith".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIdNot(value) => (
+                    "rb_id".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "not".to_string(),
+                        PrismaValue::String(value),
+                    )]),
+                ),
+                Self::RbIs(value) => (
+                    "rb".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "is".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            value.into_iter().map(Into::<SerializedWhere>::into),
+                        )),
+                    )]),
+                ),
+                Self::RbIsNot(value) => (
+                    "rb".to_string(),
+                    SerializedWhereValue::Object(vec![(
+                        "isNot".to_string(),
+                        PrismaValue::Object(transform_equals(
+                            value.into_iter().map(Into::<SerializedWhere>::into),
+                        )),
+                    )]),
+                ),
+            }
+        }
+    }
+    #[derive(Clone)]
+    pub enum UniqueWhereParam {
+        IdEquals(String),
+    }
+    impl From<UniqueWhereParam> for WhereParam {
+        fn from(value: UniqueWhereParam) -> Self {
+            match value {
+                UniqueWhereParam::IdEquals(value) => Self::IdEquals(value),
+            }
+        }
+    }
+    impl From<Operator<Self>> for WhereParam {
+        fn from(op: Operator<Self>) -> Self {
+            match op {
+                Operator::Not(value) => Self::Not(value),
+                Operator::And(value) => Self::And(value),
+                Operator::Or(value) => Self::Or(value),
+            }
+        }
+    }
+    pub type UniqueArgs = prisma_client_rust::UniqueArgs<WithParam>;
+    pub type ManyArgs = prisma_client_rust::ManyArgs<WhereParam, WithParam, OrderByParam, Cursor>;
+    pub type Create<'a> = prisma_client_rust::Create<'a, SetParam, WithParam, Data>;
+    pub type FindUnique<'a> =
+        prisma_client_rust::FindUnique<'a, WhereParam, WithParam, SetParam, Data>;
+    pub type FindMany<'a> = prisma_client_rust::FindMany<
+        'a,
+        WhereParam,
+        WithParam,
+        OrderByParam,
+        Cursor,
+        SetParam,
+        Data,
+    >;
+    pub type FindFirst<'a> =
+        prisma_client_rust::FindFirst<'a, WhereParam, WithParam, OrderByParam, Cursor, Data>;
+    pub type Update<'a> = prisma_client_rust::Update<'a, WhereParam, WithParam, SetParam, Data>;
+    pub type UpdateMany<'a> = prisma_client_rust::UpdateMany<'a, WhereParam, SetParam>;
+    pub type Upsert<'a> = prisma_client_rust::Upsert<'a, WhereParam, SetParam, WithParam, Data>;
+    pub type Delete<'a> = prisma_client_rust::Delete<'a, WhereParam, WithParam, Data>;
+    pub type DeleteMany<'a> = prisma_client_rust::DeleteMany<'a, WhereParam>;
+    pub struct Actions<'a> {
+        pub client: &'a PrismaClient,
+    }
+    impl<'a> Actions<'a> {
+        pub fn create(
+            self,
+            value: value::Set,
+            rb: rb::Link,
+            mut _params: Vec<SetParam>,
+        ) -> Create<'a> {
+            _params.push(value.into());
+            _params.push(rb.into());
+            Create::new(
+                self.client._new_query_context(),
+                QueryInfo::new("NextState", _outputs()),
+                _params,
+            )
+        }
+        pub fn find_unique(self, param: UniqueWhereParam) -> FindUnique<'a> {
+            FindUnique::new(
+                self.client._new_query_context(),
+                QueryInfo::new("NextState", _outputs()),
+                param.into(),
+            )
+        }
+        pub fn find_first(self, params: Vec<WhereParam>) -> FindFirst<'a> {
+            FindFirst::new(
+                self.client._new_query_context(),
+                QueryInfo::new("NextState", _outputs()),
+                params,
+            )
+        }
+        pub fn find_many(self, params: Vec<WhereParam>) -> FindMany<'a> {
+            FindMany::new(
+                self.client._new_query_context(),
+                QueryInfo::new("NextState", _outputs()),
+                params,
+            )
+        }
+        pub fn upsert(
+            self,
+            _where: UniqueWhereParam,
+            _create: (value::Set, rb::Link, Vec<SetParam>),
+            _update: Vec<SetParam>,
+        ) -> Upsert<'a> {
+            let (value, rb, mut _params) = _create;
+            _params.push(value.into());
+            _params.push(rb.into());
+            Upsert::new(
+                self.client._new_query_context(),
+                QueryInfo::new("NextState", _outputs()),
                 _where.into(),
                 _params,
                 _update,
@@ -1489,43 +3157,79 @@ pub mod _prisma {
             .exec()
             .await
         }
-        pub fn user(&self) -> user::Actions {
-            user::Actions { client: &self }
+        pub fn rb(&self) -> rb::Actions {
+            rb::Actions { client: &self }
         }
-        pub fn post(&self) -> post::Actions {
-            post::Actions { client: &self }
+        pub fn state(&self) -> state::Actions {
+            state::Actions { client: &self }
+        }
+        pub fn next_state(&self) -> next_state::Actions {
+            next_state::Actions { client: &self }
         }
     }
     #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-    pub enum UserScalarFieldEnum {
+    pub enum RbScalarFieldEnum {
         #[serde(rename = "id")]
         Id,
-        #[serde(rename = "displayName")]
-        DisplayName,
+        #[serde(rename = "created_at")]
+        CreatedAt,
+        #[serde(rename = "action")]
+        Action,
+        #[serde(rename = "reward")]
+        Reward,
+        #[serde(rename = "done")]
+        Done,
     }
-    impl ToString for UserScalarFieldEnum {
+    impl ToString for RbScalarFieldEnum {
         fn to_string(&self) -> String {
             match self {
                 Self::Id => "id".to_string(),
-                Self::DisplayName => "displayName".to_string(),
+                Self::CreatedAt => "created_at".to_string(),
+                Self::Action => "action".to_string(),
+                Self::Reward => "reward".to_string(),
+                Self::Done => "done".to_string(),
             }
         }
     }
     #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-    pub enum PostScalarFieldEnum {
+    pub enum StateScalarFieldEnum {
         #[serde(rename = "id")]
         Id,
-        #[serde(rename = "content")]
-        Content,
-        #[serde(rename = "userId")]
-        UserId,
+        #[serde(rename = "created_at")]
+        CreatedAt,
+        #[serde(rename = "value")]
+        Value,
+        #[serde(rename = "rb_id")]
+        RbId,
     }
-    impl ToString for PostScalarFieldEnum {
+    impl ToString for StateScalarFieldEnum {
         fn to_string(&self) -> String {
             match self {
                 Self::Id => "id".to_string(),
-                Self::Content => "content".to_string(),
-                Self::UserId => "userId".to_string(),
+                Self::CreatedAt => "created_at".to_string(),
+                Self::Value => "value".to_string(),
+                Self::RbId => "rb_id".to_string(),
+            }
+        }
+    }
+    #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+    pub enum NextStateScalarFieldEnum {
+        #[serde(rename = "id")]
+        Id,
+        #[serde(rename = "created_at")]
+        CreatedAt,
+        #[serde(rename = "value")]
+        Value,
+        #[serde(rename = "rb_id")]
+        RbId,
+    }
+    impl ToString for NextStateScalarFieldEnum {
+        fn to_string(&self) -> String {
+            match self {
+                Self::Id => "id".to_string(),
+                Self::CreatedAt => "created_at".to_string(),
+                Self::Value => "value".to_string(),
+                Self::RbId => "rb_id".to_string(),
             }
         }
     }

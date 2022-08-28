@@ -8,15 +8,32 @@ generator client {
   output   = "../src/db.rs"
 }
 
-model User {
-  id          String @id
-  displayName String
-  posts       Post[]
+model Rb {
+  id         String      @id @default(cuid())
+  created_at DateTime    @default(now())
+  state      State[]
+  action     Int
+  reward     Float
+  next_state NextState[]
+  done       Boolean
 }
 
-model Post {
-  id      String @id
-  content String
-  user    User   @relation(fields: [userId], references: [id])
-  userId  String
+model State {
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  value      Float
+  rb_id      String
+  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
 }
+
+model NextState {
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  value      Float
+  rb_id      String
+  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
+}
+
+// model Net {
+//   id String @id @default(cuid())
+// }
