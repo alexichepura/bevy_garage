@@ -1,6 +1,7 @@
 datasource db {
   provider = "postgres"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:@127.0.0.1:5432/cardqn?schema=public"
+  // url      = env("DATABASE_URL")
 }
 
 generator client {
