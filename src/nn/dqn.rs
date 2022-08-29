@@ -127,7 +127,8 @@ pub async fn dqn_system(
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
         let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
         dqn.rb.store(s, a, r, sn, done);
-        dbres
+
+        let created = dbres
             .client
             .rb()
             .create(
@@ -136,12 +137,20 @@ pub async fn dqn_system(
                 done,
                 vec![
                     rb::state::set(s.map(|s| s as f64).to_vec()),
-                    rb::state::set(sn.map(|s| s as f64).to_vec()),
+                    rb::next_state::set(sn.map(|s| s as f64).to_vec()),
                 ],
             )
             .exec()
-            .await
-            .unwrap();
+            .await;
+
+        match created {
+            Ok(_) => {
+                println!("saved sarsnd");
+            }
+            Err(err) => {
+                dbg!(err);
+            }
+        };
 
         if crash {
             println!(
