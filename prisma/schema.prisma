@@ -1,5 +1,6 @@
 datasource db {
-  provider = "postgres"
+  provider = "cockroachdb"
+  // provider = "postgres"
   // url      = "postgresql://postgres@localhost:5432/cardqn?schema=public"
   url      = env("DATABASE_URL")
 }
