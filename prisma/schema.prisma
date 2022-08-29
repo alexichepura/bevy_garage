@@ -9,29 +9,13 @@ generator client {
 }
 
 model Rb {
-  id         String      @id @default(cuid())
-  created_at DateTime    @default(now())
-  state      State[]
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  state      String
   action     Int
   reward     Float
-  next_state NextState[]
+  next_state String
   done       Boolean
-}
-
-model State {
-  id         String   @id @default(cuid())
-  created_at DateTime @default(now())
-  value      Float
-  rb_id      String
-  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
-}
-
-model NextState {
-  id         String   @id @default(cuid())
-  created_at DateTime @default(now())
-  value      Float
-  rb_id      String
-  rb         Rb       @relation(fields: [rb_id], references: [id], onDelete: Cascade)
 }
 
 // model Net {

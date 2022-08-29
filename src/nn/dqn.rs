@@ -3,7 +3,6 @@ use crate::{
     camera::CameraConfig,
     car::*,
     config::*,
-    db::{next_state, rb, state},
     db_client::DbClientResource,
     nn::{dqn_bevy::*, util::*},
     track::*,
@@ -128,45 +127,20 @@ pub async fn dqn_system(
         let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
         dqn.rb.store(s, a, r, sn, done);
 
-        let created = dbres
+        dbres
             .client
             .rb()
             .create(
-                rb::action::set(a as i32),
-                rb::reward::set(r as f64),
-                rb::done::set(done),
+                s.map(|x| x.to_string()).join(","),
+                a as i32,
+                r as f64,
+                sn.map(|x| x.to_string()).join(","),
+                done,
                 vec![],
             )
             .exec()
             .await
             .unwrap();
-
-        for s_value in s {
-            dbres
-                .client
-                .state()
-                .create(
-                    state::value::set(s_value as f64),
-                    state::rb::link(rb::id::equals(created.id.to_string())),
-                    vec![],
-                )
-                .exec()
-                .await
-                .unwrap();
-        }
-        for s_value in sn {
-            dbres
-                .client
-                .next_state()
-                .create(
-                    next_state::value::set(s_value as f64),
-                    next_state::rb::link(rb::id::equals(created.id.to_string())),
-                    vec![],
-                )
-                .exec()
-                .await
-                .unwrap();
-        }
 
         if crash {
             println!(

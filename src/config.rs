@@ -29,7 +29,7 @@ impl Default for Config {
             show_rays: true,
             max_torque: MAX_TORQUE,
             max_toi: MAX_TOI,
-            translation: Vec3::new(0., 0.5, 0.),
+            translation: Vec3::new(0., 0.1, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
             hid_car: None,
             polyline: None,

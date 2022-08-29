@@ -1,5 +1,5 @@
 use super::{params::*, replay::ReplayBuffer};
-use crate::{dash::*, db::rb, db_client::DbClientResource, nn::dqn::*};
+use crate::{dash::*, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
@@ -88,11 +88,6 @@ impl SgdResource {
 pub fn dqn_exclusive_start_system(world: &mut World) {
     world.insert_non_send_resource(SgdResource::new());
     world.insert_non_send_resource(CarsDqnResource::new());
-}
-#[tokio::main]
-pub async fn dqn_start_system(dbres: Res<DbClientResource>) {
-    let rb: Vec<rb::Data> = dbres.client.rb().find_many(vec![]).exec().await.unwrap();
-    dbg!(rb);
 }
 
 pub fn dqn_dash_update_system(

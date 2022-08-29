@@ -21,24 +21,26 @@ pub async fn keyboard_input_system(
     mut dqn: ResMut<DqnResource>,
 ) {
     if input.just_pressed(KeyCode::B) {
-        let rb: Vec<rb::Data> = dbres
-            .client
-            .rb()
-            .find_many(vec![])
-            .with(rb::state::fetch(vec![]))
-            .with(rb::next_state::fetch(vec![]))
-            .exec()
-            .await
-            .unwrap();
+        let rb: Vec<rb::Data> = dbres.client.rb().find_many(vec![]).exec().await.unwrap();
 
         for r in rb.iter() {
             let mut state = OBSERVATION_ZERO;
             let mut next_state = OBSERVATION_ZERO;
-            for (i, s) in r.state().unwrap().iter().enumerate() {
-                state[i] = s.value as f32;
+            for (i, state_item) in r
+                .state
+                .split(",")
+                .map(|x| x.parse::<f32>().unwrap())
+                .enumerate()
+            {
+                state[i] = state_item;
             }
-            for (i, s) in r.next_state().unwrap().iter().enumerate() {
-                next_state[i] = s.value as f32;
+            for (i, next_state_item) in r
+                .state
+                .split(",")
+                .map(|x| x.parse::<f32>().unwrap())
+                .enumerate()
+            {
+                next_state[i] = next_state_item;
             }
             dqn.rb.store(
                 state,
