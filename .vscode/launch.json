@@ -20,7 +20,8 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "CARGO_MANIFEST_DIR": "${workspaceFolder}",
-            }
+                "DATABASE_URL": "postgresql://postgres@localhost:5432/cardqn?schema=public",
+            },
         },
         {
             "type": "lldb",
