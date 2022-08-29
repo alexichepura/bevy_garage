@@ -23,6 +23,7 @@ pub async fn keyboard_input_system(
         let rb = dbres.client.rb().find_many(vec![]).exec().await;
         match rb {
             Ok(rb) => {
+                println!("loaded rb items: {:?}", rb.len());
                 for r in rb.iter() {
                     let mut state = OBSERVATION_ZERO;
                     let mut next_state = OBSERVATION_ZERO;
