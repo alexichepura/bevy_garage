@@ -125,22 +125,23 @@ pub async fn dqn_system(
 
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
         let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
-        dqn.rb.store(s, a, r, sn, done);
-
-        dbres
-            .client
-            .rb()
-            .create(
-                s.map(|x| x.to_string()).join(","),
-                a as i32,
-                r as f64,
-                sn.map(|x| x.to_string()).join(","),
-                done,
-                vec![],
-            )
-            .exec()
-            .await
-            .unwrap();
+        if !s.iter().all(|&x| x == 0.) {
+            dqn.rb.store(s, a, r, sn, done);
+            dbres
+                .client
+                .rb()
+                .create(
+                    s.map(|x| x.to_string()).join(","),
+                    a as i32,
+                    r as f64,
+                    sn.map(|x| x.to_string()).join(","),
+                    done,
+                    vec![],
+                )
+                .exec()
+                .await
+                .unwrap();
+        }
 
         if crash {
             println!(
