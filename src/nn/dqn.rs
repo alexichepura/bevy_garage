@@ -1,6 +1,6 @@
 use super::params::*;
 use crate::{
-    camera::CameraConfig,
+    camera::{CameraConfig, CameraFollowMode},
     car::*,
     config::*,
     db_client::DbClientResource,
@@ -37,7 +37,7 @@ pub async fn dqn_system(
         Option<&HID>,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
-    config: Res<Config>,
+    mut config: ResMut<Config>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -47,6 +47,29 @@ pub async fn dqn_system(
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let seconds = time.seconds_since_startup();
+    if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
+        let (transform, init_meters) = config.get_transform_random();
+        let new_car_id = spawn_car(
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+            &car_gl,
+            dqn.respawn_is_hid,
+            transform,
+            dqn.respawn_index,
+            init_meters,
+            config.max_toi,
+            config.max_torque,
+        );
+        cars_dqn.add_car(new_car_id);
+        // if camera_config.mode.not_none() && dqn.respawn_is_hid {
+        camera_config.camera_follow = Some(new_car_id);
+        camera_config.mode = CameraFollowMode::Far;
+        // }
+        dqn.respawn_at = 0.;
+        dqn.respawn_is_hid = false;
+        config.use_brain = true;
+    };
     let should_act: bool = seconds > dqn.seconds;
     if should_act {
         dqn.seconds = seconds + STEP_DURATION;
@@ -69,11 +92,16 @@ pub async fn dqn_system(
                 }
             }
         }
+        let should_act_or_crash = should_act || crash;
 
         if crash {
             dqn.crashes += 1;
+            dqn.respawn_at = seconds + 0.1;
+            dqn.respawn_is_hid = is_hid;
+            dqn.respawn_index = car.index;
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
+            config.use_brain = false;
         }
 
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
@@ -113,7 +141,12 @@ pub async fn dqn_system(
 
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
         let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
-        if !s.iter().all(|&x| x == 0.) {
+
+        if crash {
+            cars_dqn.del_car(&e);
+        }
+
+        if should_act_or_crash && !s.iter().all(|&x| x == 0.) {
             dqn.rb.store(s, a, r, sn, done);
             dbres
                 .client
@@ -130,30 +163,10 @@ pub async fn dqn_system(
                 .await
                 .unwrap();
         }
-
-        if crash {
-            cars_dqn.del_car(&e);
-            let (transform, init_meters) = config.get_transform_random();
-            let new_car_id = spawn_car(
-                &mut commands,
-                &mut meshes,
-                &mut materials,
-                &car_gl,
-                is_hid,
-                transform,
-                car.index,
-                init_meters,
-                config.max_toi,
-                config.max_torque,
-            );
-            cars_dqn.add_car(new_car_id);
-            if camera_config.mode.not_none() && is_hid {
-                camera_config.camera_follow = Some(new_car_id);
-            }
-        }
-
+        // if should_act_or_crash {
+        //     println!("{:?} {done:?} {a:?} {r:.3} {:.1}", car.index, car.meters);
+        // }
         if !config.use_brain || !should_act || crash {
-            println!("{:?} {done:?} {a:?} {r:.3} {:.1}", car.index, car.meters);
             return;
         }
 
@@ -206,7 +219,7 @@ pub async fn dqn_system(
                         .sgd
                         .update(&mut cars_dqn.qn, gradients)
                         .expect("Unused params");
-                    if _i_epoch % 5 == 0 {
+                    if _i_epoch % 10 == 0 {
                         loss_string.push_str(format!("{:.2} ", loss_v).as_str());
                     }
                 }

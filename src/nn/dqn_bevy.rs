@@ -54,6 +54,10 @@ pub struct DqnResource {
     pub max_eps: f32,
     pub min_eps: f32,
     pub done: f32,
+
+    pub respawn_at: f64,
+    pub respawn_is_hid: bool,
+    pub respawn_index: usize,
 }
 impl DqnResource {
     pub fn default() -> Self {
@@ -66,6 +70,10 @@ impl DqnResource {
             max_eps: 1.,
             min_eps: 0.01,
             done: 0.,
+
+            respawn_at: 0.,
+            respawn_is_hid: false,
+            respawn_index: 0,
         }
     }
 }
