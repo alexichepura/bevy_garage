@@ -12,12 +12,11 @@ mod mesh;
 mod nn;
 mod progress;
 mod track;
-
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_atmosphere::prelude::*;
+use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
-
 use camera::*;
 use car::*;
 use config::*;
@@ -28,19 +27,36 @@ use gamepad::*;
 use input::*;
 use light::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
-
 use progress::*;
 use track::*;
 
+fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
+    c.integration_parameters.max_velocity_iterations = 4 * 32;
+    c.integration_parameters.max_velocity_friction_iterations = 8 * 32;
+    c.integration_parameters.max_stabilization_iterations = 256;
+    dbg!(c.integration_parameters);
+}
+
+const FPS: f32 = 60.;
 fn main() {
     App::new()
+        .insert_resource(RapierConfiguration {
+            timestep_mode: TimestepMode::Fixed {
+                dt: 1. / FPS,
+                substeps: 10,
+            },
+            ..default()
+        })
+        .insert_resource(FramepaceSettings {
+            limiter: Limiter::from_framerate(FPS as f64),
+            ..default()
+        })
         .insert_resource(DbClientResource::default())
         .insert_resource(DqnResource::default())
         .insert_resource(WindowDescriptor {
             title: "car sim deep learning".to_string(),
             width: 1024.,
             height: 768.,
-            // present_mode: PresentMode::AutoVsync,
             ..default()
         })
         .insert_resource(Msaa { samples: 4 })
@@ -49,6 +65,7 @@ fn main() {
         .insert_resource(AtmosphereSettings { resolution: 1024 })
         .add_plugins(DefaultPlugins)
         .add_plugin(AtmospherePlugin)
+        .add_plugin(FramepacePlugin)
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
         .add_system(camera_switch_system)
@@ -91,13 +108,6 @@ fn main() {
         .add_system(progress_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .run();
-}
-
-fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 4 * 256;
-    c.integration_parameters.max_velocity_friction_iterations = 8 * 64;
-    c.integration_parameters.max_stabilization_iterations = 1 * 1024;
-    dbg!(c.integration_parameters);
 }
 
 // fn display_events_system(

@@ -16,7 +16,8 @@ dfdx = { version = "0.9.0" }
 bevy = { version = "0.8.1" }
 bevy_rapier3d = { version = "0.16.1", features=["serde-serialize"]}
 bevy_prototype_debug_lines = { version = "0.8.1", features = ["3d"] }
-bevy_atmosphere = "0.4.0"
+bevy_atmosphere = "0.4.1"
+bevy_framepace = {git = "https://github.com/aevyrie/bevy_framepace"}
 parry3d = "0.9.0"
 obj-rs = { version =  "0.7.0", default-features = false }
 serde = { version = "1.0.144", features = ["derive"] }
