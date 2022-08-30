@@ -278,6 +278,7 @@ pub fn spawn_car(
         .insert(Sleeping::disabled())
         .insert(Car::new(&wheels, max_torque, transform, init_meters, index))
         .insert(RigidBody::Dynamic)
+        .insert(Ccd::enabled())
         .insert(Damping {
             linear_damping: 0.05,
             angular_damping: 20.0,
@@ -306,7 +307,6 @@ pub fn spawn_car(
             children
                 .spawn()
                 .insert(Name::new("car_collider"))
-                .insert(Ccd::enabled())
                 .insert(Collider::round_cuboid(
                     car_hw - car_bradius,
                     car_hh - car_bradius,
@@ -315,7 +315,7 @@ pub fn spawn_car(
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
                 .insert(Friction::coefficient(0.5))
-                .insert(Restitution::coefficient(0.8))
+                .insert(Restitution::coefficient(0.))
                 .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
                 .insert(CollidingEntities::default())
                 .insert(ActiveEvents::COLLISION_EVENTS)

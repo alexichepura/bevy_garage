@@ -54,8 +54,8 @@ pub async fn dqn_system(
     }
 
     for (mut car, v, tr, children, e, hid) in q_car.iter_mut() {
-        let car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
-        let mut crash: bool = car_dqn.crash;
+        let is_hid = hid.is_some();
+        let mut crash: bool = false;
         if !crash {
             for &child in children.iter() {
                 let colliding_entities = q_colliding_entities.get(child);
@@ -69,13 +69,13 @@ pub async fn dqn_system(
                 }
             }
         }
+
         if crash {
-            car_dqn.crash = true;
+            dqn.crashes += 1;
+            commands.entity(e).despawn_recursive();
+            car.despawn_wheels(&mut commands);
         }
-        if !should_act {
-            return;
-        }
-        let is_hid = hid.is_some();
+
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
             vel_angle = 0.;
@@ -83,7 +83,6 @@ pub async fn dqn_system(
         let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
         let pos_angle = car.line_dir.angle_between(pos_dir);
         let shape_reward = || -> f32 {
-            // let (_p, colliding_entities) = q_colliding_entities.single();
             if crash {
                 return -1.;
             }
@@ -97,9 +96,6 @@ pub async fn dqn_system(
             if reward.is_nan() {
                 return 0.;
             }
-            // if reward.is_sign_negative() {
-            //     reward *= 2.; // TODO test negative reward multiplication
-            // }
             return reward;
         };
         let reward = shape_reward();
@@ -113,14 +109,6 @@ pub async fn dqn_system(
                 2 => pos_angle.cos(),
                 _ => car.sensor_inputs[i - STATE_SIZE_BASE],
             };
-        }
-
-        if !config.use_brain {
-            // println!(
-            //     "dqn {reward:.2} {:.?}",
-            //     obs.map(|o| { (o * 10.).round() / 10. })
-            // );
-            return;
         }
 
         let car_dqn = cars_dqn.cars.get(&e).unwrap();
@@ -144,14 +132,7 @@ pub async fn dqn_system(
         }
 
         if crash {
-            println!(
-                "crash!!! e_{e:?} i_{:?} r_{reward:.2} m_{:.2}",
-                car.index, car.meters
-            );
-            dqn.crashes += 1;
-            commands.entity(e).despawn_recursive();
             cars_dqn.del_car(&e);
-            car.despawn_wheels(&mut commands);
             let (transform, init_meters) = config.get_transform_random();
             let new_car_id = spawn_car(
                 &mut commands,
@@ -169,6 +150,10 @@ pub async fn dqn_system(
             if camera_config.mode.not_none() && is_hid {
                 camera_config.camera_follow = Some(new_car_id);
             }
+        }
+
+        if !config.use_brain || !should_act || crash {
+            println!("{:?} {done:?} {a:?} {r:.3} {:.1}", car.index, car.meters);
             return;
         }
 
@@ -198,7 +183,7 @@ pub async fn dqn_system(
 
         if let Some(_hid) = hid {
             if dqn.rb.len() < BATCH_SIZE {
-                log_action_reward(car_dqn.prev_action, reward);
+                log_action_reward(a, r);
             } else {
                 let start = Instant::now();
                 let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));

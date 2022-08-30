@@ -9,7 +9,6 @@ pub struct CarDqnResource {
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
-    pub crash: bool, // collision happened between dqn steps
 }
 
 impl CarDqnResource {
@@ -18,7 +17,6 @@ impl CarDqnResource {
             prev_obs: [0.; STATE_SIZE],
             prev_action: 0,
             prev_reward: 0.,
-            crash: false,
         }
     }
 }
