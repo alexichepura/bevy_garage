@@ -177,7 +177,7 @@ pub fn spawn_car(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
             .set_motor(JointAxis::X, 0., 0., 10e10, 1.)
-            .set_motor(JointAxis::Y, 0., 0., 50_000., 100.)
+            .set_motor(JointAxis::Y, 0., 0., 20_000., 1.)
             .set_motor(JointAxis::Z, 0., 0., 10e10, 1.)
             .build();
         joints.push(joint);
@@ -337,7 +337,7 @@ pub fn spawn_car(
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
-    mut q_car: Query<(&mut Car, &GlobalTransform), With<Car>>,
+    mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
     mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
@@ -345,14 +345,16 @@ pub fn car_sensor_system(
     let dir = Vec3::Z * config.max_toi;
     let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
 
-    for (mut car, gt) in q_car.iter_mut() {
+    for (mut car, gt, t) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
         for a in 0..SENSOR_COUNT {
             let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
             origins.push(gt.translation());
-            dirs.push(gt.translation() + sensor_pos_on_car + far_quat.mul_vec3(dir));
+            let mut dir_vec = t.rotation.mul_vec3(far_quat.mul_vec3(dir));
+            dir_vec.y = 0.;
+            dirs.push(gt.translation() + sensor_pos_on_car + dir_vec);
         }
 
         let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];
