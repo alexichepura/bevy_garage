@@ -45,6 +45,7 @@ pub struct Car {
     pub meters: f32,
     pub lap: usize,
     pub line_dir: Vec3,
+    pub line_pos: Vec3,
     pub place: usize,
 
     pub prev_steering: f32,
@@ -79,6 +80,7 @@ impl Car {
             place: 0,
             lap: 0,
             line_dir: Vec3::ZERO,
+            line_pos: Vec3::ZERO,
         }
     }
     pub fn despawn_wheels(&mut self, commands: &mut Commands) {
@@ -177,7 +179,7 @@ pub fn spawn_car(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
             .set_motor(JointAxis::X, 0., 0., 10e10, 1.)
-            .set_motor(JointAxis::Y, 0., 0., 40_000., 10.)
+            .set_motor(JointAxis::Y, 0., 0., 50_000., 100.)
             .set_motor(JointAxis::Z, 0., 0., 10e10, 1.)
             .build();
         joints.push(joint);
@@ -300,25 +302,6 @@ pub fn spawn_car(
                 .insert(ActiveEvents::COLLISION_EVENTS)
                 .insert(ContactForceEventThreshold(0.1))
                 .insert(collider_mass);
-
-            // let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
-            // for a in 0..SENSOR_COUNT {
-            //     let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
-            //     let dir = Vec3::Z * max_toi;
-            //     let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
-            //     children
-            //         .spawn()
-            //         .insert(SensorNear)
-            //         .insert_bundle(TransformBundle::from(Transform::from_translation(
-            //             sensor_pos_on_car,
-            //         )));
-            //     children
-            //         .spawn()
-            //         .insert(SensorFar)
-            //         .insert_bundle(TransformBundle::from(Transform::from_translation(
-            //             sensor_pos_on_car + far_quat.mul_vec3(dir),
-            //         )));
-            // }
         })
         .id();
 
@@ -348,13 +331,22 @@ pub fn car_sensor_system(
     for (mut car, gt, t) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
+        let g_translation = gt.translation();
+
+        let h = Vec3::Y * 0.6;
+        lines.line_colored(
+            h + g_translation,
+            h + car.line_pos + Vec3::Y * g_translation.y,
+            0.0,
+            Color::rgba(0.5, 0.5, 0.5, 0.5),
+        );
 
         for a in 0..SENSOR_COUNT {
             let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
-            origins.push(gt.translation());
+            origins.push(g_translation);
             let mut dir_vec = t.rotation.mul_vec3(far_quat.mul_vec3(dir));
             dir_vec.y = 0.;
-            dirs.push(gt.translation() + sensor_pos_on_car + dir_vec);
+            dirs.push(g_translation + sensor_pos_on_car + dir_vec);
         }
 
         let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];

@@ -100,6 +100,9 @@ pub fn dqn_system(
         }
         let vel_cos = vel_angle.cos();
         let pos_cos = pos_angle.cos();
+        let mut d_from_center = car.line_pos - tr.translation;
+        d_from_center.y = 0.;
+        let d = d_from_center.length();
 
         let shape_reward = || -> f32 {
             if crash {
@@ -107,8 +110,8 @@ pub fn dqn_system(
             }
             // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
             // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
-            // R = v(cos α − d) // TODO d
-            let mut reward = v.linvel.length() / SPEED_LIMIT_MPS * vel_cos;
+            // R = v(cos α − d)
+            let mut reward = v.linvel.length() / SPEED_LIMIT_MPS * (vel_cos - d / 5.);
             if vel_cos.is_sign_positive() && pos_cos.is_sign_negative() {
                 reward = -reward;
             }
