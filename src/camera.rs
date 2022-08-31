@@ -81,9 +81,9 @@ pub enum CameraFollowMode {
     None,
 }
 impl CameraFollowMode {
-    pub fn not_none(&self) -> bool {
-        *self != CameraFollowMode::None
-    }
+    // pub fn not_none(&self) -> bool {
+    //     *self != CameraFollowMode::None
+    // }
 }
 
 pub struct CameraConfig {

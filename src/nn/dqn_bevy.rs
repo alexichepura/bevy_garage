@@ -2,16 +2,16 @@ use super::{params::*, replay::ReplayBuffer};
 use crate::{dash::*, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::prelude::*;
-use rand::{rngs::StdRng, SeedableRng};
-use std::collections::HashMap;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 
-pub struct CarDqnResource {
+#[derive(Component, Debug)]
+pub struct CarDqnPrev {
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
 }
 
-impl CarDqnResource {
+impl CarDqnPrev {
     pub fn new() -> Self {
         Self {
             prev_obs: [0.; STATE_SIZE],
@@ -22,26 +22,43 @@ impl CarDqnResource {
 }
 
 pub struct CarsDqnResource {
-    pub cars: HashMap<Entity, CarDqnResource>,
     pub qn: QNetwork,
     pub tqn: QNetwork,
 }
 impl CarsDqnResource {
+    pub fn act(&self, obs: Observation, epsilon: f32) -> (usize, bool) {
+        let obs_state_tensor = Tensor1D::new(obs);
+        let mut rng = rand::thread_rng();
+        let random_number = rng.gen_range(0.0..1.0);
+        let exploration = random_number < epsilon;
+
+        let action: usize = if exploration {
+            rng.gen_range(0..ACTIONS - 1)
+        } else {
+            let q_values = self.qn.forward(obs_state_tensor.clone());
+            let max_q_value = *q_values.clone().max_axis::<-1>().data();
+            let some_action = q_values
+                .clone()
+                .data()
+                .iter()
+                .position(|q| *q >= max_q_value);
+            if None == some_action {
+                dbg!(q_values);
+                panic!();
+            } else {
+                some_action.unwrap()
+            }
+        };
+        (action, exploration)
+    }
     pub fn new() -> Self {
         let mut rng = StdRng::seed_from_u64(0);
         let mut qn = QNetwork::default();
         qn.reset_params(&mut rng);
         Self {
-            cars: HashMap::new(),
             qn: qn.clone(),
             tqn: qn.clone(),
         }
-    }
-    pub fn add_car(&mut self, car_id: Entity) {
-        self.cars.insert(car_id, CarDqnResource::new());
-    }
-    pub fn del_car(&mut self, car_id: &Entity) {
-        self.cars.remove(&car_id);
     }
 }
 

@@ -21,8 +21,7 @@ pub type QNetwork = (
 pub type Observation = [f32; STATE_SIZE];
 pub const OBSERVATION_ZERO: Observation = [0.; STATE_SIZE];
 
-#[tokio::main]
-pub async fn dqn_system(
+pub fn dqn_system(
     time: Res<Time>,
     mut dqn: ResMut<DqnResource>,
     mut sgd_res: NonSendMut<SgdResource>,
@@ -35,17 +34,16 @@ pub async fn dqn_system(
         &Children,
         Entity,
         Option<&HID>,
+        &mut CarDqnPrev,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut config: ResMut<Config>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
     mut camera_config: ResMut<CameraConfig>,
     dbres: Res<DbClientResource>,
 ) {
-    let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     let seconds = time.seconds_since_startup();
     if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
         let (transform, init_meters) = config.get_transform_random();
@@ -53,7 +51,7 @@ pub async fn dqn_system(
             &mut commands,
             &mut meshes,
             &mut materials,
-            &car_gl,
+            &config.car_scene.as_ref().unwrap(),
             dqn.respawn_is_hid,
             transform,
             dqn.respawn_index,
@@ -61,14 +59,15 @@ pub async fn dqn_system(
             config.max_toi,
             config.max_torque,
         );
-        cars_dqn.add_car(new_car_id);
         // if camera_config.mode.not_none() && dqn.respawn_is_hid {
         camera_config.camera_follow = Some(new_car_id);
         camera_config.mode = CameraFollowMode::Far;
         // }
         dqn.respawn_at = 0.;
         dqn.respawn_is_hid = false;
+        dqn.respawn_index = 0;
         config.use_brain = true;
+        return;
     };
     let should_act: bool = seconds > dqn.seconds;
     if should_act {
@@ -76,32 +75,19 @@ pub async fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, v, tr, children, e, hid) in q_car.iter_mut() {
+    for (mut car, v, tr, children, e, hid, mut car_dqn_prev) in q_car.iter_mut() {
         let is_hid = hid.is_some();
         let mut crash: bool = false;
-        if !crash {
-            for &child in children.iter() {
-                let colliding_entities = q_colliding_entities.get(child);
-                if let Ok(colliding_entities) = colliding_entities {
-                    for e in colliding_entities.iter() {
-                        let colliding_entity = q_name.get(e).unwrap();
-                        if !colliding_entity.contains(ASSET_ROAD) {
-                            crash = true;
-                        }
+        for &child in children.iter() {
+            let colliding_entities = q_colliding_entities.get(child);
+            if let Ok(colliding_entities) = colliding_entities {
+                for e in colliding_entities.iter() {
+                    let colliding_entity = q_name.get(e).unwrap();
+                    if !colliding_entity.contains(ASSET_ROAD) {
+                        crash = true;
                     }
                 }
             }
-        }
-        let should_act_or_crash = should_act || crash;
-
-        if crash {
-            dqn.crashes += 1;
-            dqn.respawn_at = seconds + 0.1;
-            dqn.respawn_is_hid = is_hid;
-            dqn.respawn_index = car.index;
-            commands.entity(e).despawn_recursive();
-            car.despawn_wheels(&mut commands);
-            config.use_brain = false;
         }
 
         let mut vel_angle = car.line_dir.angle_between(v.linvel);
@@ -109,7 +95,13 @@ pub async fn dqn_system(
             vel_angle = 0.;
         }
         let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
-        let pos_angle = car.line_dir.angle_between(pos_dir);
+        let mut pos_angle = car.line_dir.angle_between(pos_dir);
+        if pos_angle.is_nan() {
+            pos_angle = 0.;
+        }
+        let vel_cos = vel_angle.cos();
+        let pos_cos = pos_angle.cos();
+
         let shape_reward = || -> f32 {
             if crash {
                 return -1.;
@@ -117,8 +109,8 @@ pub async fn dqn_system(
             // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
             // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
             // R = v(cos α − d) // TODO d
-            let mut reward = v.linvel.length() / SPEED_LIMIT_MPS * vel_angle.cos();
-            if vel_angle.cos().is_sign_positive() && pos_angle.cos().is_sign_negative() {
+            let mut reward = v.linvel.length() / SPEED_LIMIT_MPS * vel_cos;
+            if vel_cos.is_sign_positive() && pos_cos.is_sign_negative() {
                 reward = -reward;
             }
             if reward.is_nan() {
@@ -133,72 +125,45 @@ pub async fn dqn_system(
         for i in 0..obs.len() {
             obs[i] = match i {
                 0 => kmh / 100.,
-                1 => vel_angle.cos(),
-                2 => pos_angle.cos(),
+                1 => vel_cos,
+                2 => pos_cos,
                 _ => car.sensor_inputs[i - STATE_SIZE_BASE],
             };
         }
 
-        let car_dqn = cars_dqn.cars.get(&e).unwrap();
-        let (s, a, r, sn, done) = (car_dqn.prev_obs, car_dqn.prev_action, reward, obs, crash);
+        let (prev_action, prev_obs) = (car_dqn_prev.prev_action, car_dqn_prev.prev_obs);
+        if config.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
+            dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
+            if dqn.rb.should_persist() {
+                dqn.rb.persist(&dbres.client);
+            }
+        }
 
+        let (action, exploration) = cars_dqn.act(obs, dqn.eps);
+        if should_act && !crash {
+            car_dqn_prev.prev_obs = obs;
+            car_dqn_prev.prev_action = action;
+            car_dqn_prev.prev_reward = reward;
+        }
         if crash {
-            cars_dqn.del_car(&e);
+            dqn.crashes += 1;
+            dqn.respawn_at = seconds + 0.5;
+            dqn.respawn_is_hid = is_hid;
+            dqn.respawn_index = car.index;
+            commands.entity(e).despawn_recursive();
+            car.despawn_wheels(&mut commands);
+            config.use_brain = false;
         }
-
-        if should_act_or_crash && !s.iter().all(|&x| x == 0.) {
-            dqn.rb.store(s, a, r, sn, done);
-            dbres
-                .client
-                .rb()
-                .create(
-                    s.map(|x| x.to_string()).join(","),
-                    a as i32,
-                    r as f64,
-                    sn.map(|x| x.to_string()).join(","),
-                    done,
-                    vec![],
-                )
-                .exec()
-                .await
-                .unwrap();
-        }
-        // if should_act_or_crash {
-        //     println!("{:?} {done:?} {a:?} {r:.3} {:.1}", car.index, car.meters);
-        // }
         if !config.use_brain || !should_act || crash {
             return;
         }
 
-        let obs_state_tensor = Tensor1D::new(obs);
-        let mut rng = rand::thread_rng();
-        let random_number = rng.gen_range(0.0..1.0);
-        let action: usize;
-        let exploration = random_number < dqn.eps;
-        if exploration {
-            action = rng.gen_range(0..ACTIONS - 1);
-        } else {
-            // let car_dqn = cars_dqn.cars.get(&e).unwrap();
-            let q_values = cars_dqn.qn.forward(obs_state_tensor.clone());
-            let max_q_value = *q_values.clone().max_axis::<-1>().data();
-            let some_action = q_values
-                .clone()
-                .data()
-                .iter()
-                .position(|q| *q >= max_q_value);
-            if None == some_action {
-                dbg!(q_values);
-                panic!();
-            } else {
-                action = some_action.unwrap();
-            }
-        }
-
         if let Some(_hid) = hid {
             if dqn.rb.len() < BATCH_SIZE {
-                log_action_reward(a, r);
+                log_action_reward(car_dqn_prev.prev_action, reward);
             } else {
                 let start = Instant::now();
+                let mut rng = rand::thread_rng();
                 let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
                 let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
                 let mut loss_string: String = String::from("");
@@ -219,7 +184,7 @@ pub async fn dqn_system(
                         .sgd
                         .update(&mut cars_dqn.qn, gradients)
                         .expect("Unused params");
-                    if _i_epoch % 10 == 0 {
+                    if _i_epoch % 4 == 0 {
                         loss_string.push_str(format!("{:.2} ", loss_v).as_str());
                     }
                 }
@@ -235,11 +200,6 @@ pub async fn dqn_system(
                 };
             }
         }
-
-        let mut car_dqn = cars_dqn.cars.get_mut(&e).unwrap();
-        car_dqn.prev_obs = obs;
-        car_dqn.prev_action = action;
-        car_dqn.prev_reward = reward;
 
         let (gas, brake, left, right) = map_action_to_car(action);
         car.gas = gas;

@@ -715,6 +715,27 @@ pub mod rb {
                 _params,
             )
         }
+        pub fn create_many(
+            self,
+            data: Vec<(String, i32, f64, String, bool, Vec<SetParam>)>,
+        ) -> CreateMany<'a> {
+            let data = data
+                .into_iter()
+                .map(|(state, action, reward, next_state, done, mut _params)| {
+                    _params.push(state::set(state));
+                    _params.push(action::set(action));
+                    _params.push(reward::set(reward));
+                    _params.push(next_state::set(next_state));
+                    _params.push(done::set(done));
+                    _params
+                })
+                .collect();
+            CreateMany::new(
+                self.client._new_query_context(),
+                ::prisma_client_rust::QueryInfo::new("Rb", _outputs()),
+                data,
+            )
+        }
         pub fn update(self, _where: UniqueWhereParam, _params: Vec<SetParam>) -> Update<'a> {
             Update::new(
                 self.client._new_query_context(),
