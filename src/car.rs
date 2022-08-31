@@ -43,9 +43,6 @@ pub struct Car {
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
-    pub prev_steering: f32,
-    pub prev_torque: f32,
-    pub prev_dir: f32,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
     pub init_transform: Transform,
@@ -57,6 +54,10 @@ pub struct Car {
     pub lap: usize,
     pub line_dir: Vec3,
     pub place: usize,
+
+    pub prev_steering: f32,
+    pub prev_torque: f32,
+    pub prev_dir: f32,
 }
 
 impl Car {
@@ -100,11 +101,11 @@ pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    config: Res<Config>,
+    mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
-    mut cars_dqn: NonSendMut<CarsDqnResource>,
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
+    config.car_scene = Some(car_gl);
     let ray_point_half = 0.05;
     let ray_point_size = ray_point_half * 2.;
     let ray_point_mesh = Mesh::from(shape::Cube {
@@ -121,11 +122,11 @@ pub fn car_start_system(
     for i in 0..config.cars_count {
         let is_hid = i == 0;
         let (transform, init_meters) = config.get_transform_by_index(i);
-        let car_id = spawn_car(
+        spawn_car(
             &mut commands,
             &mut meshes,
             &mut materials,
-            &car_gl,
+            &config.car_scene.as_ref().unwrap(),
             is_hid,
             transform,
             i,
@@ -133,7 +134,6 @@ pub fn car_start_system(
             config.max_toi,
             config.max_torque,
         );
-        cars_dqn.add_car(car_id);
     }
 }
 
@@ -277,6 +277,7 @@ pub fn spawn_car(
         .insert(Name::new("car"))
         .insert(Sleeping::disabled())
         .insert(Car::new(&wheels, max_torque, transform, init_meters, index))
+        .insert(CarDqnPrev::new())
         .insert(RigidBody::Dynamic)
         .insert(Ccd::enabled())
         .insert(Damping {
