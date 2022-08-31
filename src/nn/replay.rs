@@ -1,3 +1,7 @@
+use std::ops::RangeFrom;
+
+use crate::db::{rb, PrismaClient};
+
 use super::{dqn::*, params::*};
 use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
 
@@ -9,6 +13,8 @@ type StateTensorsTuple = (
     Tensor2D<BATCH_SIZE, STATE_SIZE>, // sn
     Tensor1D<BATCH_SIZE>,             // done
 );
+
+const PERSIST_BATCH_SIZE: usize = 100;
 
 pub struct ReplayBuffer {
     pub state: Vec<Observation>,
@@ -78,4 +84,67 @@ impl ReplayBuffer {
         }
         self.i += 1;
     }
+    pub fn should_persist(&self) -> bool {
+        return self.i % PERSIST_BATCH_SIZE == 0;
+    }
+
+    #[tokio::main]
+    pub async fn persist(&self, client: &PrismaClient) {
+        let save_start_index = self.state.len() - PERSIST_BATCH_SIZE;
+        let r: RangeFrom<usize> = save_start_index..;
+
+        let res = client
+            .rb()
+            .create_many(
+                self.state.as_slice()[r]
+                    .iter()
+                    .enumerate()
+                    .map(|t| {
+                        let i = save_start_index + t.0;
+                        return rb::create(
+                            self.state[i].map(|x| x.to_string()).join(","),
+                            self.action[i] as i32,
+                            self.reward[i] as f64,
+                            self.next_state[i].map(|x| x.to_string()).join(","),
+                            self.done[i] == 1.,
+                            vec![],
+                        );
+                    })
+                    .collect(),
+            )
+            .exec()
+            .await;
+        match res {
+            Ok(created) => {
+                dbg!(created);
+            }
+            Err(err) => {
+                dbg!(err);
+            }
+        };
+    }
+    // #[tokio::main]
+    // pub async fn store_db(
+    //     &mut self,
+    //     client: &PrismaClient,
+    //     s: Observation,
+    //     a: usize,
+    //     r: f32,
+    //     sn: Observation,
+    //     done: bool,
+    // ) {
+    //     client
+    //         .rb()
+    //         .create(
+    //             s.map(|x| x.to_string()).join(","),
+    //             a as i32,
+    //             r as f64,
+    //             sn.map(|x| x.to_string()).join(","),
+    //             done,
+    //             vec![],
+    //         )
+    //         .exec()
+    //         .await
+    //         .unwrap();
+    // }
 }

@@ -21,8 +21,7 @@ pub type QNetwork = (
 pub type Observation = [f32; STATE_SIZE];
 pub const OBSERVATION_ZERO: Observation = [0.; STATE_SIZE];
 
-#[tokio::main]
-pub async fn dqn_system(
+pub fn dqn_system(
     time: Res<Time>,
     mut dqn: ResMut<DqnResource>,
     mut sgd_res: NonSendMut<SgdResource>,
@@ -100,17 +99,6 @@ pub async fn dqn_system(
         if pos_angle.is_nan() {
             pos_angle = 0.;
         }
-
-        if crash {
-            dqn.crashes += 1;
-            dqn.respawn_at = seconds + 0.5;
-            dqn.respawn_is_hid = is_hid;
-            dqn.respawn_index = car.index;
-            commands.entity(e).despawn_recursive();
-            car.despawn_wheels(&mut commands);
-            config.use_brain = false;
-        }
-
         let vel_cos = vel_angle.cos();
         let pos_cos = pos_angle.cos();
 
@@ -143,30 +131,28 @@ pub async fn dqn_system(
             };
         }
 
-        let prev_action = car_dqn_prev.prev_action;
-        let prev_obs = car_dqn_prev.prev_obs;
-        if (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
+        let (prev_action, prev_obs) = (car_dqn_prev.prev_action, car_dqn_prev.prev_obs);
+        if config.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
-            // dbres
-            //     .client
-            //     .rb()
-            //     .create(
-            //         prev_obs.map(|x| x.to_string()).join(","),
-            //         prev_action as i32,
-            //         reward as f64,
-            //         obs.map(|x| x.to_string()).join(","),
-            //         crash,
-            //         vec![],
-            //     )
-            //     .exec()
-            //     .await
-            //     .unwrap();
+            if dqn.rb.should_persist() {
+                dqn.rb.persist(&dbres.client);
+            }
         }
+
         let (action, exploration) = cars_dqn.act(obs, dqn.eps);
-        if should_act {
+        if should_act && !crash {
             car_dqn_prev.prev_obs = obs;
             car_dqn_prev.prev_action = action;
             car_dqn_prev.prev_reward = reward;
+        }
+        if crash {
+            dqn.crashes += 1;
+            dqn.respawn_at = seconds + 0.5;
+            dqn.respawn_is_hid = is_hid;
+            dqn.respawn_index = car.index;
+            commands.entity(e).despawn_recursive();
+            car.despawn_wheels(&mut commands);
+            config.use_brain = false;
         }
         if !config.use_brain || !should_act || crash {
             return;
