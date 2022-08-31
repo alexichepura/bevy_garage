@@ -31,8 +31,7 @@ use progress::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 4 * 64;
-    c.integration_parameters.max_velocity_friction_iterations = 8 * 64;
+    c.integration_parameters.max_velocity_iterations = 512;
     c.integration_parameters.max_stabilization_iterations = 512;
     dbg!(c.integration_parameters);
 }
@@ -43,7 +42,7 @@ fn main() {
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,
-                substeps: 15,
+                substeps: 10,
             },
             ..default()
         })

@@ -177,7 +177,7 @@ pub fn spawn_car(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
             .set_motor(JointAxis::X, 0., 0., 10e10, 1.)
-            .set_motor(JointAxis::Y, 0., 0., 20_000., 1.)
+            .set_motor(JointAxis::Y, 0., 0., 40_000., 10.)
             .set_motor(JointAxis::Z, 0., 0., 10e10, 1.)
             .build();
         joints.push(joint);
