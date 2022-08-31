@@ -43,7 +43,7 @@ fn main() {
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,
-                substeps: 10,
+                substeps: 15,
             },
             ..default()
         })

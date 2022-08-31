@@ -56,7 +56,6 @@ pub fn dqn_system(
             transform,
             dqn.respawn_index,
             init_meters,
-            config.max_toi,
             config.max_torque,
         );
         // if camera_config.mode.not_none() && dqn.respawn_is_hid {

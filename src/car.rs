@@ -27,14 +27,6 @@ pub struct WheelFrontLeft;
 #[derive(Component)]
 pub struct WheelFrontRight;
 #[derive(Component)]
-pub struct SensorFar;
-#[derive(Component)]
-pub struct SensorNear;
-#[derive(Component)]
-pub struct RayHit;
-#[derive(Component)]
-pub struct RayLine;
-#[derive(Component)]
 pub struct HID;
 
 #[derive(Component, Debug)]
@@ -106,18 +98,6 @@ pub fn car_start_system(
 ) {
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     config.car_scene = Some(car_gl);
-    let ray_point_half = 0.05;
-    let ray_point_size = ray_point_half * 2.;
-    let ray_point_mesh = Mesh::from(shape::Cube {
-        size: ray_point_size,
-    });
-    for _i in 0..SENSOR_COUNT {
-        commands.spawn().insert(RayHit).insert_bundle(PbrBundle {
-            mesh: meshes.add(ray_point_mesh.clone()),
-            material: materials.add(Color::rgba(0.95, 0.5, 0.5, 0.9).into()),
-            ..default()
-        });
-    }
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
@@ -131,7 +111,6 @@ pub fn car_start_system(
             transform,
             i,
             init_meters,
-            config.max_toi,
             config.max_torque,
         );
     }
@@ -146,7 +125,6 @@ pub fn spawn_car(
     transform: Transform,
     index: usize,
     init_meters: f32,
-    max_toi: f32,
     max_torque: f32,
 ) -> Entity {
     let wheel_front_r: f32 = 0.4;
@@ -323,24 +301,24 @@ pub fn spawn_car(
                 .insert(ContactForceEventThreshold(0.1))
                 .insert(collider_mass);
 
-            let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
-            for a in 0..SENSOR_COUNT {
-                let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
-                let dir = Vec3::Z * max_toi;
-                let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
-                children
-                    .spawn()
-                    .insert(SensorNear)
-                    .insert_bundle(TransformBundle::from(Transform::from_translation(
-                        sensor_pos_on_car,
-                    )));
-                children
-                    .spawn()
-                    .insert(SensorFar)
-                    .insert_bundle(TransformBundle::from(Transform::from_translation(
-                        sensor_pos_on_car + far_quat.mul_vec3(dir),
-                    )));
-            }
+            // let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
+            // for a in 0..SENSOR_COUNT {
+            //     let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
+            //     let dir = Vec3::Z * max_toi;
+            //     let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
+            //     children
+            //         .spawn()
+            //         .insert(SensorNear)
+            //         .insert_bundle(TransformBundle::from(Transform::from_translation(
+            //             sensor_pos_on_car,
+            //         )));
+            //     children
+            //         .spawn()
+            //         .insert(SensorFar)
+            //         .insert_bundle(TransformBundle::from(Transform::from_translation(
+            //             sensor_pos_on_car + far_quat.mul_vec3(dir),
+            //         )));
+            // }
         })
         .id();
 
@@ -359,28 +337,22 @@ pub fn spawn_car(
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
-    q_hid: Query<Entity, With<HID>>,
-    mut q_car: Query<(Entity, &mut Car, &Children), With<Car>>,
-    q_near: Query<(&GlobalTransform, With<SensorNear>)>,
-    q_far: Query<(&GlobalTransform, With<SensorFar>)>,
-    mut ray_set: ParamSet<(Query<(&mut Transform, With<RayHit>)>,)>,
+    mut q_car: Query<(&mut Car, &GlobalTransform), With<Car>>,
     mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
+    let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
+    let dir = Vec3::Z * config.max_toi;
+    let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
 
-    let e_hid_car = q_hid.get_single();
-    for (e, mut car, children) in q_car.iter_mut() {
-        let is_hid_car = e_hid_car.is_ok() && e == q_hid.single();
+    for (mut car, gt) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
 
-        for &child in children.iter() {
-            if let Ok((gtrf, _)) = q_near.get(child) {
-                origins.push(gtrf.translation());
-            }
-            if let Ok((gtrf, _)) = q_far.get(child) {
-                dirs.push(gtrf.translation());
-            }
+        for a in 0..SENSOR_COUNT {
+            let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
+            origins.push(gt.translation());
+            dirs.push(gt.translation() + sensor_pos_on_car + far_quat.mul_vec3(dir));
         }
 
         let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];
@@ -408,12 +380,7 @@ pub fn car_sensor_system(
                 }
             }
         }
-        if is_hid_car {
-            for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
-                trf.translation = hit_points[i];
-            }
-        }
-        car.sensor_inputs = inputs.clone();
+        car.sensor_inputs = inputs;
         // println!("inputs {:#?}", car.sensor_inputs);
     }
 }
