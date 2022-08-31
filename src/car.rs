@@ -360,7 +360,7 @@ pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
     q_hid: Query<Entity, With<HID>>,
-    mut q_car: Query<(Entity, &mut Car, &Children, &Velocity), With<Car>>,
+    mut q_car: Query<(Entity, &mut Car, &Children), With<Car>>,
     q_near: Query<(&GlobalTransform, With<SensorNear>)>,
     q_far: Query<(&GlobalTransform, With<SensorFar>)>,
     mut ray_set: ParamSet<(Query<(&mut Transform, With<RayHit>)>,)>,
@@ -369,7 +369,7 @@ pub fn car_sensor_system(
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
 
     let e_hid_car = q_hid.get_single();
-    for (e, mut car, children, v) in q_car.iter_mut() {
+    for (e, mut car, children) in q_car.iter_mut() {
         let is_hid_car = e_hid_car.is_ok() && e == q_hid.single();
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
@@ -385,42 +385,35 @@ pub fn car_sensor_system(
 
         let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];
         let mut hit_points: Vec<Vec3> = vec![Vec3::ZERO; SENSOR_COUNT];
-        let solid = false;
         for (i, &ray_dir_pos) in dirs.iter().enumerate() {
             let ray_pos = origins[i];
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
-            rapier_context.intersections_with_ray(
-                ray_pos,
-                ray_dir,
-                config.max_toi,
-                solid,
-                sensor_filter,
-                |_entity, intersection| {
-                    let toi = intersection.toi;
-                    hit_points[i] = intersection.point;
-                    if toi > 0. {
-                        inputs[i] = 1. - toi / config.max_toi;
-                        if config.show_rays {
-                            lines.line_colored(
-                                ray_pos,
-                                intersection.point,
-                                0.0,
-                                Color::rgba(0.5, 0.3, 0.3, 0.5),
-                            );
-                        }
-                    } else {
-                        inputs[i] = 0.;
+
+            if let Some((_e, toi)) =
+                rapier_context.cast_ray(ray_pos, ray_dir, config.max_toi, false, sensor_filter)
+            {
+                hit_points[i] = ray_pos + ray_dir * toi;
+                if toi > 0. {
+                    inputs[i] = 1. - toi / config.max_toi;
+                    if config.show_rays {
+                        lines.line_colored(
+                            ray_pos,
+                            hit_points[i],
+                            0.0,
+                            Color::rgba(0.5, 0.3, 0.3, 0.5),
+                        );
                     }
-                    false
-                },
-            );
+                } else {
+                    inputs[i] = 0.;
+                }
+            }
         }
         if is_hid_car {
             for (i, (mut trf, _)) in ray_set.p0().iter_mut().enumerate() {
                 trf.translation = hit_points[i];
             }
         }
-        inputs.push(v.linvel.length());
         car.sensor_inputs = inputs.clone();
+        // println!("inputs {:#?}", car.sensor_inputs);
     }
 }

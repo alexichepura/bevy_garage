@@ -14,7 +14,7 @@ pub fn log_training(
         String::from(if reward > 0. { "+" } else { "-" }),
         format!("{:.2}", reward.abs()),
         " ".to_string(),
-        start.elapsed().as_micros().to_string() + "μs",
+        start.elapsed().as_millis().to_string() + "ms",
         " ".to_string(),
         loss_string.to_string(),
     ]
