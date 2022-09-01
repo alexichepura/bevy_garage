@@ -6,7 +6,7 @@ pub const SYNC_INTERVAL_STEPS: usize = 100;
 pub const BUFFER_SIZE: usize = 10_000_000;
 pub const HIDDEN_SIZE: usize = 16;
 
-pub const STEP_DURATION: f64 = 1. / 5.;
+pub const STEP_DURATION: f64 = 1. / 10.;
 pub const SENSOR_COUNT: usize = 31;
 pub const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
