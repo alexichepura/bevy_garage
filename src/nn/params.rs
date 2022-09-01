@@ -1,5 +1,5 @@
-pub const BATCH_SIZE: usize = 64;
-pub const EPOCHS: usize = 200;
+pub const BATCH_SIZE: usize = 256;
+pub const EPOCHS: usize = 50;
 pub const DECAY: f32 = 0.001;
 pub const LEARNING_RATE: f32 = 0.0025;
 pub const SYNC_INTERVAL_STEPS: usize = 100;
@@ -7,7 +7,7 @@ pub const BUFFER_SIZE: usize = 10_000_000;
 pub const HIDDEN_SIZE: usize = 16;
 
 pub const STEP_DURATION: f64 = 1. / 5.;
-pub const SENSOR_COUNT: usize = 16;
+pub const SENSOR_COUNT: usize = 31;
 pub const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 pub const ACTIONS: usize = 8;
