@@ -1,9 +1,15 @@
 # 3d car simulation in rust
 
-Sideproject to learn rust, CG and NN. Track is scaled Nürburgring GP.
+Sideproject to learn rust, computer graphics and neural networks. Track is scaled Nürburgring GP.
 https://www.youtube.com/watch?v=aN49ZP4PS-c
 
 <img width="1020" alt="Screenshot 2022-09-02 at 08 30 26" src="https://user-images.githubusercontent.com/5582266/188065552-f1abd35e-10f9-43fa-935e-3530f3292dde.png">
+
+Deep Q learning is a special guest here that knows how to approximate control function.
+
+Possible improvements:
+- Current sensors config can't predict good turns, because it can't see behind the wall.
+- Computing gradients online is hard, so next improvement from replay buffer is probably offline training longer with bigger batches.
 
 
 Giants:
