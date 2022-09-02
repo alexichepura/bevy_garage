@@ -1,6 +1,8 @@
 # 3d car simulation in rust
 
 Sideproject to learn rust, CG and NN. Track is scaled Nürburgring GP.
+https://www.youtube.com/watch?v=aN49ZP4PS-c
+
 <img width="1020" alt="Screenshot 2022-09-02 at 08 30 26" src="https://user-images.githubusercontent.com/5582266/188065552-f1abd35e-10f9-43fa-935e-3530f3292dde.png">
 
 
