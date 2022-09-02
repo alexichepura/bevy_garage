@@ -105,8 +105,8 @@ impl Default for Car {
                 (-hw, -hl, PI),
                 (hw, -hl, PI - FRAC_PI_4),
                 (-hw, -hl, PI + FRAC_PI_4),
-                (hw, -hl, PI + FRAC_PI_2),
-                (-hw, -hl, PI - FRAC_PI_2),
+                (hw, -hl, PI - FRAC_PI_2),
+                (-hw, -hl, PI + FRAC_PI_2),
             ]
             .map(|(w, l, r)| (Vec3::new(w, 0.1, l), Quat::from_rotation_y(r))),
             gas: 0.,
