@@ -1,17 +1,21 @@
 # 3d car simulation in rust
 
 Sideproject to learn rust, CG and NN. Track is scaled Nürburgring GP.
-<img width="1277" alt="screenshot" src="https://user-images.githubusercontent.com/5582266/180704095-2d4d6819-0b35-4653-b8e6-a3a50f793a9c.png">
+<img width="1020" alt="Screenshot 2022-09-02 at 08 30 26" src="https://user-images.githubusercontent.com/5582266/188065552-f1abd35e-10f9-43fa-935e-3530f3292dde.png">
+
 
 Giants:
-- [Rust](https://www.rust-lang.org)
-- [Bevy](https://bevyengine.org)
-- [Rapier3d](https://rapier.rs)
-- [Nalgebra](https://nalgebra.org)
+- [rust](https://www.rust-lang.org)
+- [bevy](https://bevyengine.org)
+- [rapier3d](https://rapier.rs)
+- [nalgebra](https://nalgebra.org)
+- [dfdx](https://github.com/coreylowman/dfdx)
+- [prisma-client-rust](https://github.com/Brendonovich/prisma-client-rust)
 
 Car 3d models are from https://www.kenney.nl/assets/car-kit
 
-Old screenshot:
+Old screenshots:
+<img width="1277" alt="screenshot" src="https://user-images.githubusercontent.com/5582266/180704095-2d4d6819-0b35-4653-b8e6-a3a50f793a9c.png">
 <img width="1279" alt="old screenshot" src="https://user-images.githubusercontent.com/5582266/177758958-3ac7a6da-b178-45bf-a9f4-edb25de3008e.jpg">
 
 ## License
