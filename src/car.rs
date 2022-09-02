@@ -11,7 +11,9 @@ use bevy_rapier3d::{
     prelude::*,
     rapier::prelude::{JointAxesMask, JointAxis},
 };
-use std::f32::consts::PI;
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
+
+pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -29,8 +31,17 @@ pub struct WheelFrontRight;
 #[derive(Component)]
 pub struct HID;
 
+#[derive(Debug, Clone)]
+pub struct CarSize {
+    pub hw: f32,
+    pub hh: f32,
+    pub hl: f32,
+}
+
 #[derive(Component, Debug)]
 pub struct Car {
+    pub size: CarSize,
+    pub sensor_config: [(Vec3, Quat); SENSOR_COUNT],
     pub sensor_inputs: Vec<f32>,
     pub gas: f32,
     pub brake: f32,
@@ -52,30 +63,65 @@ pub struct Car {
     pub prev_torque: f32,
     pub prev_dir: f32,
 }
-
-impl Car {
-    pub fn new(
-        wheels: &Vec<Entity>,
-        wheel_max_torque: f32,
-        init_transform: Transform,
-        init_meters: f32,
-        index: usize,
-    ) -> Self {
+impl Default for Car {
+    fn default() -> Self {
+        let hw = 1.;
+        let hh = 0.35;
+        let hl = 2.2;
         Self {
+            size: CarSize { hw, hh, hl },
             sensor_inputs: vec![0.; SENSOR_COUNT],
+            sensor_config: [
+                // front
+                (hw, hl, 0.),
+                (0., hl, 0.),
+                (-hw, hl, 0.),
+                (hw, hl, FRAC_PI_16 / 2.),
+                (-hw, hl, -FRAC_PI_16 / 2.),
+                (hw, hl, FRAC_PI_16),
+                (-hw, hl, -FRAC_PI_16),
+                (hw, hl, FRAC_PI_16 + FRAC_PI_16 / 2.),
+                (-hw, hl, -FRAC_PI_16 - FRAC_PI_16 / 2.),
+                (hw, hl, FRAC_PI_8),
+                (-hw, hl, -FRAC_PI_8),
+                (hw, hl, FRAC_PI_8 + FRAC_PI_16),
+                (-hw, hl, -FRAC_PI_8 - FRAC_PI_16),
+                (hw, hl, FRAC_PI_4),
+                (-hw, hl, -FRAC_PI_4),
+                // front > PI/4
+                (hw, hl, FRAC_PI_4 + FRAC_PI_16),
+                (-hw, hl, -FRAC_PI_4 - FRAC_PI_16),
+                (hw, hl, FRAC_PI_4 + FRAC_PI_8),
+                (-hw, hl, -FRAC_PI_4 - FRAC_PI_8),
+                (hw, hl, FRAC_PI_4 + FRAC_PI_8 + FRAC_PI_16),
+                (-hw, hl, -FRAC_PI_4 - FRAC_PI_8 - FRAC_PI_16),
+                (hw, hl, FRAC_PI_2),
+                (-hw, hl, -FRAC_PI_2),
+                // side
+                (hw, 0., FRAC_PI_2),
+                (-hw, 0., -FRAC_PI_2),
+                // back
+                (hw, -hl, PI),
+                (-hw, -hl, PI),
+                (hw, -hl, PI - FRAC_PI_4),
+                (-hw, -hl, PI + FRAC_PI_4),
+                (hw, -hl, PI - FRAC_PI_2),
+                (-hw, -hl, PI + FRAC_PI_2),
+            ]
+            .map(|(w, l, r)| (Vec3::new(w, 0.1, l), Quat::from_rotation_y(r))),
             gas: 0.,
             brake: 0.,
             steering: 0.,
             prev_steering: 0.,
             prev_torque: 0.,
             prev_dir: 0.,
-            wheels: wheels.clone(),
-            wheel_max_torque,
-            init_transform,
+            wheels: Vec::new(),
+            wheel_max_torque: 1000.,
+            init_transform: Transform::default(),
             reset_at: None,
 
-            index,
-            init_meters,
+            index: 0,
+            init_meters: 0.,
             meters: 0.,
             place: 0,
             lap: 0,
@@ -83,6 +129,9 @@ impl Car {
             line_pos: Vec3::ZERO,
         }
     }
+}
+
+impl Car {
     pub fn despawn_wheels(&mut self, commands: &mut Commands) {
         for e in self.wheels.iter() {
             commands.entity(*e).despawn_recursive();
@@ -129,18 +178,20 @@ pub fn spawn_car(
     init_meters: f32,
     max_torque: f32,
 ) -> Entity {
+    let size = CarSize {
+        hw: 1.,
+        hh: 0.35,
+        hl: 2.2,
+    };
     let wheel_front_r: f32 = 0.4;
     let wheel_back_r: f32 = 0.401;
     let wheel_front_hw: f32 = 0.2;
     let wheel_back_hw: f32 = 0.25;
-    let car_hw: f32 = 1.;
-    let car_hh: f32 = 0.35;
-    let car_hl: f32 = 2.2;
     let ride_height = 0.08;
     let shift = Vec3::new(
-        car_hw - wheel_front_hw - 0.1,
-        -car_hh + wheel_front_r - ride_height,
-        car_hl - wheel_front_r - 0.5,
+        size.hw - wheel_front_hw - 0.1,
+        -size.hh + wheel_front_r - ride_height,
+        size.hl - wheel_front_r - 0.5,
     );
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
@@ -251,12 +302,21 @@ pub fn spawn_car(
             commands.entity(wheel_id).insert(WheelBack);
         };
     }
+    let carrr = Car {
+        size: size.clone(),
+        wheels: wheels.clone(),
+        wheel_max_torque: max_torque,
+        init_transform: transform,
+        init_meters,
+        index,
+        ..default()
+    };
 
     let car_id = commands
         .spawn()
         .insert(Name::new("car"))
         .insert(Sleeping::disabled())
-        .insert(Car::new(&wheels, max_torque, transform, init_meters, index))
+        .insert(carrr)
         .insert(CarDqnPrev::new())
         .insert(RigidBody::Dynamic)
         .insert(Ccd::enabled())
@@ -278,7 +338,7 @@ pub fn spawn_car(
         })
         .with_children(|children| {
             let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::new(0., -car_hh, 0.),
+                local_center_of_mass: Vec3::new(0., -size.hh, 0.),
                 mass: 1500.0,
                 // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
                 principal_inertia: Vec3::new(5000., 5000., 2000.),
@@ -289,9 +349,9 @@ pub fn spawn_car(
                 .spawn()
                 .insert(Name::new("car_collider"))
                 .insert(Collider::round_cuboid(
-                    car_hw - car_bradius,
-                    car_hh - car_bradius,
-                    car_hl - car_bradius,
+                    size.hw - car_bradius,
+                    size.hh - car_bradius,
+                    size.hl - car_bradius,
                     car_bradius,
                 ))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
@@ -324,15 +384,11 @@ pub fn car_sensor_system(
     mut lines: ResMut<DebugLines>,
 ) {
     let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
-    let sensor_angle = 2. * PI / SENSOR_COUNT as f32;
     let dir = Vec3::Z * config.max_toi;
-    let sensor_pos_on_car = Vec3::new(0., 0.1, 0.);
-
     for (mut car, gt, t) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
         let g_translation = gt.translation();
-
         let h = Vec3::Y * 0.6;
         lines.line_colored(
             h + g_translation,
@@ -340,13 +396,13 @@ pub fn car_sensor_system(
             0.0,
             Color::rgba(0.5, 0.5, 0.5, 0.5),
         );
-
         for a in 0..SENSOR_COUNT {
-            let far_quat = Quat::from_rotation_y(-(a as f32) * sensor_angle);
-            origins.push(g_translation);
+            let (pos, far_quat) = car.sensor_config[a];
+            let origin = g_translation + t.rotation.mul_vec3(pos);
+            origins.push(origin);
             let mut dir_vec = t.rotation.mul_vec3(far_quat.mul_vec3(dir));
             dir_vec.y = 0.;
-            dirs.push(g_translation + sensor_pos_on_car + dir_vec);
+            dirs.push(origin + dir_vec);
         }
 
         let mut inputs: Vec<f32> = vec![0.; SENSOR_COUNT];
