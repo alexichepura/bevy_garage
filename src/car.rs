@@ -139,7 +139,7 @@ impl Car {
     }
 }
 
-pub const CAR_TRAINING_GROUP: u32 = 0b001;
+pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 pub fn car_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -383,7 +383,7 @@ pub fn car_sensor_system(
     mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
     mut lines: ResMut<DebugLines>,
 ) {
-    let sensor_filter = QueryFilter::new().exclude_dynamic().exclude_sensors();
+    let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     let dir = Vec3::Z * config.max_toi;
     for (mut car, gt, t) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();

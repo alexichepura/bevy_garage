@@ -9,7 +9,7 @@ use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
 
-pub const STATIC_GROUP: u32 = 0b010;
+pub const STATIC_GROUP: Group = Group::GROUP_1;
 
 pub fn track_start_system(
     mut commands: Commands,
@@ -86,7 +86,7 @@ pub fn track_start_system(
                 .entity(id)
                 .insert(Collider::from(ColliderShape::trimesh(vertices, indices)))
                 .insert(ColliderScale::Absolute(Vec3::ONE))
-                .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
+                .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
                 .insert(Friction {
                     combine_rule: CoefficientCombineRule::Average,
                     coefficient: 0.1,
@@ -131,7 +131,7 @@ pub fn track_start_system(
             ground_size.into(),
         ))
         .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, u32::MAX))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction::coefficient(1.))
         .insert(Restitution::coefficient(0.));
 }
