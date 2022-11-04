@@ -16,4 +16,5 @@ STYLE.md
 .idea
 
 .env
+src/db.rs
 # dev.db

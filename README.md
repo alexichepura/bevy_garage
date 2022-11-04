@@ -8,11 +8,19 @@ https://www.youtube.com/watch?v=aN49ZP4PS-c
 Deep Q learning is a special guest here that knows how to approximate control function.
 
 Possible improvements:
+
 - Current sensors config can't predict good turns, because it can't see behind the wall.
 - Computing gradients online is hard, so next improvement from replay buffer is probably offline training longer with bigger batches.
 
+How to run
+
+```sh
+cargo prisma generate
+cargo run --release
+```
 
 Giants:
+
 - [rust](https://www.rust-lang.org)
 - [bevy](https://bevyengine.org)
 - [rapier3d](https://rapier.rs)
