@@ -43,7 +43,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
     };
 
     commands
-        .spawn_bundle(TextBundle {
+        .spawn(TextBundle {
             style: get_style(40.),
             text: Text {
                 sections: sections.clone(),
@@ -53,7 +53,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         })
         .insert(TrainerGenerationText);
     commands
-        .spawn_bundle(TextBundle {
+        .spawn(TextBundle {
             style: get_style(20.),
             text: Text {
                 sections: sections.clone(),
@@ -63,7 +63,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         })
         .insert(TrainerRecordDistanceText);
     commands
-        .spawn_bundle(TextBundle {
+        .spawn(TextBundle {
             style: get_style(2.),
             text: Text {
                 sections: vec![TextSection {
@@ -76,7 +76,7 @@ pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServ
         })
         .insert(Leaderboard);
     commands
-        .spawn_bundle(TextBundle {
+        .spawn(TextBundle {
             style: get_style(60.),
             text: Text {
                 sections: vec![TextSection {
@@ -134,7 +134,7 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
         };
     };
     commands
-        .spawn_bundle(TextBundle {
+        .spawn(TextBundle {
             style: get_style(80.),
             text: Text {
                 sections: vec![TextSection {
@@ -147,7 +147,7 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
         })
         .insert(MpsText);
     commands
-        .spawn_bundle(TextBundle {
+        .spawn(TextBundle {
             style: get_style(100.),
             text: Text {
                 sections: vec![TextSection {

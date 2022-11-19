@@ -237,15 +237,15 @@ pub fn spawn_car(
 
         let wheel_border_radius = 0.05;
         let wheel_id = commands
-            .spawn()
+            .spawn_empty()
             .insert(Name::new("wheel"))
             .insert(Sleeping::disabled())
-            .insert_bundle(PbrBundle {
+            .insert(PbrBundle {
                 mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
                 material: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.7).into()),
                 ..default()
             })
-            .insert_bundle(TransformBundle::from(
+            .insert(TransformBundle::from(
                 Transform::from_translation(
                     transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
                 )
@@ -313,7 +313,7 @@ pub fn spawn_car(
     };
 
     let car_id = commands
-        .spawn()
+        .spawn_empty()
         .insert(Name::new("car"))
         .insert(Sleeping::disabled())
         .insert(carrr)
@@ -326,9 +326,9 @@ pub fn spawn_car(
         })
         .insert(Velocity::zero())
         .insert(ExternalForce::default())
-        .insert_bundle(TransformBundle::from(transform))
+        .insert(TransformBundle::from(transform))
         .insert(ReadMassProperties::default())
-        .insert_bundle(SceneBundle {
+        .insert(SceneBundle {
             scene: car_gl.clone(),
             transform,
             // .with_translation(Vec3::new(0., -0.75, 0.2))
@@ -346,7 +346,7 @@ pub fn spawn_car(
             });
             let car_bradius = 0.05;
             children
-                .spawn()
+                .spawn_empty()
                 .insert(Name::new("car_collider"))
                 .insert(Collider::round_cuboid(
                     size.hw - car_bradius,

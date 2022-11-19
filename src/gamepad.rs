@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 
-#[derive(Default)]
+#[derive(Resource, Default)]
 pub struct GamepadLobby {
     pub gamepads: HashSet<Gamepad>,
 }

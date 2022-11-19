@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub fn light_start_system(mut commands: Commands) {
-    // commands.spawn_bundle(PointLightBundle {
+    // commands.spawn(PointLightBundle {
     //     transform: Transform::from_xyz(0., 200., 0.),
     //     point_light: PointLight {
     //         range: 1000.,
@@ -15,7 +15,7 @@ pub fn light_start_system(mut commands: Commands) {
     // });
 
     const HSIZE: f32 = 200.;
-    commands.spawn_bundle(DirectionalLightBundle {
+    commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.,
             shadow_projection: OrthographicProjection {

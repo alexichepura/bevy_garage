@@ -3,12 +3,12 @@ use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::Projection;
-use bevy_atmosphere::prelude::AtmosphereCamera;
+// use bevy_atmosphere::prelude::AtmosphereCamera;
 use core::f32::consts::PI;
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
-        .spawn_bundle(Camera3dBundle {
+        .spawn(Camera3dBundle {
             projection: Projection::from(PerspectiveProjection {
                 far: 2500.,
                 near: 0.01,
@@ -20,7 +20,7 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
             .looking_at(Vec3::Y * 6., config.translation),
             ..default()
         })
-        .insert(AtmosphereCamera(None))
+        // .insert(AtmosphereCamera(None))
         .insert(CameraController::default());
     println!(
         "Controls:
@@ -86,6 +86,7 @@ impl CameraFollowMode {
     // }
 }
 
+#[derive(Resource)]
 pub struct CameraConfig {
     pub mode: CameraFollowMode,
     pub camera_follow: Option<Entity>,

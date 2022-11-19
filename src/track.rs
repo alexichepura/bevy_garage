@@ -68,10 +68,10 @@ pub fn track_start_system(
             false => 0.,
         };
         let id = commands
-            .spawn()
+            .spawn_empty()
             .insert(Name::new(obj_path))
             .insert(RigidBody::Fixed)
-            .insert_bundle(PbrBundle {
+            .insert(PbrBundle {
                 transform: Transform::from_translation(Vec3::new(0., h, 0.)),
                 mesh: meshes.add(mesh),
                 material: materials.add(match is_road {
@@ -105,9 +105,9 @@ pub fn track_start_system(
     let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
     let heights: Vec<Real> = vec![hy; num_rows * num_cols];
     commands
-        .spawn()
+        .spawn_empty()
         .insert(Name::new("road-heightfield"))
-        .insert_bundle(PbrBundle {
+        .insert(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box {
                 max_x: hx,
                 min_x: -hx,
@@ -121,7 +121,7 @@ pub fn track_start_system(
             ..default()
         })
         .insert(RigidBody::Fixed)
-        .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
+        .insert(TransformBundle::from_transform(Transform::from_xyz(
             -350., -hy, 570.,
         )))
         .insert(Collider::heightfield(
@@ -152,7 +152,7 @@ pub fn track_decorations_start_system(
     config: Res<Config>,
 ) {
     let gl_object = asset_server.load("overheadLights.glb#Scene0");
-    commands.spawn_bundle(SceneBundle {
+    commands.spawn(SceneBundle {
         scene: gl_object,
         transform: Transform::from_scale(Vec3::ONE * 15.)
             .with_translation(Vec3::new(

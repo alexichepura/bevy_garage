@@ -13,7 +13,7 @@ mod nn;
 mod progress;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-use bevy_atmosphere::prelude::*;
+// use bevy_atmosphere::prelude::*;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
@@ -52,18 +52,18 @@ fn main() {
         })
         .insert_resource(DbClientResource::default())
         .insert_resource(DqnResource::default())
-        .insert_resource(WindowDescriptor {
-            title: "car sim deep learning".to_string(),
-            width: 1024.,
-            height: 768.,
-            ..default()
-        })
+        // .insert_resource(WindowDescriptor {
+        //     title: "car sim deep learning".to_string(),
+        //     width: 1024.,
+        //     height: 768.,
+        //     ..default()
+        // })
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
-        .insert_resource(AtmosphereSettings { resolution: 1024 })
+        // .insert_resource(AtmosphereSettings { resolution: 1024 })
         .add_plugins(DefaultPlugins)
-        .add_plugin(AtmospherePlugin)
+        // .add_plugin(AtmospherePlugin)
         .add_plugin(FramepacePlugin)
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
