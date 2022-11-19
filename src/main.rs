@@ -86,7 +86,7 @@ fn main() {
         })
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .init_resource::<GamepadLobby>()
-        .add_startup_system(dqn_exclusive_start_system.exclusive_system())
+        .add_startup_system(dqn_exclusive_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
