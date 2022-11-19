@@ -44,7 +44,7 @@ pub fn dqn_system(
     mut camera_config: ResMut<CameraConfig>,
     dbres: Res<DbClientResource>,
 ) {
-    let seconds = time.seconds_since_startup();
+    let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
         let (transform, init_meters) = config.get_transform_random();
         let new_car_id = spawn_car(
