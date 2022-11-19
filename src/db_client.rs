@@ -1,6 +1,8 @@
 use crate::db::PrismaClient;
+use bevy::prelude::Resource;
 use prisma_client_rust::NewClientError;
 
+#[derive(Resource)]
 pub struct DbClientResource {
     pub client: PrismaClient,
 }

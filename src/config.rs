@@ -5,6 +5,7 @@ use std::f32::consts::PI;
 
 use crate::nn::params::{CARS_COUNT, MAX_TOI, MAX_TORQUE};
 
+#[derive(Resource)]
 pub struct Config {
     pub translation: Vec3,
     pub quat: Quat,

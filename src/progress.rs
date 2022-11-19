@@ -50,13 +50,13 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
     commands
-        .spawn()
+        .spawn_empty()
         .insert(Name::new("Track polyline"))
         .insert(collider)
         .insert(RigidBody::Fixed)
         .insert(Sensor)
         .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-        .insert_bundle(TransformBundle::from_transform(Transform::from_xyz(
+        .insert(TransformBundle::from_transform(Transform::from_xyz(
             0., 1., 0.,
         )));
 }

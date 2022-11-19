@@ -52,17 +52,21 @@ fn main() {
         })
         .insert_resource(DbClientResource::default())
         .insert_resource(DqnResource::default())
-        .insert_resource(WindowDescriptor {
-            title: "car sim deep learning".to_string(),
-            width: 1024.,
-            height: 768.,
-            ..default()
-        })
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
         .insert_resource(AtmosphereSettings { resolution: 1024 })
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            window: WindowDescriptor {
+                title: "car sim deep learning".to_string(),
+                width: 1024.,
+                height: 768.,
+                // monitor: MonitorSelection::Index(1),
+                position: WindowPosition::Centered,
+                ..default()
+            },
+            ..default()
+        }))
         .add_plugin(AtmospherePlugin)
         .add_plugin(FramepacePlugin)
         .add_startup_system(camera_start_system)
@@ -86,7 +90,7 @@ fn main() {
         })
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .init_resource::<GamepadLobby>()
-        .add_startup_system(dqn_exclusive_start_system.exclusive_system())
+        .add_startup_system(dqn_exclusive_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)

@@ -16,7 +16,7 @@ pub fn gradient_vis_start_system(// mut commands: Commands,
     //         .collect();
     //     colorful_cube.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
     // }
-    // commands.spawn_bundle(PbrBundle {
+    // commands.spawn(PbrBundle {
     //     mesh: meshes.add(colorful_cube),
     //     // This is the default color, but note that vertex colors are
     //     // multiplied by the base color, so you'll likely want this to be

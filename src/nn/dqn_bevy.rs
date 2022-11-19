@@ -62,6 +62,7 @@ impl CarsDqnResource {
     }
 }
 
+#[derive(Resource)]
 pub struct DqnResource {
     pub seconds: f64,
     pub step: usize,

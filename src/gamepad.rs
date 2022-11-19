@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 
-#[derive(Default)]
+#[derive(Resource, Default)]
 pub struct GamepadLobby {
     pub gamepads: HashSet<Gamepad>,
 }
@@ -12,7 +12,7 @@ pub fn gamepad_stage_preupdate_system(
 ) {
     for event in gamepad_event.iter() {
         match &event.event_type {
-            GamepadEventType::Connected => {
+            GamepadEventType::Connected(_) => {
                 info!("{:?} Connected", event.gamepad);
                 lobby.gamepads.insert(event.gamepad);
             }

@@ -8,7 +8,7 @@ use core::f32::consts::PI;
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
-        .spawn_bundle(Camera3dBundle {
+        .spawn(Camera3dBundle {
             projection: Projection::from(PerspectiveProjection {
                 far: 2500.,
                 near: 0.01,
@@ -86,6 +86,7 @@ impl CameraFollowMode {
     // }
 }
 
+#[derive(Resource)]
 pub struct CameraConfig {
     pub mode: CameraFollowMode,
     pub camera_follow: Option<Entity>,
