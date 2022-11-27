@@ -217,21 +217,15 @@ pub fn spawn_car(
             true => wheel_front_r,
             false => wheel_back_r,
         };
-        let joint_mask = // JointAxesMask::X
-            // | JointAxesMask::Y // vertical suspension
-            // | JointAxesMask::Z // tire suspension along car
-            // | JointAxesMask::ANG_X // wheel main axis
-            JointAxesMask::ANG_Y
-            | JointAxesMask::ANG_Z;
-
+        let joint_mask: JointAxesMask = JointAxesMask::ANG_Y | JointAxesMask::ANG_Z;
         let joint = GenericJointBuilder::new(joint_mask)
             .local_axis1(Vec3::X)
             .local_axis2(Vec3::Y)
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
-            .set_motor(JointAxis::X, 0., 0., 10e10, 1.)
-            .set_motor(JointAxis::Y, 0., 0., 50_000., 100.)
-            .set_motor(JointAxis::Z, 0., 0., 10e10, 1.)
+            .set_motor(JointAxis::X, 0., 0., 1e10, 1.)
+            .set_motor(JointAxis::Y, 0., 0., 5e5, 15e2)
+            .set_motor(JointAxis::Z, 0., 0., 1e10, 1.)
             .build();
         joints.push(joint);
 
@@ -322,7 +316,7 @@ pub fn spawn_car(
         .insert(Ccd::enabled())
         .insert(Damping {
             linear_damping: 0.05,
-            angular_damping: 20.0,
+            angular_damping: 0.1,
         })
         .insert(Velocity::zero())
         .insert(ExternalForce::default())

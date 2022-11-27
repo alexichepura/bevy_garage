@@ -147,6 +147,9 @@ pub fn dqn_system(
             car_dqn_prev.prev_action = action;
             car_dqn_prev.prev_reward = reward;
         }
+        if !config.use_brain {
+            return;
+        }
         if crash {
             dqn.crashes += 1;
             dqn.respawn_at = seconds + 0.5;
