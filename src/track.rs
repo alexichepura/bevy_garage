@@ -1,10 +1,11 @@
 use crate::config::Config;
 use bevy::prelude::*;
-use bevy::render::mesh::{Indices, PrimitiveTopology};
+use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::rapier::prelude::ColliderShape;
 
+use obj::*;
 use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
@@ -16,12 +17,46 @@ pub fn track_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let polyline_buf = BufReader::new(File::open("assets/track-polyline.obj").unwrap());
+    let model = raw::parse_obj(polyline_buf).unwrap();
+    let polypoints: Vec<Point3<Real>> = model
+        .positions
+        .iter()
+        .map(|pos| Point3::new(pos.0, pos.1, pos.2))
+        .collect();
+
+    let mut polymesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut polyvertices: Vec<[f32; 3]> = vec![];
+    for point in polypoints.iter() {
+        polyvertices.push([point.x, point.y, point.z]);
+        polyvertices.push([point.x, point.y, point.z]);
+        polyvertices.push([point.x, point.y, point.z]);
+        polyvertices.push([point.x, point.y, point.z]);
+        polyvertices.push([point.x, point.y, point.z]);
+        polyvertices.push([point.x, point.y, point.z]);
+    }
+    polymesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(polyvertices.clone()),
+    );
+    polymesh.compute_flat_normals();
+    commands
+        .spawn(PbrBundle {
+            transform: Transform::from_translation(Vec3::new(0., 0.2, 0.)),
+            mesh: meshes.add(polymesh),
+            material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+            ..Default::default()
+        })
+        .insert(RigidBody::Fixed)
+        .insert(Transform::default());
+
+    // TODO delete
     let geoms = models();
     for obj_path in geoms.into_iter() {
         let is_road = obj_path.contains("road.obj");
         let input = BufReader::new(File::open(&obj_path).unwrap());
-        let model = obj::raw::parse_obj(input).unwrap();
-        let obj: obj::Obj<obj::TexturedVertex, u32> = obj::Obj::new(model).unwrap();
+        let model = raw::parse_obj(input).unwrap();
+        let obj: Obj<TexturedVertex, u32> = Obj::new(model).unwrap();
 
         let positions: Vec<[f32; 3]> = obj
             .vertices
@@ -95,7 +130,7 @@ pub fn track_start_system(
                 .insert(Restitution::coefficient(0.));
         }
     }
-    let multiplier: usize = 10;
+    let multiplier: usize = 1;
     let scale = 280. / multiplier as f32;
     let num_cols: usize = 2 * multiplier;
     let num_rows: usize = 3 * multiplier;
