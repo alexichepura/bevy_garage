@@ -28,6 +28,7 @@ pub fn track_start_system(
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let mut vertices: Vec<[f32; 3]> = vec![];
     let mut indices: Vec<u32> = vec![];
+    let mut collider_indices: Vec<[u32; 3]> = Vec::new();
     let mut normals: Vec<[f32; 3]> = vec![];
     let normal: [f32; 3] = [0., 1., 0.];
     let width: f32 = 4.;
@@ -53,12 +54,19 @@ pub fn track_start_system(
         //     ..Default::default()
         // });
         let ind: u32 = i as u32 * 2;
-        indices.push(ind);
-        indices.push(ind + 1);
-        indices.push(if is_last { 0 } else { ind + 2 });
-        indices.push(if is_last { 0 } else { ind + 2 });
-        indices.push(ind + 1);
-        indices.push(if is_last { 1 } else { ind + 3 });
+        let ituple: [[u32; 3]; 2] = [
+            [ind, ind + 1, if is_last { 0 } else { ind + 2 }],
+            [
+                if is_last { 0 } else { ind + 2 },
+                ind + 1,
+                if is_last { 1 } else { ind + 3 },
+            ],
+        ];
+        collider_indices.push(ituple[0]);
+        collider_indices.push(ituple[1]);
+        indices.extend(ituple[0]);
+        indices.extend(ituple[1]);
+
         vertices.push(v1.into());
         vertices.push(v2.into());
         normals.push(normal.clone());
@@ -66,16 +74,34 @@ pub fn track_start_system(
     }
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(vertices),
+        VertexAttributeValues::from(vertices.clone()),
     );
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.set_indices(Some(Indices::U32(indices)));
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(mesh),
-        material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.5).into()),
-        transform: Transform::from_xyz(0., 0.1, 0.),
-        ..Default::default()
-    });
+
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(mesh),
+            material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.5).into()),
+            transform: Transform::from_xyz(0., 0.1, 0.),
+            ..Default::default()
+        })
+        .insert(Name::new("road"))
+        .insert(Collider::from(ColliderShape::trimesh(
+            vertices
+                .iter()
+                .map(|v| Point3::new(v[0], v[1], v[2]))
+                .collect(),
+            collider_indices,
+        )))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 0.1,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
 
     // TODO delete
     let geoms = models();
@@ -157,45 +183,45 @@ pub fn track_start_system(
                 .insert(Restitution::coefficient(0.));
         }
     }
-    let multiplier: usize = 1;
-    let scale = 280. / multiplier as f32;
-    let num_cols: usize = 2 * multiplier;
-    let num_rows: usize = 3 * multiplier;
-    let hx = num_cols as f32 * scale;
-    let hy = 0.5;
-    let hz = num_rows as f32 * scale;
-    let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
-    let heights: Vec<Real> = vec![hy; num_rows * num_cols];
-    commands
-        .spawn_empty()
-        .insert(Name::new("road-heightfield"))
-        .insert(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box {
-                max_x: hx,
-                min_x: -hx,
-                max_y: hy,
-                min_y: -hy,
-                max_z: hz,
-                min_z: -hz,
-            })),
-            material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
-            // material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
-            ..default()
-        })
-        .insert(RigidBody::Fixed)
-        .insert(TransformBundle::from_transform(Transform::from_xyz(
-            -350., -hy, 570.,
-        )))
-        .insert(Collider::heightfield(
-            heights,
-            num_rows,
-            num_cols,
-            ground_size.into(),
-        ))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction::coefficient(1.))
-        .insert(Restitution::coefficient(0.));
+    // let multiplier: usize = 1;
+    // let scale = 280. / multiplier as f32;
+    // let num_cols: usize = 2 * multiplier;
+    // let num_rows: usize = 3 * multiplier;
+    // let hx = num_cols as f32 * scale;
+    // let hy = 0.5;
+    // let hz = num_rows as f32 * scale;
+    // let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
+    // let heights: Vec<Real> = vec![hy; num_rows * num_cols];
+    // commands
+    //     .spawn_empty()
+    //     .insert(Name::new("road-heightfield"))
+    //     .insert(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::Box {
+    //             max_x: hx,
+    //             min_x: -hx,
+    //             max_y: hy,
+    //             min_y: -hy,
+    //             max_z: hz,
+    //             min_z: -hz,
+    //         })),
+    //         material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
+    //         // material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
+    //         ..default()
+    //     })
+    //     .insert(RigidBody::Fixed)
+    //     .insert(TransformBundle::from_transform(Transform::from_xyz(
+    //         -350., -hy, 570.,
+    //     )))
+    //     .insert(Collider::heightfield(
+    //         heights,
+    //         num_rows,
+    //         num_cols,
+    //         ground_size.into(),
+    //     ))
+    //     .insert(ColliderScale::Absolute(Vec3::ONE))
+    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+    //     .insert(Friction::coefficient(1.))
+    //     .insert(Restitution::coefficient(0.));
 }
 
 pub const ASSET_ROAD: &str = "assets/road.obj";
