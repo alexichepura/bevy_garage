@@ -19,36 +19,51 @@ pub fn track_start_system(
 ) {
     let polyline_buf = BufReader::new(File::open("assets/track-polyline.obj").unwrap());
     let model = raw::parse_obj(polyline_buf).unwrap();
-    let polypoints: Vec<Point3<Real>> = model
+    let points: Vec<Vec3> = model
         .positions
         .iter()
-        .map(|pos| Point3::new(pos.0, pos.1, pos.2))
+        .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
         .collect();
 
-    let mut polymesh = Mesh::new(PrimitiveTopology::TriangleList);
-    let mut polyvertices: Vec<[f32; 3]> = vec![];
-    for point in polypoints.iter() {
-        polyvertices.push([point.x, point.y, point.z]);
-        polyvertices.push([point.x, point.y, point.z]);
-        polyvertices.push([point.x, point.y, point.z]);
-        polyvertices.push([point.x, point.y, point.z]);
-        polyvertices.push([point.x, point.y, point.z]);
-        polyvertices.push([point.x, point.y, point.z]);
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut vertices: Vec<[f32; 3]> = vec![];
+    let mut indices: Vec<u32> = vec![];
+    let width: f32 = 4.;
+    for (i, point) in points.iter().enumerate() {
+        let i_next: usize = if i + 1 == points.len() { 0 } else { i + 1 };
+        let point_next = points.get(i_next).unwrap();
+        let v: Vec3 = (*point_next - *point).normalize();
+        let dv0: Vec3 = Quat::from_rotation_y(-PI).mul_vec3(v) * width;
+        let dv1: Vec3 = Quat::from_rotation_y(PI).mul_vec3(v) * width;
+
+        let ind: u32 = i as u32 * 6;
+        indices.push(ind);
+        indices.push(ind + 1);
+        indices.push(ind + 2);
+        indices.push(ind + 3);
+        indices.push(ind + 4);
+        indices.push(ind + 5);
+
+        vertices.push((*point + dv0).into());
+        vertices.push((*point + dv1).into());
+        vertices.push((*point_next + dv0).into());
+        vertices.push((*point_next + dv0).into());
+        vertices.push((*point + dv1).into());
+        vertices.push((*point_next + dv1).into());
     }
-    polymesh.insert_attribute(
+    mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(polyvertices.clone()),
+        VertexAttributeValues::from(vertices),
     );
-    polymesh.compute_flat_normals();
-    commands
-        .spawn(PbrBundle {
-            transform: Transform::from_translation(Vec3::new(0., 0.2, 0.)),
-            mesh: meshes.add(polymesh),
-            material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
-            ..Default::default()
-        })
-        .insert(RigidBody::Fixed)
-        .insert(Transform::default());
+    mesh.compute_flat_normals();
+    mesh.set_indices(Some(Indices::U32(indices)));
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(mesh),
+        material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+        transform: Transform::from_xyz(0., 1.2, 0.),
+        ..Default::default()
+    });
 
     // TODO delete
     let geoms = models();
@@ -175,9 +190,9 @@ pub const ASSET_ROAD: &str = "assets/road.obj";
 
 fn models() -> Vec<String> {
     vec![
-        ASSET_ROAD.to_string(),
-        "assets/border-left.obj".to_string(),
-        "assets/border-right.obj".to_string(),
+        // ASSET_ROAD.to_string(),
+        // "assets/border-left.obj".to_string(),
+        // "assets/border-right.obj".to_string(),
     ]
 }
 
