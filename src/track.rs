@@ -6,7 +6,7 @@ use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::rapier::prelude::ColliderShape;
 
 use obj::*;
-use std::f32::consts::PI;
+use std::f32::consts::{FRAC_PI_2, PI};
 use std::fs::File;
 use std::io::BufReader;
 
@@ -28,40 +28,64 @@ pub fn track_start_system(
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let mut vertices: Vec<[f32; 3]> = vec![];
     let mut indices: Vec<u32> = vec![];
+    let mut normals: Vec<[f32; 3]> = vec![];
+    let normal: [f32; 3] = [0., 1., 0.];
     let width: f32 = 4.;
     for (i, point) in points.iter().enumerate() {
         let i_next: usize = if i + 1 == points.len() { 0 } else { i + 1 };
         let point_next = points.get(i_next).unwrap();
         let v: Vec3 = (*point_next - *point).normalize();
-        let dv0: Vec3 = Quat::from_rotation_y(-PI).mul_vec3(v) * width;
-        let dv1: Vec3 = Quat::from_rotation_y(PI).mul_vec3(v) * width;
+        let dv0: Vec3 = Quat::from_rotation_y(FRAC_PI_2).mul_vec3(v) * width;
+        let dv1: Vec3 = Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(v) * width;
+        let v1: Vec3 = *point + dv0;
+        let v2: Vec3 = *point + dv1;
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(shape::Cube::default().into()),
+            material: materials.add(Color::rgb(0.5, 0.05, 0.05).into()),
+            transform: Transform::from_xyz(v1.x, v1.y, v1.z),
+            ..Default::default()
+        });
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(shape::Cube::default().into()),
+            material: materials.add(Color::rgb(0.05, 0.05, 0.5).into()),
+            transform: Transform::from_xyz(v2.x, v2.y, v2.z),
+            ..Default::default()
+        });
 
         let ind: u32 = i as u32 * 6;
         indices.push(ind);
         indices.push(ind + 1);
         indices.push(ind + 2);
+        indices.push(ind + 2);
+        indices.push(ind + 1);
         indices.push(ind + 3);
-        indices.push(ind + 4);
-        indices.push(ind + 5);
+        // indices.push(ind + 3);
+        // indices.push(ind + 4);
+        // indices.push(ind + 5);
 
-        vertices.push((*point + dv0).into());
-        vertices.push((*point + dv1).into());
-        vertices.push((*point_next + dv0).into());
-        vertices.push((*point_next + dv0).into());
-        vertices.push((*point + dv1).into());
-        vertices.push((*point_next + dv1).into());
+        vertices.push(v1.into());
+        vertices.push(v2.into());
+        // vertices.push((*point_next + dv0).into());
+        // vertices.push((*point_next + dv0).into());
+        // vertices.push((*point + dv1).into());
+        // vertices.push((*point_next + dv1).into());
+
+        normals.push(normal.clone());
+        normals.push(normal.clone());
     }
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices),
     );
-    mesh.compute_flat_normals();
+
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.set_indices(Some(Indices::U32(indices)));
+    // mesh.compute_flat_normals();
 
     commands.spawn(PbrBundle {
         mesh: meshes.add(mesh),
-        material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
-        transform: Transform::from_xyz(0., 1.2, 0.),
+        material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.5).into()),
+        transform: Transform::from_xyz(0., 0.1, 0.),
         ..Default::default()
     });
 
@@ -195,6 +219,11 @@ fn models() -> Vec<String> {
         // "assets/border-right.obj".to_string(),
     ]
 }
+
+// fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
+//     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));
+//     (b - a).cross(c - a).normalize().into()
+// }
 
 pub fn track_decorations_start_system(
     asset_server: Res<AssetServer>,
