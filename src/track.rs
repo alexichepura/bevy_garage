@@ -39,20 +39,20 @@ pub fn track_start_system(
         let dv1: Vec3 = Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(v) * width;
         let v1: Vec3 = *point + dv0;
         let v2: Vec3 = *point + dv1;
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(shape::Cube::default().into()),
-            material: materials.add(Color::rgb(0.5, 0.05, 0.05).into()),
-            transform: Transform::from_xyz(v1.x, v1.y, v1.z),
-            ..Default::default()
-        });
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(shape::Cube::default().into()),
-            material: materials.add(Color::rgb(0.05, 0.05, 0.5).into()),
-            transform: Transform::from_xyz(v2.x, v2.y, v2.z),
-            ..Default::default()
-        });
+        // commands.spawn(PbrBundle {
+        //     mesh: meshes.add(shape::Cube::default().into()),
+        //     material: materials.add(Color::rgb(0.5, 0.05, 0.05).into()),
+        //     transform: Transform::from_xyz(v1.x, v1.y, v1.z),
+        //     ..Default::default()
+        // });
+        // commands.spawn(PbrBundle {
+        //     mesh: meshes.add(shape::Cube::default().into()),
+        //     material: materials.add(Color::rgb(0.05, 0.05, 0.5).into()),
+        //     transform: Transform::from_xyz(v2.x, v2.y, v2.z),
+        //     ..Default::default()
+        // });
 
-        let ind: u32 = i as u32 * 6;
+        let ind: u32 = i as u32 * 2;
         indices.push(ind);
         indices.push(ind + 1);
         indices.push(ind + 2);
