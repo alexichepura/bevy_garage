@@ -28,75 +28,162 @@ pub fn track_start_system(
         .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
         .collect();
 
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    let mut vertices: Vec<[f32; 3]> = vec![];
-    let mut indices: Vec<u32> = vec![];
-    let mut collider_indices: Vec<[u32; 3]> = Vec::new();
-    let mut normals: Vec<[f32; 3]> = vec![];
+    let mut road_vertices: Vec<[f32; 3]> = vec![];
+    let mut road_indices: Vec<u32> = vec![];
+    let mut road_collider_indices: Vec<[u32; 3]> = Vec::new();
+    let mut road_normals: Vec<[f32; 3]> = vec![];
+
+    let mut left_wall_vertices: Vec<[f32; 3]> = vec![];
+    let mut left_wall_indices: Vec<u32> = vec![];
+    let mut left_wall_collider_indices: Vec<[u32; 3]> = Vec::new();
+    let mut left_wall_normals: Vec<[f32; 3]> = vec![];
+    let mut right_wall_vertices: Vec<[f32; 3]> = vec![];
+    let mut right_wall_indices: Vec<u32> = vec![];
+    let mut right_wall_collider_indices: Vec<[u32; 3]> = Vec::new();
+    let mut right_wall_normals: Vec<[f32; 3]> = vec![];
+
     let normal: [f32; 3] = [0., 1., 0.];
     let width: f32 = 5.;
     for (i, point) in points.iter().enumerate() {
-        let is_last: bool = i + 1 == points.len();
-        let i_next: usize = if is_last { 0 } else { i + 1 };
-        let point_next = points.get(i_next).unwrap();
-        let v: Vec3 = (*point_next - *point).normalize();
-        let dv0: Vec3 = Quat::from_rotation_y(FRAC_PI_2).mul_vec3(v) * width;
-        let dv1: Vec3 = Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(v) * width;
-        let v1: Vec3 = *point + dv0;
-        let v2: Vec3 = *point + dv1;
-        // commands.spawn(PbrBundle {
-        //     mesh: meshes.add(shape::Cube::default().into()),
-        //     material: materials.add(Color::rgb(0.5, 0.05, 0.05).into()),
-        //     transform: Transform::from_xyz(v1.x, v1.y, v1.z),
-        //     ..Default::default()
-        // });
-        // commands.spawn(PbrBundle {
-        //     mesh: meshes.add(shape::Cube::default().into()),
-        //     material: materials.add(Color::rgb(0.05, 0.05, 0.5).into()),
-        //     transform: Transform::from_xyz(v2.x, v2.y, v2.z),
-        //     ..Default::default()
-        // });
+        let last: bool = i + 1 == points.len();
         let ind: u32 = i as u32 * 2;
         let ituple: [[u32; 3]; 2] = [
-            [ind, ind + 1, if is_last { 0 } else { ind + 2 }],
+            [ind, ind + 1, if last { 0 } else { ind + 2 }],
             [
-                if is_last { 0 } else { ind + 2 },
+                if last { 0 } else { ind + 2 },
                 ind + 1,
-                if is_last { 1 } else { ind + 3 },
+                if last { 1 } else { ind + 3 },
             ],
         ];
-        collider_indices.push(ituple[0]);
-        collider_indices.push(ituple[1]);
-        indices.extend(ituple[0]);
-        indices.extend(ituple[1]);
+        let i_next: usize = if last { 0 } else { i + 1 };
+        let point_next = points.get(i_next).unwrap();
+        let point_direction: Vec3 = (*point_next - *point).normalize();
+        let dv: (Vec3, Vec3) = (
+            Quat::from_rotation_y(FRAC_PI_2).mul_vec3(point_direction) * width,
+            Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(point_direction) * width,
+        );
+        let sides: (Vec3, Vec3) = (*point + dv.0, *point + dv.1);
+        road_vertices.push(sides.0.into());
+        road_vertices.push(sides.1.into());
+        road_indices.extend(ituple[0]);
+        road_indices.extend(ituple[1]);
+        road_collider_indices.push(ituple[0]);
+        road_collider_indices.push(ituple[1]);
+        road_normals.push(normal.clone());
+        road_normals.push(normal.clone());
 
-        vertices.push(v1.into());
-        vertices.push(v2.into());
-        normals.push(normal.clone());
-        normals.push(normal.clone());
+        let walls: (Vec3, Vec3) = (sides.0 + Vec3::Y, sides.1 + Vec3::Y);
+        left_wall_vertices.push(sides.0.into());
+        left_wall_vertices.push(walls.0.into());
+        left_wall_indices.extend(ituple[0]);
+        left_wall_indices.extend(ituple[1]);
+        left_wall_collider_indices.push(ituple[0]);
+        left_wall_collider_indices.push(ituple[1]);
+        // left_wall_normals.push(normal.clone());
+        // left_wall_normals.push(normal.clone());
+
+        right_wall_vertices.push(sides.1.into());
+        right_wall_vertices.push(walls.1.into());
+        right_wall_indices.extend(ituple[0]);
+        right_wall_indices.extend(ituple[1]);
+        right_wall_collider_indices.push(ituple[0]);
+        right_wall_collider_indices.push(ituple[1]);
+        // right_wall_normals.push(normal.clone());
+        // right_wall_normals.push(normal.clone());
     }
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(vertices.clone()),
+        VertexAttributeValues::from(road_vertices.clone()),
     );
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
-    mesh.set_indices(Some(Indices::U32(indices)));
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_NORMAL,
+        VertexAttributeValues::from(road_normals),
+    );
+    mesh.set_indices(Some(Indices::U32(road_indices)));
 
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(Color::rgba(0.05, 0.05, 0.05, 0.5).into()),
+            material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
             transform: Transform::from_xyz(0., 0.1, 0.),
             ..Default::default()
         })
-        .insert(Name::new("road"))
         .insert(Road)
         .insert(Collider::from(ColliderShape::trimesh(
-            vertices
+            road_vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
-            collider_indices,
+            road_collider_indices,
+        )))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 0.1,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
+
+    let mut left_wall_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    left_wall_mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(left_wall_vertices.clone()),
+    );
+    // left_wall_mesh.insert_attribute(
+    //     Mesh::ATTRIBUTE_NORMAL,
+    //     VertexAttributeValues::from(road_normals),
+    // );
+    left_wall_mesh.set_indices(Some(Indices::U32(left_wall_indices)));
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(left_wall_mesh),
+            material: materials.add(Color::rgb(0.05, 0.05, 0.35).into()),
+            transform: Transform::from_xyz(0., 0.1, 0.),
+            ..Default::default()
+        })
+        .insert(Road)
+        .insert(Collider::from(ColliderShape::trimesh(
+            left_wall_vertices
+                .iter()
+                .map(|v| Point3::new(v[0], v[1], v[2]))
+                .collect(),
+            left_wall_collider_indices,
+        )))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 0.1,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
+
+    let mut right_wall_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    right_wall_mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(right_wall_vertices.clone()),
+    );
+    // right_wall_mesh.insert_attribute(
+    //     Mesh::ATTRIBUTE_NORMAL,
+    //     VertexAttributeValues::from(road_normals),
+    // );
+    right_wall_mesh.set_indices(Some(Indices::U32(right_wall_indices)));
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(right_wall_mesh),
+            material: materials.add(Color::rgb(0.05, 0.05, 0.35).into()),
+            transform: Transform::from_xyz(0., 0.1, 0.),
+            ..Default::default()
+        })
+        .insert(Road)
+        .insert(Collider::from(ColliderShape::trimesh(
+            right_wall_vertices
+                .iter()
+                .map(|v| Point3::new(v[0], v[1], v[2]))
+                .collect(),
+            right_wall_collider_indices,
         )))
         .insert(ColliderScale::Absolute(Vec3::ONE))
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
