@@ -26,7 +26,7 @@ pub fn dqn_system(
     mut dqn: ResMut<DqnResource>,
     mut sgd_res: NonSendMut<SgdResource>,
     mut cars_dqn: NonSendMut<CarsDqnResource>,
-    q_road: Query<&Road>,
+    q_road: Query<&TrackRoad>,
     mut q_car: Query<(
         &mut Car,
         &Velocity,
