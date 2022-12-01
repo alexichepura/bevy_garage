@@ -26,7 +26,7 @@ pub fn dqn_system(
     mut dqn: ResMut<DqnResource>,
     mut sgd_res: NonSendMut<SgdResource>,
     mut cars_dqn: NonSendMut<CarsDqnResource>,
-    q_name: Query<&Name>,
+    q_road: Query<&TrackRoad>,
     mut q_car: Query<(
         &mut Car,
         &Velocity,
@@ -81,8 +81,8 @@ pub fn dqn_system(
             let colliding_entities = q_colliding_entities.get(child);
             if let Ok(colliding_entities) = colliding_entities {
                 for e in colliding_entities.iter() {
-                    let colliding_entity = q_name.get(e).unwrap();
-                    if !colliding_entity.contains(ASSET_ROAD) {
+                    let colliding_road = q_road.get(e);
+                    if !colliding_road.is_ok() {
                         crash = true;
                     }
                 }

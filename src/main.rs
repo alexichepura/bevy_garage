@@ -31,9 +31,9 @@ use progress::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 128;
-    c.integration_parameters.max_velocity_friction_iterations = 32;
-    c.integration_parameters.max_stabilization_iterations = 128;
+    c.integration_parameters.max_velocity_iterations = 256;
+    c.integration_parameters.max_velocity_friction_iterations = 64;
+    c.integration_parameters.max_stabilization_iterations = 256;
     dbg!(c.integration_parameters);
 }
 
