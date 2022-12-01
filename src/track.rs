@@ -139,12 +139,12 @@ pub fn spawn_road(
         .insert(Restitution::coefficient(0.));
 }
 
-pub fn track_start_system(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+pub fn spawn_walls(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    track: &Track,
 ) {
-    let track = Track::new();
     let mut left_wall_vertices: Vec<[f32; 3]> = vec![];
     let mut right_wall_vertices: Vec<[f32; 3]> = vec![];
     for (i, _) in track.points.iter().enumerate() {
@@ -153,7 +153,6 @@ pub fn track_start_system(
         right_wall_vertices.push(track.right[i].into());
         right_wall_vertices.push((track.right[i] + Vec3::Y).into());
     }
-    spawn_road(&mut commands, &mut meshes, &mut materials, &track);
 
     let mut left_wall_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     left_wall_mesh.insert_attribute(
@@ -212,6 +211,16 @@ pub fn track_start_system(
             ..default()
         })
         .insert(Restitution::coefficient(0.));
+}
+
+pub fn track_start_system(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let track = Track::new();
+    spawn_road(&mut commands, &mut meshes, &mut materials, &track);
+    spawn_walls(&mut commands, &mut meshes, &mut materials, &track);
 
     let multiplier: usize = 1;
     let scale = 280. / multiplier as f32;
