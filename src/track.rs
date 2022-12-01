@@ -12,6 +12,9 @@ use std::io::BufReader;
 
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 
+#[derive(Component)]
+pub struct Road;
+
 pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -31,7 +34,7 @@ pub fn track_start_system(
     let mut collider_indices: Vec<[u32; 3]> = Vec::new();
     let mut normals: Vec<[f32; 3]> = vec![];
     let normal: [f32; 3] = [0., 1., 0.];
-    let width: f32 = 4.;
+    let width: f32 = 5.;
     for (i, point) in points.iter().enumerate() {
         let is_last: bool = i + 1 == points.len();
         let i_next: usize = if is_last { 0 } else { i + 1 };
@@ -87,6 +90,7 @@ pub fn track_start_system(
             ..Default::default()
         })
         .insert(Name::new("road"))
+        .insert(Road)
         .insert(Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
@@ -103,141 +107,46 @@ pub fn track_start_system(
         })
         .insert(Restitution::coefficient(0.));
 
-    // TODO delete
-    let geoms = models();
-    for obj_path in geoms.into_iter() {
-        let is_road = obj_path.contains("road.obj");
-        let input = BufReader::new(File::open(&obj_path).unwrap());
-        let model = raw::parse_obj(input).unwrap();
-        let obj: Obj<TexturedVertex, u32> = Obj::new(model).unwrap();
-
-        let positions: Vec<[f32; 3]> = obj
-            .vertices
-            .iter()
-            .map(|v| {
-                [
-                    v.position[0],
-                    match is_road {
-                        true => 0., // fix small deviations from 0. after blender obj triangulation export
-                        false => v.position[1],
-                    },
-                    v.position[2],
-                ]
-            })
-            .collect();
-        let normales: Vec<[f32; 3]> = obj.vertices.iter().map(|v| v.normal).collect();
-        let uv_data: Vec<[f32; 2]> = obj
-            .vertices
-            .iter()
-            .map(|v| [v.texture[0], 1.0 - v.texture[1]])
-            .collect();
-
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normales);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv_data);
-        mesh.set_indices(Some(Indices::U32(
-            obj.indices.iter().map(|i| *i as u32).collect(),
-        )));
-
-        let vertices: Vec<Point3<Real>> = positions
-            .iter()
-            .map(|v| Point3::new(v[0], v[1], v[2]))
-            .collect();
-
-        let indices: Vec<_> = obj
-            .indices
-            .chunks(3)
-            .map(|idx| [idx[0] as u32, idx[1] as u32, idx[2] as u32])
-            .collect();
-
-        let h = match is_road {
-            true => 0.001,
-            false => 0.,
-        };
-        let id = commands
-            .spawn_empty()
-            .insert(Name::new(obj_path))
-            .insert(RigidBody::Fixed)
-            .insert(PbrBundle {
-                transform: Transform::from_translation(Vec3::new(0., h, 0.)),
-                mesh: meshes.add(mesh),
-                material: materials.add(match is_road {
-                    true => Color::rgb(0.1, 0.1, 0.15).into(),
-                    false => Color::rgb(0.2, 0.2, 0.2).into(),
-                }),
-                ..default()
-            })
-            .id();
-        if !is_road {
-            commands
-                .entity(id)
-                .insert(Collider::from(ColliderShape::trimesh(vertices, indices)))
-                .insert(ColliderScale::Absolute(Vec3::ONE))
-                .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-                .insert(Friction {
-                    combine_rule: CoefficientCombineRule::Average,
-                    coefficient: 0.1,
-                    ..default()
-                })
-                .insert(Restitution::coefficient(0.));
-        }
-    }
-    // let multiplier: usize = 1;
-    // let scale = 280. / multiplier as f32;
-    // let num_cols: usize = 2 * multiplier;
-    // let num_rows: usize = 3 * multiplier;
-    // let hx = num_cols as f32 * scale;
-    // let hy = 0.5;
-    // let hz = num_rows as f32 * scale;
-    // let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
-    // let heights: Vec<Real> = vec![hy; num_rows * num_cols];
-    // commands
-    //     .spawn_empty()
-    //     .insert(Name::new("road-heightfield"))
-    //     .insert(PbrBundle {
-    //         mesh: meshes.add(Mesh::from(shape::Box {
-    //             max_x: hx,
-    //             min_x: -hx,
-    //             max_y: hy,
-    //             min_y: -hy,
-    //             max_z: hz,
-    //             min_z: -hz,
-    //         })),
-    //         material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
-    //         // material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
-    //         ..default()
-    //     })
-    //     .insert(RigidBody::Fixed)
-    //     .insert(TransformBundle::from_transform(Transform::from_xyz(
-    //         -350., -hy, 570.,
-    //     )))
-    //     .insert(Collider::heightfield(
-    //         heights,
-    //         num_rows,
-    //         num_cols,
-    //         ground_size.into(),
-    //     ))
-    //     .insert(ColliderScale::Absolute(Vec3::ONE))
-    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-    //     .insert(Friction::coefficient(1.))
-    //     .insert(Restitution::coefficient(0.));
+    let multiplier: usize = 1;
+    let scale = 280. / multiplier as f32;
+    let num_cols: usize = 2 * multiplier;
+    let num_rows: usize = 3 * multiplier;
+    let hx = num_cols as f32 * scale;
+    let hy = 0.5;
+    let hz = num_rows as f32 * scale;
+    let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
+    let heights: Vec<Real> = vec![hy; num_rows * num_cols];
+    commands
+        .spawn_empty()
+        .insert(Name::new("road-heightfield"))
+        .insert(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box {
+                max_x: hx,
+                min_x: -hx,
+                max_y: hy,
+                min_y: -hy,
+                max_z: hz,
+                min_z: -hz,
+            })),
+            material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
+            // material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
+            ..default()
+        })
+        .insert(RigidBody::Fixed)
+        .insert(TransformBundle::from_transform(Transform::from_xyz(
+            -350., -hy, 570.,
+        )))
+        .insert(Collider::heightfield(
+            heights,
+            num_rows,
+            num_cols,
+            ground_size.into(),
+        ))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction::coefficient(1.))
+        .insert(Restitution::coefficient(0.));
 }
-
-pub const ASSET_ROAD: &str = "assets/road.obj";
-
-fn models() -> Vec<String> {
-    vec![
-        // ASSET_ROAD.to_string(),
-        // "assets/border-left.obj".to_string(),
-        // "assets/border-right.obj".to_string(),
-    ]
-}
-
-// fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
-//     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));
-//     (b - a).cross(c - a).normalize().into()
-// }
 
 pub fn track_decorations_start_system(
     asset_server: Res<AssetServer>,
