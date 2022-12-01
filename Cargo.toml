@@ -10,7 +10,7 @@ members = ["prisma-cli"]
 [profile.release]
 codegen-units = 1
 [dependencies]
-bevy = { version = "0.9.0" }
+bevy = { version = "0.9.1" }
 # bevy_atmosphere = "0.4.1"
 bevy_atmosphere = {git="https://github.com/JonahPlusPlus/bevy_atmosphere"}
 bevy_framepace = { version = "0.9.1"}
@@ -21,9 +21,9 @@ obj-rs = { version =  "0.7.0", default-features = false }
 parry3d = "0.11.1"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
 rand = "0.8.5"
-serde = { version = "1.0.144", features = ["derive"] }
-serde_json = "1.0.85"
-tokio = { version = "1.20.1", features = ["full"] }
+serde = { version = "1.0.148", features = ["derive"] }
+serde_json = "1.0.89"
+tokio = { version = "1.22.0", features = ["full"] }
 
 # [profile.dev.package.bevy_rapier3d]
 # opt-level = 3
