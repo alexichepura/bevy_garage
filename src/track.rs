@@ -148,8 +148,8 @@ pub fn spawn_walls(
     let mut left_wall_vertices: Vec<[f32; 3]> = vec![];
     let mut right_wall_vertices: Vec<[f32; 3]> = vec![];
     for (i, _) in track.points.iter().enumerate() {
-        left_wall_vertices.push(track.left[i].into());
         left_wall_vertices.push((track.left[i] + Vec3::Y).into());
+        left_wall_vertices.push(track.left[i].into());
         right_wall_vertices.push(track.right[i].into());
         right_wall_vertices.push((track.right[i] + Vec3::Y).into());
     }
@@ -213,15 +213,11 @@ pub fn spawn_walls(
         .insert(Restitution::coefficient(0.));
 }
 
-pub fn track_start_system(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+pub fn spawn_ground(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
-    let track = Track::new();
-    spawn_road(&mut commands, &mut meshes, &mut materials, &track);
-    spawn_walls(&mut commands, &mut meshes, &mut materials, &track);
-
     let multiplier: usize = 1;
     let scale = 280. / multiplier as f32;
     let num_cols: usize = 2 * multiplier;
@@ -261,6 +257,17 @@ pub fn track_start_system(
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction::coefficient(1.))
         .insert(Restitution::coefficient(0.));
+}
+
+pub fn track_start_system(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let track = Track::new();
+    spawn_road(&mut commands, &mut meshes, &mut materials, &track);
+    spawn_walls(&mut commands, &mut meshes, &mut materials, &track);
+    spawn_ground(&mut commands, &mut meshes, &mut materials);
 }
 
 pub fn track_decorations_start_system(
