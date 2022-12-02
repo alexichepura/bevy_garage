@@ -68,17 +68,21 @@ fn main() {
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
         .insert_resource(AtmosphereSettings { resolution: 1024 })
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
-                title: "car sim deep learning".to_string(),
-                width: 1024.,
-                height: 768.,
-                // monitor: MonitorSelection::Index(1),
-                position: WindowPosition::Centered,
-                ..default()
-            },
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        title: "car sim deep learning".to_string(),
+                        width: 1024.,
+                        height: 768.,
+                        // monitor: MonitorSelection::Index(1),
+                        position: WindowPosition::Centered,
+                        ..default()
+                    },
+                    ..default()
+                }),
+        )
         .add_plugin(AtmospherePlugin)
         .add_plugin(FramepacePlugin)
         .add_startup_system(camera_start_system)

@@ -1,6 +1,7 @@
 use crate::config::Config;
 use bevy::prelude::*;
-use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
+use bevy::render::mesh::*;
+use bevy::render::render_resource::*;
 use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::rapier::prelude::ColliderShape;
@@ -102,9 +103,15 @@ pub fn spawn_road(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    images: &mut ResMut<Assets<Image>>,
     track: &Track,
 ) {
     let (vertices, normals) = track.road();
+
+    let debug_material = materials.add(StandardMaterial {
+        base_color_texture: Some(images.add(uv_debug_texture())),
+        ..default()
+    });
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     mesh.insert_attribute(
@@ -114,10 +121,20 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
+    // let uvs: Vec<_> = (0..track.points.len() * 2).map(|_| [0.0, 0.0]).collect();
+    let uvs: Vec<_> = track
+        .left_norm
+        .iter()
+        .map(|_| [[0.0, 0.0], [1.0, 1.0]])
+        .flatten()
+        .collect();
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+            // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+            material: debug_material.clone(),
             transform: Transform::from_xyz(0., 0.1, 0.),
             ..Default::default()
         })
@@ -143,6 +160,7 @@ pub fn spawn_walls(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    images: &mut ResMut<Assets<Image>>,
     track: &Track,
 ) {
     let mut left_wall_vertices: Vec<[f32; 3]> = vec![];
@@ -154,15 +172,44 @@ pub fn spawn_walls(
         right_wall_vertices.push((track.right[i] + Vec3::Y).into());
     }
 
+    // let debug_material = materials.add(StandardMaterial {
+    //     base_color_texture: Some(images.add(uv_debug_texture())),
+    //     ..default()
+    // });
+
     let mut left_wall_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     left_wall_mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(left_wall_vertices.clone()),
     );
     left_wall_mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+
+    // let normals: Vec<_> = track
+    //     .left_norm
+    //     .iter()
+    //     .map(|l| l.mul(-1.).to_array())
+    //     .flat_map(|normal| [normal; 2])
+    //     .collect();
+    // left_wall_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+
+    // let uvs: Vec<_> = (0..track.left.len() * 2).map(|_| [0.0, 0.0]).collect();
+    // left_wall_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+
+    // let uvs: Vec<_> = track
+    //     .left_norm
+    //     .iter()
+    //     .map(|_| [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
+    //     .flatten()
+    //     // .flat_map(|normal| [normal; 2])
+    //     .collect();
+    // let uvs: Vec<_> = (0..track.left.len() * 2).map(|_| [0.0, 0.0]).collect();
+    // let uvs: Vec<[f32; 2]> = vec![[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
+    // left_wall_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
+
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(left_wall_mesh),
+            // material: debug_material.clone(),
             material: materials.add(Color::rgb(0.05, 0.05, 0.35).into()),
             transform: Transform::from_xyz(0., 0.1, 0.),
             ..Default::default()
@@ -192,7 +239,7 @@ pub fn spawn_walls(
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(right_wall_mesh),
-            material: materials.add(Color::rgb(0.05, 0.05, 0.35).into()),
+            material: materials.add(Color::rgb(0.5, 0.1, 0.1).into()),
             transform: Transform::from_xyz(0., 0.1, 0.),
             ..Default::default()
         })
@@ -263,10 +310,23 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    spawn_road(&mut commands, &mut meshes, &mut materials, &track);
-    spawn_walls(&mut commands, &mut meshes, &mut materials, &track);
+    spawn_road(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &mut images,
+        &track,
+    );
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &mut images,
+        &track,
+    );
     spawn_ground(&mut commands, &mut meshes, &mut materials);
 }
 
@@ -288,3 +348,36 @@ pub fn track_decorations_start_system(
         ..default()
     });
 }
+
+/// Creates a colorful test pattern
+fn uv_debug_texture() -> Image {
+    const TEXTURE_SIZE: usize = 8;
+
+    let mut palette: [u8; 32] = [
+        255, 102, 159, 255, 255, 159, 102, 255, 236, 255, 102, 255, 121, 255, 102, 255, 102, 255,
+        198, 255, 102, 198, 255, 255, 121, 102, 255, 255, 236, 102, 255, 255,
+    ];
+
+    let mut texture_data = [0; TEXTURE_SIZE * TEXTURE_SIZE * 4];
+    for y in 0..TEXTURE_SIZE {
+        let offset = TEXTURE_SIZE * y * 4;
+        texture_data[offset..(offset + TEXTURE_SIZE * 4)].copy_from_slice(&palette);
+        palette.rotate_right(4);
+    }
+
+    Image::new_fill(
+        Extent3d {
+            width: TEXTURE_SIZE as u32,
+            height: TEXTURE_SIZE as u32,
+            depth_or_array_layers: 1,
+        },
+        TextureDimension::D2,
+        &texture_data,
+        TextureFormat::Rgba8UnormSrgb,
+    )
+}
+
+// fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
+//     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));
+//     (b - a).cross(c - a).normalize().into()
+// }
