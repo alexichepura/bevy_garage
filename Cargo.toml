@@ -24,6 +24,7 @@ rand = "0.8.5"
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
 tokio = { version = "1.22.0", features = ["full"] }
+wgpu = { version = "0.14.2", features = ["spirv"] }
 
 # [profile.dev.package.bevy_rapier3d]
 # opt-level = 3

@@ -2,9 +2,11 @@ use crate::config::Config;
 use bevy::prelude::*;
 use bevy::render::mesh::*;
 use bevy::render::render_resource::*;
+use bevy::render::texture::ImageSampler;
 use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::rapier::prelude::ColliderShape;
+use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
 use obj::*;
 use std::f32::consts::{FRAC_PI_2, PI};
@@ -121,13 +123,16 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
-    // let uvs: Vec<_> = (0..track.points.len() * 2).map(|_| [0.0, 0.0]).collect();
-    let uvs: Vec<_> = track
-        .left_norm
-        .iter()
-        .map(|_| [[0.0, 0.0], [1.0, 1.0]])
+    let uvs: Vec<_> = (0..track.points.len() / 2)
+        .map(|_| [[0.0, 0.0], [0.0, 1.0], [5.0, 0.0], [5.0, 1.0]])
         .flatten()
         .collect();
+    // let uvs: Vec<_> = track
+    //     .points
+    //     .iter()
+    //     .map(|_| [[0.0, 0.0], [1.0, 1.0]])
+    //     .flatten()
+    //     .collect();
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
 
     commands
@@ -160,7 +165,7 @@ pub fn spawn_walls(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
-    images: &mut ResMut<Assets<Image>>,
+    _images: &mut ResMut<Assets<Image>>,
     track: &Track,
 ) {
     let mut left_wall_vertices: Vec<[f32; 3]> = vec![];
@@ -365,7 +370,7 @@ fn uv_debug_texture() -> Image {
         palette.rotate_right(4);
     }
 
-    Image::new_fill(
+    let mut image = Image::new_fill(
         Extent3d {
             width: TEXTURE_SIZE as u32,
             height: TEXTURE_SIZE as u32,
@@ -374,7 +379,16 @@ fn uv_debug_texture() -> Image {
         TextureDimension::D2,
         &texture_data,
         TextureFormat::Rgba8UnormSrgb,
-    )
+    );
+
+    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
+        address_mode_u: AddressMode::Repeat,
+        address_mode_v: AddressMode::Repeat,
+        address_mode_w: AddressMode::Repeat,
+        ..Default::default()
+    });
+
+    image
 }
 
 // fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
