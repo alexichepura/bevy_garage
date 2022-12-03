@@ -224,7 +224,7 @@ pub fn spawn_car(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
             .set_motor(JointAxis::X, 0., 0., 1e10, 1.)
-            .set_motor(JointAxis::Y, 0., 0., 5e5, 15e2)
+            .set_motor(JointAxis::Y, 0., 0., 2e5, 15e2)
             .set_motor(JointAxis::Z, 0., 0., 1e10, 1.)
             .build();
         joints.push(joint);
@@ -236,7 +236,7 @@ pub fn spawn_car(
             .insert(Sleeping::disabled())
             .insert(PbrBundle {
                 mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
-                material: materials.add(Color::rgb(0.1, 0.1, 0.1).into()),
+                material: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.9).into()),
                 ..default()
             })
             .insert(TransformBundle::from(

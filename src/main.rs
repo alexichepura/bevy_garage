@@ -67,9 +67,7 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
-        .insert_resource(DirectionalLightShadowMap {
-            size: 2048 * 1024 * 8,
-        })
+        .insert_resource(DirectionalLightShadowMap { size: 2048 * 8 })
         .insert_resource(AtmosphereSettings { resolution: 1024 })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {

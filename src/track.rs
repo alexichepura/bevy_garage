@@ -158,10 +158,77 @@ pub fn spawn_road(
             mesh: meshes.add(mesh),
             // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
             material: debug_material.clone(),
-            transform: Transform::from_xyz(0., 0.1, 0.),
+            transform: Transform::from_xyz(0., 0.001, 0.),
             ..Default::default()
         })
         .insert(TrackRoad)
+        .insert(Collider::from(ColliderShape::trimesh(
+            vertices
+                .iter()
+                .map(|v| Point3::new(v[0], v[1], v[2]))
+                .collect(),
+            track.collider_indices.clone(),
+        )))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 0.1,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
+}
+
+pub fn spawn_kerb(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    images: &mut ResMut<Assets<Image>>,
+    track: &Track,
+) {
+    let mut vertices: Vec<[f32; 3]> = vec![];
+    for (i, _) in track.points.iter().enumerate() {
+        vertices.push((track.left[i] + track.left_norm[i]).into());
+        vertices.push(track.left[i].into());
+    }
+    let material = materials.add(StandardMaterial {
+        base_color_texture: Some(images.add(kerb_texture())),
+        ..default()
+    });
+
+    let top_norm = Vec3::Y;
+    let mut normals: Vec<[f32; 3]> = Vec::new();
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut len: f32 = 0.;
+    for (i, _) in track.points.iter().enumerate() {
+        let last: bool = i + 1 == track.points.len();
+        let i_next: usize = if last { 0 } else { i + 1 };
+        let point = track.left.get(i).unwrap();
+        let point_next = track.left.get(i_next).unwrap();
+        let point_diff = point_next.sub(*point).length();
+        uvs.push([len / 1., 0.]);
+        uvs.push([len / 1., 1.]);
+        normals.push(top_norm.to_array());
+        normals.push(top_norm.to_array());
+        len += point_diff;
+    }
+
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(vertices.clone()),
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
+    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(mesh),
+            material: material.clone(),
+            transform: Transform::from_xyz(0., 0.01, 0.),
+            ..Default::default()
+        })
         .insert(Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
@@ -201,12 +268,6 @@ pub fn spawn_walls(
     });
 
     let mut normals: Vec<[f32; 3]> = Vec::new();
-    // let normals: Vec<_> = track
-    //     .left_norm
-    //     .iter()
-    //     .map(|l| l.mul(-1.).to_array())
-    //     .flat_map(|normal| [normal; 2])
-    //     .collect();
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     let mut l_left: f32 = 0.;
     for (i, _) in track.points.iter().enumerate() {
@@ -345,13 +406,20 @@ pub fn track_start_system(
         &mut images,
         &track,
     );
-    spawn_walls(
+    spawn_kerb(
         &mut commands,
         &mut meshes,
         &mut materials,
         &mut images,
         &track,
     );
+    // spawn_walls(
+    //     &mut commands,
+    //     &mut meshes,
+    //     &mut materials,
+    //     &mut images,
+    //     &track,
+    // );
     spawn_ground(&mut commands, &mut meshes, &mut materials);
 }
 
@@ -374,7 +442,42 @@ pub fn track_decorations_start_system(
     });
 }
 
-/// Creates a colorful test pattern
+fn kerb_texture() -> Image {
+    const TEXTURE_SIZE: usize = 8;
+
+    let mut palette: [u8; 32] = [
+        255, 102, 159, 255, 255, 159, 102, 255, 236, 255, 102, 255, 121, 255, 102, 255, 102, 255,
+        198, 255, 102, 198, 255, 255, 121, 102, 255, 255, 236, 102, 255, 255,
+    ];
+
+    let mut texture_data = [0; TEXTURE_SIZE * TEXTURE_SIZE * 4];
+    for y in 0..TEXTURE_SIZE {
+        let offset = TEXTURE_SIZE * y * 4;
+        texture_data[offset..(offset + TEXTURE_SIZE * 4)].copy_from_slice(&palette);
+        palette.rotate_right(4);
+    }
+
+    let mut image = Image::new_fill(
+        Extent3d {
+            width: TEXTURE_SIZE as u32,
+            height: TEXTURE_SIZE as u32,
+            depth_or_array_layers: 1,
+        },
+        TextureDimension::D2,
+        &texture_data,
+        TextureFormat::Rgba8UnormSrgb,
+    );
+
+    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
+        address_mode_u: AddressMode::Repeat,
+        address_mode_v: AddressMode::Repeat,
+        address_mode_w: AddressMode::Repeat,
+        ..Default::default()
+    });
+
+    image
+}
+
 fn uv_debug_texture() -> Image {
     const TEXTURE_SIZE: usize = 8;
 
