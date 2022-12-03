@@ -206,8 +206,8 @@ pub fn spawn_kerb(
         let point = track.left.get(i).unwrap();
         let point_next = track.left.get(i_next).unwrap();
         let point_diff = point_next.sub(*point).length();
-        uvs.push([len / 1., 0.]);
-        uvs.push([len / 1., 1.]);
+        uvs.push([len / 2., 0.]);
+        uvs.push([len / 2., 1.]);
         normals.push(top_norm.to_array());
         normals.push(top_norm.to_array());
         len += point_diff;
@@ -443,28 +443,17 @@ pub fn track_decorations_start_system(
 }
 
 fn kerb_texture() -> Image {
-    const TEXTURE_SIZE: usize = 8;
-
-    let mut palette: [u8; 32] = [
-        255, 102, 159, 255, 255, 159, 102, 255, 236, 255, 102, 255, 121, 255, 102, 255, 102, 255,
-        198, 255, 102, 198, 255, 255, 121, 102, 255, 255, 236, 102, 255, 255,
-    ];
-
-    let mut texture_data = [0; TEXTURE_SIZE * TEXTURE_SIZE * 4];
-    for y in 0..TEXTURE_SIZE {
-        let offset = TEXTURE_SIZE * y * 4;
-        texture_data[offset..(offset + TEXTURE_SIZE * 4)].copy_from_slice(&palette);
-        palette.rotate_right(4);
-    }
-
     let mut image = Image::new_fill(
         Extent3d {
-            width: TEXTURE_SIZE as u32,
-            height: TEXTURE_SIZE as u32,
+            width: 2,
+            height: 1,
             depth_or_array_layers: 1,
         },
         TextureDimension::D2,
-        &texture_data,
+        &[
+            255, 0, 0, 255, // red
+            255, 255, 255, 255, // white
+        ],
         TextureFormat::Rgba8UnormSrgb,
     );
 
