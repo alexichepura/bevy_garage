@@ -278,10 +278,14 @@ pub fn spawn_walls(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    images: &mut ResMut<Assets<Image>>,
     track: &Track,
 ) {
-    let wall_color = Color::rgb(0.9, 0.1, 0.1);
-    // let wall_color = Color::rgba(0.7, 0.1, 0.1, 0.7);
+    let wall_material = materials.add(StandardMaterial {
+        base_color_texture: Some(images.add(wall_texture())),
+        ..default()
+    });
+    let material_lengh = 20.;
     let from_center: f32 = 7.;
 
     let normals_input = &track.left_norm;
@@ -297,8 +301,8 @@ pub fn spawn_walls(
         vertices.push((point + Vec3::Y).into());
         vertices.push(point.into());
         let diff = point_next.sub(point).length();
-        uvs.push([len / 1., 0.]);
-        uvs.push([len / 1., 1.]);
+        uvs.push([len / material_lengh, 0.]);
+        uvs.push([len / material_lengh, 1.]);
         normals.push(normals_input[i].mul(-1.).to_array());
         normals.push(normals_input[i].mul(-1.).to_array());
         len += diff;
@@ -316,7 +320,7 @@ pub fn spawn_walls(
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(wall_color.into()),
+            material: wall_material.clone(),
             transform: Transform::from_xyz(0., 0., 0.),
             ..Default::default()
         })
@@ -349,8 +353,8 @@ pub fn spawn_walls(
         vertices.push(point.into());
         vertices.push((point + Vec3::Y).into());
         let diff = point_next.sub(point).length();
-        uvs.push([len / 1., 0.]);
-        uvs.push([len / 1., 1.]);
+        uvs.push([len / material_lengh, 0.]);
+        uvs.push([len / material_lengh, 1.]);
         normals.push(normals_input[i].mul(-1.).to_array());
         normals.push(normals_input[i].mul(-1.).to_array());
         len += diff;
@@ -367,7 +371,7 @@ pub fn spawn_walls(
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(wall_color.into()),
+            material: wall_material.clone(),
             transform: Transform::from_xyz(0., 0., 0.),
             ..Default::default()
         })
@@ -450,7 +454,13 @@ pub fn track_start_system(
         &mut images,
         &track,
     );
-    spawn_walls(&mut commands, &mut meshes, &mut materials, &track);
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &mut images,
+        &track,
+    );
 }
 
 pub fn track_decorations_start_system(
@@ -472,6 +482,30 @@ pub fn track_decorations_start_system(
     });
 }
 
+fn wall_texture() -> Image {
+    let mut image = Image::new_fill(
+        Extent3d {
+            width: 2,
+            height: 1,
+            depth_or_array_layers: 1,
+        },
+        TextureDimension::D2,
+        &[
+            8, 8, 8, 255, // darker
+            128, 128, 128, 255, // dark
+        ],
+        TextureFormat::Rgba8UnormSrgb,
+    );
+
+    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
+        address_mode_u: AddressMode::Repeat,
+        address_mode_v: AddressMode::Repeat,
+        address_mode_w: AddressMode::Repeat,
+        ..Default::default()
+    });
+
+    image
+}
 fn kerb_texture() -> Image {
     let mut image = Image::new_fill(
         Extent3d {
