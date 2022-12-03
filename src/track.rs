@@ -12,6 +12,8 @@ use obj::*;
 use std::f32::consts::{FRAC_PI_2, PI};
 use std::fs::File;
 use std::io::BufReader;
+use std::ops::Mul;
+use std::ops::Sub;
 
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 #[derive(Component, Debug)]
@@ -123,14 +125,30 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
-    let uvs: Vec<_> = (0..track.points.len() / 2)
-        .map(|_| [[0.0, 0.0], [0.0, 1.0], [5.0, 0.0], [5.0, 1.0]])
-        .flatten()
-        .collect();
-    // let uvs: Vec<_> = track
-    //     .points
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut l_left: f32 = 0.;
+    // let l_right: f32 = 0.;
+    for (i, _) in track.points.iter().enumerate() {
+        let last: bool = i + 1 == track.points.len();
+        let i_next: usize = if last { 0 } else { i + 1 };
+        let left = track.left.get(i).unwrap();
+        // let right = track.right.get(i).unwrap();
+        let left_next = track.left.get(i_next).unwrap();
+        // let right_next = track.right.get(i_next).unwrap();
+        let left_diff = left_next.sub(*left).length();
+        // let right_diff = right_next.sub(*right).length();
+        uvs.push([l_left / 10., 0.]);
+        uvs.push([l_left / 10., 1.]);
+        // uvs.push();
+        l_left += left_diff;
+    }
+    // let uvs: Vec<_> = vertices
     //     .iter()
-    //     .map(|_| [[0.0, 0.0], [1.0, 1.0]])
+    //     .map(|_| [[0.0, 0.0], [0.0, 1.0], [5.0, 0.0], [5.0, 1.0]])
+    //     .flatten()
+    //     .collect();
+    // let uvs: Vec<_> = (0..track.points.len() / 2)
+    //     .map(|_| [[0.0, 0.0], [0.0, 1.0], [5.0, 0.0], [5.0, 1.0]])
     //     .flatten()
     //     .collect();
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
@@ -165,62 +183,64 @@ pub fn spawn_walls(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
-    _images: &mut ResMut<Assets<Image>>,
+    images: &mut ResMut<Assets<Image>>,
     track: &Track,
 ) {
-    let mut left_wall_vertices: Vec<[f32; 3]> = vec![];
-    let mut right_wall_vertices: Vec<[f32; 3]> = vec![];
+    let mut left_vertices: Vec<[f32; 3]> = vec![];
+    let mut right_vertices: Vec<[f32; 3]> = vec![];
     for (i, _) in track.points.iter().enumerate() {
-        left_wall_vertices.push((track.left[i] + Vec3::Y).into());
-        left_wall_vertices.push(track.left[i].into());
-        right_wall_vertices.push(track.right[i].into());
-        right_wall_vertices.push((track.right[i] + Vec3::Y).into());
+        left_vertices.push((track.left[i] + Vec3::Y).into());
+        left_vertices.push(track.left[i].into());
+        right_vertices.push(track.right[i].into());
+        right_vertices.push((track.right[i] + Vec3::Y).into());
     }
 
-    // let debug_material = materials.add(StandardMaterial {
-    //     base_color_texture: Some(images.add(uv_debug_texture())),
-    //     ..default()
-    // });
+    let debug_material = materials.add(StandardMaterial {
+        base_color_texture: Some(images.add(uv_debug_texture())),
+        ..default()
+    });
 
-    let mut left_wall_mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    left_wall_mesh.insert_attribute(
-        Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(left_wall_vertices.clone()),
-    );
-    left_wall_mesh.set_indices(Some(Indices::U32(track.indices.clone())));
-
+    let mut normals: Vec<[f32; 3]> = Vec::new();
     // let normals: Vec<_> = track
     //     .left_norm
     //     .iter()
     //     .map(|l| l.mul(-1.).to_array())
     //     .flat_map(|normal| [normal; 2])
     //     .collect();
-    // left_wall_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut l_left: f32 = 0.;
+    for (i, _) in track.points.iter().enumerate() {
+        let last: bool = i + 1 == track.points.len();
+        let i_next: usize = if last { 0 } else { i + 1 };
+        let left = track.left.get(i).unwrap();
+        let left_next = track.left.get(i_next).unwrap();
+        let left_diff = left_next.sub(*left).length();
+        let left_norm = track.left_norm.get(i).unwrap();
+        uvs.push([l_left / 1., 0.]);
+        uvs.push([l_left / 1., 1.]);
+        normals.push(left_norm.mul(-1.).to_array());
+        normals.push(left_norm.mul(-1.).to_array());
+        l_left += left_diff;
+    }
 
-    // let uvs: Vec<_> = (0..track.left.len() * 2).map(|_| [0.0, 0.0]).collect();
-    // left_wall_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-
-    // let uvs: Vec<_> = track
-    //     .left_norm
-    //     .iter()
-    //     .map(|_| [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
-    //     .flatten()
-    //     // .flat_map(|normal| [normal; 2])
-    //     .collect();
-    // let uvs: Vec<_> = (0..track.left.len() * 2).map(|_| [0.0, 0.0]).collect();
-    // let uvs: Vec<[f32; 2]> = vec![[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]];
-    // left_wall_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
+    let mut left_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    left_mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(left_vertices.clone()),
+    );
+    left_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
+    left_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
+    left_mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(left_wall_mesh),
-            // material: debug_material.clone(),
-            material: materials.add(Color::rgb(0.05, 0.05, 0.35).into()),
+            mesh: meshes.add(left_mesh),
+            material: debug_material.clone(),
             transform: Transform::from_xyz(0., 0.1, 0.),
             ..Default::default()
         })
         .insert(Collider::from(ColliderShape::trimesh(
-            left_wall_vertices
+            left_vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
@@ -238,7 +258,7 @@ pub fn spawn_walls(
     let mut right_wall_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     right_wall_mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(right_wall_vertices.clone()),
+        VertexAttributeValues::from(right_vertices.clone()),
     );
     right_wall_mesh.set_indices(Some(Indices::U32(track.indices.clone())));
     commands
@@ -249,7 +269,7 @@ pub fn spawn_walls(
             ..Default::default()
         })
         .insert(Collider::from(ColliderShape::trimesh(
-            right_wall_vertices
+            right_vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),

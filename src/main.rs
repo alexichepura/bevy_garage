@@ -12,7 +12,7 @@ mod mesh;
 mod nn;
 mod progress;
 mod track;
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_atmosphere::prelude::*;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
@@ -37,7 +37,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     dbg!(c.integration_parameters);
 }
 
-const FPS: f32 = 60.;
+const FPS: f32 = 120.;
 fn main() {
     App::new()
         .insert_resource(RapierConfiguration {
@@ -67,6 +67,9 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
+        .insert_resource(DirectionalLightShadowMap {
+            size: 2048 * 1024 * 8,
+        })
         .insert_resource(AtmosphereSettings { resolution: 1024 })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
@@ -87,9 +90,10 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin {
+            enabled: false,
             style: DebugRenderStyle {
                 rigid_body_axes_length: 0.5,
-                subdivisions: 50,
+                // subdivisions: 50,
                 ..default()
             },
             // | DebugRenderMode::COLLIDER_AABBS
