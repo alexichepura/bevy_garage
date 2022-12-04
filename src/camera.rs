@@ -140,99 +140,105 @@ pub fn camera_controller_system(
     mut pset: ParamSet<(
         Query<(&mut Transform, &mut CameraController), With<Camera>>,
         Query<&Transform, With<HID>>,
+        Query<&mut Transform, With<DirectionalLight>>,
     )>,
 ) {
-    if let Some(e) = config.camera_follow {
-        let p1 = pset.p1();
-        if let Ok(car_tf) = p1.get(e) {
-            let look_from = match config.mode {
-                CameraFollowMode::Near => Vec3::new(0., 2., -5.),
-                CameraFollowMode::Mid => Vec3::new(0., 3., -10.),
-                CameraFollowMode::Far => Vec3::new(0., 5., -20.),
-                CameraFollowMode::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
-                _ => Vec3::ZERO,
-            };
-            let look_at = match config.mode {
-                CameraFollowMode::Near => Vec3::new(0., 1.5, 0.),
-                CameraFollowMode::Mid => Vec3::new(0., 2., 0.),
-                CameraFollowMode::Far => Vec3::new(0., 3., 0.),
-                CameraFollowMode::FrontWheel => Vec3::new(0., -0.2, 1.),
-                _ => Vec3::ZERO,
-            };
-            let mut tf = car_tf.clone();
-            tf.translation += tf.rotation.mul_vec3(look_from);
-            tf.rotate(Quat::from_rotation_y(-PI));
-            tf.look_at(car_tf.translation + look_at, Vec3::Y);
-            let mut p0 = pset.p0();
-            let (mut camera_tf, _) = p0.single_mut();
-            *camera_tf = tf;
-        }
-        return;
-    }
-    let dt = time.delta_seconds();
+    let tf: Transform = if let Some(e) = config.camera_follow {
+        let look_from = match config.mode {
+            CameraFollowMode::Near => Vec3::new(0., 2., -5.),
+            CameraFollowMode::Mid => Vec3::new(0., 3., -10.),
+            CameraFollowMode::Far => Vec3::new(0., 5., -20.),
+            CameraFollowMode::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
+            _ => Vec3::ZERO,
+        };
+        let look_at = match config.mode {
+            CameraFollowMode::Near => Vec3::new(0., 1.5, 0.),
+            CameraFollowMode::Mid => Vec3::new(0., 2., 0.),
+            CameraFollowMode::Far => Vec3::new(0., 3., 0.),
+            CameraFollowMode::FrontWheel => Vec3::new(0., -0.2, 1.),
+            _ => Vec3::ZERO,
+        };
 
-    let mut mouse_delta = Vec2::ZERO;
-    for mouse_event in mouse_events.iter() {
-        mouse_delta += mouse_event.delta;
-    }
+        let p1 = pset.p1();
+        let car_tf = p1.get(e).unwrap();
+        let mut tf = car_tf.clone();
+        tf.translation += tf.rotation.mul_vec3(look_from);
+        tf.rotate(Quat::from_rotation_y(-PI));
+        tf.look_at(car_tf.translation + look_at, Vec3::Y);
+        tf
+    } else {
+        let dt = time.delta_seconds();
+
+        let mut mouse_delta = Vec2::ZERO;
+        for mouse_event in mouse_events.iter() {
+            mouse_delta += mouse_event.delta;
+        }
+
+        let mut p0 = pset.p0();
+        let (tf, mut options) = p0.single_mut();
+
+        let mut axis_input = Vec3::ZERO;
+        if key_input.pressed(options.key_forward) {
+            axis_input.z += 1.0;
+        }
+        if key_input.pressed(options.key_back) {
+            axis_input.z -= 1.0;
+        }
+        if key_input.pressed(options.key_right) {
+            axis_input.x += 1.0;
+        }
+        if key_input.pressed(options.key_left) {
+            axis_input.x -= 1.0;
+        }
+        if key_input.pressed(options.key_up) {
+            axis_input.y += 1.0;
+        }
+        if key_input.pressed(options.key_down) {
+            axis_input.y -= 1.0;
+        }
+
+        if axis_input != Vec3::ZERO {
+            let max_speed = if key_input.pressed(options.key_run) {
+                options.run_speed
+            } else {
+                options.walk_speed
+            };
+            options.velocity = axis_input.normalize() * max_speed;
+        } else {
+            let friction = options.friction.clamp(0.0, 1.0);
+            options.velocity *= 1.0 - friction;
+            if options.velocity.length_squared() < 1e-6 {
+                options.velocity = Vec3::ZERO;
+            }
+        }
+
+        let mut tf = tf.clone();
+        let forward = tf.forward();
+        let right = tf.right();
+        tf.translation += options.velocity.x * dt * right
+            + options.velocity.y * dt * Vec3::Y
+            + options.velocity.z * dt * forward;
+
+        if mouse_delta != Vec2::ZERO {
+            let (pitch, yaw) = (
+                (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt).clamp(
+                    -0.99 * std::f32::consts::FRAC_PI_2,
+                    0.99 * std::f32::consts::FRAC_PI_2,
+                ),
+                options.yaw - mouse_delta.x * options.sensitivity * dt,
+            );
+            tf.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, yaw, pitch);
+            options.pitch = pitch;
+            options.yaw = yaw;
+        }
+        tf
+    };
 
     let mut p0 = pset.p0();
-    let (mut transform, mut options) = p0.single_mut();
+    let (mut camera_tf, _) = p0.single_mut();
+    *camera_tf = tf;
 
-    if !options.enabled {
-        return;
-    }
-
-    let mut axis_input = Vec3::ZERO;
-    if key_input.pressed(options.key_forward) {
-        axis_input.z += 1.0;
-    }
-    if key_input.pressed(options.key_back) {
-        axis_input.z -= 1.0;
-    }
-    if key_input.pressed(options.key_right) {
-        axis_input.x += 1.0;
-    }
-    if key_input.pressed(options.key_left) {
-        axis_input.x -= 1.0;
-    }
-    if key_input.pressed(options.key_up) {
-        axis_input.y += 1.0;
-    }
-    if key_input.pressed(options.key_down) {
-        axis_input.y -= 1.0;
-    }
-
-    if axis_input != Vec3::ZERO {
-        let max_speed = if key_input.pressed(options.key_run) {
-            options.run_speed
-        } else {
-            options.walk_speed
-        };
-        options.velocity = axis_input.normalize() * max_speed;
-    } else {
-        let friction = options.friction.clamp(0.0, 1.0);
-        options.velocity *= 1.0 - friction;
-        if options.velocity.length_squared() < 1e-6 {
-            options.velocity = Vec3::ZERO;
-        }
-    }
-    let forward = transform.forward();
-    let right = transform.right();
-    transform.translation += options.velocity.x * dt * right
-        + options.velocity.y * dt * Vec3::Y
-        + options.velocity.z * dt * forward;
-
-    if mouse_delta != Vec2::ZERO {
-        let (pitch, yaw) = (
-            (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt).clamp(
-                -0.99 * std::f32::consts::FRAC_PI_2,
-                0.99 * std::f32::consts::FRAC_PI_2,
-            ),
-            options.yaw - mouse_delta.x * options.sensitivity * dt,
-        );
-        transform.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, yaw, pitch);
-        options.pitch = pitch;
-        options.yaw = yaw;
-    }
+    let mut p2 = pset.p2();
+    let mut dlight_tf = p2.single_mut();
+    dlight_tf.translation = tf.translation;
 }
