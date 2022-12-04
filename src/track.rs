@@ -276,49 +276,52 @@ pub fn spawn_walls(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     images: &mut ResMut<Assets<Image>>,
-    track: &Track,
+    indices_input: &Vec<u32>,
+    points: &Vec<Vec3>,
+    normals_input: &Vec<Vec3>,
 ) {
-    let points_len = track.points.len() as u32;
+    let points_len = points.len() as u32;
     let wall_material = materials.add(StandardMaterial {
         base_color_texture: Some(images.add(wall_texture())),
         ..default()
     });
     let material_lengh = 20.;
-    let from_center: f32 = 7.;
     let width: f32 = 1.;
+    let height: f32 = 1.;
+    let heightv: Vec3 = Vec3::Y * height;
+    let hw = width / 2.;
 
-    let normals_input = &track.left_norm;
     let mut vertices: Vec<[f32; 3]> = vec![];
     let mut normals: Vec<[f32; 3]> = Vec::new();
     let mut uvs: Vec<[f32; 2]> = Vec::new();
 
     let mut len: f32 = 0.;
-    for (i, p) in track.points.iter().enumerate() {
-        let last: bool = i + 1 == track.points.len();
+    for (i, p) in points.iter().enumerate() {
+        let last: bool = i + 1 == points.len();
         let i_next: usize = if last { 0 } else { i + 1 };
         let normal = normals_input[i];
-        let point: Vec3 = *p + normal * from_center;
-        let point_next: Vec3 = track.points[i_next] + normals_input[i_next] * from_center;
-        vertices.push((point + Vec3::Y).into());
+        let point: Vec3 = *p + normal * hw;
+        let point_next: Vec3 = points[i_next] + normal * hw;
+        vertices.push((point + heightv).into());
         vertices.push(point.into());
 
         let diff = point_next.sub(point).length();
         uvs.push([len / material_lengh, 0.]);
         uvs.push([len / material_lengh, 1.]);
-        normals.push(normal.mul(-1.).to_array());
-        normals.push(normal.mul(-1.).to_array());
+        normals.push(normal.to_array());
+        normals.push(normal.to_array());
         len += diff;
     }
 
     let mut len: f32 = 0.;
-    for (i, p) in track.points.iter().enumerate() {
-        let last: bool = i + 1 == track.points.len();
+    for (i, p) in points.iter().enumerate() {
+        let last: bool = i + 1 == points.len();
         let i_next: usize = if last { 0 } else { i + 1 };
         let normal = normals_input[i];
-        let point: Vec3 = *p + normal * from_center + Vec3::Y;
-        let point_next: Vec3 = track.points[i_next] + normals_input[i_next] * from_center + Vec3::Y;
-        vertices.push((point + normal * width).into());
-        vertices.push((point).into());
+        let point: Vec3 = *p + heightv;
+        let point_next: Vec3 = points[i_next] + heightv;
+        vertices.push((point - normal * hw).into());
+        vertices.push((point + normal * hw).into());
 
         let diff = point_next.sub(point).length();
         uvs.push([len / material_lengh, 0.]);
@@ -329,28 +332,27 @@ pub fn spawn_walls(
     }
 
     let mut len: f32 = 0.;
-    for (i, p) in track.points.iter().enumerate() {
-        let last: bool = i + 1 == track.points.len();
+    for (i, p) in points.iter().enumerate() {
+        let last: bool = i + 1 == points.len();
         let i_next: usize = if last { 0 } else { i + 1 };
         let normal = normals_input[i];
-        let point: Vec3 = *p + normal * from_center + normal * width;
-        let point_next: Vec3 =
-            track.points[i_next] + normals_input[i_next] * from_center + normal * width;
+        let point: Vec3 = *p - normal * hw;
+        let point_next: Vec3 = points[i_next] - normal * hw;
         vertices.push((point).into());
-        vertices.push((point + Vec3::Y).into());
+        vertices.push((point + heightv).into());
 
         let diff = point_next.sub(point).length();
         uvs.push([len / material_lengh, 0.]);
         uvs.push([len / material_lengh, 1.]);
-        normals.push(normal.to_array());
-        normals.push(normal.to_array());
+        normals.push(normal.mul(-1.).to_array());
+        normals.push(normal.mul(-1.).to_array());
         len += diff;
     }
 
     let mut indices: Vec<u32> = vec![];
-    indices.extend(track.indices.clone());
-    indices.extend(track.indices.iter().map(|ind| ind + points_len * 2));
-    indices.extend(track.indices.iter().map(|ind| ind + points_len * 4));
+    indices.extend(indices_input.clone());
+    indices.extend(indices_input.iter().map(|ind| ind + points_len * 2));
+    indices.extend(indices_input.iter().map(|ind| ind + points_len * 4));
 
     let collider_vertices: Vec<Point3<Real>> = vertices
         .iter()
@@ -386,58 +388,7 @@ pub fn spawn_walls(
             coefficient: 0.1,
             ..default()
         })
-        .insert(Restitution::coefficient(0.));
-
-    let normals_input = &track.right_norm;
-    let mut vertices: Vec<[f32; 3]> = vec![];
-    let mut normals: Vec<[f32; 3]> = Vec::new();
-    let mut uvs: Vec<[f32; 2]> = Vec::new();
-    let mut len: f32 = 0.;
-    for (i, p) in track.points.iter().enumerate() {
-        let last: bool = i + 1 == track.points.len();
-        let i_next: usize = if last { 0 } else { i + 1 };
-        let point: Vec3 = *p + normals_input[i] * from_center;
-        let point_next: Vec3 = track.points[i_next] + normals_input[i_next] * from_center;
-        vertices.push(point.into());
-        vertices.push((point + Vec3::Y).into());
-        let diff = point_next.sub(point).length();
-        uvs.push([len / material_lengh, 0.]);
-        uvs.push([len / material_lengh, 1.]);
-        normals.push(normals_input[i].mul(-1.).to_array());
-        normals.push(normals_input[i].mul(-1.).to_array());
-        len += diff;
-    }
-
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(
-        Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(vertices.clone()),
-    );
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
-    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            material: wall_material.clone(),
-            transform: Transform::from_xyz(0., 0., 0.),
-            ..Default::default()
-        })
-        .insert(Collider::from(ColliderShape::trimesh(
-            vertices
-                .iter()
-                .map(|v| Point3::new(v[0], v[1], v[2]))
-                .collect(),
-            track.collider_indices.clone(),
-        )))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
-            combine_rule: CoefficientCombineRule::Average,
-            coefficient: 0.1,
-            ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+        .insert(Restitution::coefficient(0.5));
 }
 
 pub fn spawn_ground(
@@ -502,12 +453,29 @@ pub fn track_start_system(
         &mut images,
         &track,
     );
+    let mut left_wall_points: Vec<Vec3> = vec![];
+    let mut right_wall_points: Vec<Vec3> = vec![];
+    for (i, p) in track.points.iter().enumerate() {
+        left_wall_points.push(*p + track.right_norm[i] * 7.);
+        right_wall_points.push(*p + track.right_norm[i] * -7.);
+    }
     spawn_walls(
         &mut commands,
         &mut meshes,
         &mut materials,
         &mut images,
-        &track,
+        &track.indices,
+        &left_wall_points,
+        &track.right_norm,
+    );
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &mut images,
+        &track.indices,
+        &right_wall_points,
+        &track.right_norm,
     );
 }
 
