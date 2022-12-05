@@ -15,6 +15,9 @@ use std::io::BufReader;
 use std::ops::Mul;
 use std::ops::Sub;
 
+// https://google.github.io/filament/Filament.html#materialsystem/parameterization/
+// https://google.github.io/filament/Material%20Properties.pdf
+
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 #[derive(Component, Debug)]
 pub struct TrackRoad;
@@ -131,7 +134,12 @@ pub fn spawn_road(
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+            // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+            material: materials.add(StandardMaterial {
+                base_color: Color::rgb(0.05, 0.05, 0.05),
+                perceptual_roughness: 0.7,
+                ..default()
+            }),
             transform: Transform::from_xyz(0., 0.001, 0.),
             ..Default::default()
         })
@@ -162,6 +170,7 @@ pub fn spawn_kerb(
 ) {
     let material = materials.add(StandardMaterial {
         base_color_texture: Some(images.add(kerb_texture())),
+        perceptual_roughness: 0.7,
         ..default()
     });
     let kerb_length: f32 = 10.;
@@ -283,6 +292,7 @@ pub fn spawn_walls(
     let points_len = points.len() as u32;
     let wall_material = materials.add(StandardMaterial {
         base_color_texture: Some(images.add(wall_texture())),
+        perceptual_roughness: 0.7,
         ..default()
     });
     let material_lengh = 20.;
@@ -417,8 +427,12 @@ pub fn spawn_ground(
                 max_z: hz,
                 min_z: -hz,
             })),
-            material: materials.add(Color::rgba(0.2, 0.35, 0.2, 0.5).into()),
-            // material: materials.add(Color::rgb(0.1, 0.1, 0.15).into()),
+            // material: materials.add(Color::rgb(0.2, 0.35, 0.2).into()),
+            material: materials.add(StandardMaterial {
+                base_color: Color::hex("7b824e").unwrap(),
+                perceptual_roughness: 0.3,
+                ..default()
+            }),
             ..default()
         })
         .insert(RigidBody::Fixed)

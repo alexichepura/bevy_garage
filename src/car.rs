@@ -236,7 +236,12 @@ pub fn spawn_car(
             .insert(Sleeping::disabled())
             .insert(PbrBundle {
                 mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
-                material: materials.add(Color::rgb(0.1, 0.1, 0.1).into()),
+                // material: materials.add(Color::rgb(0.1, 0.1, 0.1).into()),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::hex("353535").unwrap(),
+                    perceptual_roughness: 0.9,
+                    ..default()
+                }),
                 ..default()
             })
             .insert(TransformBundle::from(
