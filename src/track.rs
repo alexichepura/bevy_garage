@@ -209,7 +209,7 @@ pub fn spawn_kerb(
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
             material: material.clone(),
-            transform: Transform::from_xyz(0., 0.01, 0.),
+            transform: Transform::from_xyz(0., 0.005, 0.),
             ..Default::default()
         })
         .insert(Collider::from(ColliderShape::trimesh(
