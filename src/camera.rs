@@ -16,9 +16,9 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
                     ..default()
                 }),
                 transform: Transform::from_translation(
-                    config.translation + Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+                    Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
                 )
-                .looking_at(Vec3::Y * 6., config.translation),
+                .looking_at(Vec3::Y * 6., Vec3::Y),
                 ..default()
             },
             AtmosphereCamera::default(),

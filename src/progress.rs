@@ -19,7 +19,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
         .collect();
 
     let polyline = Polyline::new(vertices.clone(), None);
-    let initial_point = Point3::from(config.translation);
+    let initial_point = Point3::from(Vec3::ZERO);
     let point_location = polyline.project_local_point_and_get_location(&initial_point, true);
     let (segment_i, segment_location) = point_location.1;
     let segment = polyline.segment(segment_i);

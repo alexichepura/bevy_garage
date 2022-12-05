@@ -147,7 +147,7 @@ pub fn spawn_road(
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction {
             combine_rule: CoefficientCombineRule::Average,
-            coefficient: 0.1,
+            coefficient: 3.,
             ..default()
         })
         .insert(Restitution::coefficient(0.));
@@ -214,7 +214,7 @@ pub fn spawn_kerb(
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction {
             combine_rule: CoefficientCombineRule::Average,
-            coefficient: 0.1,
+            coefficient: 3.,
             ..default()
         })
         .insert(Restitution::coefficient(0.));
@@ -265,7 +265,7 @@ pub fn spawn_kerb(
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction {
             combine_rule: CoefficientCombineRule::Average,
-            coefficient: 0.1,
+            coefficient: 3.,
             ..default()
         })
         .insert(Restitution::coefficient(0.));
@@ -388,7 +388,7 @@ pub fn spawn_walls(
             coefficient: 0.1,
             ..default()
         })
-        .insert(Restitution::coefficient(0.5));
+        .insert(Restitution::coefficient(0.));
 }
 
 pub fn spawn_ground(
@@ -488,11 +488,7 @@ pub fn track_decorations_start_system(
     commands.spawn(SceneBundle {
         scene: gl_object,
         transform: Transform::from_scale(Vec3::ONE * 15.)
-            .with_translation(Vec3::new(
-                config.translation.x + 1.65,
-                0.,
-                config.translation.z + 1.65,
-            ))
+            .with_translation(Vec3::new(1.65, 0., 1.65))
             .with_rotation(config.quat.mul_quat(Quat::from_rotation_y(PI))),
         ..default()
     });

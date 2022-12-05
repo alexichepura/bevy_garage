@@ -31,9 +31,9 @@ use progress::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 256;
-    c.integration_parameters.max_velocity_friction_iterations = 64;
-    c.integration_parameters.max_stabilization_iterations = 256;
+    c.integration_parameters.max_velocity_iterations = 64;
+    c.integration_parameters.max_velocity_friction_iterations = 16;
+    c.integration_parameters.max_stabilization_iterations = 64;
     dbg!(c.integration_parameters);
 }
 
@@ -43,7 +43,7 @@ fn main() {
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,
-                substeps: 10,
+                substeps: 5,
             },
             // timestep_mode: TimestepMode::Variable {
             //     max_dt: 1. / FPS,
@@ -75,8 +75,8 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
                 title: "car sim deep learning".to_string(),
-                width: 1024.,
-                height: 768.,
+                width: 720.,
+                height: 640.,
                 // monitor: MonitorSelection::Index(1),
                 position: WindowPosition::Centered,
                 ..default()

@@ -7,14 +7,13 @@ use crate::nn::params::{CARS_COUNT, MAX_TOI, MAX_TORQUE};
 
 #[derive(Resource)]
 pub struct Config {
-    pub translation: Vec3,
+    // pub translation: Vec3,
     pub quat: Quat,
     pub cars_count: usize,
     pub show_rays: bool,
     pub use_brain: bool,
     pub max_torque: f32,
     pub max_toi: f32,
-    pub hid_car: Option<Entity>,
     pub polyline: Option<Polyline>,
     pub segment_i: u32,
     pub segment_m: f32,
@@ -31,9 +30,7 @@ impl Default for Config {
             show_rays: true,
             max_torque: MAX_TORQUE,
             max_toi: MAX_TOI,
-            translation: Vec3::new(0., 0.1, 0.),
             quat: Quat::from_rotation_y(-PI * 0.225),
-            hid_car: None,
             polyline: None,
             segment_i: 0,
             segment_m: 0.,
@@ -74,7 +71,7 @@ impl Config {
                 let a: Vec3 = segment.a.into();
                 let dir: Vec3 = segment.direction().unwrap().into();
                 let mut pos: Vec3 = a + dir * (shift - seg_meters);
-                pos.y = 0.4;
+                pos.y = 0.5;
 
                 return (pos, Quat::from_rotation_arc(Vec3::Z, dir));
             }
