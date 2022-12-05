@@ -28,7 +28,6 @@ pub struct Track {
     points: Vec<Vec3>,
     indices: Vec<u32>,
     collider_indices: Vec<[u32; 3]>,
-    dirs: Vec<Vec3>,
     left: Vec<Vec3>,
     right: Vec<Vec3>,
     left_norm: Vec<Vec3>,
@@ -42,7 +41,6 @@ impl Track {
             points: Vec::new(),
             indices: Vec::new(),
             collider_indices: Vec::new(),
-            dirs: Vec::new(),
             left: Vec::new(),
             right: Vec::new(),
             left_norm: Vec::new(),
@@ -54,38 +52,43 @@ impl Track {
         let model = raw::parse_obj(polyline_buf).unwrap();
 
         let mut track = Track::empty();
-        track.points = model
-            .positions
-            .iter()
-            .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
-            .collect();
+        let mut points: Vec<Vec3> = vec![];
+        points.extend(
+            model
+                .positions
+                .iter()
+                .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
+                .collect::<Vec<Vec3>>(),
+        );
+        let p0 = model.positions[0];
+        points.push(Vec3::new(p0.0, p0.1, p0.2));
+        track.points = points;
 
         for (i, point) in track.points.iter().enumerate() {
             let last: bool = i + 1 == track.points.len();
-            let i_next: usize = if last { 0 } else { i + 1 };
-            let ind: u32 = i as u32 * 2;
-            let dindices: [[u32; 3]; 2] = [
-                [ind, ind + 1, if last { 0 } else { ind + 2 }],
-                [
-                    if last { 0 } else { ind + 2 },
-                    ind + 1,
-                    if last { 1 } else { ind + 3 },
-                ],
-            ];
-            let point_next = track.points.get(i_next).unwrap();
-            let dir: Vec3 = (*point_next - *point).normalize();
-            track.indices.extend(dindices[0]);
-            track.indices.extend(dindices[1]);
-            track.collider_indices.push(dindices[0]);
-            track.collider_indices.push(dindices[1]);
-            track.dirs.push(dir);
+            let ix2: u32 = i as u32 * 2;
+            if last {
+                let inx = if last { 0 } else { i + 1 };
+                track.left_norm.push(track.left_norm[inx]);
+                track.right_norm.push(track.right_norm[inx]);
+                track.left.push(track.left[inx]);
+                track.right.push(track.right[inx]);
+            } else {
+                let (i1, i2) = ([ix2, ix2 + 1, ix2 + 2], [ix2 + 2, ix2 + 1, ix2 + 3]);
+                track.indices.extend(i1);
+                track.indices.extend(i2);
+                track.collider_indices.push(i1);
+                track.collider_indices.push(i2);
 
-            let left_norm = Quat::from_rotation_y(FRAC_PI_2).mul_vec3(dir);
-            let right_norm = Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(dir);
-            track.left_norm.push(left_norm);
-            track.right_norm.push(right_norm);
-            track.left.push(*point + left_norm * track.width);
-            track.right.push(*point + right_norm * track.width);
+                let point_next = track.points[i + 1];
+                let dir: Vec3 = (point_next - *point).normalize();
+                let left_norm = Quat::from_rotation_y(FRAC_PI_2).mul_vec3(dir);
+                let right_norm = Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(dir);
+                track.left_norm.push(left_norm);
+                track.right_norm.push(right_norm);
+                track.left.push(*point + left_norm * track.width);
+                track.right.push(*point + right_norm * track.width);
+            }
         }
 
         track
@@ -187,11 +190,19 @@ pub fn spawn_kerb(
         let i_next: usize = if last { 0 } else { i + 1 };
         let point: Vec3 = *p + normals_side[i] * from_center;
         let point_next: Vec3 = track.points[i_next] + normals_side[i_next] * from_center;
-        vertices.push((point + normals_side[i]).into());
-        vertices.push(point.into());
+        let (v1, v2) = (point + normals_side[i], point);
+        vertices.push(v1.into());
+        vertices.push(v2.into());
+        // commands.spawn(PbrBundle {
+        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
+        //     material: materials.add(Color::rgb(0.5, 0.05, 0.05).into()),
+        //     transform: Transform::from_translation(v1),
+        //     ..Default::default()
+        // });
         let diff = point_next.sub(point).length();
-        uvs.push([len / kerb_length, 0.]);
-        uvs.push([len / kerb_length, 1.]);
+        let uv = len / kerb_length;
+        uvs.push([uv, 0.]);
+        uvs.push([uv, 1.]);
         normals.push(top_norm.to_array());
         normals.push(top_norm.to_array());
         len += diff;
