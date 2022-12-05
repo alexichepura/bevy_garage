@@ -8,19 +8,21 @@ use core::f32::consts::PI;
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
-        .spawn(Camera3dBundle {
-            projection: Projection::from(PerspectiveProjection {
-                far: 2500.,
-                near: 0.01,
+        .spawn((
+            Camera3dBundle {
+                projection: Projection::from(PerspectiveProjection {
+                    far: 2500.,
+                    near: 0.01,
+                    ..default()
+                }),
+                transform: Transform::from_translation(
+                    config.translation + Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+                )
+                .looking_at(Vec3::Y * 6., config.translation),
                 ..default()
-            }),
-            transform: Transform::from_translation(
-                config.translation + Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
-            )
-            .looking_at(Vec3::Y * 6., config.translation),
-            ..default()
-        })
-        .insert(AtmosphereCamera(None))
+            },
+            AtmosphereCamera::default(),
+        ))
         .insert(CameraController::default());
     println!(
         "Controls:

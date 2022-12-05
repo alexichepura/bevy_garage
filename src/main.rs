@@ -68,7 +68,10 @@ fn main() {
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
         .insert_resource(DirectionalLightShadowMap { size: 2048 * 8 })
-        .insert_resource(AtmosphereSettings { resolution: 1024 })
+        .insert_resource(AtmosphereSettings {
+            resolution: 1024,
+            ..default()
+        })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
                 title: "car sim deep learning".to_string(),
