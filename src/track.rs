@@ -63,7 +63,6 @@ impl Track {
         let p0 = model.positions[0];
         points.push(Vec3::new(p0.0, p0.1, p0.2));
         track.points = points;
-
         for (i, point) in track.points.iter().enumerate() {
             let last: bool = i + 1 == track.points.len();
             let ix2: u32 = i as u32 * 2;
@@ -80,17 +79,27 @@ impl Track {
                 track.collider_indices.push(i1);
                 track.collider_indices.push(i2);
 
+                let point_prev = if i == 0 {
+                    track.points[track.points.len() - 1]
+                } else {
+                    track.points[i - 1]
+                };
                 let point_next = track.points[i + 1];
+                let vec_len = (point_prev - *point).length();
+                let angle = if vec_len == 0. {
+                    0.
+                } else {
+                    (*point - point_next).angle_between(point_prev - *point) / 2.
+                };
                 let dir: Vec3 = (point_next - *point).normalize();
-                let left_norm = Quat::from_rotation_y(FRAC_PI_2).mul_vec3(dir);
-                let right_norm = Quat::from_rotation_y(-FRAC_PI_2).mul_vec3(dir);
+                let left_norm = Quat::from_rotation_y(FRAC_PI_2 + angle).mul_vec3(dir);
+                let right_norm = -left_norm;
                 track.left_norm.push(left_norm);
                 track.right_norm.push(right_norm);
                 track.left.push(*point + left_norm * track.width);
                 track.right.push(*point + right_norm * track.width);
             }
         }
-
         track
     }
     pub fn road(&self) -> (Vec<[f32; 3]>, Vec<[f32; 3]>) {
@@ -195,8 +204,14 @@ pub fn spawn_kerb(
         vertices.push(v2.into());
         // commands.spawn(PbrBundle {
         //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
-        //     material: materials.add(Color::rgb(0.5, 0.05, 0.05).into()),
+        //     material: materials.add(Color::rgb(0.5, 0.1, 0.1).into()),
         //     transform: Transform::from_translation(v1),
+        //     ..Default::default()
+        // });
+        // commands.spawn(PbrBundle {
+        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
+        //     material: materials.add(Color::rgb(0.1, 0.1, 0.5).into()),
+        //     transform: Transform::from_translation(v2),
         //     ..Default::default()
         // });
         let diff = point_next.sub(point).length();
@@ -249,8 +264,21 @@ pub fn spawn_kerb(
         let i_next: usize = if last { 0 } else { i + 1 };
         let point: Vec3 = *p + normals_side[i] * from_center;
         let point_next: Vec3 = track.points[i_next] + normals_side[i_next] * from_center;
-        vertices.push(point.into());
-        vertices.push((point + normals_side[i]).into());
+        let (v1, v2) = (point, point + normals_side[i]);
+        vertices.push(v1.into());
+        vertices.push(v2.into());
+        // commands.spawn(PbrBundle {
+        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
+        //     material: materials.add(Color::rgb(0.5, 0.1, 0.1).into()),
+        //     transform: Transform::from_translation(v1),
+        //     ..Default::default()
+        // });
+        // commands.spawn(PbrBundle {
+        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
+        //     material: materials.add(Color::rgb(0.1, 0.1, 0.5).into()),
+        //     transform: Transform::from_translation(v2),
+        //     ..Default::default()
+        // });
         let diff = point_next.sub(point).length();
         uvs.push([len / kerb_length, 0.]);
         uvs.push([len / kerb_length, 1.]);
@@ -417,7 +445,7 @@ pub fn spawn_ground(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
-    let multiplier: usize = 1;
+    let multiplier: usize = 2;
     let scale = 280. / multiplier as f32;
     let num_cols: usize = 2 * multiplier;
     let num_rows: usize = 3 * multiplier;
@@ -448,7 +476,9 @@ pub fn spawn_ground(
         })
         .insert(RigidBody::Fixed)
         .insert(TransformBundle::from_transform(Transform::from_xyz(
-            -350., -hy, 570.,
+            -350.,
+            -hy - 0.01,
+            570.,
         )))
         .insert(Collider::heightfield(
             heights,
@@ -481,8 +511,8 @@ pub fn track_start_system(
     let mut left_wall_points: Vec<Vec3> = vec![];
     let mut right_wall_points: Vec<Vec3> = vec![];
     for (i, p) in track.points.iter().enumerate() {
-        left_wall_points.push(*p + track.right_norm[i] * 7.);
-        right_wall_points.push(*p + track.right_norm[i] * -7.);
+        left_wall_points.push(*p + track.right_norm[i] * 8.);
+        right_wall_points.push(*p + track.right_norm[i] * -8.);
     }
     spawn_walls(
         &mut commands,
