@@ -25,6 +25,10 @@ serde_json = "1.0.89"
 tokio = { version = "1.22.0", features = ["full"] }
 wgpu = { version = "0.14.2", features = ["spirv"] }
 
+crossbeam-channel = "0.5"
+reqwest = { version = "0.11", features = ["json"] }
+
+
 # [profile.dev.package.bevy_rapier3d]
 # opt-level = 3
 # [profile.dev.package.rapier3d]
