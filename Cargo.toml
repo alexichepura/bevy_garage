@@ -6,7 +6,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 [workspace]
 resolver = "2"
-members = ["prisma-cli"]
+members = ["prisma-cli", "api"]
 [profile.release]
 codegen-units = 1
 [dependencies]
