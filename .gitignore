@@ -17,4 +17,5 @@ STYLE.md
 
 .env
 src/db.rs
+api/src/db.rs
 # dev.db

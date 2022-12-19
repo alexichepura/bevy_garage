@@ -123,28 +123,4 @@ impl ReplayBuffer {
             }
         };
     }
-    // #[tokio::main]
-    // pub async fn store_db(
-    //     &mut self,
-    //     client: &PrismaClient,
-    //     s: Observation,
-    //     a: usize,
-    //     r: f32,
-    //     sn: Observation,
-    //     done: bool,
-    // ) {
-    //     client
-    //         .rb()
-    //         .create(
-    //             s.map(|x| x.to_string()).join(","),
-    //             a as i32,
-    //             r as f64,
-    //             sn.map(|x| x.to_string()).join(","),
-    //             done,
-    //             vec![],
-    //         )
-    //         .exec()
-    //         .await
-    //         .unwrap();
-    // }
 }
