@@ -3,8 +3,6 @@ mod camera;
 mod car;
 mod config;
 mod dash;
-mod db;
-mod db_client;
 mod esp;
 mod gamepad;
 mod input;
@@ -23,7 +21,6 @@ use camera::*;
 use car::*;
 use config::*;
 use dash::*;
-use db_client::DbClientResource;
 use esp::*;
 use gamepad::*;
 use input::*;
@@ -65,7 +62,6 @@ fn main() {
             // limiter: Limiter::Auto,
             ..default()
         })
-        .insert_resource(DbClientResource::default())
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
@@ -132,7 +128,6 @@ fn main() {
         .add_system(progress_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_startup_system(api_start_system)
-        .add_system(api_send_system)
         .add_system(api_read_stream_event_writer_system)
         .add_system(api_event_reader_system)
         .run();

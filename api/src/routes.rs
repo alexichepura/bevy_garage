@@ -18,16 +18,12 @@ type AppResult<T> = Result<T, AppError>;
 type AppJsonResult<T> = AppResult<Json<T>>;
 
 #[derive(Deserialize)]
-struct ReplayBufferRecord {
+pub struct ReplayBufferRecord {
     state: Vec<String>,
     action: i32,
     reward: f64,
     next_state: Vec<String>,
     done: bool,
-}
-#[derive(Deserialize)]
-struct ReplayBufferPersist {
-    rb: Vec<ReplayBufferRecord>,
 }
 
 pub fn create_route() -> Router {
@@ -36,12 +32,11 @@ pub fn create_route() -> Router {
 
 async fn handle_replay_post(
     db: Database,
-    Json(input): Json<ReplayBufferPersist>,
+    Json(input): Json<Vec<ReplayBufferRecord>>,
 ) -> AppJsonResult<String> {
     db.rb()
         .create_many(
             input
-                .rb
                 .iter()
                 .map(|t| {
                     return rb::create(

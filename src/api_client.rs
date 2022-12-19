@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crossbeam_channel::{bounded, Receiver, Sender};
+use serde::Deserialize;
 use tokio::runtime::Runtime;
 
 #[derive(Resource)]
@@ -7,6 +8,14 @@ pub struct ApiClient {
     runtime: Runtime,
 }
 
+#[derive(Deserialize)]
+pub struct ReplayBufferRecord {
+    pub state: Vec<f32>,
+    pub action: i32,
+    pub reward: f64,
+    pub next_state: Vec<f32>,
+    pub done: bool,
+}
 impl ApiClient {
     pub(crate) fn new() -> ApiClient {
         ApiClient {
@@ -16,18 +25,24 @@ impl ApiClient {
                 .expect("Could not build tokio runtime"),
         }
     }
-    pub fn hello(&self, sender: Sender<String>) {
+    pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
         self.runtime.spawn(async move {
-            let api_result = reqwest::get("http://localhost:3000/hello/bevy").await;
-            if api_result.is_ok() {
-                println!("r, {:?}", api_result);
-            } else {
-                println!("api_result error");
-            }
+            let api_result = reqwest::get("http://localhost:3000/replay").await;
             let api_response_text = api_result.unwrap().text().await.unwrap();
-            sender.send(api_response_text);
         });
     }
+    // pub fn hello(&self, sender: Sender<String>) {
+    //     self.runtime.spawn(async move {
+    //         let api_result = reqwest::get("http://localhost:3000/hello/bevy").await;
+    //         if api_result.is_ok() {
+    //             println!("r, {:?}", api_result);
+    //         } else {
+    //             println!("api_result error");
+    //         }
+    //         let api_response_text = api_result.unwrap().text().await.unwrap();
+    //         sender.send(api_response_text);
+    //     });
+    // }
 }
 
 #[derive(Resource, Deref)]
@@ -43,13 +58,13 @@ pub fn api_start_system(mut commands: Commands) {
     commands.insert_resource(StreamSender(tx));
 }
 
-pub fn api_send_system(input: Res<Input<KeyCode>>, api: Res<ApiClient>, sender: Res<StreamSender>) {
-    if !input.just_pressed(KeyCode::T) {
-        return;
-    }
-    let sender = sender.clone();
-    api.hello(sender);
-}
+// pub fn api_send_system(input: Res<Input<KeyCode>>, api: Res<ApiClient>, sender: Res<StreamSender>) {
+//     if !input.just_pressed(KeyCode::T) {
+//         return;
+//     }
+//     let sender = sender.clone();
+//     api.hello(sender);
+// }
 pub fn api_read_stream_event_writer_system(
     receiver: Res<StreamReceiver>,
     mut events: EventWriter<StreamEvent>,

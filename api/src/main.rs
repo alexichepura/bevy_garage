@@ -1,4 +1,6 @@
 use axum::{Extension, Router};
+use db::PrismaClient;
+use prisma_client_rust::NewClientError;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
@@ -15,7 +17,8 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let prisma_client = Arc::new(db::new_client().await.unwrap());
+    let client: Result<PrismaClient, NewClientError> = PrismaClient::_builder().build().await;
+    let prisma_client = Arc::new(client.unwrap());
 
     #[cfg(debug)]
     prisma_client._db_push(false).await.unwrap();

@@ -773,7 +773,6 @@ dependencies = [
  "dfdx",
  "obj-rs",
  "parry3d 0.12.0",
- "prisma-client-rust",
  "rand 0.8.5",
  "reqwest",
  "serde",

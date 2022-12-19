@@ -1,9 +1,9 @@
 use super::params::*;
 use crate::{
+    api_client::ApiClient,
     camera::{CameraConfig, CameraFollowMode},
     car::*,
     config::*,
-    db_client::DbClientResource,
     nn::{dqn_bevy::*, util::*},
     track::*,
 };
@@ -19,7 +19,6 @@ pub type QNetwork = (
     Linear<HIDDEN_SIZE, ACTIONS>,
 );
 pub type Observation = [f32; STATE_SIZE];
-pub const OBSERVATION_ZERO: Observation = [0.; STATE_SIZE];
 
 pub fn dqn_system(
     time: Res<Time>,
@@ -42,7 +41,7 @@ pub fn dqn_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut camera_config: ResMut<CameraConfig>,
-    dbres: Res<DbClientResource>,
+    api: Res<ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
@@ -137,7 +136,7 @@ pub fn dqn_system(
         if config.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
             if dqn.rb.should_persist() {
-                dqn.rb.persist(&dbres.client);
+                api.save_replay_buffer(dqn.rb.get_replay_buffer_to_persist());
             }
         }
 

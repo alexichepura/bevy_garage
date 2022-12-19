@@ -15,18 +15,16 @@ bevy_atmosphere = "0.5.0"
 bevy_framepace = { version = "0.9.1"}
 bevy_prototype_debug_lines = { version = "0.9.0", features = ["3d"] }
 bevy_rapier3d = { version = "0.19.0", features=["serde-serialize"]}
+crossbeam-channel = "0.5"
 dfdx = { version = "0.9.0" }
 obj-rs = { version =  "0.7.0", default-features = false }
 parry3d = "0.12.0"
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
 rand = "0.8.5"
+reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
 tokio = { version = "1.22.0", features = ["full"] }
 wgpu = { version = "0.14.2", features = ["spirv"] }
-
-crossbeam-channel = "0.5"
-reqwest = { version = "0.11", features = ["json"] }
 
 
 # [profile.dev.package.bevy_rapier3d]
