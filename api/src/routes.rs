@@ -19,10 +19,10 @@ type AppJsonResult<T> = AppResult<Json<T>>;
 
 #[derive(Deserialize)]
 pub struct ReplayBufferRecord {
-    state: Vec<String>,
+    state: Vec<f32>,
     action: i32,
     reward: f64,
-    next_state: Vec<String>,
+    next_state: Vec<f32>,
     done: bool,
 }
 
@@ -34,6 +34,7 @@ async fn handle_replay_post(
     db: Database,
     Json(input): Json<Vec<ReplayBufferRecord>>,
 ) -> AppJsonResult<String> {
+    println!("rb batch received {:?}", input.len());
     db.rb()
         .create_many(
             input

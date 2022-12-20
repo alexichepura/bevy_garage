@@ -157,6 +157,8 @@ pub fn dqn_system(
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
             config.use_brain = false;
+            camera_config.camera_follow = None;
+            camera_config.mode = CameraFollowMode::None;
         }
         if !config.use_brain || !should_act || crash {
             return;

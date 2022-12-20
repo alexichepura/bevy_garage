@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crossbeam_channel::{bounded, Receiver, Sender};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tokio::runtime::Runtime;
 
 #[derive(Resource)]
@@ -8,7 +8,7 @@ pub struct ApiClient {
     runtime: Runtime,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct ReplayBufferRecord {
     pub state: Vec<f32>,
     pub action: i32,
@@ -27,8 +27,14 @@ impl ApiClient {
     }
     pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
         self.runtime.spawn(async move {
-            let api_result = reqwest::get("http://localhost:3000/replay").await;
+            let client = reqwest::Client::new();
+            let api_result = client
+                .post("http://localhost:3000/api/replay")
+                .json(&rb)
+                .send()
+                .await;
             let api_response_text = api_result.unwrap().text().await.unwrap();
+            println!("rb batch sent {:?}", api_response_text);
         });
     }
     // pub fn hello(&self, sender: Sender<String>) {
