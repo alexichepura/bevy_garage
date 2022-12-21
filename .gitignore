@@ -18,4 +18,6 @@ STYLE.md
 .env
 src/db.rs
 api/src/db.rs
+trainer/src/db.rs
+db-client/src/db.rs
 # dev.db

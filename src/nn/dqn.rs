@@ -10,8 +10,6 @@ use crate::{
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
-use rand::Rng;
-use std::time::Instant;
 
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
@@ -23,8 +21,7 @@ pub type Observation = [f32; STATE_SIZE];
 pub fn dqn_system(
     time: Res<Time>,
     mut dqn: ResMut<DqnResource>,
-    mut sgd_res: NonSendMut<SgdResource>,
-    mut cars_dqn: NonSendMut<CarsDqnResource>,
+    cars_dqn: NonSend<CarsDqnResource>,
     q_road: Query<&TrackRoad>,
     mut q_car: Query<(
         &mut Car,
@@ -165,46 +162,7 @@ pub fn dqn_system(
         }
 
         if let Some(_hid) = hid {
-            if dqn.rb.len() < BATCH_SIZE {
-                log_action_reward(car_dqn_prev.prev_action, reward);
-            } else {
-                let start = Instant::now();
-                let mut rng = rand::thread_rng();
-                let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-                let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
-                let mut loss_string: String = String::from("");
-                for _i_epoch in 0..EPOCHS {
-                    let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
-                        cars_dqn.tqn.forward(sn.clone());
-                    let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_axis::<-1>();
-                    let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
-                    // forward through model, computing gradients
-                    let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
-                        cars_dqn.qn.forward(s.trace());
-                    let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
-                    let loss = huber_loss(action_qs, &target_q, 1.);
-                    let loss_v = *loss.data();
-                    // run backprop
-                    let gradients = loss.backward();
-                    sgd_res
-                        .sgd
-                        .update(&mut cars_dqn.qn, gradients)
-                        .expect("Unused params");
-                    if _i_epoch % 4 == 0 {
-                        loss_string.push_str(format!("{:.2} ", loss_v).as_str());
-                    }
-                }
-                log_training(exploration, action, reward, &loss_string, start);
-                if dqn.step % SYNC_INTERVAL_STEPS == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
-                    dbg!("networks sync");
-                    cars_dqn.tqn = cars_dqn.qn.clone();
-                }
-                dqn.eps = if dqn.eps <= dqn.min_eps {
-                    dqn.min_eps
-                } else {
-                    dqn.eps - DECAY
-                };
-            }
+            log_action_reward(car_dqn_prev.prev_action, reward);
         }
 
         let (gas, brake, left, right) = map_action_to_car(action);

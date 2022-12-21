@@ -1,10 +1,9 @@
 use axum::{Extension, Router};
-use db::PrismaClient;
+use db_client::db::PrismaClient;
 use prisma_client_rust::NewClientError;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
-pub mod db;
 pub mod routes;
 
 #[tokio::main]

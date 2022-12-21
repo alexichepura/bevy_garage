@@ -1,11 +1,11 @@
-use crate::db::{self, rb};
 use axum::{
     extract::Json,
     http::StatusCode,
     response::{IntoResponse, Response},
-    routing::post,
+    routing::*,
     Extension, Router,
 };
+use db_client::db::{self, rb};
 use itertools::Itertools;
 use prisma_client_rust::{
     prisma_errors::query_engine::{RecordNotFound, UniqueKeyViolation},
@@ -13,9 +13,9 @@ use prisma_client_rust::{
 };
 use serde::Deserialize;
 
-type Database = Extension<std::sync::Arc<db::PrismaClient>>;
+pub type DbExt = Extension<std::sync::Arc<db::PrismaClient>>;
 type AppResult<T> = Result<T, AppError>;
-type AppJsonResult<T> = AppResult<Json<T>>;
+pub type AppJsonResult<T> = AppResult<Json<T>>;
 
 #[derive(Deserialize)]
 pub struct ReplayBufferRecord {
@@ -27,11 +27,11 @@ pub struct ReplayBufferRecord {
 }
 
 pub fn create_route() -> Router {
-    Router::new().route("/replay", post(handle_replay_post))
+    Router::new().route("/replay", post(add_replay_buffer))
 }
 
-async fn handle_replay_post(
-    db: Database,
+async fn add_replay_buffer(
+    db: DbExt,
     Json(input): Json<Vec<ReplayBufferRecord>>,
 ) -> AppJsonResult<String> {
     println!("rb batch received {:?}", input.len());
