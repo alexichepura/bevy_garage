@@ -7,12 +7,12 @@ edition = "2021"
 db_client = { path = "../db_client" }
 axum = "0.6"
 itertools = { version = "*" }
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-tokio = { version = "1.0", features = ["full"] }
+prisma-client-rust = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tower-http = { version = "0.3", features = ["fs", "trace"] }
-dfdx = { version = "0.9.0" }
-rand = "0.8.5"
+dfdx = { workspace = true }
+rand = { workspace = true }
