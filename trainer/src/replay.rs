@@ -1,5 +1,8 @@
 use crate::nn::{Observation, BATCH_SIZE, STATE_SIZE};
-use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
+use dfdx::{
+    prelude::HasArrayData,
+    tensor::{Tensor1D, Tensor2D, TensorCreator},
+};
 
 type StateTuple = (Observation, usize, f32, Observation, f32);
 type StateTensorsTuple = (
