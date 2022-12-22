@@ -29,6 +29,7 @@ obj-rs = { version =  "0.7.0", default-features = false }
 parry3d = "0.12.0"
 rand = { workspace = true }
 reqwest = { version = "0.11", features = ["json"] }
+ron = {version = "*"}
 serde = { workspace = true }
 serde_json = { workspace = true }
 wgpu = { version = "0.14.2", features = ["spirv"] }
