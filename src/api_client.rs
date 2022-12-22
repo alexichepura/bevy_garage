@@ -1,11 +1,11 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, tasks::IoTaskPool};
 use crossbeam_channel::{bounded, Receiver, Sender};
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Runtime;
+// use tokio::runtime::Runtime;
 
 #[derive(Resource)]
 pub struct ApiClient {
-    runtime: Runtime,
+    // runtime: Runtime,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -19,36 +19,39 @@ pub struct ReplayBufferRecord {
 impl ApiClient {
     pub(crate) fn new() -> ApiClient {
         ApiClient {
-            runtime: tokio::runtime::Builder::new_multi_thread()
-                .enable_all()
-                .build()
-                .expect("Could not build tokio runtime"),
+            // runtime: tokio::runtime::Builder::new_multi_thread()
+            //     .enable_all()
+            //     .build()
+            //     .expect("Could not build tokio runtime"),
         }
     }
     pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
-        self.runtime.spawn(async move {
-            let client = reqwest::Client::new();
-            let api_result = client
-                .post("http://localhost:3000/api/replay")
-                .json(&rb)
-                .send()
-                .await;
-            let api_response_text = api_result.unwrap().text().await.unwrap();
-            println!("rb batch sent {:?}", api_response_text);
-        });
+        println!("IoTaskPool before");
+        IoTaskPool::get()
+            .spawn(async move {
+                println!("rb batch seding {:?}", rb.len());
+                let client = reqwest::Client::new();
+                let api_result = client
+                    .post("http://localhost:3000/api/replay")
+                    .json(&rb)
+                    .send()
+                    .await;
+                let api_response_text = api_result.unwrap().text().await.unwrap();
+                println!("rb batch sent {:?}", api_response_text);
+            })
+            .detach();
+        println!("IoTaskPool after");
+        // self.runtime.spawn(async move {
+        //     let client = reqwest::Client::new();
+        //     let api_result = client
+        //         .post("http://localhost:3000/api/replay")
+        //         .json(&rb)
+        //         .send()
+        //         .await;
+        //     let api_response_text = api_result.unwrap().text().await.unwrap();
+        //     println!("rb batch sent {:?}", api_response_text);
+        // });
     }
-    // pub fn hello(&self, sender: Sender<String>) {
-    //     self.runtime.spawn(async move {
-    //         let api_result = reqwest::get("http://localhost:3000/hello/bevy").await;
-    //         if api_result.is_ok() {
-    //             println!("r, {:?}", api_result);
-    //         } else {
-    //             println!("api_result error");
-    //         }
-    //         let api_response_text = api_result.unwrap().text().await.unwrap();
-    //         sender.send(api_response_text);
-    //     });
-    // }
 }
 
 #[derive(Resource, Deref)]
