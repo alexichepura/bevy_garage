@@ -177,12 +177,12 @@ pub fn dqn_system(
                     let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
                         cars_dqn.tqn.forward(sn.clone());
                     let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max();
-                    let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
+                    let target_q = 0.99 * mul(max_next_q, 1.0 - done.clone()) + r.clone();
                     // forward through model, computing gradients
                     let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
                         cars_dqn.qn.forward(s.trace());
                     let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
-                    let loss = huber_loss(action_qs, &target_q, 1.);
+                    let loss = huber_loss(action_qs, target_q, 1.);
                     let loss_v = *loss.data();
                     // run backprop
                     let gradients = loss.backward();

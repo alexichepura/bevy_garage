@@ -1,6 +1,9 @@
 use super::{dqn::*, params::*};
 use crate::api_client::ReplayBufferRecord;
-use dfdx::tensor::{HasArrayData, Tensor1D, Tensor2D, TensorCreator};
+use dfdx::{
+    prelude::HasArrayData,
+    tensor::{Tensor1D, Tensor2D, TensorCreator},
+};
 use std::ops::RangeFrom;
 
 type StateTuple = (Observation, usize, f32, Observation, f32);
