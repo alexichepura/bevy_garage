@@ -1,3 +1,7 @@
+pub const BATCH_SIZE: usize = 256;
+pub const EPOCHS: usize = 50;
+pub const DECAY: f32 = 0.001;
+pub const LEARNING_RATE: f32 = 0.0025;
 pub const SYNC_INTERVAL_STEPS: usize = 100;
 pub const BUFFER_SIZE: usize = 10_000_000;
 pub const HIDDEN_SIZE: usize = 16;

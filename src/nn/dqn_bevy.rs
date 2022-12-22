@@ -95,7 +95,23 @@ impl DqnResource {
         }
     }
 }
+
+pub struct SgdResource {
+    pub sgd: Sgd<QNetwork>,
+}
+impl SgdResource {
+    pub fn new() -> Self {
+        Self {
+            sgd: Sgd::new(SgdConfig {
+                lr: LEARNING_RATE,
+                momentum: Some(Momentum::Nesterov(0.9)),
+            }),
+        }
+    }
+}
+
 pub fn dqn_exclusive_start_system(world: &mut World) {
+    world.insert_non_send_resource(SgdResource::new());
     world.insert_non_send_resource(CarsDqnResource::new());
 }
 
