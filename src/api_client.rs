@@ -1,12 +1,6 @@
-use bevy::{prelude::*, tasks::IoTaskPool};
+use bevy::prelude::*;
 use crossbeam_channel::{bounded, Receiver, Sender};
 use serde::{Deserialize, Serialize};
-// use tokio::runtime::Runtime;
-
-#[derive(Resource)]
-pub struct ApiClient {
-    // runtime: Runtime,
-}
 
 #[derive(Deserialize, Serialize)]
 pub struct ReplayBufferRecord {
@@ -16,18 +10,25 @@ pub struct ReplayBufferRecord {
     pub next_state: Vec<f32>,
     pub done: bool,
 }
+
+#[derive(Resource)]
+pub struct ApiClient {
+    #[cfg(not(target_arch = "wasm32"))]
+    runtime: tokio::runtime::Runtime,
+}
 impl ApiClient {
     pub(crate) fn new() -> ApiClient {
         ApiClient {
-            // runtime: tokio::runtime::Builder::new_multi_thread()
-            //     .enable_all()
-            //     .build()
-            //     .expect("Could not build tokio runtime"),
+            #[cfg(not(target_arch = "wasm32"))]
+            runtime: tokio::runtime::Builder::new_multi_thread()
+                .enable_all()
+                .build()
+                .expect("Could not build tokio runtime"),
         }
     }
+    #[cfg(target_arch = "wasm32")]
     pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
-        println!("IoTaskPool before");
-        IoTaskPool::get()
+        bevy::tasks::IoTaskPool::get()
             .spawn(async move {
                 println!("rb batch seding {:?}", rb.len());
                 let client = reqwest::Client::new();
@@ -40,17 +41,19 @@ impl ApiClient {
                 println!("rb batch sent {:?}", api_response_text);
             })
             .detach();
-        println!("IoTaskPool after");
-        // self.runtime.spawn(async move {
-        //     let client = reqwest::Client::new();
-        //     let api_result = client
-        //         .post("http://localhost:3000/api/replay")
-        //         .json(&rb)
-        //         .send()
-        //         .await;
-        //     let api_response_text = api_result.unwrap().text().await.unwrap();
-        //     println!("rb batch sent {:?}", api_response_text);
-        // });
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
+        self.runtime.spawn(async move {
+            let client = reqwest::Client::new();
+            let api_result = client
+                .post("http://localhost:3000/api/replay")
+                .json(&rb)
+                .send()
+                .await;
+            let api_response_text = api_result.unwrap().text().await.unwrap();
+            println!("rb batch sent {:?}", api_response_text);
+        });
     }
 }
 
