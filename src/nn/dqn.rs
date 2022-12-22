@@ -176,7 +176,7 @@ pub fn dqn_system(
                 for _i_epoch in 0..EPOCHS {
                     let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
                         cars_dqn.tqn.forward(sn.clone());
-                    let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max_axis::<-1>();
+                    let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max();
                     let target_q = 0.99 * mul(max_next_q, &(1.0 - done.clone())) + &r;
                     // forward through model, computing gradients
                     let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
