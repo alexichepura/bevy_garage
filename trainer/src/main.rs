@@ -2,7 +2,7 @@ use crate::{nn::*, replay::*};
 use db_client::db::{rb, PrismaClient};
 use dfdx::prelude::*;
 use rand::Rng;
-use std::time::Instant;
+use std::{default, time::Instant};
 pub mod nn;
 pub mod replay;
 
@@ -21,6 +21,7 @@ async fn main() {
     let mut sgd = Sgd::new(SgdConfig {
         lr: LEARNING_RATE,
         momentum: Some(Momentum::Nesterov(0.9)),
+        weight_decay: None,
     });
     let rb_data: Vec<rb::Data> = db_client.rb().find_many(vec![]).exec().await.unwrap();
     println!("rb_data len: {:?}", rb_data.len());

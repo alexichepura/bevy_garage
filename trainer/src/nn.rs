@@ -49,6 +49,7 @@ pub async fn start_training(db: PrismaClient) {
     let mut sgd = Sgd::new(SgdConfig {
         lr: LEARNING_RATE,
         momentum: Some(Momentum::Nesterov(0.9)),
+        weight_decay: None,
     });
     let rb_data: Vec<rb::Data> = db.rb().find_many(vec![]).exec().await.unwrap();
     let mut rb = ReplayBuffer::new();
