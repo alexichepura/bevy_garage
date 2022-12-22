@@ -2,7 +2,7 @@ use crate::{nn::*, replay::*};
 use db_client::db::{rb, PrismaClient};
 use dfdx::prelude::*;
 use rand::Rng;
-use std::{default, time::Instant};
+use std::time::Instant;
 pub mod nn;
 pub mod replay;
 

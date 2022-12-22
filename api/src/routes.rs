@@ -15,7 +15,7 @@ use serde::Deserialize;
 
 pub type DbExt = Extension<std::sync::Arc<db::PrismaClient>>;
 type AppResult<T> = Result<T, AppError>;
-pub type AppJsonResult<T> = AppResult<Json<T>>;
+type AppJsonResult<T> = AppResult<Json<T>>;
 
 #[derive(Deserialize)]
 pub struct ReplayBufferRecord {
