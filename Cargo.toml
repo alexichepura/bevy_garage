@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 resolver = "2"
 members = ["prisma-cli", "api", "trainer", "db_client"]
 [workspace.dependencies]
-dfdx = "0.9"
+dfdx = "0.10"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
