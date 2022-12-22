@@ -36,7 +36,7 @@ impl CarsDqnResource {
             rng.gen_range(0..ACTIONS - 1)
         } else {
             let q_values = self.qn.forward(obs_state_tensor.clone());
-            let max_q_value = *q_values.clone().max_axis::<-1>().data();
+            let max_q_value = *q_values.clone().max().data();
             let some_action = q_values
                 .clone()
                 .data()
@@ -105,6 +105,7 @@ impl SgdResource {
             sgd: Sgd::new(SgdConfig {
                 lr: LEARNING_RATE,
                 momentum: Some(Momentum::Nesterov(0.9)),
+                weight_decay: None,
             }),
         }
     }
