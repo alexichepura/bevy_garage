@@ -1,0 +1,18 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+db_client = { path = "../db_client" }
+axum = "0.6"
+itertools = { version = "*" }
+prisma-client-rust = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower-http = { version = "0.3", features = ["fs", "trace"] }
+dfdx = { workspace = true }
+rand = { workspace = true }

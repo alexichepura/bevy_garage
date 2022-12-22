@@ -1,9 +1,8 @@
+mod api_client;
 mod camera;
 mod car;
 mod config;
 mod dash;
-mod db;
-mod db_client;
 mod esp;
 mod gamepad;
 mod input;
@@ -12,6 +11,7 @@ mod mesh;
 mod nn;
 mod progress;
 mod track;
+use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_atmosphere::prelude::*;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
@@ -21,7 +21,6 @@ use camera::*;
 use car::*;
 use config::*;
 use dash::*;
-use db_client::DbClientResource;
 use esp::*;
 use gamepad::*;
 use input::*;
@@ -40,6 +39,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
 const FPS: f32 = 120.;
 fn main() {
     App::new()
+        .add_event::<StreamEvent>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,
@@ -62,7 +62,6 @@ fn main() {
             // limiter: Limiter::Auto,
             ..default()
         })
-        .insert_resource(DbClientResource::default())
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
@@ -128,6 +127,9 @@ fn main() {
         .add_system(keyboard_input_system)
         .add_system(progress_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_startup_system(api_start_system)
+        .add_system(api_read_stream_event_writer_system)
+        .add_system(api_event_reader_system)
         .run();
 }
 

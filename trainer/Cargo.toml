@@ -1,0 +1,11 @@
+[package]
+name = "trainer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+db_client = { path = "../db_client" }
+dfdx = { workspace = true }
+prisma-client-rust = { workspace = true }
+rand = { workspace = true }
+tokio = { workspace = true }

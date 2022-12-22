@@ -95,6 +95,7 @@ impl DqnResource {
         }
     }
 }
+
 pub struct SgdResource {
     pub sgd: Sgd<QNetwork>,
 }
