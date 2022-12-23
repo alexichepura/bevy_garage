@@ -29,11 +29,13 @@ obj-rs = { version =  "0.7.0", default-features = false }
 parry3d = "0.12.0"
 rand = { workspace = true }
 reqwest = { version = "0.11", features = ["json"] }
+ron = {version = "*"}
 serde = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true }
 wgpu = { version = "0.14.2", features = ["spirv"] }
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { workspace = true }
 
 # [profile.dev.package.bevy_rapier3d]
 # opt-level = 3

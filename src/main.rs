@@ -13,7 +13,7 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_atmosphere::prelude::*;
+// use bevy_atmosphere::prelude::*;
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
@@ -79,11 +79,11 @@ fn main() {
             ..default()
         }))
         // .insert_resource(AtmosphereModel::default())
-        .insert_resource(AtmosphereModel::new(Nishita {
-            sun_position: Vec3::new(0.0, 1.0, 1.0),
-            ..default()
-        }))
-        .add_plugin(AtmospherePlugin)
+        // .insert_resource(AtmosphereModel::new(Nishita {
+        //     sun_position: Vec3::new(0.0, 1.0, 1.0),
+        //     ..default()
+        // }))
+        // .add_plugin(AtmospherePlugin)
         .add_plugin(FramepacePlugin)
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)

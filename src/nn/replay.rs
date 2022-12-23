@@ -15,7 +15,7 @@ type StateTensorsTuple = (
     Tensor1D<BATCH_SIZE>,             // done
 );
 
-const PERSIST_BATCH_SIZE: usize = 500;
+const PERSIST_BATCH_SIZE: usize = 100;
 
 pub struct ReplayBuffer {
     pub state: Vec<Observation>,
