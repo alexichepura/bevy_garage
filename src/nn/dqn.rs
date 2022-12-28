@@ -1,7 +1,6 @@
 use super::params::*;
 use crate::{
     api_client::ApiClient,
-    camera::{CameraConfig, CameraFollowMode},
     car::*,
     config::*,
     nn::{dqn_bevy::*, util::*},
@@ -40,13 +39,12 @@ pub fn dqn_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut camera_config: ResMut<CameraConfig>,
     api: Res<ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
         let (transform, init_meters) = config.get_transform_random();
-        let new_car_id = spawn_car(
+        spawn_car(
             &mut commands,
             &mut meshes,
             &mut materials,
@@ -57,10 +55,6 @@ pub fn dqn_system(
             init_meters,
             config.max_torque,
         );
-        // if camera_config.mode.not_none() && dqn.respawn_is_hid {
-        camera_config.camera_follow = Some(new_car_id);
-        camera_config.mode = CameraFollowMode::Far;
-        // }
         dqn.respawn_at = 0.;
         dqn.respawn_is_hid = false;
         dqn.respawn_index = 0;
@@ -157,8 +151,6 @@ pub fn dqn_system(
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
             config.use_brain = false;
-            camera_config.camera_follow = None;
-            camera_config.mode = CameraFollowMode::None;
         }
         if !config.use_brain || !should_act || crash {
             return;
