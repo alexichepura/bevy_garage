@@ -166,21 +166,21 @@ pub fn camera_controller_system(
         Query<&mut Transform, With<DirectionalLight>>,
     )>,
 ) {
-    let follow_option: Option<(Transform, Vec3, Vec3)> = match config.mode {
+    let follow_option: Option<Transform> = match config.mode {
         CameraMode::Free => None,
         CameraMode::Follow(_, from, at) => {
             if let Ok(car_tf) = pset.p1().get_single() {
-                Some((*car_tf, from, at))
+                let mut tf = car_tf.clone();
+                tf.translation += tf.rotation.mul_vec3(from);
+                tf.rotate(Quat::from_rotation_y(-PI));
+                tf.look_at(car_tf.translation + at, Vec3::Y);
+                Some(tf)
             } else {
                 None
             }
         }
     };
-    let tf: Transform = if let Some((car_tf, from, at)) = follow_option {
-        let mut tf = car_tf.clone();
-        tf.translation += tf.rotation.mul_vec3(from);
-        tf.rotate(Quat::from_rotation_y(-PI));
-        tf.look_at(car_tf.translation + at, Vec3::Y);
+    let tf: Transform = if let Some(tf) = follow_option {
         tf
     } else {
         let dt = time.delta_seconds();
