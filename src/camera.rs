@@ -74,65 +74,66 @@ impl Default for CameraController {
     }
 }
 
-#[derive(PartialEq, Debug)]
-pub enum FollowView {
+#[derive(PartialEq, Debug, Clone, Copy)]
+enum CameraFollowView {
     FrontWheel,
     Near,
     Mid,
     Far,
 }
-
-#[derive(Resource)]
-pub struct CameraConfig {
-    mode: FollowView,
-    from: Vec3,
-    at: Vec3,
-}
-impl CameraConfig {
-    pub fn near(&mut self) {
-        self.mode = FollowView::Near;
-        self.follow_update();
-    }
-    pub fn mid(&mut self) {
-        self.mode = FollowView::Mid;
-        self.follow_update();
-    }
-    pub fn far(&mut self) {
-        self.mode = FollowView::Far;
-        self.follow_update();
-    }
-    pub fn wheel(&mut self) {
-        self.mode = FollowView::FrontWheel;
-        self.follow_update();
-    }
-    fn follow_update(&mut self) {
-        let (look_from, look_at) = follow_props_by_mode(&self.mode);
-        self.from = look_from;
-        self.at = look_at;
-    }
-}
-fn follow_props_by_mode(mode: &FollowView) -> (Vec3, Vec3) {
+fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     let look_from = match mode {
-        FollowView::Near => Vec3::new(0., 2., -5.),
-        FollowView::Mid => Vec3::new(0., 3., -10.),
-        FollowView::Far => Vec3::new(0., 5., -20.),
-        FollowView::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
+        CameraFollowView::Near => Vec3::new(0., 2., -5.),
+        CameraFollowView::Mid => Vec3::new(0., 3., -10.),
+        CameraFollowView::Far => Vec3::new(0., 5., -20.),
+        CameraFollowView::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
     };
     let look_at = match mode {
-        FollowView::Near => Vec3::new(0., 1.5, 0.),
-        FollowView::Mid => Vec3::new(0., 2., 0.),
-        FollowView::Far => Vec3::new(0., 3., 0.),
-        FollowView::FrontWheel => Vec3::new(0., -0.2, 1.),
+        CameraFollowView::Near => Vec3::new(0., 1.5, 0.),
+        CameraFollowView::Mid => Vec3::new(0., 2., 0.),
+        CameraFollowView::Far => Vec3::new(0., 3., 0.),
+        CameraFollowView::FrontWheel => Vec3::new(0., -0.2, 1.),
     };
     (look_from, look_at)
 }
+#[derive(PartialEq, Debug)]
+enum CameraMode {
+    Follow(CameraFollowView, Vec3, Vec3),
+    Free,
+}
+
+#[derive(Resource)]
+pub struct CameraConfig {
+    mode: CameraMode,
+}
+
+impl CameraConfig {
+    pub fn free(&mut self) {
+        self.mode = CameraMode::Free;
+    }
+    fn follow_view(&mut self, view: CameraFollowView) {
+        let (from, at) = follow_props_by_mode(&view);
+        self.mode = CameraMode::Follow(view, from, at);
+    }
+    pub fn near(&mut self) {
+        self.follow_view(CameraFollowView::Near);
+    }
+    pub fn mid(&mut self) {
+        self.follow_view(CameraFollowView::Mid);
+    }
+    pub fn far(&mut self) {
+        self.follow_view(CameraFollowView::Far);
+    }
+    pub fn wheel(&mut self) {
+        self.follow_view(CameraFollowView::FrontWheel);
+    }
+}
+
 impl Default for CameraConfig {
     fn default() -> Self {
-        let (from, at) = follow_props_by_mode(&FollowView::Mid);
+        let (from, at) = follow_props_by_mode(&CameraFollowView::Mid);
         Self {
-            mode: FollowView::Mid,
-            from,
-            at,
+            mode: CameraMode::Follow(CameraFollowView::Mid, from, at),
         }
     }
 }
@@ -150,7 +151,7 @@ pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<K
         config.wheel();
     }
     if input.just_pressed(KeyCode::Key0) {
-        config.wheel();
+        config.free();
     }
 }
 
@@ -165,11 +166,21 @@ pub fn camera_controller_system(
         Query<&mut Transform, With<DirectionalLight>>,
     )>,
 ) {
-    let tf: Transform = if let Ok(car_tf) = pset.p1().get_single() {
+    let follow_option: Option<(Transform, Vec3, Vec3)> = match config.mode {
+        CameraMode::Free => None,
+        CameraMode::Follow(_, from, at) => {
+            if let Ok(car_tf) = pset.p1().get_single() {
+                Some((*car_tf, from, at))
+            } else {
+                None
+            }
+        }
+    };
+    let tf: Transform = if let Some((car_tf, from, at)) = follow_option {
         let mut tf = car_tf.clone();
-        tf.translation += tf.rotation.mul_vec3(config.from);
+        tf.translation += tf.rotation.mul_vec3(from);
         tf.rotate(Quat::from_rotation_y(-PI));
-        tf.look_at(car_tf.translation + config.at, Vec3::Y);
+        tf.look_at(car_tf.translation + at, Vec3::Y);
         tf
     } else {
         let dt = time.delta_seconds();
