@@ -181,6 +181,11 @@ pub fn camera_controller_system(
         }
     };
     let tf: Transform = if let Some(tf) = follow_option {
+        let mut p0 = pset.p0();
+        let (_, mut options) = p0.single_mut();
+        let (yaw, pitch, _roll) = tf.rotation.to_euler(EulerRot::YXZ);
+        options.pitch = pitch;
+        options.yaw = yaw;
         tf
     } else {
         let dt = time.delta_seconds();
