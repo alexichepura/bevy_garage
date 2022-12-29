@@ -74,6 +74,8 @@ fn main() {
                 height: 640.,
                 // monitor: MonitorSelection::Index(1),
                 position: WindowPosition::Centered,
+                fit_canvas_to_parent: true,
+                // canvas: Some("#bevy".to_string()),
                 ..default()
             },
             ..default()

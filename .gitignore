@@ -1,7 +1,6 @@
 .DS_Store
 *.swp
 *.swo
-*.html
 *.so
 *.dSYM
 target
@@ -17,4 +16,3 @@ STYLE.md
 
 .env
 db-client/src/db.rs
-# dev.db
