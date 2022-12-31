@@ -37,9 +37,8 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
 }
 
 const FPS: f32 = 120.;
-pub fn app() {
-    App::new()
-        .add_event::<StreamEvent>()
+pub fn car_app(app: &mut App) -> &mut App {
+    app.add_event::<StreamEvent>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,
@@ -131,8 +130,8 @@ pub fn app() {
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_startup_system(api_start_system)
         .add_system(api_read_stream_event_writer_system)
-        .add_system(api_event_reader_system)
-        .run();
+        .add_system(api_event_reader_system);
+    app
 }
 
 // fn display_events_system(

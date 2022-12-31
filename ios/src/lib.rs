@@ -1,9 +1,11 @@
 use bevy::prelude::*;
-use bevy_rapier_car_sim::app;
+use bevy_rapier_car_sim::car_app;
 
 #[bevy_main]
 fn main() {
-    app()
+    let mut app = App::new();
+    car_app(&mut app);
+    app.run();
 }
 
 // // copy from bevy ios example, just to make it working first with new project

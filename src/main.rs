@@ -1,5 +1,8 @@
-use bevy_rapier_car_sim::app;
+use bevy::prelude::App;
+use bevy_rapier_car_sim::car_app;
 
 fn main() {
-    app()
+    let mut app = App::new();
+    car_app(&mut app);
+    app.run();
 }
