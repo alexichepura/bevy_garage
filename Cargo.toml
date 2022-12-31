@@ -9,7 +9,7 @@ description = "3d car simulation in rust"
 identifier = "io.github.alexichepura.bevy-rapier-car-sim"
 [workspace]
 resolver = "2"
-members = ["prisma-cli", "api", "trainer", "db_client"]
+members = ["prisma-cli", "api", "trainer", "db_client", "ios"]
 [workspace.dependencies]
 dfdx = "0.10"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
