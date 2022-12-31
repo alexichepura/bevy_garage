@@ -254,7 +254,11 @@
 				);
 				INFOPLIST_FILE = "ios-src/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				"LIBRARY_SEARCH_PATHS[sdk=*]" = (
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"../target/aarch64-apple-ios/debug",
+				);
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
 					"../target/aarch64-apple-ios-sim/debug",
 				);
@@ -317,7 +321,11 @@
 				);
 				INFOPLIST_FILE = "ios-src/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				"LIBRARY_SEARCH_PATHS[arch=*]" = (
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"../target/aarch64-apple-ios/release",
+				);
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
 					"../target/aarch64-apple-ios-sim/release",
 				);

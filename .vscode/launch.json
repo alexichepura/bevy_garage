@@ -8,11 +8,11 @@
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=bevy_rapier_3d_car_sim",
-                    "--package=bevy_rapier_3d_car_sim"
+                    "--bin=bevy_rapier_car_sim",
+                    "--package=bevy_rapier_car_sim"
                 ],
                 "filter": {
-                    "name": "bevy_rapier_3d_car_sim",
+                    "name": "bevy_rapier_car_sim",
                     "kind": "bin"
                 }
             },
@@ -25,16 +25,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'bevy_rapier_3d_car_sim'",
+            "name": "Debug unit tests in executable 'bevy_rapier_car_sim'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=bevy_rapier_3d_car_sim",
-                    "--package=bevy_rapier_3d_car_sim"
+                    "--bin=bevy_rapier_car_sim",
+                    "--package=bevy_rapier_car_sim"
                 ],
                 "filter": {
-                    "name": "bevy_rapier_3d_car_sim",
+                    "name": "bevy_rapier_car_sim",
                     "kind": "bin"
                 }
             },

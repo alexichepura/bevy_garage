@@ -751,7 +751,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_rapier_3d_car_sim"
+name = "bevy_rapier_car_sim"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -1187,6 +1187,7 @@ name = "car_sim"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_rapier_car_sim",
 ]
 
 [[package]]

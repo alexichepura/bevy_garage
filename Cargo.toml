@@ -1,5 +1,5 @@
 [package]
-name    = "bevy_rapier_3d_car_sim"
+name    = "bevy_rapier_car_sim"
 version = "0.1.0"
 authors = [ "Alexi Chepura <a.chepura@gmail.com>" ]
 edition = "2021"
@@ -11,6 +11,7 @@ identifier = "io.github.alexichepura.bevy-rapier-car-sim"
 resolver = "2"
 members = ["prisma-cli", "api", "trainer", "db_client", "ios"]
 [workspace.dependencies]
+bevy = { version = "0.9.1" }
 dfdx = "0.10"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
 rand = "0.8"
@@ -21,7 +22,7 @@ tokio = { version = "1", features = ["full"] }
 [profile.release]
 codegen-units = 1
 [dependencies]
-bevy = { version = "0.9.1" }
+bevy = { workspace = true }
 bevy_atmosphere = "0.5.0"
 bevy_framepace = { version = "0.9.1"}
 bevy_prototype_debug_lines = { version = "0.9.0", features = ["3d"] }
