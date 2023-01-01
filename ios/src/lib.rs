@@ -4,8 +4,15 @@ use bevy_rapier_car_sim::car_app;
 #[bevy_main]
 fn main() {
     let mut app = App::new();
-    car_app(&mut app);
-    app.run();
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        window: WindowDescriptor {
+            resizable: false,
+            mode: WindowMode::BorderlessFullscreen,
+            ..default()
+        },
+        ..default()
+    }));
+    car_app(&mut app).run();
 }
 
 // // copy from bevy ios example, just to make it working first with new project
