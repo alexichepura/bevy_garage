@@ -7,12 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7A215A0529627EA700310237 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A2159F629627EA700310237 /* main.m */; };
+		7A215A1329627F2700310237 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 7A215A1229627F2700310237 /* assets */; };
 		7A60F4702960148800A64E57 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A60F46F2960148800A64E57 /* Security.framework */; };
 		7A60F4722960149300A64E57 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A60F4712960149300A64E57 /* Metal.framework */; };
 		7A60F4742960149A00A64E57 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A60F4732960149A00A64E57 /* UIKit.framework */; };
 		7A60F476296014A700A64E57 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A60F475296014A700A64E57 /* AudioToolbox.framework */; };
 		7A60F478296014AF00A64E57 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A60F477296014AF00A64E57 /* libc++.tbd */; };
-		7A60F48A296023CA00A64E57 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A60F488296023CA00A64E57 /* main.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,15 +27,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7A2159F529627EA700310237 /* bindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		7A2159F629627EA700310237 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		7A215A0429627EA700310237 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7A215A1229627F2700310237 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
 		7A60F44D2960013D00A64E57 /* car-sim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "car-sim.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A60F46F2960148800A64E57 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		7A60F4712960149300A64E57 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		7A60F4732960149A00A64E57 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		7A60F475296014A700A64E57 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		7A60F477296014AF00A64E57 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
-		7A60F487296023CA00A64E57 /* bindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
-		7A60F488296023CA00A64E57 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		7A60F489296023CA00A64E57 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,10 +55,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7A2159F429627EA700310237 /* ios-src */ = {
+			isa = PBXGroup;
+			children = (
+				7A215A1229627F2700310237 /* assets */,
+				7A2159F529627EA700310237 /* bindings.h */,
+				7A2159F629627EA700310237 /* main.m */,
+				7A215A0429627EA700310237 /* Info.plist */,
+			);
+			path = "ios-src";
+			sourceTree = "<group>";
+		};
 		7A60F4442960013D00A64E57 = {
 			isa = PBXGroup;
 			children = (
-				7A60F486296023CA00A64E57 /* ios-src */,
+				7A2159F429627EA700310237 /* ios-src */,
 				7A60F44E2960013D00A64E57 /* Products */,
 				7A60F46E2960148800A64E57 /* Frameworks */,
 			);
@@ -80,16 +93,6 @@
 				7A60F46F2960148800A64E57 /* Security.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		7A60F486296023CA00A64E57 /* ios-src */ = {
-			isa = PBXGroup;
-			children = (
-				7A60F487296023CA00A64E57 /* bindings.h */,
-				7A60F488296023CA00A64E57 /* main.m */,
-				7A60F489296023CA00A64E57 /* Info.plist */,
-			);
-			path = "ios-src";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -172,6 +175,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A215A1329627F2700310237 /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,7 +186,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7A60F48A296023CA00A64E57 /* main.m in Sources */,
+				7A215A0529627EA700310237 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
