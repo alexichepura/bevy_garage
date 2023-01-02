@@ -26,7 +26,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             cars_count: CARS_COUNT,
-            use_brain: true,
+            use_brain: false,
             show_rays: true,
             max_torque: MAX_TORQUE,
             max_toi: MAX_TOI,
