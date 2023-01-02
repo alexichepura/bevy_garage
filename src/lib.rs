@@ -36,7 +36,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     dbg!(c.integration_parameters);
 }
 
-const FPS: f32 = 30.;
+const FPS: f32 = 60.;
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
         .add_plugin(FramepacePlugin)
@@ -66,7 +66,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
-        .insert_resource(DirectionalLightShadowMap { size: 2048 * 8 })
+        .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
         // .insert_resource(AtmosphereModel::default())
         // .insert_resource(AtmosphereModel::new(Nishita {
         //     sun_position: Vec3::new(0.0, 1.0, 1.0),
@@ -108,8 +108,8 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(car_sensor_system)
         .add_system(dqn_system)
         .add_system(dqn_dash_update_system)
-        .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
+        .add_system(dash_fps_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(keyboard_input_system)
