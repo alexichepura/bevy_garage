@@ -51,7 +51,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
         .add_system(camera_switch_system)
-        // .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // .add_plugin(RapierDebugRenderPlugin {
         //     enabled: false,
