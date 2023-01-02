@@ -6,10 +6,10 @@ set -eux
 
 PATH=$PATH:$HOME/.cargo/bin
 
-RELFLAG=
-if [[ "$CONFIGURATION" != "Debug" ]]; then
-    RELFLAG=--release
-fi
+RELFLAG=--release
+# if [[ "$CONFIGURATION" != "Debug" ]]; then
+#     RELFLAG=--release
+# fi
 
 set -euvx
 
