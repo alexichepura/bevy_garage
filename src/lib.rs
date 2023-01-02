@@ -88,6 +88,8 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(keyboard_input_system)
+        .add_startup_system(touch_input_start_system)
+        // .add_system(touch_input_system)
         // .add_system(progress_system)
         // .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_startup_system(api_start_system)
