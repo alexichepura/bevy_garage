@@ -751,7 +751,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_rapier_3d_car_sim"
+name = "bevy_rapier_car_sim"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -1181,6 +1181,14 @@ name = "cache-padded"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1db59621ec70f09c5e9b597b220c7a2b43611f4710dc03ceb8748637775692c"
+
+[[package]]
+name = "car_sim"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_rapier_car_sim",
+]
 
 [[package]]
 name = "cc"
