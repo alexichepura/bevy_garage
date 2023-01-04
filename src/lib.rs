@@ -110,6 +110,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(touch_input_start_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system(keyboard_input_system.label(CarSimLabel::Input))
+        .add_system(touch_input_system.label(CarSimLabel::Input))
         .add_system(car_sensor_system.label(CarSimLabel::Input))
         .add_system(progress_system.label(CarSimLabel::Input))
         .add_system(

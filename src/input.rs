@@ -118,33 +118,13 @@ fn spawn_button(
         });
 }
 
-pub fn keyboard_input_system(
-    input: Res<Input<KeyCode>>,
-    mut config: ResMut<Config>,
+pub fn touch_input_system(
     mut cars: Query<(&mut Car, &Transform, With<HID>)>,
-    mut commands: Commands,
-    q_car: Query<Entity, With<Car>>,
-    q_wheel: Query<Entity, With<Wheel>>,
-    // mut debug_ctx: ResMut<DebugRenderContext>,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &CarButton),
         (Changed<Interaction>, With<CarButton>),
     >,
 ) {
-    if input.just_pressed(KeyCode::N) {
-        config.use_brain = !config.use_brain;
-    }
-    if input.just_pressed(KeyCode::Space) {
-        for e in q_wheel.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-        for e in q_car.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-    }
-    // if input.just_pressed(KeyCode::R) {
-    //     debug_ctx.enabled = !debug_ctx.enabled;
-    // }
     for (mut car, _transform, _car) in cars.iter_mut() {
         for (interaction, mut color, btn) in &mut interaction_query {
             match *interaction {
@@ -187,7 +167,32 @@ pub fn keyboard_input_system(
                 }
             }
         }
-
+    }
+}
+pub fn keyboard_input_system(
+    input: Res<Input<KeyCode>>,
+    mut config: ResMut<Config>,
+    mut cars: Query<(&mut Car, &Transform, With<HID>)>,
+    mut commands: Commands,
+    q_car: Query<Entity, With<Car>>,
+    q_wheel: Query<Entity, With<Wheel>>,
+    // mut debug_ctx: ResMut<DebugRenderContext>,
+) {
+    if input.just_pressed(KeyCode::N) {
+        config.use_brain = !config.use_brain;
+    }
+    if input.just_pressed(KeyCode::Space) {
+        for e in q_wheel.iter() {
+            commands.entity(e).despawn_recursive();
+        }
+        for e in q_car.iter() {
+            commands.entity(e).despawn_recursive();
+        }
+    }
+    // if input.just_pressed(KeyCode::R) {
+    //     debug_ctx.enabled = !debug_ctx.enabled;
+    // }
+    for (mut car, _transform, _car) in cars.iter_mut() {
         if input.pressed(KeyCode::Up) {
             car.gas = 1.;
         }
