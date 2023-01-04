@@ -20,8 +20,8 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
                 position_type: PositionType::Absolute,
                 size: Size::new(Val::Px(120.0), Val::Px(120.0)),
                 position: UiRect {
-                    bottom: Val::Px(10.0),
-                    left: Val::Px(10.0),
+                    bottom: Val::Px(20.0),
+                    left: Val::Px(20.0),
                     ..default()
                 },
                 ..default()
@@ -38,8 +38,8 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
                 position_type: PositionType::Absolute,
                 size: Size::new(Val::Px(120.0), Val::Px(120.0)),
                 position: UiRect {
-                    bottom: Val::Px(10.0),
-                    right: Val::Px(10.0),
+                    bottom: Val::Px(20.0),
+                    right: Val::Px(20.0),
                     ..default()
                 },
                 ..default()
