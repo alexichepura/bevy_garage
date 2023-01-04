@@ -78,8 +78,8 @@ pub fn esp_system(
         let prev_torque = if is_same_dir { car.prev_torque } else { 0. };
         let prev_steering = car.prev_steering;
         let (steering, mut torque) = (
-            prev_steering + (car.steering - prev_steering) * d_seconds * 4.,
-            prev_torque + (car_torque - prev_torque) * d_seconds * 4.,
+            prev_steering + (car.steering - prev_steering) * d_seconds * 10.,
+            prev_torque + (car_torque - prev_torque) * d_seconds * 10.,
         );
         car.prev_steering = steering;
         car.prev_torque = torque;
