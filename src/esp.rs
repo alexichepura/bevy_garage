@@ -1,4 +1,4 @@
-use crate::{car::*, config::*, nn::params::*};
+use crate::{car::*, nn::params::*};
 use bevy::prelude::*;
 // use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
@@ -29,12 +29,12 @@ pub fn esp_system(
         >,
     )>,
     // mut lines: ResMut<DebugLines>,
-    config: Res<Config>,
+    // config: Res<Config>,
     time: Res<Time>,
 ) {
     let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
-    let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
+    // let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
 
     for (_entity, mut car, velocity, transform) in query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);

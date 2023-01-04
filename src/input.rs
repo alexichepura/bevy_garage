@@ -2,6 +2,16 @@ use crate::{car::*, config::*};
 use bevy::prelude::*;
 // use bevy_rapier3d::render::DebugRenderContext;
 
+enum BtnType {
+    U,
+    D,
+    L,
+    R,
+}
+
+#[derive(Component)]
+pub struct CarButton(BtnType);
+
 pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     commands
@@ -10,7 +20,7 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
                 position_type: PositionType::Absolute,
                 size: Size::new(Val::Percent(100.0), Val::Px(100.0)),
                 position: UiRect {
-                    bottom: Val::Px(100.0),
+                    bottom: Val::Px(10.0),
                     ..default()
                 },
                 ..default()
@@ -18,32 +28,41 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
             ..default()
         })
         .with_children(|commands| {
-            spawn_button(commands, font.clone(), Vec2::new(10., 0.), "U");
-            spawn_button(commands, font.clone(), Vec2::new(30., 0.), "D");
-            spawn_button(commands, font.clone(), Vec2::new(70., 0.), "L");
-            spawn_button(commands, font.clone(), Vec2::new(90., 0.), "R");
+            spawn_button(commands, font.clone(), Vec2::new(10., 0.), "U", BtnType::U);
+            spawn_button(commands, font.clone(), Vec2::new(10., 60.), "D", BtnType::D);
+            spawn_button(commands, font.clone(), Vec2::new(80., 0.), "L", BtnType::L);
+            spawn_button(commands, font.clone(), Vec2::new(90., 0.), "R", BtnType::R);
         });
 }
 
-fn spawn_button(commands: &mut ChildBuilder, font: Handle<Font>, position: Vec2, str: &str) {
+fn spawn_button(
+    commands: &mut ChildBuilder,
+    font: Handle<Font>,
+    position: Vec2,
+    str: &str,
+    btn_type: BtnType,
+) {
     let position = UiRect {
         left: Val::Percent(position.x),
         top: Val::Percent(position.y),
         ..default()
     };
     commands
-        .spawn((ButtonBundle {
-            style: Style {
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                size: Size::new(Val::Px(50.0), Val::Px(50.0)),
-                position,
-                position_type: PositionType::Absolute,
+        .spawn((
+            ButtonBundle {
+                style: Style {
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    size: Size::new(Val::Px(50.0), Val::Px(50.0)),
+                    position,
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                background_color: Color::DARK_GRAY.into(),
                 ..default()
             },
-            background_color: Color::DARK_GRAY.into(),
-            ..default()
-        },))
+            CarButton(btn_type),
+        ))
         .with_children(|b| {
             b.spawn(
                 TextBundle::from_section(
@@ -68,8 +87,8 @@ pub fn keyboard_input_system(
     q_wheel: Query<Entity, With<Wheel>>,
     // mut debug_ctx: ResMut<DebugRenderContext>,
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<Button>),
+        (&Interaction, &mut BackgroundColor, &CarButton),
+        (Changed<Interaction>, With<CarButton>),
     >,
 ) {
     if input.just_pressed(KeyCode::N) {
@@ -87,18 +106,44 @@ pub fn keyboard_input_system(
     //     debug_ctx.enabled = !debug_ctx.enabled;
     // }
     for (mut car, _transform, _car) in cars.iter_mut() {
-        for (interaction, mut color) in &mut interaction_query {
+        for (interaction, mut color, btn) in &mut interaction_query {
             match *interaction {
                 Interaction::Clicked => {
                     *color = Color::BLUE.into();
-                    car.gas = 1.;
+                    match btn.0 {
+                        BtnType::U => {
+                            car.gas = 1.;
+                        }
+                        BtnType::D => {
+                            car.brake = 1.;
+                        }
+                        BtnType::L => {
+                            car.steering = -1.;
+                        }
+                        BtnType::R => {
+                            car.steering = 1.;
+                        }
+                    }
                 }
                 Interaction::Hovered => {
                     *color = Color::GRAY.into();
                 }
                 Interaction::None => {
                     *color = Color::WHITE.into();
-                    car.gas = 0.;
+                    match btn.0 {
+                        BtnType::U => {
+                            car.gas = 0.;
+                        }
+                        BtnType::D => {
+                            car.brake = 0.;
+                        }
+                        BtnType::L => {
+                            car.steering = 0.;
+                        }
+                        BtnType::R => {
+                            car.steering = 0.;
+                        }
+                    }
                 }
             }
         }

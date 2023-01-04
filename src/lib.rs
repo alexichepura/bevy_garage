@@ -15,7 +15,7 @@ use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 // use bevy_atmosphere::prelude::*;
-use bevy_prototype_debug_lines::DebugLinesPlugin;
+// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 use camera::*;
 use car::*;
@@ -115,8 +115,8 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(keyboard_input_system)
         .add_startup_system(touch_input_start_system)
         // .add_system(touch_input_system)
-        // .add_system(progress_system)
-        // .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_system(progress_system)
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_startup_system(api_start_system)
         .add_system(api_read_stream_event_writer_system)
         .add_system(api_event_reader_system);
