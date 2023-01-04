@@ -4,6 +4,7 @@ mod car;
 mod config;
 mod dash;
 mod esp;
+mod font;
 mod gamepad;
 mod input;
 mod light;
@@ -21,6 +22,7 @@ use car::*;
 use config::*;
 use dash::*;
 use esp::*;
+use font::*;
 use gamepad::*;
 use input::*;
 use light::*;
@@ -39,6 +41,7 @@ const FPS: f32 = 60.;
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
         .add_plugin(FramepacePlugin)
+        .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,

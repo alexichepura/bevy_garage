@@ -1,4 +1,4 @@
-use crate::car::*;
+use crate::{car::*, font::FontHandle};
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -16,10 +16,9 @@ pub struct TrainerRecordDistanceText;
 #[derive(Component)]
 pub struct TrainerGenerationText;
 
-pub fn dash_fps_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
+pub fn dash_fps_start_system(mut commands: Commands, font: Res<FontHandle>) {
     let text_style = TextStyle {
-        font: medium.clone(),
+        font: font.medium.clone(),
         font_size: 16.0,
         color: Color::BLACK,
     };

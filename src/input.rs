@@ -1,4 +1,4 @@
-use crate::{car::*, config::*};
+use crate::{car::*, config::*, font::FontHandle};
 use bevy::prelude::*;
 // use bevy_rapier3d::render::DebugRenderContext;
 
@@ -12,8 +12,7 @@ enum BtnType {
 #[derive(Component)]
 pub struct CarButton(BtnType);
 
-pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
+pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -29,8 +28,20 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
             ..default()
         })
         .with_children(|commands| {
-            spawn_button(commands, font.clone(), Vec2::new(0., 0.), "U", BtnType::U);
-            spawn_button(commands, font.clone(), Vec2::new(0., 60.), "D", BtnType::D);
+            spawn_button(
+                commands,
+                font.bold.clone(),
+                Vec2::new(0., 0.),
+                "U",
+                BtnType::U,
+            );
+            spawn_button(
+                commands,
+                font.bold.clone(),
+                Vec2::new(0., 60.),
+                "D",
+                BtnType::D,
+            );
         });
     commands
         .spawn(NodeBundle {
@@ -47,8 +58,20 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
             ..default()
         })
         .with_children(|commands| {
-            spawn_button(commands, font.clone(), Vec2::new(0., 0.), "L", BtnType::L);
-            spawn_button(commands, font.clone(), Vec2::new(60., 0.), "R", BtnType::R);
+            spawn_button(
+                commands,
+                font.bold.clone(),
+                Vec2::new(0., 0.),
+                "L",
+                BtnType::L,
+            );
+            spawn_button(
+                commands,
+                font.bold.clone(),
+                Vec2::new(60., 0.),
+                "R",
+                BtnType::R,
+            );
         });
 }
 
