@@ -18,9 +18,10 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size::new(Val::Percent(100.0), Val::Px(100.0)),
+                size: Size::new(Val::Px(120.0), Val::Px(120.0)),
                 position: UiRect {
                     bottom: Val::Px(10.0),
+                    left: Val::Px(10.0),
                     ..default()
                 },
                 ..default()
@@ -28,10 +29,26 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
             ..default()
         })
         .with_children(|commands| {
-            spawn_button(commands, font.clone(), Vec2::new(10., 0.), "U", BtnType::U);
-            spawn_button(commands, font.clone(), Vec2::new(10., 60.), "D", BtnType::D);
-            spawn_button(commands, font.clone(), Vec2::new(80., 0.), "L", BtnType::L);
-            spawn_button(commands, font.clone(), Vec2::new(90., 0.), "R", BtnType::R);
+            spawn_button(commands, font.clone(), Vec2::new(0., 0.), "U", BtnType::U);
+            spawn_button(commands, font.clone(), Vec2::new(0., 60.), "D", BtnType::D);
+        });
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                size: Size::new(Val::Px(120.0), Val::Px(120.0)),
+                position: UiRect {
+                    bottom: Val::Px(10.0),
+                    right: Val::Px(10.0),
+                    ..default()
+                },
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|commands| {
+            spawn_button(commands, font.clone(), Vec2::new(0., 0.), "L", BtnType::L);
+            spawn_button(commands, font.clone(), Vec2::new(60., 0.), "R", BtnType::R);
         });
 }
 
