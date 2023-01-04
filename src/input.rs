@@ -3,11 +3,11 @@ use bevy::prelude::*;
 // use bevy_rapier3d::render::DebugRenderContext;
 
 pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     commands
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                // size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                 size: Size::new(Val::Percent(100.0), Val::Px(100.0)),
                 position: UiRect {
                     bottom: Val::Px(100.0),
@@ -18,80 +18,46 @@ pub fn touch_input_start_system(mut commands: Commands, asset_server: Res<AssetS
             ..default()
         })
         .with_children(|commands| {
-            spawn_button(commands, Vec2::new(10., 0.));
-            spawn_button(commands, Vec2::new(30., 0.));
-            spawn_button(commands, Vec2::new(70., 0.));
-            spawn_button(commands, Vec2::new(90., 0.));
+            spawn_button(commands, font.clone(), Vec2::new(10., 0.), "U");
+            spawn_button(commands, font.clone(), Vec2::new(30., 0.), "D");
+            spawn_button(commands, font.clone(), Vec2::new(70., 0.), "L");
+            spawn_button(commands, font.clone(), Vec2::new(90., 0.), "R");
         });
-    // commands
-    //     .spawn(ButtonBundle {
-    //         style: Style {
-    //             justify_content: JustifyContent::Center,
-    //             align_items: AlignItems::Center,
-    //             position_type: PositionType::Absolute,
-    //             position: UiRect {
-    //                 left: Val::Px(50.0),
-    //                 right: Val::Px(50.0),
-    //                 top: Val::Auto,
-    //                 bottom: Val::Px(50.0),
-    //             },
-    //             ..default()
-    //         },
-    //         ..default()
-    //     })
-    //     .with_children(|b| {
-    //         b.spawn(
-    //             TextBundle::from_section(
-    //                 "▲",
-    //                 TextStyle {
-    //                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-    //                     font_size: 30.0,
-    //                     color: Color::BLACK,
-    //                 },
-    //             )
-    //             .with_text_alignment(TextAlignment::CENTER),
-    //         );
-    //     });
 }
 
-fn spawn_button(commands: &mut ChildBuilder, position: Vec2) {
+fn spawn_button(commands: &mut ChildBuilder, font: Handle<Font>, position: Vec2, str: &str) {
     let position = UiRect {
         left: Val::Percent(position.x),
         top: Val::Percent(position.y),
         ..default()
     };
-    commands.spawn((ButtonBundle {
-        style: Style {
-            size: Size::new(Val::Px(50.0), Val::Px(50.0)),
-            position,
-            position_type: PositionType::Absolute,
+    commands
+        .spawn((ButtonBundle {
+            style: Style {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                size: Size::new(Val::Px(50.0), Val::Px(50.0)),
+                position,
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            background_color: Color::DARK_GRAY.into(),
             ..default()
-        },
-        background_color: Color::DARK_GRAY.into(),
-        ..default()
-    },));
+        },))
+        .with_children(|b| {
+            b.spawn(
+                TextBundle::from_section(
+                    str,
+                    TextStyle {
+                        font,
+                        font_size: 30.0,
+                        color: Color::BLACK,
+                    },
+                )
+                .with_text_alignment(TextAlignment::CENTER),
+            );
+        });
 }
-
-// pub fn touch_input_system(
-//     mut interaction_query: Query<
-//         (&Interaction, &mut BackgroundColor),
-//         (Changed<Interaction>, With<Button>),
-//     >,
-// ) {
-//     for (interaction, mut color) in &mut interaction_query {
-//         match *interaction {
-//             Interaction::Clicked => {
-//                 *color = Color::BLUE.into();
-//             }
-//             Interaction::Hovered => {
-//                 *color = Color::GRAY.into();
-//             }
-//             Interaction::None => {
-//                 *color = Color::WHITE.into();
-//             }
-//         }
-//     }
-// }
 
 pub fn keyboard_input_system(
     input: Res<Input<KeyCode>>,
