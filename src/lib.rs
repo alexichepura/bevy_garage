@@ -76,7 +76,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
         .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
-        // .insert_resource(AtmosphereModel::default())
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
         .add_system(camera_switch_system)
@@ -109,8 +108,10 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
         .add_startup_system(touch_input_start_system)
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system(keyboard_input_system.label(CarSimLabel::Input))
         .add_system(car_sensor_system.label(CarSimLabel::Input))
+        .add_system(progress_system.label(CarSimLabel::Input))
         .add_system(
             dqn_system
                 .label(CarSimLabel::Brain)
@@ -122,8 +123,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(dash_fps_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
-        .add_system(progress_system)
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_startup_system(api_start_system)
         .add_system(api_read_stream_event_writer_system)
         .add_system(api_event_reader_system);
