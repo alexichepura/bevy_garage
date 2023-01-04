@@ -13,8 +13,9 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
+use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 // use bevy_atmosphere::prelude::*;
-use bevy_prototype_debug_lines::DebugLinesPlugin;
+// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 use camera::*;
 use car::*;
@@ -35,13 +36,37 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     dbg!(c.integration_parameters);
 }
 
+const FPS: f32 = 60.;
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
+        .add_plugin(FramepacePlugin)
+        .insert_resource(RapierConfiguration {
+            timestep_mode: TimestepMode::Fixed {
+                dt: 1. / FPS,
+                substeps: 5,
+            },
+            // timestep_mode: TimestepMode::Variable {
+            //     max_dt: 1. / FPS,
+            //     substeps: 5,
+            //     time_scale: 1.,
+            // },
+            // timestep_mode: TimestepMode::Interpolated {
+            //     dt: 1. / FPS,
+            //     substeps: 5,
+            //     time_scale: 1.,
+            // },
+            ..default()
+        })
+        .insert_resource(FramepaceSettings {
+            limiter: Limiter::from_framerate(FPS as f64),
+            // limiter: Limiter::Auto,
+            ..default()
+        })
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
-        .insert_resource(DirectionalLightShadowMap { size: 2048 * 8 })
+        .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
         // .insert_resource(AtmosphereModel::default())
         // .insert_resource(AtmosphereModel::new(Nishita {
         //     sun_position: Vec3::new(0.0, 1.0, 1.0),
@@ -83,13 +108,15 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(car_sensor_system)
         .add_system(dqn_system)
         .add_system(dqn_dash_update_system)
-        .add_system(dash_fps_system)
         .add_system(dash_leaderboard_system)
+        .add_system(dash_fps_system)
         .add_system(dash_speed_update_system)
         // .add_system(gamepad_input_system)
         .add_system(keyboard_input_system)
-        // .add_system(progress_system)
-        // .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_startup_system(touch_input_start_system)
+        // .add_system(touch_input_system)
+        .add_system(progress_system)
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_startup_system(api_start_system)
         .add_system(api_read_stream_event_writer_system)
         .add_system(api_event_reader_system);

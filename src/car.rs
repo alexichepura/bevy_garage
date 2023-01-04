@@ -388,7 +388,7 @@ pub fn car_sensor_system(
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
         let g_translation = gt.translation();
-        let h = Vec3::Y * 0.6;
+        // let h = Vec3::Y * 0.6;
         // lines.line_colored(
         //     h + g_translation,
         //     h + car.line_pos + Vec3::Y * g_translation.y,
