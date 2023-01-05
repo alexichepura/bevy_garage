@@ -73,8 +73,6 @@ impl Track {
                 .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
                 .collect::<Vec<Vec3>>(),
         );
-        let p0 = positions[0];
-        points.push(Vec3::new(p0.0, p0.1, p0.2));
         track.points = points;
         for (i, point) in track.points.iter().enumerate() {
             let last: bool = i + 1 == track.points.len();
@@ -647,14 +645,16 @@ fn kerb_texture() -> Image {
 //     (b - a).cross(c - a).normalize().into()
 // }
 
-pub const _TRACK_POSITIONS: [(f32, f32, f32, f32); 5] = [
+pub const _TRACK_POSITIONS: [(f32, f32, f32, f32); 6] = [
     (0., 0.0, 0., 1.0),
     (100., 0.0, 0., 1.0),
     (100., 0.0, 100., 1.0),
     (-100., 0.0, 100., 1.0),
     (-100., 0.0, 0., 1.0),
+    (0., 0.0, 0., 1.0),
 ];
-pub const TRACK_POSITIONS: [(f32, f32, f32, f32); 364] = [
+
+pub const TRACK_POSITIONS: [(f32, f32, f32, f32); 365] = [
     (-65.2042, 0.0, 80.13815, 1.0),
     (-115.01793, 0.0, 143.06631, 1.0),
     (-166.25946, 0.0, 207.94211, 1.0),
@@ -1019,4 +1019,5 @@ pub const TRACK_POSITIONS: [(f32, f32, f32, f32); 364] = [
     (86.867874, 0.0, -105.11299, 1.0),
     (27.652275, 0.0, -33.059837, 1.0),
     (-27.773415, 0.0, 34.381996, 1.0),
+    (-65.2042, 0.0, 80.13815, 1.0),
 ];

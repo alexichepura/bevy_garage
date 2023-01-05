@@ -115,7 +115,7 @@ pub fn esp_system(
                 {
                     if config.show_rays {
                         let start = transform.translation + Vec3::Y * 0.5;
-                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
+                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
                         lines.line_colored(start, end, 0.0, Color::VIOLET);
                     }
                 }
@@ -138,7 +138,7 @@ pub fn esp_system(
                 {
                     if config.show_rays {
                         let start = transform.translation + Vec3::Y * 0.5;
-                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
+                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
                         lines.line_colored(start, end, 0.0, Color::VIOLET);
                     }
                 }
