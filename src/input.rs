@@ -10,14 +10,16 @@ enum BtnType {
 }
 
 #[derive(Component)]
-pub struct CarButton(BtnType);
+pub struct CarButton {
+    btn_type: BtnType,
+}
 
 pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
     commands
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size::new(Val::Px(120.0), Val::Px(120.0)),
+                size: Size::new(Val::Px(130.0), Val::Px(130.0)),
                 position: UiRect {
                     bottom: Val::Px(20.0),
                     left: Val::Px(20.0),
@@ -47,7 +49,7 @@ pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size::new(Val::Px(120.0), Val::Px(120.0)),
+                size: Size::new(Val::Px(130.0), Val::Px(130.0)),
                 position: UiRect {
                     bottom: Val::Px(20.0),
                     right: Val::Px(20.0),
@@ -93,7 +95,7 @@ fn spawn_button(
                 style: Style {
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    size: Size::new(Val::Px(50.0), Val::Px(50.0)),
+                    size: Size::new(Val::Px(60.0), Val::Px(60.0)),
                     position,
                     position_type: PositionType::Absolute,
                     ..default()
@@ -101,7 +103,7 @@ fn spawn_button(
                 background_color: Color::DARK_GRAY.into(),
                 ..default()
             },
-            CarButton(btn_type),
+            CarButton { btn_type },
         ))
         .with_children(|b| {
             b.spawn(
@@ -130,7 +132,7 @@ pub fn touch_input_system(
             match *interaction {
                 Interaction::Clicked => {
                     *color = Color::BLUE.into();
-                    match btn.0 {
+                    match btn.btn_type {
                         BtnType::U => {
                             car.gas = 1.;
                         }
@@ -150,7 +152,7 @@ pub fn touch_input_system(
                 }
                 Interaction::None => {
                     *color = Color::WHITE.into();
-                    match btn.0 {
+                    match btn.btn_type {
                         BtnType::U => {
                             car.gas = 0.;
                         }
