@@ -1,4 +1,4 @@
-use crate::{car::*, config::*, font::FontHandle};
+use crate::{car::*, config::*, font::FontHandle, gamepad::GamepadLobby};
 use bevy::prelude::*;
 
 enum BtnType {
@@ -203,7 +203,7 @@ pub fn keyboard_input_system(
         debug_ctx.enabled = !debug_ctx.enabled;
         config.show_rays = debug_ctx.enabled;
     }
-    for (mut car, _transform, _car) in cars.iter_mut() {
+    for (mut car, _transform, _hid) in cars.iter_mut() {
         if input.pressed(KeyCode::Up) {
             car.gas = 1.;
         }
@@ -229,6 +229,33 @@ pub fn keyboard_input_system(
         }
         if input.just_released(KeyCode::Right) {
             car.steering = 0.;
+        }
+    }
+}
+
+pub fn gamepad_input_system(
+    buttons: Res<Input<GamepadButton>>,
+    axes: Res<Axis<GamepadAxis>>,
+    lobby: Res<GamepadLobby>,
+    mut cars: Query<(&mut Car, &Transform, With<HID>)>,
+) {
+    for (mut car, _transform, _hid) in cars.iter_mut() {
+        for gamepad in lobby.gamepads.iter().cloned() {
+            if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::South)) {
+                car.gas = 1.;
+            } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
+                car.gas = 0.;
+            }
+            if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::North)) {
+                car.brake = 1.;
+            } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::North)) {
+                car.brake = 0.;
+            }
+            let left_stick_x = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
+                .unwrap();
+            // dbg!(left_stick_x);
+            car.steering = left_stick_x;
         }
     }
 }

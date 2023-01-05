@@ -20,18 +20,19 @@ pub fn gamepad_stage_preupdate_system(
                 info!("{:?} Disconnected", event.gamepad);
                 lobby.gamepads.remove(&event.gamepad);
             }
-            GamepadEventType::ButtonChanged(button_type, value) => {
-                info!(
-                    "{:?} of {:?} is changed to {}",
-                    button_type, event.gamepad, value
-                );
-            }
-            GamepadEventType::AxisChanged(axis_type, value) => {
-                info!(
-                    "{:?} of {:?} is changed to {}",
-                    axis_type, event.gamepad, value
-                );
-            }
+            _ => (),
+            // GamepadEventType::ButtonChanged(button_type, value) => {
+            //     info!(
+            //         "{:?} of {:?} is changed to {}",
+            //         button_type, event.gamepad, value
+            //     );
+            // }
+            // GamepadEventType::AxisChanged(axis_type, value) => {
+            //     info!(
+            //         "{:?} of {:?} is changed to {}",
+            //         axis_type, event.gamepad, value
+            //     );
+            // }
         }
     }
 }
