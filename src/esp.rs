@@ -1,6 +1,5 @@
 use crate::{car::*, nn::params::*};
 use bevy::prelude::*;
-// use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -28,13 +27,18 @@ pub fn esp_system(
             With<WheelBack>,
         >,
     )>,
-    // mut lines: ResMut<DebugLines>,
-    // config: Res<Config>,
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] mut lines: ResMut<
+        bevy_prototype_debug_lines::DebugLines,
+    >,
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] config: Res<
+        crate::config::Config,
+    >,
     time: Res<Time>,
 ) {
     let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
-    // let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
 
     for (_entity, mut car, velocity, transform) in query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
@@ -107,11 +111,14 @@ pub fn esp_system(
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
                 f.torque = (transform.rotation.mul_vec3(total_torque)).into();
 
-                // if config.show_rays {
-                //     let start = transform.translation + Vec3::Y * 0.5;
-                //     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
-                //     lines.line_colored(start, end, 0.0, Color::VIOLET);
-                // }
+                #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+                {
+                    if config.show_rays {
+                        let start = transform.translation + Vec3::Y * 0.5;
+                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
+                        lines.line_colored(start, end, 0.0, Color::VIOLET);
+                    }
+                }
                 j.data.set_local_basis1(quat);
             }
 
@@ -127,11 +134,14 @@ pub fn esp_system(
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
                 f.torque = (transform.rotation.mul_vec3(total_torque)).into();
 
-                // if config.show_rays {
-                //     let start = transform.translation + Vec3::Y * 0.5;
-                //     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
-                //     lines.line_colored(start, end, 0.0, Color::VIOLET);
-                // }
+                #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+                {
+                    if config.show_rays {
+                        let start = transform.translation + Vec3::Y * 0.5;
+                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 100.;
+                        lines.line_colored(start, end, 0.0, Color::VIOLET);
+                    }
+                }
                 let quat_back = -Quat::from_axis_angle(Vec3::Y, 0.);
                 j.data.set_local_basis1(quat_back);
             }

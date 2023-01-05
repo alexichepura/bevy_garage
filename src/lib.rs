@@ -15,7 +15,6 @@ mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
-// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 use camera::*;
 use car::*;
@@ -81,22 +80,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(RapierDebugRenderPlugin {
-        //     enabled: false,
-        //     style: DebugRenderStyle {
-        //         rigid_body_axes_length: 0.5,
-        //         // subdivisions: 50,
-        //         ..default()
-        //     },
-        //     // | DebugRenderMode::COLLIDER_AABBS
-        //     mode: DebugRenderMode::COLLIDER_SHAPES
-        //         | DebugRenderMode::RIGID_BODY_AXES
-        //         | DebugRenderMode::JOINTS
-        //         | DebugRenderMode::CONTACTS
-        //         | DebugRenderMode::SOLVER_CONTACTS,
-        //     ..default()
-        // })
-        // .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .init_resource::<GamepadLobby>()
         .add_startup_system(dqn_exclusive_start_system)
         .add_startup_system(track_start_system)
@@ -127,6 +110,27 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(api_start_system)
         .add_system(api_read_stream_event_writer_system)
         .add_system(api_event_reader_system);
+
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    {
+        use bevy_prototype_debug_lines::DebugLinesPlugin;
+        app.add_plugin(DebugLinesPlugin::with_depth_test(true))
+            .add_plugin(RapierDebugRenderPlugin {
+                enabled: false,
+                style: DebugRenderStyle {
+                    rigid_body_axes_length: 0.5,
+                    // subdivisions: 50,
+                    ..default()
+                },
+                // | DebugRenderMode::COLLIDER_AABBS
+                mode: DebugRenderMode::COLLIDER_SHAPES
+                    | DebugRenderMode::RIGID_BODY_AXES
+                    | DebugRenderMode::JOINTS
+                    | DebugRenderMode::CONTACTS
+                    | DebugRenderMode::SOLVER_CONTACTS,
+                ..default()
+            });
+    }
 
     #[cfg(not(target_arch = "wasm32"))]
     {

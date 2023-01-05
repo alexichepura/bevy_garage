@@ -1,6 +1,5 @@
 use crate::{car::*, config::*, font::FontHandle};
 use bevy::prelude::*;
-// use bevy_rapier3d::render::DebugRenderContext;
 
 enum BtnType {
     U,
@@ -178,7 +177,9 @@ pub fn keyboard_input_system(
     mut commands: Commands,
     q_car: Query<Entity, With<Car>>,
     q_wheel: Query<Entity, With<Wheel>>,
-    // mut debug_ctx: ResMut<DebugRenderContext>,
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] mut debug_ctx: ResMut<
+        bevy_rapier3d::render::DebugRenderContext,
+    >,
 ) {
     if input.just_pressed(KeyCode::N) {
         config.use_brain = !config.use_brain;
@@ -191,9 +192,10 @@ pub fn keyboard_input_system(
             commands.entity(e).despawn_recursive();
         }
     }
-    // if input.just_pressed(KeyCode::R) {
-    //     debug_ctx.enabled = !debug_ctx.enabled;
-    // }
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    if input.just_pressed(KeyCode::R) {
+        debug_ctx.enabled = !debug_ctx.enabled;
+    }
     for (mut car, _transform, _car) in cars.iter_mut() {
         if input.pressed(KeyCode::Up) {
             car.gas = 1.;

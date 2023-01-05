@@ -5,7 +5,6 @@ use crate::{
     track::*,
 };
 use bevy::prelude::*;
-// use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier3d::{
     parry::shape::Cylinder,
     prelude::*,
@@ -380,7 +379,9 @@ pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
     mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
-    // mut lines: ResMut<DebugLines>,
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] mut lines: ResMut<
+        bevy_prototype_debug_lines::DebugLines,
+    >,
 ) {
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     let dir = Vec3::Z * config.max_toi;
@@ -388,13 +389,16 @@ pub fn car_sensor_system(
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
         let g_translation = gt.translation();
-        // let h = Vec3::Y * 0.6;
-        // lines.line_colored(
-        //     h + g_translation,
-        //     h + car.line_pos + Vec3::Y * g_translation.y,
-        //     0.0,
-        //     Color::rgba(0.5, 0.5, 0.5, 0.5),
-        // );
+        #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+        {
+            let h = Vec3::Y * 0.6;
+            lines.line_colored(
+                h + g_translation,
+                h + car.line_pos + Vec3::Y * g_translation.y,
+                0.0,
+                Color::rgba(0.5, 0.5, 0.5, 0.5),
+            );
+        }
         for a in 0..SENSOR_COUNT {
             let (pos, far_quat) = car.sensor_config[a];
             let origin = g_translation + t.rotation.mul_vec3(pos);
@@ -417,12 +421,15 @@ pub fn car_sensor_system(
                 if toi > 0. {
                     inputs[i] = 1. - toi / config.max_toi;
                     if config.show_rays {
-                        // lines.line_colored(
-                        //     ray_pos,
-                        //     hit_points[i],
-                        //     0.0,
-                        //     Color::rgba(0.5, 0.3, 0.3, 0.5),
-                        // );
+                        #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+                        {
+                            lines.line_colored(
+                                ray_pos,
+                                hit_points[i],
+                                0.0,
+                                Color::rgba(0.5, 0.3, 0.3, 0.5),
+                            );
+                        }
                     }
                 } else {
                     inputs[i] = 0.;
