@@ -27,7 +27,7 @@ impl Default for Config {
         Self {
             cars_count: CARS_COUNT,
             use_brain: false,
-            show_rays: true,
+            show_rays: false,
             max_torque: MAX_TORQUE,
             max_toi: MAX_TOI,
             quat: Quat::from_rotation_y(-PI * 0.225),

@@ -391,13 +391,15 @@ pub fn car_sensor_system(
         let g_translation = gt.translation();
         #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
         {
-            let h = Vec3::Y * 0.6;
-            lines.line_colored(
-                h + g_translation,
-                h + car.line_pos + Vec3::Y * g_translation.y,
-                0.0,
-                Color::rgba(0.5, 0.5, 0.5, 0.5),
-            );
+            if config.show_rays {
+                let h = Vec3::Y * 0.6;
+                lines.line_colored(
+                    h + g_translation,
+                    h + car.line_pos + Vec3::Y * g_translation.y,
+                    0.0,
+                    Color::rgba(0.5, 0.5, 0.5, 0.5),
+                );
+            }
         }
         for a in 0..SENSOR_COUNT {
             let (pos, far_quat) = car.sensor_config[a];

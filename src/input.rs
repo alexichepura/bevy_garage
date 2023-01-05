@@ -14,14 +14,16 @@ pub struct CarButton {
 }
 
 pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
+    let margin: f32 = 30.;
+    let size: f32 = 60.;
     commands
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size::new(Val::Px(130.0), Val::Px(130.0)),
+                size: Size::new(Val::Px(size), Val::Px(size * 2. + margin)),
                 position: UiRect {
-                    bottom: Val::Px(20.0),
-                    left: Val::Px(20.0),
+                    bottom: Val::Px(margin),
+                    left: Val::Px(margin),
                     ..default()
                 },
                 ..default()
@@ -39,7 +41,7 @@ pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
             spawn_button(
                 commands,
                 font.bold.clone(),
-                Vec2::new(0., 60.),
+                Vec2::new(0., size),
                 "D",
                 BtnType::D,
             );
@@ -48,10 +50,10 @@ pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
         .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size::new(Val::Px(130.0), Val::Px(130.0)),
+                size: Size::new(Val::Px(size * 2. + margin), Val::Px(size)),
                 position: UiRect {
-                    bottom: Val::Px(20.0),
-                    right: Val::Px(20.0),
+                    bottom: Val::Px(margin),
+                    right: Val::Px(margin),
                     ..default()
                 },
                 ..default()
@@ -69,7 +71,7 @@ pub fn touch_input_start_system(mut commands: Commands, font: Res<FontHandle>) {
             spawn_button(
                 commands,
                 font.bold.clone(),
-                Vec2::new(60., 0.),
+                Vec2::new(size, 0.),
                 "R",
                 BtnType::R,
             );
@@ -83,6 +85,7 @@ fn spawn_button(
     str: &str,
     btn_type: BtnType,
 ) {
+    let size: f32 = 60.;
     let position = UiRect {
         left: Val::Percent(position.x),
         top: Val::Percent(position.y),
@@ -94,12 +97,12 @@ fn spawn_button(
                 style: Style {
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    size: Size::new(Val::Px(60.0), Val::Px(60.0)),
+                    size: Size::new(Val::Px(size), Val::Px(size)),
                     position,
                     position_type: PositionType::Absolute,
                     ..default()
                 },
-                background_color: Color::DARK_GRAY.into(),
+                background_color: BTN_WHITE,
                 ..default()
             },
             CarButton { btn_type },
@@ -111,7 +114,7 @@ fn spawn_button(
                     TextStyle {
                         font,
                         font_size: 30.0,
-                        color: Color::BLACK,
+                        color: Color::rgba(0., 0., 0., 0.7),
                     },
                 )
                 .with_text_alignment(TextAlignment::CENTER),
@@ -119,6 +122,9 @@ fn spawn_button(
         });
 }
 
+const BTN_WHITE: BackgroundColor = BackgroundColor(Color::rgba(1., 1., 1., 0.5));
+const BTN_GRAY: BackgroundColor = BackgroundColor(Color::rgba(0.5, 0.5, 0.5, 0.5));
+const BTN_BLUE: BackgroundColor = BackgroundColor(Color::rgba(0., 0., 1., 0.5));
 pub fn touch_input_system(
     mut cars: Query<(&mut Car, &Transform, With<HID>)>,
     mut interaction_query: Query<
@@ -130,7 +136,7 @@ pub fn touch_input_system(
         for (interaction, mut color, btn) in &mut interaction_query {
             match *interaction {
                 Interaction::Clicked => {
-                    *color = Color::BLUE.into();
+                    *color = BTN_BLUE;
                     match btn.btn_type {
                         BtnType::U => {
                             car.gas = 1.;
@@ -147,10 +153,10 @@ pub fn touch_input_system(
                     }
                 }
                 Interaction::Hovered => {
-                    *color = Color::GRAY.into();
+                    *color = BTN_GRAY;
                 }
                 Interaction::None => {
-                    *color = Color::WHITE.into();
+                    *color = BTN_WHITE;
                     match btn.btn_type {
                         BtnType::U => {
                             car.gas = 0.;
@@ -195,6 +201,7 @@ pub fn keyboard_input_system(
     #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
+        config.show_rays = debug_ctx.enabled;
     }
     for (mut car, _transform, _car) in cars.iter_mut() {
         if input.pressed(KeyCode::Up) {
