@@ -1,8 +1,15 @@
 use bevy::prelude::*;
 use bevy_rapier_car_sim::car_app;
 
+use crate::gyro::CMMotionManager;
+mod gyro;
+
 #[bevy_main]
 fn main() {
+    let cm = CMMotionManager::new();
+    let is_gyro = cm.msg_send_gyroAvailable();
+    dbg!(is_gyro);
+
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         window: WindowDescriptor {

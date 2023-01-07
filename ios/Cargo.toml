@@ -1,5 +1,5 @@
 [package]
-name = "car_sim"
+name = "car_sim_ios"
 version = "0.1.0"
 edition = "2021"
 description = "Car sim with bevy and rapier"
@@ -13,3 +13,5 @@ crate-type = ["staticlib"]
 [dependencies]
 bevy = { workspace = true }
 bevy_rapier_car_sim = { path = "../" }
+core-foundation = "0.9.3"
+objc2 = "=0.3.0-beta.3"
