@@ -1,14 +1,30 @@
+#![deny(unsafe_op_in_unsafe_fn)]
+
 use bevy::prelude::*;
 use bevy_rapier_car_sim::car_app;
 
 use crate::gyro::CMMotionManager;
 mod gyro;
 
+#[derive(Resource)]
+pub struct IosRes {
+    pub cm: CMMotionManager,
+}
+
 #[bevy_main]
 fn main() {
     let cm = CMMotionManager::new();
-    let is_gyro = cm.msg_send_gyroAvailable();
-    dbg!(is_gyro);
+    dbg!(cm.isGyroAvailable());
+    dbg!(cm.isGyroActive());
+    cm.startGyroUpdates();
+    dbg!(cm.isGyroAvailable());
+    dbg!(cm.isGyroActive());
+    if cm.isGyroAvailable() {
+        let gyro_data = cm.gyroData();
+        dbg!(gyro_data.rotationRate);
+    }
+
+    // let ios_res = IosRes { cm };
 
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -19,8 +35,12 @@ fn main() {
         },
         ..default()
     }));
+    // app.insert_resource(ios_res);
+    app.add_system(gyro_system);
     car_app(&mut app).run();
 }
+
+fn gyro_system() {}
 
 // fn touch_camera(
 //     windows: ResMut<Windows>,

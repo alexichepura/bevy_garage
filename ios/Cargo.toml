@@ -14,4 +14,4 @@ crate-type = ["staticlib"]
 bevy = { workspace = true }
 bevy_rapier_car_sim = { path = "../" }
 core-foundation = "0.9.3"
-objc2 = "=0.3.0-beta.3"
+objc2 = { version="=0.3.0-beta.3", features=["malloc"]}
