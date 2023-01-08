@@ -1,14 +1,17 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 
+use std::{thread, time::Duration};
+
 use bevy::prelude::*;
 use bevy_rapier_car_sim::car_app;
+use objc2::rc;
 
 use crate::gyro::CMMotionManager;
 mod gyro;
 
 #[derive(Resource)]
 pub struct IosRes {
-    pub cm: CMMotionManager,
+    pub cm: rc::Id<CMMotionManager, rc::Shared>,
 }
 
 #[bevy_main]
@@ -17,16 +20,17 @@ fn main() {
     dbg!(cm.isGyroAvailable());
     dbg!(cm.isGyroActive());
     cm.startGyroUpdates();
+    thread::sleep(Duration::from_millis(100));
     dbg!(cm.isGyroAvailable());
     dbg!(cm.isGyroActive());
     if cm.isGyroAvailable() {
-        let gyro_data = cm.gyroData();
-        dbg!(gyro_data.rotationRate);
+        dbg!(cm.gyroData().rotationRate);
+        thread::sleep(Duration::from_millis(100));
+        dbg!(cm.gyroData().rotationRate);
     }
 
-    // let ios_res = IosRes { cm };
-
     let mut app = App::new();
+    app.insert_resource(IosRes { cm: cm });
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         window: WindowDescriptor {
             resizable: false,
@@ -35,12 +39,13 @@ fn main() {
         },
         ..default()
     }));
-    // app.insert_resource(ios_res);
     app.add_system(gyro_system);
     car_app(&mut app).run();
 }
 
-fn gyro_system() {}
+fn gyro_system(ios: Res<IosRes>) {
+    dbg!(ios.cm.gyroData().rotationRate);
+}
 
 // fn touch_camera(
 //     windows: ResMut<Windows>,

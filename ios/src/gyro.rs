@@ -29,7 +29,6 @@ impl CMMotionManager {
             dbg!(mr.name());
         }
         let id: Id<Self, Shared> = unsafe { msg_send_id![_class, new] };
-        // dbg!(id.isGyroAvailable());
         id
     }
 }
