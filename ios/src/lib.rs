@@ -29,6 +29,18 @@ fn main() {
         dbg!(cm.gyroData().rotationRate);
     }
 
+    dbg!(cm.isDeviceMotionAvailable());
+    dbg!(cm.isDeviceMotionActive());
+    cm.startDeviceMotionUpdates();
+    thread::sleep(Duration::from_millis(100));
+    dbg!(cm.isDeviceMotionAvailable());
+    dbg!(cm.isDeviceMotionActive());
+    if cm.isDeviceMotionAvailable() {
+        dbg!(cm.deviceMotion().attitude);
+        thread::sleep(Duration::from_millis(100));
+        dbg!(cm.deviceMotion().attitude);
+    }
+
     let mut app = App::new();
     app.insert_resource(IosRes { cm: cm });
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -44,7 +56,8 @@ fn main() {
 }
 
 fn gyro_system(ios: Res<IosRes>) {
-    dbg!(ios.cm.gyroData().rotationRate);
+    // dbg!(ios.cm.gyroData().rotationRate);
+    dbg!(ios.cm.deviceMotion().attitude);
 }
 
 // fn touch_camera(

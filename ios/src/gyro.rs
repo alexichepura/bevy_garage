@@ -47,6 +47,20 @@ unsafe impl Encode for CMRotationRate {
         &[CGFloat::ENCODING, CGFloat::ENCODING, CGFloat::ENCODING],
     );
 }
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub struct CMAttitude {
+    pub roll: CGFloat,
+    pub pitch: CGFloat,
+    pub yaw: CGFloat,
+}
+
+unsafe impl Encode for CMAttitude {
+    const ENCODING: Encoding = Encoding::Struct(
+        "CMAttitude",
+        &[CGFloat::ENCODING, CGFloat::ENCODING, CGFloat::ENCODING],
+    );
+}
 
 #[repr(C)]
 #[derive(Clone, Debug)]
@@ -55,6 +69,17 @@ pub struct CMGyroData {
 }
 unsafe impl Encode for CMGyroData {
     const ENCODING: Encoding = Encoding::Struct("CMGyroData", &[CGFloat::ENCODING]);
+}
+
+#[repr(C)]
+#[derive(Clone, Debug)]
+pub struct CMDeviceMotion {
+    pub rotationRate: CMRotationRate,
+    pub attitude: CMAttitude,
+}
+unsafe impl Encode for CMDeviceMotion {
+    const ENCODING: Encoding =
+        Encoding::Struct("CMDeviceMotion", &[CGFloat::ENCODING, CGFloat::ENCODING]);
 }
 
 extern_methods!(
@@ -67,5 +92,14 @@ extern_methods!(
         pub fn startGyroUpdates(&self);
         #[sel(gyroData)]
         pub fn gyroData(&self) -> CMGyroData;
+
+        #[sel(isDeviceMotionAvailable)]
+        pub fn isDeviceMotionAvailable(&self) -> bool;
+        #[sel(isDeviceMotionActive)]
+        pub fn isDeviceMotionActive(&self) -> bool;
+        #[sel(startDeviceMotionUpdates)]
+        pub fn startDeviceMotionUpdates(&self);
+        #[sel(deviceMotion)]
+        pub fn deviceMotion(&self) -> CMDeviceMotion;
     }
 );
