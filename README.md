@@ -16,10 +16,10 @@ Giants:
 - [nalgebra](https://nalgebra.org)
 - [dfdx](https://github.com/coreylowman/dfdx)
 - [prisma-client-rust](https://github.com/Brendonovich/prisma-client-rust)
+- [kenney assets](https://www.kenney.nl/assets/car-kit)
 
-Car 3d models are from https://www.kenney.nl/assets/car-kit
+History:
 
-Older screenshots and demos:
 https://www.youtube.com/watch?v=aN49ZP4PS-c
 <img width="1020" alt="old screenshot" src="https://user-images.githubusercontent.com/5582266/188065552-f1abd35e-10f9-43fa-935e-3530f3292dde.png">
 <img width="1277" alt="old screenshot" src="https://user-images.githubusercontent.com/5582266/180704095-2d4d6819-0b35-4653-b8e6-a3a50f793a9c.png">
