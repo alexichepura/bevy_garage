@@ -21,7 +21,6 @@ fn main() {
     dbg!(cm.isGyroActive());
     cm.startGyroUpdates();
     thread::sleep(Duration::from_millis(100));
-    dbg!(cm.isGyroAvailable());
     dbg!(cm.isGyroActive());
     if cm.isGyroAvailable() {
         dbg!(cm.gyroData().rotationRate);
@@ -29,11 +28,14 @@ fn main() {
         dbg!(cm.gyroData().rotationRate);
     }
 
+    dbg!(cm.showsDeviceMovementDisplay());
+    dbg!(cm.deviceMotionUpdateInterval());
     dbg!(cm.isDeviceMotionAvailable());
     dbg!(cm.isDeviceMotionActive());
     cm.startDeviceMotionUpdates();
+    cm.setShowsDeviceMovementDisplay(true);
     thread::sleep(Duration::from_millis(100));
-    dbg!(cm.isDeviceMotionAvailable());
+    dbg!(cm.showsDeviceMovementDisplay());
     dbg!(cm.isDeviceMotionActive());
     if cm.isDeviceMotionAvailable() {
         dbg!(cm.deviceMotion().attitude);

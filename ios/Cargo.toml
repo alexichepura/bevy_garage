@@ -13,5 +13,7 @@ crate-type = ["staticlib"]
 [dependencies]
 bevy = { workspace = true }
 bevy_rapier_car_sim = { path = "../" }
-core-foundation = "0.9.3"
-objc2 = { version="=0.3.0-beta.3", features=["malloc"]}
+# objc2 = { version="=0.3.0-beta.3", features=["malloc"]}
+# objc2 = { git="https://github.com/madsmtm/objc2", features=["malloc"]}
+objc2 = { path="../../objc2/crates/objc2", features=["malloc"]}
+icrate = { path="../../objc2/crates/icrate", features=["Foundation"] }

@@ -1,13 +1,11 @@
 #![allow(non_snake_case)]
+use icrate::Foundation::{CGFloat, NSObject};
 use objc2::{
     encode::{Encode, Encoding},
-    extern_class, extern_methods,
-    foundation::{CGFloat, NSObject},
-    msg_send_id,
+    extern_class, extern_methods, msg_send_id,
     rc::{Id, Shared},
     ClassType,
 };
-// https://github.com/rust-windowing/winit/blob/master/src/platform_impl/ios/uikit/view.rs
 
 extern_class!(
     #[derive(Debug, PartialEq, Eq, Hash)]
@@ -33,32 +31,34 @@ impl CMMotionManager {
     }
 }
 
+type Double = f64;
+
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub struct CMRotationRate {
-    pub x: CGFloat,
-    pub y: CGFloat,
-    pub z: CGFloat,
+    pub x: Double,
+    pub y: Double,
+    pub z: Double,
 }
 
 unsafe impl Encode for CMRotationRate {
     const ENCODING: Encoding = Encoding::Struct(
         "CMRotationRate",
-        &[CGFloat::ENCODING, CGFloat::ENCODING, CGFloat::ENCODING],
+        &[Double::ENCODING, Double::ENCODING, Double::ENCODING],
     );
 }
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub struct CMAttitude {
-    pub roll: CGFloat,
-    pub pitch: CGFloat,
-    pub yaw: CGFloat,
+    pub roll: Double,
+    pub pitch: Double,
+    pub yaw: Double,
 }
 
 unsafe impl Encode for CMAttitude {
     const ENCODING: Encoding = Encoding::Struct(
         "CMAttitude",
-        &[CGFloat::ENCODING, CGFloat::ENCODING, CGFloat::ENCODING],
+        &[Double::ENCODING, Double::ENCODING, Double::ENCODING],
     );
 }
 
@@ -68,7 +68,7 @@ pub struct CMGyroData {
     pub rotationRate: CMRotationRate,
 }
 unsafe impl Encode for CMGyroData {
-    const ENCODING: Encoding = Encoding::Struct("CMGyroData", &[CGFloat::ENCODING]);
+    const ENCODING: Encoding = Encoding::Struct("CMGyroData", &[CMRotationRate::ENCODING]);
 }
 
 #[repr(C)]
@@ -78,28 +78,37 @@ pub struct CMDeviceMotion {
     pub attitude: CMAttitude,
 }
 unsafe impl Encode for CMDeviceMotion {
-    const ENCODING: Encoding =
-        Encoding::Struct("CMDeviceMotion", &[CGFloat::ENCODING, CGFloat::ENCODING]);
+    const ENCODING: Encoding = Encoding::Struct(
+        "CMDeviceMotion",
+        &[CMRotationRate::ENCODING, CMAttitude::ENCODING],
+    );
 }
 
 extern_methods!(
     unsafe impl CMMotionManager {
-        #[sel(isGyroAvailable)]
+        #[method(isGyroAvailable)]
         pub fn isGyroAvailable(&self) -> bool;
-        #[sel(isGyroActive)]
+        #[method(isGyroActive)]
         pub fn isGyroActive(&self) -> bool;
-        #[sel(startGyroUpdates)]
+        #[method(startGyroUpdates)]
         pub fn startGyroUpdates(&self);
-        #[sel(gyroData)]
+        #[method(gyroData)]
         pub fn gyroData(&self) -> CMGyroData;
 
-        #[sel(isDeviceMotionAvailable)]
+        #[method(showsDeviceMovementDisplay)]
+        pub fn showsDeviceMovementDisplay(&self) -> bool;
+        #[method(setShowsDeviceMovementDisplay:)]
+        pub(crate) fn setShowsDeviceMovementDisplay(&self, flag: bool);
+
+        #[method(deviceMotionUpdateInterval)]
+        pub fn deviceMotionUpdateInterval(&self) -> CGFloat;
+        #[method(isDeviceMotionAvailable)]
         pub fn isDeviceMotionAvailable(&self) -> bool;
-        #[sel(isDeviceMotionActive)]
+        #[method(isDeviceMotionActive)]
         pub fn isDeviceMotionActive(&self) -> bool;
-        #[sel(startDeviceMotionUpdates)]
+        #[method(startDeviceMotionUpdates)]
         pub fn startDeviceMotionUpdates(&self);
-        #[sel(deviceMotion)]
+        #[method(deviceMotion)]
         pub fn deviceMotion(&self) -> CMDeviceMotion;
     }
 );
