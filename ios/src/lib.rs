@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use bevy_rapier_car_sim::car_app;
+use bevy_rapier_car_sim::{car_app, CarSimLabel};
+mod touch;
+use touch::*;
 
 #[bevy_main]
 fn main() {
@@ -12,6 +14,8 @@ fn main() {
         },
         ..default()
     }));
+    app.add_startup_system(touch_input_start_system);
+    app.add_system(touch_input_system.label(CarSimLabel::Input));
     car_app(&mut app).run();
 }
 
