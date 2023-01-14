@@ -7,8 +7,9 @@ use bevy_rapier_car_sim::car_app;
 
 pub fn game_main() {
     let mut app = App::new();
+    car_app(&mut app);
     app.add_startup_system(xr_startup);
-    car_app(&mut app).run();
+    app.run();
 }
 
 fn xr_startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<AppExit>) {
