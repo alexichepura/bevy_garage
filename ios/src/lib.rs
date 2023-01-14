@@ -3,8 +3,10 @@
 use std::{thread, time::Duration};
 
 use bevy::prelude::*;
-use bevy_rapier_car_sim::car_app;
+use bevy_rapier_car_sim::{car_app, CarSimLabel};
+mod touch;
 use objc2::rc;
+use touch::*;
 
 use crate::gyro::CMMotionManager;
 mod gyro;
@@ -53,6 +55,8 @@ fn main() {
         },
         ..default()
     }));
+    app.add_startup_system(touch_input_start_system);
+    app.add_system(touch_input_system.label(CarSimLabel::Input));
     app.add_system(gyro_system);
     car_app(&mut app).run();
 }
