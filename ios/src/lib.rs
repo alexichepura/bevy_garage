@@ -13,7 +13,7 @@ mod gyro;
 
 #[derive(Resource)]
 pub struct IosRes {
-    pub cm: rc::Id<CMMotionManager, rc::Shared>,
+    pub cm: rc::Id<CMMotionManager, rc::Owned>,
 }
 
 #[bevy_main]
@@ -34,6 +34,8 @@ fn main() {
     dbg!(cm.deviceMotionUpdateInterval());
     dbg!(cm.isDeviceMotionAvailable());
     dbg!(cm.isDeviceMotionActive());
+    cm.startAccelerometerUpdates();
+    cm.startMagnetometerUpdates();
     cm.startDeviceMotionUpdates();
     cm.setShowsDeviceMovementDisplay(true);
     thread::sleep(Duration::from_millis(100));
@@ -46,7 +48,7 @@ fn main() {
     }
 
     let mut app = App::new();
-    app.insert_resource(IosRes { cm: cm });
+    app.insert_resource(IosRes { cm });
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         window: WindowDescriptor {
             resizable: false,

@@ -1,11 +1,14 @@
 #![allow(non_snake_case)]
-use icrate::Foundation::{CGFloat, NSObject};
-use objc2::{
+use icrate::objc2::{
     encode::{Encode, Encoding},
     extern_class, extern_methods, msg_send_id,
-    rc::{Id, Shared},
+    rc::{Id, Owned},
     ClassType,
 };
+use icrate::Foundation::{CGFloat, NSObject};
+
+// #[link(name = "AppKit", kind = "framework")]
+// extern "C" {}
 
 extern_class!(
     #[derive(Debug, PartialEq, Eq, Hash)]
@@ -20,18 +23,19 @@ unsafe impl Send for CMMotionManager {}
 unsafe impl Sync for CMMotionManager {}
 
 impl CMMotionManager {
-    pub fn new() -> Id<Self, Shared> {
+    pub fn new() -> Id<Self, Owned> {
         let _class = Self::class();
         let m = _class.instance_methods();
         for mr in m.iter() {
             dbg!(mr.name());
         }
-        let id: Id<Self, Shared> = unsafe { msg_send_id![_class, new] };
+        let id: Id<Self, Owned> = unsafe { msg_send_id![_class, new] };
         id
     }
 }
 
-type Double = f64;
+use std::os::raw::c_double;
+type Double = c_double;
 
 #[repr(C)]
 #[derive(Debug, Clone)]
@@ -44,7 +48,8 @@ pub struct CMRotationRate {
 unsafe impl Encode for CMRotationRate {
     const ENCODING: Encoding = Encoding::Struct(
         "CMRotationRate",
-        &[Double::ENCODING, Double::ENCODING, Double::ENCODING],
+        // &[Double::ENCODING, Double::ENCODING, Double::ENCODING],
+        &[Encoding::Double, Encoding::Double, Encoding::Double],
     );
 }
 #[repr(C)]
@@ -58,7 +63,8 @@ pub struct CMAttitude {
 unsafe impl Encode for CMAttitude {
     const ENCODING: Encoding = Encoding::Struct(
         "CMAttitude",
-        &[Double::ENCODING, Double::ENCODING, Double::ENCODING],
+        // &[Double::ENCODING, Double::ENCODING, Double::ENCODING],
+        &[Encoding::Double, Encoding::Double, Encoding::Double],
     );
 }
 
@@ -86,6 +92,11 @@ unsafe impl Encode for CMDeviceMotion {
 
 extern_methods!(
     unsafe impl CMMotionManager {
+        #[method(startAccelerometerUpdates)]
+        pub fn startAccelerometerUpdates(&self);
+        #[method(startMagnetometerUpdates)]
+        pub fn startMagnetometerUpdates(&self);
+
         #[method(isGyroAvailable)]
         pub fn isGyroAvailable(&self) -> bool;
         #[method(isGyroActive)]
