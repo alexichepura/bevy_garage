@@ -14,7 +14,7 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
+// use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_rapier3d::prelude::*;
 use camera::*;
 use car::*;
@@ -48,7 +48,7 @@ pub enum CarSimLabel {
 const FPS: f32 = 60.;
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
-        .add_plugin(FramepacePlugin)
+        // .add_plugin(FramepacePlugin)
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
@@ -67,11 +67,11 @@ pub fn car_app(app: &mut App) -> &mut App {
             // },
             ..default()
         })
-        .insert_resource(FramepaceSettings {
-            limiter: Limiter::from_framerate(FPS as f64),
-            // limiter: Limiter::Auto,
-            ..default()
-        })
+        // .insert_resource(FramepaceSettings {
+        //     limiter: Limiter::from_framerate(FPS as f64),
+        //     // limiter: Limiter::Auto,
+        //     ..default()
+        // })
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
@@ -132,15 +132,15 @@ pub fn car_app(app: &mut App) -> &mut App {
             });
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        use bevy_atmosphere::prelude::*;
-        app.insert_resource(AtmosphereModel::new(Nishita {
-            sun_position: Vec3::new(0.0, 1.0, 1.0),
-            ..default()
-        }))
-        .add_plugin(AtmospherePlugin);
-    }
+    // #[cfg(not(target_arch = "wasm32"))]
+    // {
+    //     use bevy_atmosphere::prelude::*;
+    //     app.insert_resource(AtmosphereModel::new(Nishita {
+    //         sun_position: Vec3::new(0.0, 1.0, 1.0),
+    //         ..default()
+    //     }))
+    //     .add_plugin(AtmospherePlugin);
+    // }
 
     app
 }
