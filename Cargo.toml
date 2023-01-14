@@ -11,7 +11,8 @@ identifier = "io.github.alexichepura.bevy-rapier-car-sim"
 resolver = "2"
 members = ["prisma-cli", "api", "trainer", "db_client", "ios", "xr"]
 [workspace.dependencies]
-bevy = { version = "0.9.1" }
+# bevy = { version = "0.9.1" }
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
 dfdx = "0.10"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
 rand = "0.8"
@@ -25,7 +26,8 @@ codegen-units = 1
 bevy = { workspace = true }
 bevy_framepace = { version = "0.9.1"}
 bevy_prototype_debug_lines = { version = "0.9.0", features = ["3d"] }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev="190ee1447364111605218fbc5066044b6cb61d30", features=["serde-serialize"]}
+bevy_rapier3d = { path="../bevy_rapier/bevy_rapier3d", features=["serde-serialize"]}
+# bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev="190ee1447364111605218fbc5066044b6cb61d30", features=["serde-serialize"]}
 # bevy_rapier3d = { version = "0.19.0", features=["serde-serialize"]}
 crossbeam-channel = "0.5"
 dfdx = { workspace = true }

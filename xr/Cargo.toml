@@ -1,11 +1,76 @@
 [package]
-name = "xr"
+name = "car_sim_xr"
 version = "0.1.0"
 edition = "2021"
 description = "Car sim with bevy and rapier"
 publish = false
 license = "MIT OR Apache-2.0"
 
+[[example]]
+name = "android"
+crate-type = ["cdylib"]
+
 [dependencies]
-bevy = { workspace = true }
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features = false, features = [
+    "xr",
+    "bevy_openxr",
+
+    "bevy_gilrs",
+    "render",
+    "png",
+    "bevy_asset",
+    "trace",
+    "jpeg",
+] }
 bevy_rapier_car_sim = { path = "../" }
+
+
+[patch.'crates-io']
+# bevy_rapier3d = { path="../bevy_rapier/bevy_rapier3d", features=["serde-serialize"]}
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_render = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_ecs = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_app = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_asset = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_core = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_hierarchy = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_log = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_math = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_reflect = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_utils = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_core_pipeline = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_pbr = { git = "https://github.com/kcking/bevy", branch = "xr" }
+
+[package.metadata.android]
+apk_label = "Bevy XR Example"
+package = "com.example.bevyxr"
+assets = "assets"
+res = "assets/android-res"
+icon = "@mipmap/ic_launcher"
+build_targets = ["aarch64-linux-android"]
+runtime_libs = "libs"
+
+[package.metadata.android.sdk]
+min_sdk_version = 29
+target_sdk_version = 29
+
+[package.metadata.android.application]
+
+[[package.metadata.android.application.meta_data]]
+name = "com.samsung.android.vr.application.mode"
+value = "vr_only"
+
+[package.metadata.android.application.activity]
+theme = "@android:style/Theme.Black.NoTitleBar.Fullscreen"
+config_changes = "density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
+launch_mode = "singleTask"
+orientation = "landscape"
+resizeable_activity = false
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.MAIN"]
+categories = [
+    "com.oculus.intent.category.VR",
+    "android.intent.category.LAUNCHER",
+    "android.intent.category.INFO",
+]
