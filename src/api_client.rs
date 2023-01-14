@@ -26,7 +26,7 @@ impl ApiClient {
                 .expect("Could not build tokio runtime"),
         }
     }
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(target_arch = "wasm32", target_os = "android"))]
     pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
         bevy::tasks::IoTaskPool::get()
             .spawn(async move {
@@ -42,7 +42,7 @@ impl ApiClient {
             })
             .detach();
     }
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "android")))]
     pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
         self.runtime.spawn(async move {
             let client = reqwest::Client::new();
