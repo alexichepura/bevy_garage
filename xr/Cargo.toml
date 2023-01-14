@@ -1,0 +1,11 @@
+[package]
+name = "xr"
+version = "0.1.0"
+edition = "2021"
+description = "Car sim with bevy and rapier"
+publish = false
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+bevy = { workspace = true }
+bevy_rapier_car_sim = { path = "../" }

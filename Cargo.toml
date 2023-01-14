@@ -9,7 +9,7 @@ description = "3d car simulation in rust"
 identifier = "io.github.alexichepura.bevy-rapier-car-sim"
 [workspace]
 resolver = "2"
-members = ["prisma-cli", "api", "trainer", "db_client", "ios"]
+members = ["prisma-cli", "api", "trainer", "db_client", "ios", "xr"]
 [workspace.dependencies]
 bevy = { version = "0.9.1" }
 dfdx = "0.10"
