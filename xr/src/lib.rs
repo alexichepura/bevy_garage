@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_rapier_car_sim::car_app;
 
-fn game_main() {
+pub fn game_main() {
     let mut app = App::new();
     app.add_startup_system(xr_startup);
     car_app(&mut app).run();
