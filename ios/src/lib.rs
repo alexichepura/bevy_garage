@@ -1,11 +1,52 @@
+#![deny(unsafe_op_in_unsafe_fn)]
+
+use std::{thread, time::Duration};
+
 use bevy::prelude::*;
 use bevy_rapier_car_sim::{car_app, CarSimLabel};
 mod touch;
+use objc2::rc;
 use touch::*;
+
+use crate::gyro::CMMotionManager;
+mod gyro;
+
+#[derive(Resource)]
+pub struct IosRes {
+    pub cm: rc::Id<CMMotionManager, rc::Shared>,
+}
 
 #[bevy_main]
 fn main() {
+    let cm = CMMotionManager::new();
+    dbg!(cm.isGyroAvailable());
+    dbg!(cm.isGyroActive());
+    cm.startGyroUpdates();
+    thread::sleep(Duration::from_millis(100));
+    dbg!(cm.isGyroActive());
+    if cm.isGyroAvailable() {
+        dbg!(cm.gyroData().rotationRate);
+        thread::sleep(Duration::from_millis(100));
+        dbg!(cm.gyroData().rotationRate);
+    }
+
+    dbg!(cm.showsDeviceMovementDisplay());
+    dbg!(cm.deviceMotionUpdateInterval());
+    dbg!(cm.isDeviceMotionAvailable());
+    dbg!(cm.isDeviceMotionActive());
+    cm.startDeviceMotionUpdates();
+    cm.setShowsDeviceMovementDisplay(true);
+    thread::sleep(Duration::from_millis(100));
+    dbg!(cm.showsDeviceMovementDisplay());
+    dbg!(cm.isDeviceMotionActive());
+    if cm.isDeviceMotionAvailable() {
+        dbg!(cm.deviceMotion().attitude);
+        thread::sleep(Duration::from_millis(100));
+        dbg!(cm.deviceMotion().attitude);
+    }
+
     let mut app = App::new();
+    app.insert_resource(IosRes { cm: cm });
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         window: WindowDescriptor {
             resizable: false,
@@ -16,7 +57,13 @@ fn main() {
     }));
     app.add_startup_system(touch_input_start_system);
     app.add_system(touch_input_system.label(CarSimLabel::Input));
+    app.add_system(gyro_system);
     car_app(&mut app).run();
+}
+
+fn gyro_system(ios: Res<IosRes>) {
+    // dbg!(ios.cm.gyroData().rotationRate);
+    dbg!(ios.cm.deviceMotion().attitude);
 }
 
 // fn touch_camera(
