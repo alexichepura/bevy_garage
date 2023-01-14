@@ -803,7 +803,6 @@ dependencies = [
  "bevy_ptr 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bevy_reflect 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bevy_render 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_sprite 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bevy_tasks 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bevy_time 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bevy_transform 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -839,7 +838,7 @@ dependencies = [
  "bevy_reflect 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_render 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_scene",
- "bevy_sprite 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
+ "bevy_sprite",
  "bevy_tasks 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_text",
  "bevy_time 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
@@ -1014,10 +1013,8 @@ dependencies = [
 [[package]]
 name = "bevy_prototype_debug_lines"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d9e933f5bf971fbc7e83b447db6758ed3b091faf4cd8e524a9406ae7acca096"
 dependencies = [
- "bevy 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bevy 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
 ]
 
 [[package]]
@@ -1263,31 +1260,6 @@ dependencies = [
 [[package]]
 name = "bevy_sprite"
 version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ec01c7db7f698d95bcb70708527c3ae6bcdc78fc247abe74f935cae8f0a1145"
-dependencies = [
- "bevy_app 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_asset 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_core_pipeline 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_derive 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_ecs 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_log 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_math 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_reflect 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_render 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_transform 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bevy_utils 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "bitflags",
- "bytemuck",
- "fixedbitset 0.4.2",
- "guillotiere",
- "rectangle-pack",
- "thiserror",
-]
-
-[[package]]
-name = "bevy_sprite"
-version = "0.9.1"
 source = "git+https://github.com/kcking/bevy?branch=xr#8a320ad5cff74039c88e841d30303be6ef6ea1f1"
 dependencies = [
  "bevy_app 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
@@ -1351,7 +1323,7 @@ dependencies = [
  "bevy_math 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_reflect 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_render 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
- "bevy_sprite 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
+ "bevy_sprite",
  "bevy_transform 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_utils 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_window 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
@@ -1426,7 +1398,7 @@ dependencies = [
  "bevy_math 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_reflect 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_render 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
- "bevy_sprite 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
+ "bevy_sprite",
  "bevy_text",
  "bevy_transform 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
  "bevy_utils 0.9.1 (git+https://github.com/kcking/bevy?branch=xr)",
