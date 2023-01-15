@@ -21,6 +21,7 @@ pub struct Config {
     pub meters_shift: f32,
     pub track_length: f32,
     pub car_scene: Option<Handle<Scene>>,
+    pub wheel_scene: Option<Handle<Scene>>,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -38,6 +39,7 @@ impl Default for Config {
             meters_shift: 0.,
             track_length: 0.,
             car_scene: None,
+            wheel_scene: None,
         }
     }
 }
