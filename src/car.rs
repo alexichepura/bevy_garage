@@ -1,12 +1,10 @@
 use crate::{
     config::*,
-    mesh::*,
     nn::{dqn_bevy::*, params::SENSOR_COUNT},
     track::*,
 };
 use bevy::prelude::*;
 use bevy_rapier3d::{
-    parry::shape::Cylinder,
     prelude::*,
     rapier::prelude::{JointAxesMask, JointAxis},
 };
@@ -24,9 +22,13 @@ pub struct WheelFront;
 #[derive(Component)]
 pub struct WheelBack;
 #[derive(Component)]
-pub struct WheelFrontLeft;
+pub struct WheelLeft;
 #[derive(Component)]
-pub struct WheelFrontRight;
+pub struct WheelRight;
+// #[derive(Component)]
+// pub struct WheelFrontLeft;
+// #[derive(Component)]
+// pub struct WheelFrontRight;
 #[derive(Component)]
 pub struct HID;
 
@@ -141,8 +143,6 @@ impl Car {
 pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 pub fn car_start_system(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
 ) {
@@ -156,8 +156,6 @@ pub fn car_start_system(
         let (transform, init_meters) = config.get_transform_by_index(i);
         spawn_car(
             &mut commands,
-            &mut meshes,
-            &mut materials,
             &car_gl,
             &wheel_gl,
             is_hid,
@@ -171,8 +169,6 @@ pub fn car_start_system(
 
 pub fn spawn_car(
     commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
     car_gl: &Handle<Scene>,
     wheel_gl: &Handle<Scene>,
     is_hid: bool,
@@ -189,7 +185,8 @@ pub fn spawn_car(
     let wheel_front_r: f32 = 0.4;
     let wheel_back_r: f32 = 0.401;
     let wheel_front_hw: f32 = 0.2;
-    let wheel_back_hw: f32 = 0.25;
+    let wheel_back_hw: f32 = wheel_front_hw;
+    // let wheel_back_hw: f32 = 0.2;
     let ride_height = 0.08;
     let shift = Vec3::new(
         size.hw - wheel_front_hw - 0.1,
@@ -206,7 +203,7 @@ pub fn spawn_car(
     let mut wheels: Vec<Entity> = vec![];
     let mut joints: Vec<GenericJoint> = vec![];
     for i in 0..4 {
-        let (is_front, _is_left): (bool, bool) = match i {
+        let (is_front, is_left): (bool, bool) = match i {
             0 => (true, false),
             1 => (true, true),
             2 => (false, false),
@@ -221,9 +218,13 @@ pub fn spawn_car(
             false => wheel_back_r,
         };
         let joint_mask: JointAxesMask = JointAxesMask::ANG_Y | JointAxesMask::ANG_Z;
+        let wheel_axis = match is_left {
+            true => -Vec3::Y,
+            false => Vec3::Y,
+        };
         let joint = GenericJointBuilder::new(joint_mask)
             .local_axis1(Vec3::X)
-            .local_axis2(Vec3::Y)
+            .local_axis2(wheel_axis)
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
             .set_motor(JointAxis::X, 0., 0., 1e10, 1.)
@@ -236,7 +237,12 @@ pub fn spawn_car(
         let wheel_transform = Transform::from_translation(
             transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
         )
-        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI));
+        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
+        .with_scale(Vec3::new(
+            wheel_front_r * 2.,
+            wheel_front_hw * 2.,
+            wheel_front_r * 2.,
+        ));
         let wheel_id = commands
             .spawn_empty()
             .insert(Name::new("wheel"))
@@ -293,19 +299,29 @@ pub fn spawn_car(
         wheels.push(wheel_id);
 
         if is_front {
-            if is_front {
+            if is_left {
                 commands
                     .entity(wheel_id)
-                    .insert(WheelFrontLeft)
+                    .insert(WheelLeft)
                     .insert(WheelFront);
             } else {
                 commands
                     .entity(wheel_id)
-                    .insert(WheelFrontRight)
+                    .insert(WheelRight)
                     .insert(WheelFront);
             }
         } else {
-            commands.entity(wheel_id).insert(WheelBack);
+            if is_left {
+                commands
+                    .entity(wheel_id)
+                    .insert(WheelLeft)
+                    .insert(WheelBack);
+            } else {
+                commands
+                    .entity(wheel_id)
+                    .insert(WheelRight)
+                    .insert(WheelBack);
+            }
         };
     }
     let carrr = Car {
