@@ -49,6 +49,7 @@ pub fn dqn_system(
             &mut meshes,
             &mut materials,
             &config.car_scene.as_ref().unwrap(),
+            &config.wheel_scene.as_ref().unwrap(),
             dqn.respawn_is_hid,
             transform,
             dqn.respawn_index,

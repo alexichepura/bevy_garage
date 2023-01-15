@@ -146,8 +146,10 @@ pub fn car_start_system(
     mut config: ResMut<Config>,
     asset_server: Res<AssetServer>,
 ) {
+    let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
+    config.wheel_scene = Some(wheel_gl.clone());
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
-    config.car_scene = Some(car_gl);
+    config.car_scene = Some(car_gl.clone());
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
@@ -156,7 +158,8 @@ pub fn car_start_system(
             &mut commands,
             &mut meshes,
             &mut materials,
-            &config.car_scene.as_ref().unwrap(),
+            &car_gl,
+            &wheel_gl,
             is_hid,
             transform,
             i,
@@ -171,6 +174,7 @@ pub fn spawn_car(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     car_gl: &Handle<Scene>,
+    wheel_gl: &Handle<Scene>,
     is_hid: bool,
     transform: Transform,
     index: usize,
