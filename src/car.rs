@@ -233,26 +233,30 @@ pub fn spawn_car(
         joints.push(joint);
 
         let wheel_border_radius = 0.05;
+        let wheel_transform = Transform::from_translation(
+            transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
+        )
+        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI));
         let wheel_id = commands
             .spawn_empty()
             .insert(Name::new("wheel"))
-            .insert(Sleeping::disabled())
-            .insert(PbrBundle {
-                mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
-                // material: materials.add(Color::rgb(0.1, 0.1, 0.1).into()),
-                material: materials.add(StandardMaterial {
-                    base_color: Color::hex("353535").unwrap(),
-                    perceptual_roughness: 0.9,
-                    ..default()
-                }),
+            .insert(SceneBundle {
+                scene: wheel_gl.clone(),
+                transform: wheel_transform,
                 ..default()
             })
-            .insert(TransformBundle::from(
-                Transform::from_translation(
-                    transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
-                )
-                .with_rotation(Quat::from_axis_angle(Vec3::Y, PI)),
-            ))
+            .insert(Sleeping::disabled())
+            // .insert(PbrBundle {
+            //     mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
+            //     // material: materials.add(Color::rgb(0.1, 0.1, 0.1).into()),
+            //     material: materials.add(StandardMaterial {
+            //         base_color: Color::hex("353535").unwrap(),
+            //         perceptual_roughness: 0.9,
+            //         ..default()
+            //     }),
+            //     ..default()
+            // })
+            .insert(TransformBundle::from(wheel_transform))
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
             .insert(Velocity::zero())
