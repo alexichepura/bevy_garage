@@ -49,7 +49,7 @@ const FPS: f32 = 60.;
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
         // .add_plugin(FramepacePlugin)
-        .init_resource::<FontHandle>()
+        // .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / FPS,
@@ -72,65 +72,65 @@ pub fn car_app(app: &mut App) -> &mut App {
         //     // limiter: Limiter::Auto,
         //     ..default()
         // })
-        .insert_resource(DqnResource::default())
+        // .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(CameraConfig::default())
-        .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
+        // .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
         .add_startup_system(camera_start_system)
         .add_system(camera_controller_system)
-        .add_system(camera_switch_system)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .init_resource::<GamepadLobby>()
-        .add_startup_system(dqn_exclusive_start_system)
-        .add_startup_system(track_start_system)
-        .add_startup_system(track_decorations_start_system)
-        .add_startup_system(track_polyline_start_system)
-        .add_startup_system(car_start_system.after(track_polyline_start_system))
-        .add_startup_system(light_start_system)
-        .add_startup_system(dash_speed_start_system)
-        .add_startup_system(dash_fps_start_system)
-        .add_startup_system(rapier_config_start_system)
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
-        .add_system(keyboard_input_system.label(CarSimLabel::Input))
-        .add_system(gamepad_input_system.label(CarSimLabel::Input))
-        .add_system(car_sensor_system.label(CarSimLabel::Input))
-        .add_system(progress_system.label(CarSimLabel::Input))
-        .add_system(
-            dqn_system
-                .label(CarSimLabel::Brain)
-                .after(CarSimLabel::Input),
-        )
-        .add_system(esp_system.label(CarSimLabel::Esp).after(CarSimLabel::Brain))
-        .add_system(dqn_dash_update_system)
-        .add_system(dash_leaderboard_system)
-        .add_system(dash_fps_system)
-        .add_system(dash_speed_update_system)
-        .add_startup_system(api_start_system)
-        .add_system(api_read_stream_event_writer_system)
-        .add_system(api_event_reader_system);
+        .add_system(camera_switch_system);
+    // .add_plugin(FrameTimeDiagnosticsPlugin::default())
+    // .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+    // .init_resource::<GamepadLobby>()
+    // .add_startup_system(dqn_exclusive_start_system)
+    // .add_startup_system(track_start_system)
+    // .add_startup_system(track_decorations_start_system)
+    // .add_startup_system(track_polyline_start_system)
+    // .add_startup_system(car_start_system.after(track_polyline_start_system))
+    // .add_startup_system(light_start_system)
+    // .add_startup_system(dash_speed_start_system)
+    // .add_startup_system(dash_fps_start_system)
+    // .add_startup_system(rapier_config_start_system)
+    // .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+    // .add_system(keyboard_input_system.label(CarSimLabel::Input))
+    // .add_system(gamepad_input_system.label(CarSimLabel::Input))
+    // .add_system(car_sensor_system.label(CarSimLabel::Input))
+    // .add_system(progress_system.label(CarSimLabel::Input))
+    // .add_system(
+    //     dqn_system
+    //         .label(CarSimLabel::Brain)
+    //         .after(CarSimLabel::Input),
+    // )
+    // .add_system(esp_system.label(CarSimLabel::Esp).after(CarSimLabel::Brain))
+    // .add_system(dqn_dash_update_system)
+    // .add_system(dash_leaderboard_system)
+    // .add_system(dash_fps_system)
+    // .add_system(dash_speed_update_system)
+    // .add_startup_system(api_start_system)
+    // .add_system(api_read_stream_event_writer_system)
+    // .add_system(api_event_reader_system);
 
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
-    {
-        use bevy_prototype_debug_lines::DebugLinesPlugin;
-        app.add_plugin(DebugLinesPlugin::with_depth_test(true))
-            .add_plugin(RapierDebugRenderPlugin {
-                enabled: false,
-                style: DebugRenderStyle {
-                    rigid_body_axes_length: 0.5,
-                    // subdivisions: 50,
-                    ..default()
-                },
-                // | DebugRenderMode::COLLIDER_AABBS
-                mode: DebugRenderMode::COLLIDER_SHAPES
-                    | DebugRenderMode::RIGID_BODY_AXES
-                    | DebugRenderMode::JOINTS
-                    | DebugRenderMode::CONTACTS
-                    | DebugRenderMode::SOLVER_CONTACTS,
-                ..default()
-            });
-    }
+    // #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    // {
+    //     use bevy_prototype_debug_lines::DebugLinesPlugin;
+    //     app.add_plugin(DebugLinesPlugin::with_depth_test(true))
+    //         .add_plugin(RapierDebugRenderPlugin {
+    //             enabled: false,
+    //             style: DebugRenderStyle {
+    //                 rigid_body_axes_length: 0.5,
+    //                 // subdivisions: 50,
+    //                 ..default()
+    //             },
+    //             // | DebugRenderMode::COLLIDER_AABBS
+    //             mode: DebugRenderMode::COLLIDER_SHAPES
+    //                 | DebugRenderMode::RIGID_BODY_AXES
+    //                 | DebugRenderMode::JOINTS
+    //                 | DebugRenderMode::CONTACTS
+    //                 | DebugRenderMode::SOLVER_CONTACTS,
+    //             ..default()
+    //         });
+    // }
 
     // #[cfg(not(target_arch = "wasm32"))]
     // {

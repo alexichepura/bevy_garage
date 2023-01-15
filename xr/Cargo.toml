@@ -43,7 +43,7 @@ bevy_pbr = { git = "https://github.com/kcking/bevy", branch = "xr" }
 
 [package.metadata.android]
 apk_label = "Bevy XR Example"
-package = "com.example.bevyxr"
+package = "com.example.car_sim_xr"
 assets = "assets"
 res = "assets/android-res"
 icon = "@mipmap/ic_launcher"
