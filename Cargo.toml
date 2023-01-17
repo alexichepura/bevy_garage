@@ -13,7 +13,8 @@ members = ["prisma-cli", "api", "trainer", "db_client", "ios"]
 [workspace.dependencies]
 bevy = { version = "0.9.1" }
 dfdx = "0.10"
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.3", default-features = false, features = ["sqlite", "sqlite-create-many"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite", "sqlite-create-many"] }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
