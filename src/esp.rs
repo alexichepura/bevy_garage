@@ -29,17 +29,27 @@ pub fn esp_system(
             With<WheelBack>,
         >,
     )>,
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] mut lines: ResMut<
-        bevy_prototype_debug_lines::DebugLines,
-    >,
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] config: Res<
-        crate::config::Config,
-    >,
+    #[cfg(all(
+        not(target_arch = "wasm32"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    ))]
+    mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
+    #[cfg(all(
+        not(target_arch = "wasm32"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    ))]
+    config: Res<crate::config::Config>,
     time: Res<Time>,
 ) {
     let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    #[cfg(all(
+        not(target_arch = "wasm32"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    ))]
     let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
 
     for (_entity, mut car, velocity, transform) in query.iter_mut() {
@@ -118,7 +128,11 @@ pub fn esp_system(
                 };
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
-                #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+                #[cfg(all(
+                    not(target_arch = "wasm32"),
+                    not(target_os = "ios"),
+                    not(target_os = "android")
+                ))]
                 {
                     if config.show_rays {
                         let start = transform.translation + Vec3::Y * 0.5;
@@ -148,7 +162,11 @@ pub fn esp_system(
                 };
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
-                #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+                #[cfg(all(
+                    not(target_arch = "wasm32"),
+                    not(target_os = "ios"),
+                    not(target_os = "android")
+                ))]
                 {
                     if config.show_rays {
                         let start = transform.translation + Vec3::Y * 0.5;

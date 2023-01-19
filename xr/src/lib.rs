@@ -19,7 +19,7 @@ pub fn game_main() {
     //     ..default()
     // }));
     app.add_startup_system(xr_startup);
-    // car_app(&mut app);
+    car_app(&mut app);
     app.run();
 }
 

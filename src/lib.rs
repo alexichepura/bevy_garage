@@ -14,7 +14,7 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-// use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
+use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_rapier3d::prelude::*;
 use camera::*;
 use car::*;
@@ -47,53 +47,52 @@ pub enum CarSimLabel {
 
 const FPS: f32 = 60.;
 pub fn car_app(app: &mut App) -> &mut App {
-    // app
-    // .add_event::<StreamEvent>()
-    // .add_plugin(FramepacePlugin)
-    // .init_resource::<FontHandle>()
-    // .insert_resource(RapierConfiguration {
-    //     timestep_mode: TimestepMode::Fixed {
-    //         dt: 1. / FPS,
-    //         substeps: 20,
-    //     },
-    //     // timestep_mode: TimestepMode::Variable {
-    //     //     max_dt: 1. / FPS,
-    //     //     substeps: 5,
-    //     //     time_scale: 1.,
-    //     // },
-    //     // timestep_mode: TimestepMode::Interpolated {
-    //     //     dt: 1. / FPS,
-    //     //     substeps: 5,
-    //     //     time_scale: 1.,
-    //     // },
-    //     ..default()
-    // })
-    // .insert_resource(FramepaceSettings {
-    //     limiter: Limiter::from_framerate(FPS as f64),
-    //     // limiter: Limiter::Auto,
-    //     ..default()
-    // })
-    // .insert_resource(DqnResource::default())
-    // .insert_resource(Msaa { samples: 4 })
-    // .insert_resource(Config::default())
-    // .insert_resource(CameraConfig::default())
-    // .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
-    // .add_startup_system(camera_start_system)
-    // .add_system(camera_controller_system)
-    // .add_system(camera_switch_system);
-    // .add_plugin(FrameTimeDiagnosticsPlugin::default())
-    // .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-    // .init_resource::<GamepadLobby>()
-    // .add_startup_system(dqn_exclusive_start_system)
-    // .add_startup_system(track_start_system)
-    // .add_startup_system(track_decorations_start_system)
-    // .add_startup_system(track_polyline_start_system)
-    // .add_startup_system(car_start_system.after(track_polyline_start_system))
-    // .add_startup_system(light_start_system)
-    // .add_startup_system(dash_speed_start_system)
-    // .add_startup_system(dash_fps_start_system)
-    // .add_startup_system(rapier_config_start_system)
-    // .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+    app.add_event::<StreamEvent>()
+        .add_plugin(FramepacePlugin)
+        .init_resource::<FontHandle>()
+        .insert_resource(RapierConfiguration {
+            timestep_mode: TimestepMode::Fixed {
+                dt: 1. / FPS,
+                substeps: 20,
+            },
+            // timestep_mode: TimestepMode::Variable {
+            //     max_dt: 1. / FPS,
+            //     substeps: 5,
+            //     time_scale: 1.,
+            // },
+            // timestep_mode: TimestepMode::Interpolated {
+            //     dt: 1. / FPS,
+            //     substeps: 5,
+            //     time_scale: 1.,
+            // },
+            ..default()
+        })
+        .insert_resource(FramepaceSettings {
+            limiter: Limiter::from_framerate(FPS as f64),
+            // limiter: Limiter::Auto,
+            ..default()
+        })
+        .insert_resource(DqnResource::default())
+        // .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Config::default())
+        .insert_resource(CameraConfig::default())
+        // .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
+        .add_startup_system(camera_start_system)
+        .add_system(camera_controller_system)
+        .add_system(camera_switch_system)
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .init_resource::<GamepadLobby>()
+        .add_startup_system(dqn_exclusive_start_system)
+        .add_startup_system(track_start_system)
+        .add_startup_system(track_decorations_start_system)
+        .add_startup_system(track_polyline_start_system)
+        .add_startup_system(car_start_system.after(track_polyline_start_system))
+        .add_startup_system(light_start_system)
+        .add_startup_system(dash_speed_start_system)
+        .add_startup_system(dash_fps_start_system)
+        .add_startup_system(rapier_config_start_system)
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system);
     // .add_system(keyboard_input_system.label(CarSimLabel::Input))
     // .add_system(gamepad_input_system.label(CarSimLabel::Input))
     // .add_system(car_sensor_system.label(CarSimLabel::Input))
@@ -112,7 +111,11 @@ pub fn car_app(app: &mut App) -> &mut App {
     // .add_system(api_read_stream_event_writer_system)
     // .add_system(api_event_reader_system);
 
-    // #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    // #[cfg(all(
+    //     not(target_arch = "wasm32"),
+    //     not(target_os = "ios"),
+    //     not(target_os = "android")
+    // ))]
     // {
     //     use bevy_prototype_debug_lines::DebugLinesPlugin;
     //     app.add_plugin(DebugLinesPlugin::with_depth_test(true))

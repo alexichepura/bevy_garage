@@ -403,9 +403,12 @@ pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,
     mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] mut lines: ResMut<
-        bevy_prototype_debug_lines::DebugLines,
-    >,
+    #[cfg(all(
+        not(target_arch = "wasm32"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    ))]
+    mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
 ) {
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     let dir = Vec3::Z * config.max_toi;
@@ -413,7 +416,11 @@ pub fn car_sensor_system(
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
         let g_translation = gt.translation();
-        #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+        #[cfg(all(
+            not(target_arch = "wasm32"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        ))]
         {
             if config.show_rays {
                 let h = Vec3::Y * 0.6;
@@ -447,7 +454,11 @@ pub fn car_sensor_system(
                 if toi > 0. {
                     inputs[i] = 1. - toi / config.max_toi;
                     if config.show_rays {
-                        #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+                        #[cfg(all(
+                            not(target_arch = "wasm32"),
+                            not(target_os = "ios"),
+                            not(target_os = "android")
+                        ))]
                         {
                             lines.line_colored(
                                 ray_pos,

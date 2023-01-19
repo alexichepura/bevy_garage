@@ -8,9 +8,12 @@ pub fn keyboard_input_system(
     mut commands: Commands,
     q_car: Query<Entity, With<Car>>,
     q_wheel: Query<Entity, With<Wheel>>,
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))] mut debug_ctx: ResMut<
-        bevy_rapier3d::render::DebugRenderContext,
-    >,
+    #[cfg(all(
+        not(target_arch = "wasm32"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    ))]
+    mut debug_ctx: ResMut<bevy_rapier3d::render::DebugRenderContext>,
 ) {
     if input.just_pressed(KeyCode::N) {
         config.use_brain = !config.use_brain;
@@ -23,7 +26,11 @@ pub fn keyboard_input_system(
             commands.entity(e).despawn_recursive();
         }
     }
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    #[cfg(all(
+        not(target_arch = "wasm32"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    ))]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
         config.show_rays = debug_ctx.enabled;
