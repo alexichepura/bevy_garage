@@ -559,6 +559,8 @@ dependencies = [
 [[package]]
 name = "bevy_framepace"
 version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5ae983870b93cdc5bc3484dd6928d7c3217e4a31ccbe4dfb0680dc00c06b47f"
 dependencies = [
  "bevy",
  "wasm_thread",
@@ -795,6 +797,8 @@ dependencies = [
 [[package]]
 name = "bevy_prototype_debug_lines"
 version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d9e933f5bf971fbc7e83b447db6758ed3b091faf4cd8e524a9406ae7acca096"
 dependencies = [
  "bevy",
 ]
@@ -807,6 +811,8 @@ source = "git+https://github.com/kcking/bevy?branch=xr#8a320ad5cff74039c88e841d3
 [[package]]
 name = "bevy_rapier3d"
 version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77057d7ecde9cff3ad7f36faa362dd540c25a6316e160550e49915f3a765fc53"
 dependencies = [
  "bevy",
  "bitflags",
