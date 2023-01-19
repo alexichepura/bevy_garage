@@ -260,7 +260,7 @@ pub fn camera_controller_system(
     let (mut camera_tf, _) = p0.single_mut();
     *camera_tf = tf;
 
-    let mut p2 = pset.p2();
-    let mut dlight_tf = p2.single_mut();
-    dlight_tf.translation = tf.translation;
+    // let mut p2 = pset.p2();
+    // let mut dlight_tf = p2.single_mut();
+    // dlight_tf.translation = tf.translation;
 }
