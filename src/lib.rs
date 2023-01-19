@@ -92,24 +92,24 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system);
-    // .add_system(keyboard_input_system.label(CarSimLabel::Input))
-    // .add_system(gamepad_input_system.label(CarSimLabel::Input))
-    // .add_system(car_sensor_system.label(CarSimLabel::Input))
-    // .add_system(progress_system.label(CarSimLabel::Input))
-    // .add_system(
-    //     dqn_system
-    //         .label(CarSimLabel::Brain)
-    //         .after(CarSimLabel::Input),
-    // )
-    // .add_system(esp_system.label(CarSimLabel::Esp).after(CarSimLabel::Brain))
-    // .add_system(dqn_dash_update_system)
-    // .add_system(dash_leaderboard_system)
-    // .add_system(dash_fps_system)
-    // .add_system(dash_speed_update_system)
-    // .add_startup_system(api_start_system)
-    // .add_system(api_read_stream_event_writer_system)
-    // .add_system(api_event_reader_system);
+        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_system(keyboard_input_system.label(CarSimLabel::Input))
+        // .add_system(gamepad_input_system.label(CarSimLabel::Input))
+        // .add_system(car_sensor_system.label(CarSimLabel::Input))
+        // .add_system(progress_system.label(CarSimLabel::Input))
+        // .add_system(
+        //     dqn_system
+        //         .label(CarSimLabel::Brain)
+        //         .after(CarSimLabel::Input),
+        // )
+        // .add_system(esp_system.label(CarSimLabel::Esp).after(CarSimLabel::Brain))
+        .add_system(dqn_dash_update_system)
+        .add_system(dash_leaderboard_system)
+        .add_system(dash_fps_system)
+        .add_system(dash_speed_update_system)
+        .add_startup_system(api_start_system)
+        .add_system(api_read_stream_event_writer_system)
+        .add_system(api_event_reader_system);
 
     // #[cfg(all(
     //     not(target_arch = "wasm32"),
@@ -136,15 +136,15 @@ pub fn car_app(app: &mut App) -> &mut App {
     //         });
     // }
 
-    // #[cfg(not(target_arch = "wasm32"))]
-    // {
-    //     use bevy_atmosphere::prelude::*;
-    //     app.insert_resource(AtmosphereModel::new(Nishita {
-    //         sun_position: Vec3::new(0.0, 1.0, 1.0),
-    //         ..default()
-    //     }))
-    //     .add_plugin(AtmospherePlugin);
-    // }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        use bevy_atmosphere::prelude::*;
+        app.insert_resource(AtmosphereModel::new(Nishita {
+            sun_position: Vec3::new(0.0, 1.0, 1.0),
+            ..default()
+        }))
+        .add_plugin(AtmospherePlugin);
+    }
 
     app
 }

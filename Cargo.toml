@@ -10,6 +10,9 @@ identifier = "io.github.alexichepura.bevy-rapier-car-sim"
 [workspace]
 resolver = "2"
 members = ["prisma-cli", "api", "trainer", "db_client", "ios", "xr"]
+[features]
+default = ["debug_lines"]
+debug_lines = []
 [workspace.dependencies]
 # bevy = { version = "0.9.1" }
 bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
