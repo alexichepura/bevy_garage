@@ -16,7 +16,7 @@ fn main() {
     }));
     app.add_startup_system(touch_input_start_system);
     app.add_system(touch_input_system.label(CarSimLabel::Input));
-    car_app(&mut app).run();
+    car_app(&mut app, 60.).run();
 }
 
 // fn touch_camera(
