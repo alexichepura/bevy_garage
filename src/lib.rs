@@ -30,9 +30,9 @@ use progress::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 64;
-    c.integration_parameters.max_velocity_friction_iterations = 16;
-    c.integration_parameters.max_stabilization_iterations = 64;
+    // c.integration_parameters.max_velocity_iterations = 64;
+    // c.integration_parameters.max_velocity_friction_iterations = 16;
+    c.integration_parameters.max_stabilization_iterations = 16;
     c.integration_parameters.allowed_linear_error = 0.0001;
     c.integration_parameters.erp = 0.99;
     dbg!(c.integration_parameters);
@@ -45,7 +45,7 @@ pub enum CarSimLabel {
     Esp,
 }
 
-const FPS: f32 = 60.;
+const FPS: f32 = 30.;
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
         .add_plugin(FramepacePlugin)
