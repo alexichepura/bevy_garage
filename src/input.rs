@@ -8,11 +8,6 @@ pub fn keyboard_input_system(
     mut commands: Commands,
     q_car: Query<Entity, With<Car>>,
     q_wheel: Query<Entity, With<Wheel>>,
-    // #[cfg(all(
-    //     not(target_arch = "wasm32"),
-    //     not(target_os = "ios"),
-    //     not(target_os = "android")
-    // ))]
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
     >,
