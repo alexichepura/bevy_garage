@@ -3,9 +3,10 @@
 Wasm online!
 https://dainty-churros-415c79.netlify.app
 
+<img width="1512" alt="screenshot 2023-01-19" src="https://user-images.githubusercontent.com/5582266/213419807-695a0437-63c0-4d16-b257-dfc5d96e457e.png">
+
 Features:
-- Wasm
-- iOs
+- Wasm, iOS, xr
 - neural network
 - api server and client
 
