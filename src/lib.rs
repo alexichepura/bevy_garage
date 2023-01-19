@@ -14,7 +14,7 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
+// use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_rapier3d::prelude::*;
 use camera::*;
 use car::*;
@@ -47,29 +47,19 @@ pub enum CarSimLabel {
 
 pub fn car_app(app: &mut App, fps: f32) -> &mut App {
     app.add_event::<StreamEvent>()
-        .add_plugin(FramepacePlugin)
+        // .add_plugin(FramepacePlugin)
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / fps,
                 substeps: 20,
             },
-            // timestep_mode: TimestepMode::Variable {
-            //     max_dt: 1. / fps,
-            //     substeps: 5,
-            //     time_scale: 1.,
-            // },
-            // timestep_mode: TimestepMode::Interpolated {
-            //     dt: 1. / fps,
-            //     substeps: 5,
-            //     time_scale: 1.,
-            // },
             ..default()
         })
-        .insert_resource(FramepaceSettings {
-            limiter: Limiter::from_framerate(fps as f64),
-            ..default()
-        })
+        // .insert_resource(FramepaceSettings {
+        //     limiter: Limiter::from_framerate(fps as f64),
+        //     ..default()
+        // })
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
