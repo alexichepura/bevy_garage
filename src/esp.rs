@@ -13,6 +13,7 @@ pub fn esp_system(
                 &Transform,
                 &Velocity,
                 &mut ImpulseJoint,
+                Option<&WheelLeft>,
             ),
             With<WheelFront>,
         >,
@@ -23,6 +24,7 @@ pub fn esp_system(
                 &Transform,
                 &Velocity,
                 &mut ImpulseJoint,
+                Option<&WheelLeft>,
             ),
             With<WheelBack>,
         >,
@@ -99,7 +101,7 @@ pub fn esp_system(
         for (_i, wheel_entity) in car.wheels.iter().enumerate() {
             let mut q_front_wheels = wheel_set.p0();
             let wheel_result = q_front_wheels.get_mut(*wheel_entity);
-            if let Ok((wheel, mut f, transform, v, mut j)) = wheel_result {
+            if let Ok((wheel, mut f, transform, v, mut j, is_left)) = wheel_result {
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
@@ -109,7 +111,12 @@ pub fn esp_system(
                     x => 1. - x,
                 };
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
-                f.torque = (transform.rotation.mul_vec3(total_torque)).into();
+                let wheel_torque = if let Some(_) = is_left {
+                    -total_torque
+                } else {
+                    total_torque
+                };
+                f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
                 {
@@ -122,7 +129,9 @@ pub fn esp_system(
                 j.data.set_local_basis1(quat);
             }
 
-            if let Ok((wheel, mut f, transform, v, mut j)) = wheel_set.p1().get_mut(*wheel_entity) {
+            if let Ok((wheel, mut f, transform, v, mut j, is_left)) =
+                wheel_set.p1().get_mut(*wheel_entity)
+            {
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
@@ -132,7 +141,12 @@ pub fn esp_system(
                     x => 1. - x,
                 };
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
-                f.torque = (transform.rotation.mul_vec3(total_torque)).into();
+                let wheel_torque = if let Some(_) = is_left {
+                    -total_torque
+                } else {
+                    total_torque
+                };
+                f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
                 {

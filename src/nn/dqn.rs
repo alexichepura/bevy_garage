@@ -37,8 +37,6 @@ pub fn dqn_system(
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut config: ResMut<Config>,
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     api: Res<ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
@@ -46,9 +44,8 @@ pub fn dqn_system(
         let (transform, init_meters) = config.get_transform_random();
         spawn_car(
             &mut commands,
-            &mut meshes,
-            &mut materials,
             &config.car_scene.as_ref().unwrap(),
+            &config.wheel_scene.as_ref().unwrap(),
             dqn.respawn_is_hid,
             transform,
             dqn.respawn_index,
