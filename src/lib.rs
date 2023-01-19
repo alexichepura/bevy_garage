@@ -30,9 +30,9 @@ use progress::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 64;
-    c.integration_parameters.max_velocity_friction_iterations = 16;
-    c.integration_parameters.max_stabilization_iterations = 64;
+    // c.integration_parameters.max_velocity_iterations = 64;
+    // c.integration_parameters.max_velocity_friction_iterations = 16;
+    c.integration_parameters.max_stabilization_iterations = 8;
     c.integration_parameters.allowed_linear_error = 0.0001;
     c.integration_parameters.erp = 0.99;
     dbg!(c.integration_parameters);
@@ -45,31 +45,29 @@ pub enum CarSimLabel {
     Esp,
 }
 
-const FPS: f32 = 60.;
-pub fn car_app(app: &mut App) -> &mut App {
+pub fn car_app(app: &mut App, fps: f32) -> &mut App {
     app.add_event::<StreamEvent>()
         .add_plugin(FramepacePlugin)
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
-                dt: 1. / FPS,
+                dt: 1. / fps,
                 substeps: 20,
             },
             // timestep_mode: TimestepMode::Variable {
-            //     max_dt: 1. / FPS,
+            //     max_dt: 1. / fps,
             //     substeps: 5,
             //     time_scale: 1.,
             // },
             // timestep_mode: TimestepMode::Interpolated {
-            //     dt: 1. / FPS,
+            //     dt: 1. / fps,
             //     substeps: 5,
             //     time_scale: 1.,
             // },
             ..default()
         })
         .insert_resource(FramepaceSettings {
-            limiter: Limiter::from_framerate(FPS as f64),
-            // limiter: Limiter::Auto,
+            limiter: Limiter::from_framerate(fps as f64),
             ..default()
         })
         .insert_resource(DqnResource::default())
@@ -111,7 +109,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(api_read_stream_event_writer_system)
         .add_system(api_event_reader_system);
 
-    #[cfg(all(not(target_arch = "wasm32"), not(target_os = "ios")))]
+    #[cfg(feature = "debug_lines")]
     {
         use bevy_prototype_debug_lines::DebugLinesPlugin;
         app.add_plugin(DebugLinesPlugin::with_depth_test(true))
@@ -132,7 +130,7 @@ pub fn car_app(app: &mut App) -> &mut App {
             });
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "bevy_atmosphere")]
     {
         use bevy_atmosphere::prelude::*;
         app.insert_resource(AtmosphereModel::new(Nishita {

@@ -17,5 +17,10 @@ fn main() {
         ..default()
     }));
 
-    car_app(&mut app).run();
+    let fps: f32 = if cfg!(target_arch = "wasm32") {
+        60.
+    } else {
+        120.
+    };
+    car_app(&mut app, fps).run();
 }

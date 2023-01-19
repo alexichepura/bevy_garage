@@ -51,19 +51,15 @@ impl Track {
     pub fn new() -> Self {
         // let polyline_buf = BufReader::new(File::open("assets/track-polyline.obj").unwrap());
         // let model = raw::parse_obj(polyline_buf).unwrap();
-
-        // #[cfg(not(target_arch = "wasm32"))]
-        // {
-        //     let pretty_config = ron::ser::PrettyConfig::default()
-        //         .indentor("  ".to_string())
-        //         .new_line("\n".to_string());
-        //     let pos_ron = ron::ser::to_string_pretty(&model.positions, pretty_config).unwrap();
-        //     File::create(format!("assets/track-positions.ron"))
-        //         .and_then(|mut file| file.write(pos_ron.as_bytes()))
-        //         .expect("Error while writing scene to file");
-        // }
-
+        // let pretty_config = ron::ser::PrettyConfig::default()
+        //     .indentor("  ".to_string())
+        //     .new_line("\n".to_string());
+        // let pos_ron = ron::ser::to_string_pretty(&model.positions, pretty_config).unwrap();
+        // File::create(format!("assets/track-positions.ron"))
+        //     .and_then(|mut file| file.write(pos_ron.as_bytes()))
+        //     .expect("Error while writing scene to file");
         // let positions = model.positions;
+
         let positions = TRACK_POSITIONS;
         let mut track = Track::empty();
         let mut points: Vec<Vec3> = vec![];

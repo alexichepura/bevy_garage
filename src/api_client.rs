@@ -26,6 +26,9 @@ impl ApiClient {
                 .expect("Could not build tokio runtime"),
         }
     }
+    // pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
+    //     dbg!(rb.len());
+    // }
     #[cfg(target_arch = "wasm32")]
     pub fn save_replay_buffer(&self, rb: Vec<ReplayBufferRecord>) {
         bevy::tasks::IoTaskPool::get()

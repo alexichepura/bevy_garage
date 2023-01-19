@@ -20,7 +20,7 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
                 .looking_at(Vec3::Y * 6., Vec3::Y),
                 ..default()
             },
-            #[cfg(not(target_arch = "wasm32"))]
+            #[cfg(feature = "bevy_atmosphere")]
             bevy_atmosphere::prelude::AtmosphereCamera::default(),
         ))
         .insert(CameraController::default());
@@ -260,7 +260,7 @@ pub fn camera_controller_system(
     let (mut camera_tf, _) = p0.single_mut();
     *camera_tf = tf;
 
-    let mut p2 = pset.p2();
-    let mut dlight_tf = p2.single_mut();
-    dlight_tf.translation = tf.translation;
+    // let mut p2 = pset.p2();
+    // let mut dlight_tf = p2.single_mut();
+    // dlight_tf.translation = tf.translation;
 }

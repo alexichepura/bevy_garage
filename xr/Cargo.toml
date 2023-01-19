@@ -1,0 +1,63 @@
+[package]
+name = "car_sim_xr"
+version = "0.1.0"
+edition = "2021"
+description = "Car sim with bevy and rapier"
+publish = false
+license = "MIT OR Apache-2.0"
+
+[[example]]
+name = "android"
+crate-type = ["cdylib"]
+
+[features]
+default = ["simulator"]
+simulator = ["bevy/winit_loop", "bevy/openxr_simulator"]
+
+[dependencies]
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features = false, features = [
+    "xr",
+    "bevy_openxr",
+
+    "bevy_gilrs",
+    "render",
+    "png",
+    "bevy_asset",
+    "trace",
+    "jpeg",
+] }
+bevy_rapier_car_sim = { path = "../", default-features = false, features = [] }
+
+[package.metadata.android]
+apk_label = "Bevy XR Example"
+package = "com.example.car_sim_xr"
+assets = "assets"
+res = "assets/android-res"
+icon = "@mipmap/ic_launcher"
+build_targets = ["aarch64-linux-android"]
+runtime_libs = "libs"
+
+[package.metadata.android.sdk]
+min_sdk_version = 29
+target_sdk_version = 29
+
+[package.metadata.android.application]
+
+[[package.metadata.android.application.meta_data]]
+name = "com.samsung.android.vr.application.mode"
+value = "vr_only"
+
+[package.metadata.android.application.activity]
+theme = "@android:style/Theme.Black.NoTitleBar.Fullscreen"
+config_changes = "density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
+launch_mode = "singleTask"
+orientation = "landscape"
+resizeable_activity = false
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.MAIN"]
+categories = [
+    "com.oculus.intent.category.VR",
+    "android.intent.category.LAUNCHER",
+    "android.intent.category.INFO",
+]
