@@ -41,6 +41,10 @@ runtime_libs = "libs"
 min_sdk_version = 29
 target_sdk_version = 29
 
+[package.metadata.android.signing.release]
+path = "/Users/alexi/.android/debug.keystore"
+keystore_password = "android"
+
 [package.metadata.android.application]
 
 [[package.metadata.android.application.meta_data]]

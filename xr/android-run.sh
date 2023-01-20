@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cargo apk run --example android --no-default-features
+cargo apk run --release --example android --no-default-features

@@ -5,33 +5,33 @@ use bevy::prelude::*;
 use bevy::render::camera::Projection;
 use core::f32::consts::PI;
 
-pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
-    commands
-        .spawn((
-            Camera3dBundle {
-                projection: Projection::from(PerspectiveProjection {
-                    far: 5000.,
-                    near: 0.01,
-                    ..default()
-                }),
-                transform: Transform::from_translation(
-                    Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
-                )
-                .looking_at(Vec3::Y * 6., Vec3::Y),
-                ..default()
-            },
-            #[cfg(feature = "bevy_atmosphere")]
-            bevy_atmosphere::prelude::AtmosphereCamera::default(),
-        ))
-        .insert(CameraController::default());
-    println!(
-        "Controls:
-        WSAD   - forward/back/strafe left/right
-        LShift - run
-        E      - up
-        Q      - down"
-    );
-}
+// pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
+//     commands
+//         .spawn((
+//             Camera3dBundle {
+//                 projection: Projection::from(PerspectiveProjection {
+//                     far: 5000.,
+//                     near: 0.01,
+//                     ..default()
+//                 }),
+//                 transform: Transform::from_translation(
+//                     Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+//                 )
+//                 .looking_at(Vec3::Y * 6., Vec3::Y),
+//                 ..default()
+//             },
+//             #[cfg(feature = "bevy_atmosphere")]
+//             bevy_atmosphere::prelude::AtmosphereCamera::default(),
+//         ))
+//         .insert(CameraController::default());
+//     println!(
+//         "Controls:
+//         WSAD   - forward/back/strafe left/right
+//         LShift - run
+//         E      - up
+//         Q      - down"
+//     );
+// }
 
 #[derive(Component)]
 pub struct CameraController {
