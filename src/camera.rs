@@ -75,7 +75,7 @@ impl Default for CameraController {
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
-enum CameraFollowView {
+pub enum CameraFollowView {
     FrontWheel,
     Near,
     Mid,
@@ -97,14 +97,14 @@ fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     (look_from, look_at)
 }
 #[derive(PartialEq, Debug)]
-enum CameraMode {
+pub enum CameraMode {
     Follow(CameraFollowView, Vec3, Vec3),
     Free,
 }
 
 #[derive(Resource)]
 pub struct CameraConfig {
-    mode: CameraMode,
+    pub mode: CameraMode,
 }
 
 impl CameraConfig {

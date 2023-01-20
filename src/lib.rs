@@ -1,5 +1,5 @@
 mod api_client;
-mod camera;
+pub mod camera;
 pub mod car;
 mod config;
 mod dash;
