@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{
     app::AppExit,
     openxr::camera::XrPawn,
@@ -9,7 +11,10 @@ use bevy::{
     },
     DefaultPlugins,
 };
-use bevy_rapier_car_sim::car_app;
+use bevy_rapier_car_sim::{
+    car::{Car, HID},
+    car_app,
+};
 use camera::camera_controller_system;
 mod camera;
 
@@ -43,6 +48,33 @@ fn xr_startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<
 //     }
 // }
 
+// pub fn xr_input_system(
+//     buttons: Res<Input<GamepadButton>>,
+//     axes: Res<Axis<GamepadAxis>>,
+//     lobby: Res<GamepadLobby>,
+//     mut cars: Query<(&mut Car, &Transform, With<HID>)>,
+// ) {
+//     for (mut car, _transform, _hid) in cars.iter_mut() {
+//         for gamepad in lobby.gamepads.iter().cloned() {
+//             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::South)) {
+//                 car.gas = 1.;
+//             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
+//                 car.gas = 0.;
+//             }
+//             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::North)) {
+//                 car.brake = 1.;
+//             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::North)) {
+//                 car.brake = 0.;
+//             }
+//             let left_stick_x = axes
+//                 .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
+//                 .unwrap();
+//             // dbg!(left_stick_x);
+//             car.steering = left_stick_x;
+//         }
+//     }
+// }
+
 #[derive(Component, PartialEq, Eq)]
 enum Hand {
     Left,
@@ -54,10 +86,18 @@ fn interaction(
     action_set: Option<Res<XrActionSet>>,
     mut tracking_source: ResMut<XrTrackingSource>,
     mut vibration_events: EventWriter<XrVibrationEvent>,
-    mut hands: Query<(&Hand, &mut Transform, &GlobalTransform)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     pawn: Query<Entity, With<XrPawn>>,
+    mut pset: ParamSet<(
+        // Query<(&mut Transform, &mut CameraController), With<Camera>>,
+        // Query<&Transform, With<HID>>,
+        // Query<&mut Transform, With<DirectionalLight>>,
+        Query<(&Hand, &mut Transform, &GlobalTransform)>,
+        Query<(&mut Car, &Transform, With<HID>)>,
+    )>,
+    // mut hands: Query<(&Hand, &mut Transform, &GlobalTransform)>,
+    // mut cars: Query<(&mut Car, &Transform, With<HID>)>,
 ) {
     if tracking_source.reference_space_type() != XrReferenceSpaceType::Stage {
         tracking_source.set_reference_space_type(XrReferenceSpaceType::Stage);
@@ -96,23 +136,31 @@ fn interaction(
         } else {
             let squeeze_value = action_set.scalar_value(&squeeze);
             if squeeze_value > 0.0 {
+                for (mut car, _transform, _hid) in pset.p1().iter_mut() {
+                    car.gas = squeeze_value;
+                }
                 // Low frequency rumble
-                vibration_events.send(XrVibrationEvent {
-                    hand,
-                    command: XrVibrationEventType::Apply {
-                        duration: Duration::from_millis(100),
-                        frequency: 100_f32, // Hz
-                        // haptics intensity depends on the squeeze force
-                        amplitude: squeeze_value,
-                    },
-                });
+                // vibration_events.send(XrVibrationEvent {
+                //     hand,
+                //     command: XrVibrationEventType::Apply {
+                //         duration: Duration::from_millis(100),
+                //         frequency: 100_f32, // Hz
+                //         // haptics intensity depends on the squeeze force
+                //         amplitude: squeeze_value,
+                //     },
+                // });
             }
         }
     }
 
     let [left_pose, right_pose] = tracking_source.hands_pose();
     if let Some(pose) = left_pose {
-        if hands.iter().find(|hand| hand.0 == &Hand::Left).is_none() {
+        if pset
+            .p0()
+            .iter()
+            .find(|hand| hand.0 == &Hand::Left)
+            .is_none()
+        {
             let cube = c
                 .spawn_bundle(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -131,7 +179,7 @@ fn interaction(
 
             dbg!("spawned left hand");
         }
-        for mut hand in hands.iter_mut().filter(|hand| hand.0 == &Hand::Left) {
+        for mut hand in pset.p0().iter_mut().filter(|hand| hand.0 == &Hand::Left) {
             *hand.1 = Transform {
                 translation: pose.transform.position,
                 rotation: pose.transform.orientation,
@@ -140,7 +188,12 @@ fn interaction(
         }
     }
     if let Some(pose) = right_pose {
-        if hands.iter().find(|hand| hand.0 == &Hand::Right).is_none() {
+        if pset
+            .p0()
+            .iter()
+            .find(|hand| hand.0 == &Hand::Right)
+            .is_none()
+        {
             let cube = c
                 .spawn_bundle(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -159,14 +212,16 @@ fn interaction(
 
             dbg!("spawned right hand");
         }
-        for mut hand in hands.iter_mut().filter(|hand| hand.0 == &Hand::Right) {
+        for mut hand in pset.p0().iter_mut().filter(|hand| hand.0 == &Hand::Right) {
             *hand.1 = Transform {
                 translation: pose.transform.position,
                 rotation: pose.transform.orientation,
                 scale: Vec3::ONE,
             };
         }
+        for (mut car, _transform, _hid) in pset.p1().iter_mut() {
+            let (yaw, pitch, _roll) = pose.transform.orientation.to_euler(EulerRot::YXZ);
+            car.steering = -yaw / PI;
+        }
     }
-
-    // TODO: Draw hands
 }
