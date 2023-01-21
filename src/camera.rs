@@ -76,7 +76,7 @@ impl Default for CameraController {
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum CameraFollowView {
-    ZERO,
+    Windshield,
     FrontWheel,
     Near,
     Mid,
@@ -84,14 +84,14 @@ pub enum CameraFollowView {
 }
 fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     let look_from = match mode {
-        CameraFollowView::ZERO => Vec3::new(0., 0.1, -0.1),
+        CameraFollowView::Windshield => Vec3::new(0., -0.85, 0.26),
         CameraFollowView::Near => Vec3::new(0., 2., -5.),
         CameraFollowView::Mid => Vec3::new(0., 3., -10.),
         CameraFollowView::Far => Vec3::new(0., 5., -20.),
         CameraFollowView::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
     };
     let look_at = match mode {
-        CameraFollowView::ZERO => Vec3::new(0., 0.01, 0.),
+        CameraFollowView::Windshield => Vec3::new(0., 0., 0.), // TODO
         CameraFollowView::Near => Vec3::new(0., 1.5, 0.),
         CameraFollowView::Mid => Vec3::new(0., 2., 0.),
         CameraFollowView::Far => Vec3::new(0., 3., 0.),
@@ -134,7 +134,7 @@ impl CameraConfig {
 
 impl Default for CameraConfig {
     fn default() -> Self {
-        let view = CameraFollowView::ZERO;
+        let view = CameraFollowView::Windshield;
         let (from, at) = follow_props_by_mode(&view);
         Self {
             mode: CameraMode::Follow(view, from, at),
