@@ -162,7 +162,7 @@ fn interaction(
             .is_none()
         {
             let cube = c
-                .spawn_bundle(PbrBundle {
+                .spawn(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                     material: materials.add(Color::rgb(0.1, 0.1, 0.8).into()),
                     transform: Transform::default().with_scale([0.1, 0.1, 0.1].into()),
@@ -170,8 +170,8 @@ fn interaction(
                 })
                 .id();
             let hand = c
-                .spawn_bundle(TransformBundle::default())
-                .insert_bundle(VisibilityBundle::default())
+                .spawn(TransformBundle::default())
+                .insert(VisibilityBundle::default())
                 .add_child(cube)
                 .insert(Hand::Left)
                 .id();
@@ -195,7 +195,7 @@ fn interaction(
             .is_none()
         {
             let cube = c
-                .spawn_bundle(PbrBundle {
+                .spawn(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                     material: materials.add(Color::rgb(0.8, 0.1, 0.2).into()),
                     transform: Transform::default().with_scale([0.1, 0.1, 0.1].into()),
@@ -203,8 +203,8 @@ fn interaction(
                 })
                 .id();
             let hand = c
-                .spawn_bundle(TransformBundle::default())
-                .insert_bundle(VisibilityBundle::default())
+                .spawn(TransformBundle::default())
+                .insert(VisibilityBundle::default())
                 .add_child(cube)
                 .insert(Hand::Right)
                 .id();

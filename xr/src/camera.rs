@@ -1,26 +1,18 @@
-// use crate::car::HID;
-// use crate::config::Config;
-use bevy::input::mouse::MouseMotion;
 use bevy::openxr::XrPawn;
 use bevy::prelude::*;
-use bevy::render::camera::Projection;
-use bevy_rapier_car_sim::camera::{CameraConfig, CameraController, CameraMode};
+use bevy_rapier_car_sim::camera::{CameraConfig, CameraMode};
 use bevy_rapier_car_sim::car::HID;
 use core::f32::consts::PI;
 
-fn camera_position(mut q: Query<(&mut Transform, &mut GlobalTransform, &XrPawn)>) {
-    for (mut transform, _global, _) in q.iter_mut() {
-        transform.translation = Vec3::new(1., 0., 1.);
-    }
-}
+// fn camera_position(mut q: Query<(&mut Transform, &mut GlobalTransform, &XrPawn)>) {
+//     for (mut transform, _global, _) in q.iter_mut() {
+//         transform.translation = Vec3::new(1., 0., 1.);
+//     }
+// }
 
 pub fn camera_controller_system(
-    time: Res<Time>,
     config: Res<CameraConfig>,
-    mut mouse_events: EventReader<MouseMotion>,
-    key_input: Res<Input<KeyCode>>,
     mut pset: ParamSet<(
-        // Query<(&mut Transform, &mut CameraController), With<Camera>>,
         Query<(&mut Transform, &mut GlobalTransform, &XrPawn)>,
         Query<&Transform, With<HID>>,
         Query<&mut Transform, With<DirectionalLight>>,
@@ -33,22 +25,18 @@ pub fn camera_controller_system(
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
                 tf.rotate(Quat::from_rotation_y(-PI));
-                tf.look_at(car_tf.translation + at, Vec3::Y);
+                // tf.look_at(car_tf.translation + at, Vec3::Y);
                 Some(tf)
             } else {
                 None
             }
         }
     };
-    let tf: Transform = if let Some(tf) = follow_option {
-        // let mut p0 = pset.p0();
-        // let (_, mut options) = p0.single_mut();
-        tf
+    if let Some(tf) = follow_option {
+        let mut p0 = pset.p0();
+        let (mut camera_tf, _, _) = p0.single_mut();
+        *camera_tf = tf;
     } else {
-        Transform::default()
+        return;
     };
-
-    let mut p0 = pset.p0();
-    let (mut camera_tf, _, _) = p0.single_mut();
-    *camera_tf = tf;
 }
