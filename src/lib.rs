@@ -91,6 +91,7 @@ pub fn car_app(app: &mut App, fps: f32) -> &mut App {
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
         .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
+        .add_system(aero_system.label(CarSimLabel::Input))
         .add_system(keyboard_input_system.label(CarSimLabel::Input))
         .add_system(gamepad_input_system.label(CarSimLabel::Input))
         .add_system(car_sensor_system.label(CarSimLabel::Input))
