@@ -3,8 +3,21 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
+pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
+    for (velocity, transform, mut force) in car_query.iter_mut() {
+        let car_vector = transform.rotation.mul_vec3(Vec3::Z);
+        let car_vector_norm = car_vector.normalize();
+        let car_mps = velocity.linvel.length();
+        let f_drag = 1. / 2. * 1.2 * car_mps.powi(2) * 0.2 * 1.5;
+        let f_down = car_mps.powi(2) * 2.;
+        // println!("drag:{f_drag:.1} down:{f_down:.1}");
+        force.force = -Vec3::Y * f_down - car_vector_norm * f_drag;
+    }
+}
+
 pub fn esp_system(
-    mut query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
+    time: Res<Time>,
+    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
     mut wheel_set: ParamSet<(
         Query<
             (
@@ -31,16 +44,16 @@ pub fn esp_system(
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
     #[cfg(feature = "debug_lines")] config: Res<crate::config::Config>,
-    time: Res<Time>,
 ) {
     let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
     #[cfg(feature = "debug_lines")]
     let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
 
-    for (_entity, mut car, velocity, transform) in query.iter_mut() {
+    for (_entity, mut car, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
-        let delta = velocity.linvel.normalize() - car_vector.normalize();
+        let car_vector_norm = car_vector.normalize();
+        let delta = velocity.linvel.normalize() - car_vector_norm;
         let car_angle_slip_rad = Vec3::new(delta.x, 0., delta.z).length();
         let moving_forward: bool = car_angle_slip_rad < PI / 2.;
         let braking = match moving_forward {
@@ -51,9 +64,12 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 2.,
+            // _ => 1.,
             _ => match car_kmh / SPEED_LIMIT_KMH {
                 x if x >= 1. => 0.,
-                x => 1. - x,
+                // x => 1. - x,
+                x => 0.5 + 0.5 * (1. - x),
+                // _ => 1.,
             },
         };
         let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
