@@ -124,7 +124,7 @@ fn interaction(
             None => continue,
         };
         if action_set.button_just_pressed(&button) {
-            // Short haptic click
+            println!("Short haptic click");
             vibration_events.send(XrVibrationEvent {
                 hand,
                 command: XrVibrationEventType::Apply {
@@ -137,18 +137,14 @@ fn interaction(
             let squeeze_value = action_set.scalar_value(&squeeze);
             if squeeze_value > 0.0 {
                 for (mut car, _transform, _hid) in pset.p1().iter_mut() {
-                    car.gas = squeeze_value;
+                    if hand == XrHandType::Right {
+                        car.gas = squeeze_value;
+                        car.brake = 0.;
+                    } else {
+                        car.brake = squeeze_value;
+                        car.gas = 0.;
+                    }
                 }
-                // Low frequency rumble
-                // vibration_events.send(XrVibrationEvent {
-                //     hand,
-                //     command: XrVibrationEventType::Apply {
-                //         duration: Duration::from_millis(100),
-                //         frequency: 100_f32, // Hz
-                //         // haptics intensity depends on the squeeze force
-                //         amplitude: squeeze_value,
-                //     },
-                // });
             }
         }
     }
