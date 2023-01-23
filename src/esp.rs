@@ -9,8 +9,8 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
         let car_vector_norm = car_vector.normalize();
         let car_mps = velocity.linvel.length();
         let f_drag = 1. / 2. * 1.2 * car_mps.powi(2) * 0.2 * 1.5;
-        let f_down = car_mps.powi(2);
-        println!("drag:{f_drag:.1} down:{f_down:.1}");
+        let f_down = car_mps.powi(2) * 2.;
+        // println!("drag:{f_drag:.1} down:{f_down:.1}");
         force.force = -Vec3::Y * f_down - car_vector_norm * f_drag;
     }
 }
@@ -68,7 +68,8 @@ pub fn esp_system(
             _ => match car_kmh / SPEED_LIMIT_KMH {
                 x if x >= 1. => 0.,
                 // x => 1. - x,
-                _ => 1.,
+                x => 0.5 + 0.5 * (1. - x),
+                // _ => 1.,
             },
         };
         let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
