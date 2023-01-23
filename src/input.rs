@@ -81,6 +81,18 @@ pub fn gamepad_input_system(
                 .unwrap();
             // dbg!(left_stick_x);
             car.steering = left_stick_x;
+
+            let left_stick_y = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickY))
+                .unwrap();
+            // dbg!(left_stick_y);
+            if left_stick_y < 0. {
+                car.brake = -left_stick_y / 0.75;
+                car.gas = 0.;
+            } else {
+                car.gas = left_stick_y / 0.75;
+                car.brake = 0.;
+            }
         }
     }
 }
