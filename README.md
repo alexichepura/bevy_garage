@@ -3,7 +3,7 @@
 Wasm online!
 https://dainty-churros-415c79.netlify.app
 
-<img width="1512" alt="screenshot 2023-01-19" src="https://user-images.githubusercontent.com/5582266/213419807-695a0437-63c0-4d16-b257-dfc5d96e457e.png">
+<img width="1512" alt="screenshot 2023-01-19" src="https://user-images.githubusercontent.com/5582266/214000445-8fa5ac99-2412-416e-9905-8640c8d51502.jpg">
 
 Features:
 - Wasm, iOS, xr
