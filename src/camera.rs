@@ -5,33 +5,45 @@ use bevy::prelude::*;
 use bevy::render::camera::Projection;
 use core::f32::consts::PI;
 
-// pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
-//     commands
-//         .spawn((
-//             Camera3dBundle {
-//                 projection: Projection::from(PerspectiveProjection {
-//                     far: 5000.,
-//                     near: 0.01,
-//                     ..default()
-//                 }),
-//                 transform: Transform::from_translation(
-//                     Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
-//                 )
-//                 .looking_at(Vec3::Y * 6., Vec3::Y),
-//                 ..default()
-//             },
-//             #[cfg(feature = "bevy_atmosphere")]
-//             bevy_atmosphere::prelude::AtmosphereCamera::default(),
-//         ))
-//         .insert(CameraController::default());
-//     println!(
-//         "Controls:
-//         WSAD   - forward/back/strafe left/right
-//         LShift - run
-//         E      - up
-//         Q      - down"
-//     );
-// }
+pub struct CarCameraPlugin;
+
+impl Plugin for CarCameraPlugin {
+    fn build(&self, app: &mut App) {
+        println!("CarCameraPlugin build");
+        app.insert_resource(CameraConfig::default())
+            .add_startup_system(camera_start_system)
+            .add_system(camera_controller_system)
+            .add_system(camera_switch_system);
+    }
+}
+
+pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
+    commands
+        .spawn((
+            Camera3dBundle {
+                projection: Projection::from(PerspectiveProjection {
+                    far: 5000.,
+                    near: 0.01,
+                    ..default()
+                }),
+                transform: Transform::from_translation(
+                    Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+                )
+                .looking_at(Vec3::Y * 6., Vec3::Y),
+                ..default()
+            },
+            #[cfg(feature = "bevy_atmosphere")]
+            bevy_atmosphere::prelude::AtmosphereCamera::default(),
+        ))
+        .insert(CameraController::default());
+    println!(
+        "Controls:
+        WSAD   - forward/back/strafe left/right
+        LShift - run
+        E      - up
+        Q      - down"
+    );
+}
 
 #[derive(Component)]
 pub struct CameraController {
@@ -111,6 +123,12 @@ pub struct CameraConfig {
 }
 
 impl CameraConfig {
+    pub fn from_view(view: CameraFollowView) -> Self {
+        let (from, at) = follow_props_by_mode(&view);
+        Self {
+            mode: CameraMode::Follow(view, from, at),
+        }
+    }
     pub fn free(&mut self) {
         self.mode = CameraMode::Free;
     }
@@ -134,11 +152,7 @@ impl CameraConfig {
 
 impl Default for CameraConfig {
     fn default() -> Self {
-        let view = CameraFollowView::Windshield;
-        let (from, at) = follow_props_by_mode(&view);
-        Self {
-            mode: CameraMode::Follow(view, from, at),
-        }
+        Self::from_view(CameraFollowView::Near)
     }
 }
 pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<KeyCode>>) {
@@ -263,7 +277,7 @@ pub fn camera_controller_system(
     let (mut camera_tf, _) = p0.single_mut();
     *camera_tf = tf;
 
-    // let mut p2 = pset.p2();
-    // let mut dlight_tf = p2.single_mut();
-    // dlight_tf.translation = tf.translation;
+    let mut p2 = pset.p2();
+    let mut dlight_tf = p2.single_mut();
+    dlight_tf.translation = tf.translation;
 }

@@ -12,6 +12,7 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rapier_car_sim::{
+    camera::{CameraConfig, CameraFollowView},
     car::{Car, HID},
     car_app,
 };
@@ -24,8 +25,8 @@ pub fn game_main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins);
     app.add_startup_system(xr_startup);
+    app.insert_resource(CameraConfig::from_view(CameraFollowView::Windshield));
     car_app(&mut app, 30.);
-    // app.add_system(camera_position);
     app.add_system(interaction);
     app.add_system(camera_controller_system);
     app.run();
@@ -41,39 +42,6 @@ fn xr_startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<
 
     println!("startup done");
 }
-
-// fn camera_position(mut q: Query<(&mut Transform, &mut GlobalTransform, &XrPawn)>) {
-//     for (mut transform, _global, _) in q.iter_mut() {
-//         transform.translation = Vec3::new(1., 0., 1.);
-//     }
-// }
-
-// pub fn xr_input_system(
-//     buttons: Res<Input<GamepadButton>>,
-//     axes: Res<Axis<GamepadAxis>>,
-//     lobby: Res<GamepadLobby>,
-//     mut cars: Query<(&mut Car, &Transform, With<HID>)>,
-// ) {
-//     for (mut car, _transform, _hid) in cars.iter_mut() {
-//         for gamepad in lobby.gamepads.iter().cloned() {
-//             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::South)) {
-//                 car.gas = 1.;
-//             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
-//                 car.gas = 0.;
-//             }
-//             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::North)) {
-//                 car.brake = 1.;
-//             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::North)) {
-//                 car.brake = 0.;
-//             }
-//             let left_stick_x = axes
-//                 .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
-//                 .unwrap();
-//             // dbg!(left_stick_x);
-//             car.steering = left_stick_x;
-//         }
-//     }
-// }
 
 #[derive(Component, PartialEq, Eq)]
 enum Hand {

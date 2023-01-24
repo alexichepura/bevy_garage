@@ -16,7 +16,6 @@ use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 // use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_rapier3d::prelude::*;
-use camera::*;
 use car::*;
 use config::*;
 use dash::*;
@@ -63,11 +62,7 @@ pub fn car_app(app: &mut App, fps: f32) -> &mut App {
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
-        .insert_resource(CameraConfig::default())
         .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
-        // .add_startup_system(camera_start_system)
-        // .add_system(camera_controller_system)
-        // .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .init_resource::<GamepadLobby>()
