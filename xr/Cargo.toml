@@ -6,6 +6,9 @@ description = "Car sim with bevy and rapier"
 publish = false
 license = "MIT OR Apache-2.0"
 
+[workspace]
+resolver = "2"
+
 [[example]]
 name = "android"
 crate-type = ["cdylib"]
@@ -28,6 +31,21 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features
 ] }
 bevy_rapier_car_sim = { path = "../", default-features = false, features = [] }
 
+[patch.'crates-io']
+bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_render = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_ecs = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_app = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_asset = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_core = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_hierarchy = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_log = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_math = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_reflect = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_utils = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_core_pipeline = { git = "https://github.com/kcking/bevy", branch = "xr" }
+bevy_pbr = { git = "https://github.com/kcking/bevy", branch = "xr" }
+
 [package.metadata.android]
 apk_label = "Bevy XR Example"
 package = "com.example.car_sim_xr"
@@ -40,6 +58,10 @@ runtime_libs = "libs"
 [package.metadata.android.sdk]
 min_sdk_version = 29
 target_sdk_version = 29
+
+[package.metadata.android.signing.release]
+path = "/Users/alexi/.android/debug.keystore"
+keystore_password = "android"
 
 [package.metadata.android.application]
 

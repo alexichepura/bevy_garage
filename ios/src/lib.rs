@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier_car_sim::{car_app, CarSimLabel};
+use bevy_rapier_car_sim::{camera::CarCameraPlugin, car_app, CarSimLabel};
 mod touch;
 use touch::*;
 
@@ -16,6 +16,7 @@ fn main() {
     }));
     app.add_startup_system(touch_input_start_system);
     app.add_system(touch_input_system.label(CarSimLabel::Input));
+    app.add_plugin(CarCameraPlugin);
     car_app(&mut app, 60.).run();
 }
 

@@ -5,6 +5,18 @@ use bevy::prelude::*;
 use bevy::render::camera::Projection;
 use core::f32::consts::PI;
 
+pub struct CarCameraPlugin;
+
+impl Plugin for CarCameraPlugin {
+    fn build(&self, app: &mut App) {
+        println!("CarCameraPlugin build");
+        app.insert_resource(CameraConfig::default())
+            .add_startup_system(camera_start_system)
+            .add_system(camera_controller_system)
+            .add_system(camera_switch_system);
+    }
+}
+
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
         .spawn((
@@ -75,7 +87,8 @@ impl Default for CameraController {
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
-enum CameraFollowView {
+pub enum CameraFollowView {
+    Windshield,
     FrontWheel,
     Near,
     Mid,
@@ -83,12 +96,14 @@ enum CameraFollowView {
 }
 fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     let look_from = match mode {
+        CameraFollowView::Windshield => Vec3::new(0., -0.85, 0.26),
         CameraFollowView::Near => Vec3::new(0., 2., -5.),
         CameraFollowView::Mid => Vec3::new(0., 3., -10.),
         CameraFollowView::Far => Vec3::new(0., 5., -20.),
         CameraFollowView::FrontWheel => Vec3::new(-2.5, -0.2, 2.),
     };
     let look_at = match mode {
+        CameraFollowView::Windshield => Vec3::new(0., 0., 0.), // TODO
         CameraFollowView::Near => Vec3::new(0., 1.5, 0.),
         CameraFollowView::Mid => Vec3::new(0., 2., 0.),
         CameraFollowView::Far => Vec3::new(0., 3., 0.),
@@ -97,17 +112,23 @@ fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     (look_from, look_at)
 }
 #[derive(PartialEq, Debug)]
-enum CameraMode {
+pub enum CameraMode {
     Follow(CameraFollowView, Vec3, Vec3),
     Free,
 }
 
 #[derive(Resource)]
 pub struct CameraConfig {
-    mode: CameraMode,
+    pub mode: CameraMode,
 }
 
 impl CameraConfig {
+    pub fn from_view(view: CameraFollowView) -> Self {
+        let (from, at) = follow_props_by_mode(&view);
+        Self {
+            mode: CameraMode::Follow(view, from, at),
+        }
+    }
     pub fn free(&mut self) {
         self.mode = CameraMode::Free;
     }
@@ -131,11 +152,7 @@ impl CameraConfig {
 
 impl Default for CameraConfig {
     fn default() -> Self {
-        let view = CameraFollowView::Near;
-        let (from, at) = follow_props_by_mode(&view);
-        Self {
-            mode: CameraMode::Follow(view, from, at),
-        }
+        Self::from_view(CameraFollowView::Near)
     }
 }
 pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<KeyCode>>) {
@@ -260,7 +277,7 @@ pub fn camera_controller_system(
     let (mut camera_tf, _) = p0.single_mut();
     *camera_tf = tf;
 
-    // let mut p2 = pset.p2();
-    // let mut dlight_tf = p2.single_mut();
-    // dlight_tf.translation = tf.translation;
+    let mut p2 = pset.p2();
+    let mut dlight_tf = p2.single_mut();
+    dlight_tf.translation = tf.translation;
 }

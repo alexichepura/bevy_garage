@@ -1,5 +1,5 @@
 mod api_client;
-mod camera;
+pub mod camera;
 pub mod car;
 mod config;
 mod dash;
@@ -14,9 +14,8 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
+// use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_rapier3d::prelude::*;
-use camera::*;
 use car::*;
 use config::*;
 use dash::*;
@@ -47,37 +46,23 @@ pub enum CarSimLabel {
 
 pub fn car_app(app: &mut App, fps: f32) -> &mut App {
     app.add_event::<StreamEvent>()
-        .add_plugin(FramepacePlugin)
+        // .add_plugin(FramepacePlugin)
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Fixed {
                 dt: 1. / fps,
                 substeps: 20,
             },
-            // timestep_mode: TimestepMode::Variable {
-            //     max_dt: 1. / fps,
-            //     substeps: 5,
-            //     time_scale: 1.,
-            // },
-            // timestep_mode: TimestepMode::Interpolated {
-            //     dt: 1. / fps,
-            //     substeps: 5,
-            //     time_scale: 1.,
-            // },
             ..default()
         })
-        .insert_resource(FramepaceSettings {
-            limiter: Limiter::from_framerate(fps as f64),
-            ..default()
-        })
+        // .insert_resource(FramepaceSettings {
+        //     limiter: Limiter::from_framerate(fps as f64),
+        //     ..default()
+        // })
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
-        .insert_resource(CameraConfig::default())
         .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
-        .add_startup_system(camera_start_system)
-        .add_system(camera_controller_system)
-        .add_system(camera_switch_system)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .init_resource::<GamepadLobby>()
