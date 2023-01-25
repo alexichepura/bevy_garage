@@ -14,7 +14,6 @@ mod progress;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-// use bevy_framepace::{FramepacePlugin, FramepaceSettings, Limiter};
 use bevy_rapier3d::prelude::*;
 use car::*;
 use config::*;
@@ -29,9 +28,9 @@ use progress::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    // c.integration_parameters.max_velocity_iterations = 64;
-    // c.integration_parameters.max_velocity_friction_iterations = 16;
-    c.integration_parameters.max_stabilization_iterations = 8;
+    c.integration_parameters.max_velocity_iterations = 8;
+    c.integration_parameters.max_velocity_friction_iterations = 16;
+    c.integration_parameters.max_stabilization_iterations = 16;
     c.integration_parameters.allowed_linear_error = 0.0001;
     c.integration_parameters.erp = 0.99;
     dbg!(c.integration_parameters);
@@ -44,21 +43,17 @@ pub enum CarSimLabel {
     Esp,
 }
 
-pub fn car_app(app: &mut App, fps: f32) -> &mut App {
+pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
-        // .add_plugin(FramepacePlugin)
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
-            timestep_mode: TimestepMode::Fixed {
-                dt: 1. / fps,
+            timestep_mode: TimestepMode::Variable {
+                max_dt: 1. / 30.,
+                time_scale: 1.,
                 substeps: 20,
             },
             ..default()
         })
-        // .insert_resource(FramepaceSettings {
-        //     limiter: Limiter::from_framerate(fps as f64),
-        //     ..default()
-        // })
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())

@@ -12,6 +12,7 @@ impl Plugin for CarCameraPlugin {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system)
+            // .add_system_to_stage(CoreStage::PreUpdate, camera_controller_system)
             .add_system(camera_switch_system);
     }
 }
@@ -119,6 +120,7 @@ pub enum CameraMode {
 #[derive(Resource)]
 pub struct CameraConfig {
     pub mode: CameraMode,
+    pub prev: Transform,
 }
 
 impl CameraConfig {
@@ -126,6 +128,7 @@ impl CameraConfig {
         let (from, at) = follow_props_by_mode(&view);
         Self {
             mode: CameraMode::Follow(view, from, at),
+            prev: Transform::IDENTITY,
         }
     }
     pub fn free(&mut self) {
@@ -174,7 +177,7 @@ pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<K
 
 pub fn camera_controller_system(
     time: Res<Time>,
-    config: Res<CameraConfig>,
+    mut config: ResMut<CameraConfig>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
     mut pset: ParamSet<(
@@ -271,9 +274,25 @@ pub fn camera_controller_system(
         tf
     };
 
+    let d_seconds = time.delta_seconds();
+    let d_seconds_min = if d_seconds == 0.0 {
+        1. / 120.
+    } else {
+        d_seconds
+    };
+    let prev = config.prev;
+    let k = d_seconds_min * 100.;
+    let new_translation = prev.translation.lerp(tf.translation, k);
+    let new_rotation = prev.rotation.slerp(tf.rotation, k);
+    config.prev.translation = new_translation;
+    config.prev.rotation = new_rotation;
+    // let new_translation = tf.translation;
+    // let new_rotation = tf.rotation;
+
     let mut p0 = pset.p0();
     let (mut camera_tf, options) = p0.single_mut();
-    *camera_tf = tf;
+    camera_tf.translation = new_translation;
+    camera_tf.rotation = new_rotation;
     let yaw = options.yaw;
 
     let mut p2 = pset.p2();

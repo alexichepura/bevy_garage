@@ -16,11 +16,5 @@ fn main() {
         ..default()
     }));
     app.add_plugin(CarCameraPlugin);
-
-    let fps: f32 = if cfg!(target_arch = "wasm32") {
-        60.
-    } else {
-        120.
-    };
-    car_app(&mut app, fps).run();
+    car_app(&mut app).run();
 }
