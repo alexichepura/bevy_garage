@@ -195,6 +195,7 @@ pub fn spawn_kerb(
         ..default()
     });
     let kerb_length: f32 = 10.;
+    let kerb_height: f32 = 0.002;
     let from_center: f32 = 5.;
     let top_norm = Vec3::Y;
 
@@ -233,7 +234,7 @@ pub fn spawn_kerb(
             PbrBundle {
                 mesh: meshes.add(mesh),
                 material: material.clone(),
-                transform: Transform::from_xyz(0., 0.001, 0.),
+                transform: Transform::from_xyz(0., kerb_height, 0.),
                 ..Default::default()
             },
             NotShadowCaster,
@@ -288,7 +289,7 @@ pub fn spawn_kerb(
             PbrBundle {
                 mesh: meshes.add(mesh),
                 material: material.clone(),
-                transform: Transform::from_xyz(0., 0.01, 0.),
+                transform: Transform::from_xyz(0., kerb_height, 0.),
                 ..Default::default()
             },
             NotShadowCaster,
