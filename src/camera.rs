@@ -3,7 +3,6 @@ use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::Projection;
-use core::f32::consts::PI;
 
 pub struct CarCameraPlugin;
 
@@ -190,7 +189,6 @@ pub fn camera_controller_system(
             if let Ok(car_tf) = pset.p1().get_single() {
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
-                tf.rotate(Quat::from_rotation_y(-PI));
                 tf.look_at(car_tf.translation + at, Vec3::Y);
                 Some(tf)
             } else {
@@ -274,10 +272,14 @@ pub fn camera_controller_system(
     };
 
     let mut p0 = pset.p0();
-    let (mut camera_tf, _) = p0.single_mut();
+    let (mut camera_tf, options) = p0.single_mut();
     *camera_tf = tf;
+    let yaw = options.yaw;
 
     let mut p2 = pset.p2();
     let mut dlight_tf = p2.single_mut();
-    dlight_tf.translation = tf.translation;
+    let camera_xz = Vec3::new(tf.translation.x, dlight_tf.translation.y, tf.translation.z);
+    let camera_dir = -Quat::from_rotation_y(yaw).mul_vec3(Vec3::Z);
+    let light_shift = 50. * camera_dir;
+    dlight_tf.translation = camera_xz + light_shift;
 }

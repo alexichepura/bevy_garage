@@ -62,7 +62,7 @@ pub fn car_app(app: &mut App, fps: f32) -> &mut App {
         .insert_resource(DqnResource::default())
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
-        .insert_resource(DirectionalLightShadowMap { size: 2048 * 4 })
+        .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .init_resource::<GamepadLobby>()
