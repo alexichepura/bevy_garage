@@ -36,13 +36,6 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
             bevy_atmosphere::prelude::AtmosphereCamera::default(),
         ))
         .insert(CameraController::default());
-    println!(
-        "Controls:
-        WSAD   - forward/back/strafe left/right
-        LShift - run
-        E      - up
-        Q      - down"
-    );
 }
 
 #[derive(Component)]
