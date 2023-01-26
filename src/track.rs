@@ -1,8 +1,7 @@
 use crate::config::Config;
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
-use bevy::render::mesh::*;
-use bevy::render::render_resource::*;
-use bevy::render::texture::ImageSampler;
+use bevy::render::{mesh::*, render_resource::*, texture::ImageSampler};
 use bevy_rapier3d::na::Point3;
 use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::rapier::prelude::ColliderShape;
@@ -151,17 +150,20 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
 
     commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
-            material: materials.add(StandardMaterial {
-                base_color: Color::rgb(0.05, 0.05, 0.05),
-                perceptual_roughness: 0.7,
-                ..default()
-            }),
-            transform: Transform::from_xyz(0., 0.001, 0.),
-            ..Default::default()
-        })
+        .spawn((
+            PbrBundle {
+                mesh: meshes.add(mesh),
+                // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::rgb(0.05, 0.05, 0.05),
+                    perceptual_roughness: 0.7,
+                    ..default()
+                }),
+                transform: Transform::from_xyz(0., 0.001, 0.),
+                ..Default::default()
+            },
+            NotShadowCaster,
+        ))
         .insert(TrackRoad)
         .insert(Collider::from(ColliderShape::trimesh(
             vertices
@@ -193,6 +195,7 @@ pub fn spawn_kerb(
         ..default()
     });
     let kerb_length: f32 = 10.;
+    let kerb_height: f32 = 0.002;
     let from_center: f32 = 5.;
     let top_norm = Vec3::Y;
 
@@ -209,18 +212,6 @@ pub fn spawn_kerb(
         let (v1, v2) = (point + normals_side[i], point);
         vertices.push(v1.into());
         vertices.push(v2.into());
-        // commands.spawn(PbrBundle {
-        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
-        //     material: materials.add(Color::rgb(0.5, 0.1, 0.1).into()),
-        //     transform: Transform::from_translation(v1),
-        //     ..Default::default()
-        // });
-        // commands.spawn(PbrBundle {
-        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
-        //     material: materials.add(Color::rgb(0.1, 0.1, 0.5).into()),
-        //     transform: Transform::from_translation(v2),
-        //     ..Default::default()
-        // });
         let diff = point_next.sub(point).length();
         let uv = len / kerb_length;
         uvs.push([uv, 0.]);
@@ -239,12 +230,15 @@ pub fn spawn_kerb(
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            material: material.clone(),
-            transform: Transform::from_xyz(0., 0.005, 0.),
-            ..Default::default()
-        })
+        .spawn((
+            PbrBundle {
+                mesh: meshes.add(mesh),
+                material: material.clone(),
+                transform: Transform::from_xyz(0., kerb_height, 0.),
+                ..Default::default()
+            },
+            NotShadowCaster,
+        ))
         .insert(Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
@@ -274,18 +268,6 @@ pub fn spawn_kerb(
         let (v1, v2) = (point, point + normals_side[i]);
         vertices.push(v1.into());
         vertices.push(v2.into());
-        // commands.spawn(PbrBundle {
-        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
-        //     material: materials.add(Color::rgb(0.5, 0.1, 0.1).into()),
-        //     transform: Transform::from_translation(v1),
-        //     ..Default::default()
-        // });
-        // commands.spawn(PbrBundle {
-        //     mesh: meshes.add(shape::Cube { size: 0.1 }.into()),
-        //     material: materials.add(Color::rgb(0.1, 0.1, 0.5).into()),
-        //     transform: Transform::from_translation(v2),
-        //     ..Default::default()
-        // });
         let diff = point_next.sub(point).length();
         uvs.push([len / kerb_length, 0.]);
         uvs.push([len / kerb_length, 1.]);
@@ -303,12 +285,15 @@ pub fn spawn_kerb(
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            material: material.clone(),
-            transform: Transform::from_xyz(0., 0.01, 0.),
-            ..Default::default()
-        })
+        .spawn((
+            PbrBundle {
+                mesh: meshes.add(mesh),
+                material: material.clone(),
+                transform: Transform::from_xyz(0., kerb_height, 0.),
+                ..Default::default()
+            },
+            NotShadowCaster,
+        ))
         .insert(Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
@@ -462,30 +447,30 @@ pub fn spawn_ground(
     let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
     let heights: Vec<Real> = vec![hy; num_rows * num_cols];
     commands
-        .spawn_empty()
-        .insert(Name::new("road-heightfield"))
-        .insert(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box {
-                max_x: hx,
-                min_x: -hx,
-                max_y: hy,
-                min_y: -hy,
-                max_z: hz,
-                min_z: -hz,
-            })),
-            // material: materials.add(Color::rgb(0.2, 0.35, 0.2).into()),
-            material: materials.add(StandardMaterial {
-                base_color: Color::hex("7b824e").unwrap(),
-                perceptual_roughness: 0.3,
+        .spawn((
+            Name::new("road-heightfield"),
+            PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Box {
+                    max_x: hx,
+                    min_x: -hx,
+                    max_y: hy,
+                    min_y: -hy,
+                    max_z: hz,
+                    min_z: -hz,
+                })),
+                // material: materials.add(Color::rgb(0.2, 0.35, 0.2).into()),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::hex("7b824e").unwrap(),
+                    perceptual_roughness: 0.3,
+                    ..default()
+                }),
                 ..default()
-            }),
-            ..default()
-        })
+            },
+            NotShadowCaster,
+        ))
         .insert(RigidBody::Fixed)
         .insert(TransformBundle::from_transform(Transform::from_xyz(
-            -350.,
-            -hy - 0.01,
-            570.,
+            -350., -hy, 570.,
         )))
         .insert(Collider::heightfield(
             heights,

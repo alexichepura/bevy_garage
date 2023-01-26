@@ -3,7 +3,6 @@ use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::Projection;
-use core::f32::consts::PI;
 
 pub struct CarCameraPlugin;
 
@@ -13,6 +12,7 @@ impl Plugin for CarCameraPlugin {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system)
+            // .add_system_to_stage(CoreStage::PreUpdate, camera_controller_system)
             .add_system(camera_switch_system);
     }
 }
@@ -36,13 +36,6 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
             bevy_atmosphere::prelude::AtmosphereCamera::default(),
         ))
         .insert(CameraController::default());
-    println!(
-        "Controls:
-        WSAD   - forward/back/strafe left/right
-        LShift - run
-        E      - up
-        Q      - down"
-    );
 }
 
 #[derive(Component)]
@@ -120,6 +113,7 @@ pub enum CameraMode {
 #[derive(Resource)]
 pub struct CameraConfig {
     pub mode: CameraMode,
+    pub prev: Transform,
 }
 
 impl CameraConfig {
@@ -127,6 +121,7 @@ impl CameraConfig {
         let (from, at) = follow_props_by_mode(&view);
         Self {
             mode: CameraMode::Follow(view, from, at),
+            prev: Transform::IDENTITY,
         }
     }
     pub fn free(&mut self) {
@@ -175,7 +170,7 @@ pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<K
 
 pub fn camera_controller_system(
     time: Res<Time>,
-    config: Res<CameraConfig>,
+    mut config: ResMut<CameraConfig>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
     mut pset: ParamSet<(
@@ -190,7 +185,6 @@ pub fn camera_controller_system(
             if let Ok(car_tf) = pset.p1().get_single() {
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
-                tf.rotate(Quat::from_rotation_y(-PI));
                 tf.look_at(car_tf.translation + at, Vec3::Y);
                 Some(tf)
             } else {
@@ -273,11 +267,31 @@ pub fn camera_controller_system(
         tf
     };
 
+    let d_seconds = time.delta_seconds();
+    let d_seconds_min = if d_seconds == 0.0 {
+        1. / 120.
+    } else {
+        d_seconds
+    };
+    let prev = config.prev;
+    let k = d_seconds_min * 100.;
+    let new_translation = prev.translation.lerp(tf.translation, k);
+    let new_rotation = prev.rotation.slerp(tf.rotation, k);
+    config.prev.translation = new_translation;
+    config.prev.rotation = new_rotation;
+    // let new_translation = tf.translation;
+    // let new_rotation = tf.rotation;
+
     let mut p0 = pset.p0();
-    let (mut camera_tf, _) = p0.single_mut();
-    *camera_tf = tf;
+    let (mut camera_tf, options) = p0.single_mut();
+    camera_tf.translation = new_translation;
+    camera_tf.rotation = new_rotation;
+    let yaw = options.yaw;
 
     let mut p2 = pset.p2();
     let mut dlight_tf = p2.single_mut();
-    dlight_tf.translation = tf.translation;
+    let camera_xz = Vec3::new(tf.translation.x, dlight_tf.translation.y, tf.translation.z);
+    let camera_dir = -Quat::from_rotation_y(yaw).mul_vec3(Vec3::Z);
+    let light_shift = 50. * camera_dir;
+    dlight_tf.translation = camera_xz + light_shift;
 }
