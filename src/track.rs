@@ -122,19 +122,21 @@ impl Track {
 }
 
 pub fn spawn_road(
+    asset_server: Res<AssetServer>,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     track: &Track,
 ) {
+    let texture_handle = asset_server.load("bake.png");
+    let material_handle = materials.add(StandardMaterial {
+        base_color_texture: Some(texture_handle.clone()),
+        // alpha_mode: AlphaMode::Blend,
+        // unlit: true,
+        ..default()
+    });
+
     let (vertices, normals) = track.road();
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(
-        Mesh::ATTRIBUTE_POSITION,
-        VertexAttributeValues::from(vertices.clone()),
-    );
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
-    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     let mut len: f32 = 0.;
@@ -143,22 +145,31 @@ pub fn spawn_road(
         let i_next: usize = if last { 0 } else { i + 1 };
         let next = track.points.get(i_next).unwrap();
         let diff = next.sub(*p).length();
-        uvs.push([len / 10., 0.]);
-        uvs.push([len / 10., 1.]);
+        let uv = len / 1.;
+        uvs.push([uv / 1., 0.]);
+        uvs.push([uv / 1., 1.]);
         len += diff;
     }
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(vertices.clone()),
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     commands
         .spawn((
             PbrBundle {
                 mesh: meshes.add(mesh),
+                material: material_handle,
                 // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
-                material: materials.add(StandardMaterial {
-                    base_color: Color::rgb(0.05, 0.05, 0.05),
-                    perceptual_roughness: 0.7,
-                    ..default()
-                }),
+                // material: materials.add(StandardMaterial {
+                //     base_color: Color::rgb(0.05, 0.05, 0.05),
+                //     perceptual_roughness: 0.7,
+                //     ..default()
+                // }),
                 transform: Transform::from_xyz(0., 0.001, 0.),
                 ..Default::default()
             },
@@ -485,6 +496,7 @@ pub fn spawn_ground(
 }
 
 pub fn track_start_system(
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -492,7 +504,13 @@ pub fn track_start_system(
 ) {
     let track = Track::new();
     spawn_ground(&mut commands, &mut meshes, &mut materials);
-    spawn_road(&mut commands, &mut meshes, &mut materials, &track);
+    spawn_road(
+        asset_server,
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &track,
+    );
     spawn_kerb(
         &mut commands,
         &mut meshes,

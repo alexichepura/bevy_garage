@@ -8,7 +8,6 @@ pub struct CarCameraPlugin;
 
 impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
-        println!("CarCameraPlugin build");
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system)
