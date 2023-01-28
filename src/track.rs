@@ -129,11 +129,10 @@ pub fn spawn_road(
     track: &Track,
 ) {
     let texture_handle = asset_server.load("bake.png");
-    // texture_handle.get_field("");
+    let texture_normals_handle = asset_server.load("bake_normals.png");
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle.clone()),
-        // alpha_mode: AlphaMode::Blend,
-        // unlit: true,
+        normal_map_texture: Some(texture_normals_handle.clone()),
         ..default()
     });
 
@@ -146,9 +145,9 @@ pub fn spawn_road(
         let i_next: usize = if last { 0 } else { i + 1 };
         let next = track.points.get(i_next).unwrap();
         let diff = next.sub(*p).length();
-        let uv = len / 1.;
+        let uv = len / 10.;
         uvs.push([uv, 0.]);
-        uvs.push([uv, 10.]);
+        uvs.push([uv, 1.]);
         len += diff;
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
@@ -159,6 +158,10 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+    let generate_tangents = mesh.generate_tangents();
+    if generate_tangents.is_ok() {
+        println!("Generated tangents");
+    }
 
     commands
         .spawn((
