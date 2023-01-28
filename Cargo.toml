@@ -15,7 +15,7 @@ default = ["debug_lines", "bevy_atmosphere"]
 debug_lines = ["dep:bevy_prototype_debug_lines"]
 bevy_atmosphere = ["dep:bevy_atmosphere"]
 [workspace.dependencies]
-bevy = { version = "0.9.1" }
+bevy = { version = "0.9.1", features = ["jpeg"] }
 dfdx = "0.10"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite", "sqlite-create-many"] }
 prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }

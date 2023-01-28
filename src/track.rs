@@ -128,11 +128,12 @@ pub fn spawn_road(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     track: &Track,
 ) {
-    let texture_handle = asset_server.load("bake.png");
-    let texture_normals_handle = asset_server.load("bake_normals.png");
+    let texture_handle = asset_server.load("asphalt.jpg");
+    let texture_normals_handle = asset_server.load("asphalt_normals.jpg");
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle.clone()),
         normal_map_texture: Some(texture_normals_handle.clone()),
+        perceptual_roughness: 0.7,
         ..default()
     });
 
@@ -145,9 +146,10 @@ pub fn spawn_road(
         let i_next: usize = if last { 0 } else { i + 1 };
         let next = track.points.get(i_next).unwrap();
         let diff = next.sub(*p).length();
-        let uv = len / 10.;
+        let x = 5.;
+        let uv = x * len / 10.;
         uvs.push([uv, 0.]);
-        uvs.push([uv, 1.]);
+        uvs.push([uv, x * 1.]);
         len += diff;
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
