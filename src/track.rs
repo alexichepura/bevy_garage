@@ -129,6 +129,7 @@ pub fn spawn_road(
     track: &Track,
 ) {
     let texture_handle = asset_server.load("bake.png");
+    // texture_handle.get_field("");
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle.clone()),
         // alpha_mode: AlphaMode::Blend,
@@ -146,8 +147,8 @@ pub fn spawn_road(
         let next = track.points.get(i_next).unwrap();
         let diff = next.sub(*p).length();
         let uv = len / 1.;
-        uvs.push([uv / 1., 0.]);
-        uvs.push([uv / 1., 1.]);
+        uvs.push([uv, 0.]);
+        uvs.push([uv, 10.]);
         len += diff;
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
