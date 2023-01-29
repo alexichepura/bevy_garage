@@ -81,6 +81,7 @@ impl Default for CameraController {
 pub enum CameraFollowView {
     Windshield,
     FrontWheel,
+    Driver,
     Near,
     Mid,
     Far,
@@ -88,6 +89,7 @@ pub enum CameraFollowView {
 fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     let look_from = match mode {
         CameraFollowView::Windshield => Vec3::new(0., -0.85, 0.26),
+        CameraFollowView::Driver => Vec3::new(0., 0.47, -0.402),
         CameraFollowView::Near => Vec3::new(0., 2., -5.),
         CameraFollowView::Mid => Vec3::new(0., 3., -10.),
         CameraFollowView::Far => Vec3::new(0., 5., -20.),
@@ -95,6 +97,7 @@ fn follow_props_by_mode(mode: &CameraFollowView) -> (Vec3, Vec3) {
     };
     let look_at = match mode {
         CameraFollowView::Windshield => Vec3::new(0., 0., 0.), // TODO
+        CameraFollowView::Driver => Vec3::new(0., 0.47, 0.),
         CameraFollowView::Near => Vec3::new(0., 1.5, 0.),
         CameraFollowView::Mid => Vec3::new(0., 2., 0.),
         CameraFollowView::Far => Vec3::new(0., 3., 0.),
@@ -129,6 +132,9 @@ impl CameraConfig {
         let (from, at) = follow_props_by_mode(&view);
         self.mode = CameraMode::Follow(view, from, at);
     }
+    pub fn driver(&mut self) {
+        self.follow_view(CameraFollowView::Driver);
+    }
     pub fn near(&mut self) {
         self.follow_view(CameraFollowView::Near);
     }
@@ -145,20 +151,23 @@ impl CameraConfig {
 
 impl Default for CameraConfig {
     fn default() -> Self {
-        Self::from_view(CameraFollowView::Near)
+        Self::from_view(CameraFollowView::Driver)
     }
 }
 pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<KeyCode>>) {
     if input.just_pressed(KeyCode::Key1) {
-        config.near();
+        config.driver();
     }
     if input.just_pressed(KeyCode::Key2) {
-        config.mid();
+        config.near();
     }
     if input.just_pressed(KeyCode::Key3) {
-        config.far();
+        config.mid();
     }
     if input.just_pressed(KeyCode::Key4) {
+        config.far();
+    }
+    if input.just_pressed(KeyCode::Key5) {
         config.wheel();
     }
     if input.just_pressed(KeyCode::Key0) {
