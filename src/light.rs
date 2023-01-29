@@ -3,7 +3,7 @@ use bevy::prelude::*;
 pub fn light_start_system(mut commands: Commands) {
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.45,
+        brightness: 0.2,
     });
 
     commands.spawn(DirectionalLightBundle {

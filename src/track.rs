@@ -130,9 +130,11 @@ pub fn spawn_road(
 ) {
     let texture_handle = asset_server.load("asphalt.jpg");
     let texture_normals_handle = asset_server.load("asphalt_normals.jpg");
+    // let texture_metallic_roughness_handle = asset_server.load("asphalt_metallic_roughness.jpg");
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle.clone()),
         normal_map_texture: Some(texture_normals_handle.clone()),
+        // metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
         perceptual_roughness: 0.7,
         ..default()
     });
