@@ -151,7 +151,7 @@ impl CameraConfig {
 
 impl Default for CameraConfig {
     fn default() -> Self {
-        Self::from_view(CameraFollowView::Driver)
+        Self::from_view(CameraFollowView::Near)
     }
 }
 pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<KeyCode>>) {
@@ -194,7 +194,8 @@ pub fn camera_controller_system(
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
                 // tf.rotate_local_y(std::f32::consts::PI);
-                tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), Vec3::Y);
+                tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), tf.local_y());
+                // tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), Vec3::Y);
                 Some(tf)
             } else {
                 None
