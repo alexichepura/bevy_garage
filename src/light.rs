@@ -8,7 +8,7 @@ pub fn light_start_system(mut commands: Commands) {
 
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 30_000.,
+            illuminance: 40_000.,
             shadows_enabled: true,
             shadow_projection: OrthographicProjection {
                 left: -50.,

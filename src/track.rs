@@ -128,31 +128,27 @@ pub fn spawn_road(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     track: &Track,
 ) {
-    let texture_handle = asset_server.load("asphalt.jpg");
-    let texture_normals_handle = asset_server.load("asphalt_normals.jpg");
-    // let texture_metallic_roughness_handle = asset_server.load("asphalt_metallic_roughness.jpg");
+    let texture_handle = asset_server.load("8k_asphalt.jpg");
+    let texture_normals_handle = asset_server.load("8k_asphalt_normals.jpg");
+    let texture_metallic_roughness_handle = asset_server.load("8k_asphalt_metallic_roughness.jpg");
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle.clone()),
         normal_map_texture: Some(texture_normals_handle.clone()),
-        // metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
-        perceptual_roughness: 0.7,
+        metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
+        perceptual_roughness: 1.,
+        // perceptual_roughness: 0.7,
         ..default()
     });
 
     let (vertices, normals) = track.road();
 
     let mut uvs: Vec<[f32; 2]> = Vec::new();
-    let mut len: f32 = 0.;
-    for (i, p) in track.points.iter().enumerate() {
-        let last: bool = i + 1 == track.points.len();
-        let i_next: usize = if last { 0 } else { i + 1 };
-        let next = track.points.get(i_next).unwrap();
-        let diff = next.sub(*p).length();
-        let x = 5.;
-        let uv = x * len / 10.;
-        uvs.push([uv, 0.]);
-        uvs.push([uv, x * 1.]);
-        len += diff;
+    for (i, _p) in track.points.iter().enumerate() {
+        let left = track.left.get(i).unwrap();
+        let right = track.right.get(i).unwrap();
+        let x = 50.;
+        uvs.push([left.x / x, left.z / x]);
+        uvs.push([right.x / x, right.z / x]);
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     mesh.insert_attribute(
