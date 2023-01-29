@@ -8,7 +8,6 @@ pub struct CarCameraPlugin;
 
 impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
-        println!("CarCameraPlugin build");
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system)
@@ -69,9 +68,9 @@ impl Default for CameraController {
             key_up: KeyCode::E,
             key_down: KeyCode::Q,
             key_run: KeyCode::LShift,
-            walk_speed: 10.0,
+            walk_speed: 2.0,
             run_speed: 100.0,
-            friction: 0.5,
+            friction: 0.8,
             pitch: 0.0,
             yaw: 0.0,
             velocity: Vec3::ZERO,
