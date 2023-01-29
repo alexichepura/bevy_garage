@@ -10,8 +10,7 @@ impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
-            .add_system(camera_controller_system)
-            // .add_system_to_stage(CoreStage::PreUpdate, camera_controller_system)
+            .add_system_to_stage(CoreStage::PostUpdate, camera_controller_system)
             .add_system(camera_switch_system);
     }
 }
@@ -169,7 +168,8 @@ pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<K
 
 pub fn camera_controller_system(
     time: Res<Time>,
-    mut config: ResMut<CameraConfig>,
+    config: Res<CameraConfig>,
+    // mut config: ResMut<CameraConfig>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
     mut pset: ParamSet<(
@@ -184,7 +184,8 @@ pub fn camera_controller_system(
             if let Ok(car_tf) = pset.p1().get_single() {
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
-                tf.look_at(car_tf.translation + at, Vec3::Y);
+                // tf.rotate_local_y(std::f32::consts::PI);
+                tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), Vec3::Y);
                 Some(tf)
             } else {
                 None
@@ -266,20 +267,20 @@ pub fn camera_controller_system(
         tf
     };
 
-    let d_seconds = time.delta_seconds();
-    let d_seconds_min = if d_seconds == 0.0 {
-        1. / 120.
-    } else {
-        d_seconds
-    };
-    let prev = config.prev;
-    let k = d_seconds_min * 100.;
-    let new_translation = prev.translation.lerp(tf.translation, k);
-    let new_rotation = prev.rotation.slerp(tf.rotation, k);
-    config.prev.translation = new_translation;
-    config.prev.rotation = new_rotation;
-    // let new_translation = tf.translation;
-    // let new_rotation = tf.rotation;
+    // let d_seconds = time.delta_seconds();
+    // let d_seconds_min = if d_seconds == 0.0 {
+    //     1. / 120.
+    // } else {
+    //     d_seconds
+    // };
+    // let prev = config.prev;
+    // let k = d_seconds_min * 20.;
+    // let new_translation = prev.translation.lerp(tf.translation, k);
+    // let new_rotation = prev.rotation.slerp(tf.rotation, k);
+    // config.prev.translation = new_translation;
+    // config.prev.rotation = new_rotation;
+    let new_translation = tf.translation;
+    let new_rotation = tf.rotation;
 
     let mut p0 = pset.p0();
     let (mut camera_tf, options) = p0.single_mut();
