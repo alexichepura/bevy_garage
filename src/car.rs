@@ -371,7 +371,7 @@ pub fn spawn_car(
                 principal_inertia: Vec3::new(5000., 5000., 2000.),
                 ..default()
             });
-            let car_bradius = 0.05;
+            let car_bradius = 0.1;
             children
                 .spawn_empty()
                 .insert(Name::new("car_collider"))

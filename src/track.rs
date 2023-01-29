@@ -343,7 +343,7 @@ pub fn spawn_walls(
     });
     let material_lengh = 20.;
     let width: f32 = 1.;
-    let height: f32 = 1.;
+    let height: f32 = 0.6;
     let heightv: Vec3 = Vec3::Y * height;
     let hw = width / 2.;
 
