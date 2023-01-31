@@ -15,14 +15,14 @@ pub fn keyboard_input_system(
     if input.just_pressed(KeyCode::N) {
         config.use_brain = !config.use_brain;
     }
-    if input.just_pressed(KeyCode::Space) {
-        for e in q_wheel.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-        for e in q_car.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-    }
+    // if input.just_pressed(KeyCode::Space) {
+    //     for e in q_wheel.iter() {
+    //         commands.entity(e).despawn_recursive();
+    //     }
+    //     for e in q_car.iter() {
+    //         commands.entity(e).despawn_recursive();
+    //     }
+    // }
     #[cfg(feature = "debug_lines")]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
@@ -43,10 +43,10 @@ pub fn keyboard_input_system(
             car.brake = 0.;
         }
 
-        if input.just_pressed(KeyCode::Left) {
+        if input.pressed(KeyCode::Left) {
             car.steering = -1.;
         }
-        if input.just_pressed(KeyCode::Right) {
+        if input.pressed(KeyCode::Right) {
             car.steering = 1.;
         }
         if input.just_released(KeyCode::Left) {
@@ -54,6 +54,14 @@ pub fn keyboard_input_system(
         }
         if input.just_released(KeyCode::Right) {
             car.steering = 0.;
+        }
+        if input.just_released(KeyCode::Space) {
+            car.gas = 0.;
+            car.brake = 0.;
+        }
+        if input.pressed(KeyCode::Space) {
+            car.gas = 0.;
+            car.brake = 1.;
         }
     }
 }

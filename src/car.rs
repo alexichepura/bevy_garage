@@ -366,7 +366,7 @@ pub fn spawn_car(
         .with_children(|children| {
             let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::new(0., -size.hh, 0.),
-                mass: 1500.0,
+                mass: 1000.0,
                 // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
                 principal_inertia: Vec3::new(5000., 5000., 2000.),
                 ..default()

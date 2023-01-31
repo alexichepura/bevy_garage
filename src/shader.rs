@@ -14,6 +14,7 @@ impl Plugin for ShadersPlugin {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Resource)]
 struct ShaderUtils {
     perlin_noise_3d: HandleId,
