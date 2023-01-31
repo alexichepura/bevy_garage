@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::shader::GroundMaterial;
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy::render::{mesh::*, render_resource::*, texture::ImageSampler};
@@ -122,7 +123,7 @@ impl Track {
 }
 
 pub fn spawn_road(
-    asset_server: Res<AssetServer>,
+    asset_server: &Res<AssetServer>,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -450,7 +451,7 @@ pub fn spawn_walls(
 pub fn spawn_ground(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
+    custom_materials: &mut ResMut<Assets<GroundMaterial>>,
 ) {
     let multiplier: usize = 2;
     let scale = 280. / multiplier as f32;
@@ -461,10 +462,12 @@ pub fn spawn_ground(
     let hz = num_rows as f32 * scale;
     let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
     let heights: Vec<Real> = vec![hy; num_rows * num_cols];
+
+    let ground_color = Color::hex("7b824e").unwrap();
     commands
         .spawn((
             Name::new("road-heightfield"),
-            PbrBundle {
+            MaterialMeshBundle::<GroundMaterial> {
                 mesh: meshes.add(Mesh::from(shape::Box {
                     max_x: hx,
                     min_x: -hx,
@@ -473,11 +476,8 @@ pub fn spawn_ground(
                     max_z: hz,
                     min_z: -hz,
                 })),
-                // material: materials.add(Color::rgb(0.2, 0.35, 0.2).into()),
-                material: materials.add(StandardMaterial {
-                    base_color: Color::hex("7b824e").unwrap(),
-                    perceptual_roughness: 0.3,
-                    ..default()
+                material: custom_materials.add(GroundMaterial {
+                    color: ground_color,
                 }),
                 ..default()
             },
@@ -504,12 +504,13 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut custom_materials: ResMut<Assets<GroundMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    spawn_ground(&mut commands, &mut meshes, &mut materials);
+    spawn_ground(&mut commands, &mut meshes, &mut custom_materials);
     spawn_road(
-        asset_server,
+        &asset_server,
         &mut commands,
         &mut meshes,
         &mut materials,

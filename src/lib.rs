@@ -11,6 +11,7 @@ mod light;
 // mod mesh;
 mod nn;
 mod progress;
+mod shader;
 mod track;
 use api_client::*;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
@@ -25,6 +26,7 @@ use input::*;
 use light::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
 use progress::*;
+use shader::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
@@ -58,6 +60,8 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(DirectionalLightShadowMap::default())
+        .add_plugin(ShadersPlugin)
+        .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .init_resource::<GamepadLobby>()
