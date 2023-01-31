@@ -7,7 +7,7 @@ use bevy::{
 };
 use bevy_rapier3d::{na::Point3, prelude::Real};
 
-pub fn bevy_mesh(buffers: (Vec<Point3<Real>>, Vec<[u32; 3]>)) -> Mesh {
+pub fn _bevy_mesh(buffers: (Vec<Point3<Real>>, Vec<[u32; 3]>)) -> Mesh {
     let (vtx, idx) = buffers;
     let mut vertices: Vec<[f32; 3]> = vec![];
 

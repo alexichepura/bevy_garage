@@ -5,8 +5,15 @@
 #import bevy_pbr::mesh_view_bindings
 #import bevy_pbr::mesh_bindings
 
-// // NOTE: Bindings must come before functions that use them!
+#import bevy_pbr::pbr_types
+#import bevy_pbr::utils
+#import bevy_pbr::clustered_forward
+#import bevy_pbr::lighting
+#import bevy_pbr::shadows
+// #import bevy_pbr::fog
+#import bevy_pbr::pbr_functions
 #import bevy_pbr::mesh_functions
+
 #import shaders::perlin_noise_3d
 
 struct GroundMaterial {
@@ -83,15 +90,57 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 }
 
 struct FragmentInput {
+    @builtin(front_facing) is_front: bool,
+    @builtin(position) frag_coord: vec4<f32>,
     #import bevy_pbr::mesh_vertex_output
 };
 
+
 @fragment
-fn fragment(
-    in: FragmentInput,
-) -> @location(0) vec4<f32> {
+fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
+    let layer = i32(in.world_position.x) & 0x3;
+    var pbr_input: PbrInput = pbr_input_new();
+    
+    // pbr_input.material.base_color = textureSample(my_array_texture, my_array_texture_sampler, in.uv, layer);
     var input: vec3<f32> = vec3<f32>(in.uv.x * 1000., in.uv.y * 1000., 1.);
     var noise = perlinNoise3(input);
     var noise_01 = (noise + 1.0) / 2.0;
-    return material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
+    pbr_input.material.base_color = material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
+#ifdef VERTEX_COLORS
+    pbr_input.material.base_color = pbr_input.material.base_color * in.color;
+#endif
+
+    pbr_input.frag_coord = in.frag_coord;
+    pbr_input.world_position = in.world_position;
+    pbr_input.world_normal = prepare_world_normal(
+        in.world_normal,
+        (pbr_input.material.flags & STANDARD_MATERIAL_FLAGS_DOUBLE_SIDED_BIT) != 0u,
+        in.is_front,
+    );
+
+    pbr_input.is_orthographic = view.projection[3].w == 1.0;
+
+    pbr_input.N = apply_normal_mapping(
+        pbr_input.material.flags,
+        pbr_input.world_normal,
+#ifdef VERTEX_TANGENTS
+#ifdef STANDARDMATERIAL_NORMAL_MAP
+        in.world_tangent,
+#endif
+#endif
+        in.uv,
+    );
+    pbr_input.V = calculate_view(in.world_position, pbr_input.is_orthographic);
+
+    return tone_mapping(pbr(pbr_input));
 }
+
+// @fragment
+// fn fragment(
+//     in: FragmentInput,
+// ) -> @location(0) vec4<f32> {
+//     var input: vec3<f32> = vec3<f32>(in.uv.x * 1000., in.uv.y * 1000., 1.);
+//     var noise = perlinNoise3(input);
+//     var noise_01 = (noise + 1.0) / 2.0;
+//     return material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
+// }
