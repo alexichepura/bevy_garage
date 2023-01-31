@@ -1,11 +1,10 @@
-use crate::config::Config;
-use crate::shader::GroundMaterial;
-use bevy::pbr::NotShadowCaster;
-use bevy::prelude::*;
-use bevy::render::{mesh::*, render_resource::*, texture::ImageSampler};
-use bevy_rapier3d::na::Point3;
-use bevy_rapier3d::prelude::*;
-use bevy_rapier3d::rapier::prelude::ColliderShape;
+use crate::{config::Config, mesh::QuadPlane, shader::GroundMaterial};
+use bevy::{
+    pbr::NotShadowCaster,
+    prelude::*,
+    render::{mesh::*, render_resource::*, texture::ImageSampler},
+};
+use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
 // use obj::*;
@@ -456,14 +455,13 @@ pub fn spawn_ground(
     let multiplier: usize = 2;
     let scale = 280. / multiplier as f32;
     let (cols, rows): (usize, usize) = (2 * multiplier, 3 * multiplier);
-    let size: Vec3 = 2. * Vec3::new(cols as f32 * scale, 0.5, rows as f32 * scale);
-    let heights: Vec<Real> = vec![size.y; rows * cols];
+    let size: Vec2 = 2. * Vec2::new(cols as f32 * scale, rows as f32 * scale);
     let color = Color::hex("7b824e").unwrap();
     commands
         .spawn((
             Name::new("road-heightfield"),
             MaterialMeshBundle::<GroundMaterial> {
-                mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),
+                mesh: meshes.add(Mesh::from(QuadPlane::new(size))),
                 material: custom_materials.add(GroundMaterial { color }),
                 ..default()
             },
@@ -473,10 +471,15 @@ pub fn spawn_ground(
             CollisionGroups::new(STATIC_GROUP, Group::ALL),
             Friction::coefficient(1.),
             Restitution::coefficient(0.),
-            Collider::heightfield(heights, rows, cols, size.into()),
+            Collider::heightfield(
+                vec![0.; rows * cols],
+                rows,
+                cols,
+                Vec3::new(size.x, 0., size.y),
+            ),
         ))
         .insert(TransformBundle::from_transform(Transform::from_xyz(
-            -350., -size.y, 570.,
+            -350., 0., 570.,
         )));
 }
 
