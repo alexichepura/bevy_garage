@@ -100,9 +100,7 @@ struct FragmentInput {
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     let layer = i32(in.world_position.x) & 0x3;
     var pbr_input: PbrInput = pbr_input_new();
-    
-    // pbr_input.material.base_color = textureSample(my_array_texture, my_array_texture_sampler, in.uv, layer);
-    var input: vec3<f32> = vec3<f32>(in.uv.x * 1000., in.uv.y * 1000., 1.);
+    var input: vec3<f32> = vec3<f32>(in.uv.x * 2000., in.uv.y * 2000., 1.);
     var noise = perlinNoise3(input);
     var noise_01 = (noise + 1.0) / 2.0;
     pbr_input.material.base_color = material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
