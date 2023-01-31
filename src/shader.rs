@@ -2,7 +2,7 @@ use bevy::reflect::TypeUuid;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::{asset::HandleId, prelude::*};
 
-// inspiration https://github.com/rust-adventure/bevy-examples/tree/main/examples/shader-test-001
+// https://github.com/rust-adventure/bevy-examples/tree/main/examples/shader-test-001
 
 pub const PERLIN_NOISE_3D: &str = include_str!("shader/perlin_noise_3d.wgsl");
 
