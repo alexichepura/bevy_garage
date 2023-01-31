@@ -1,10 +1,10 @@
-use crate::config::Config;
-use bevy::pbr::NotShadowCaster;
-use bevy::prelude::*;
-use bevy::render::{mesh::*, render_resource::*, texture::ImageSampler};
-use bevy_rapier3d::na::Point3;
-use bevy_rapier3d::prelude::*;
-use bevy_rapier3d::rapier::prelude::ColliderShape;
+use crate::{config::Config, mesh::QuadPlane, shader::GroundMaterial};
+use bevy::{
+    pbr::NotShadowCaster,
+    prelude::*,
+    render::{mesh::*, render_resource::*, texture::ImageSampler},
+};
+use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
 // use obj::*;
@@ -122,7 +122,7 @@ impl Track {
 }
 
 pub fn spawn_road(
-    asset_server: Res<AssetServer>,
+    asset_server: &Res<AssetServer>,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -450,53 +450,37 @@ pub fn spawn_walls(
 pub fn spawn_ground(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
+    custom_materials: &mut ResMut<Assets<GroundMaterial>>,
 ) {
     let multiplier: usize = 2;
     let scale = 280. / multiplier as f32;
-    let num_cols: usize = 2 * multiplier;
-    let num_rows: usize = 3 * multiplier;
-    let hx = num_cols as f32 * scale;
-    let hy = 0.5;
-    let hz = num_rows as f32 * scale;
-    let ground_size: Vec3 = 2. * Vec3::new(hx, hy, hz);
-    let heights: Vec<Real> = vec![hy; num_rows * num_cols];
+    let (cols, rows): (usize, usize) = (2 * multiplier, 3 * multiplier);
+    let size: Vec2 = 2. * Vec2::new(cols as f32 * scale, rows as f32 * scale);
+    let color = Color::hex("7b824e").unwrap();
     commands
         .spawn((
             Name::new("road-heightfield"),
-            PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Box {
-                    max_x: hx,
-                    min_x: -hx,
-                    max_y: hy,
-                    min_y: -hy,
-                    max_z: hz,
-                    min_z: -hz,
-                })),
-                // material: materials.add(Color::rgb(0.2, 0.35, 0.2).into()),
-                material: materials.add(StandardMaterial {
-                    base_color: Color::hex("7b824e").unwrap(),
-                    perceptual_roughness: 0.3,
-                    ..default()
-                }),
+            MaterialMeshBundle::<GroundMaterial> {
+                mesh: meshes.add(Mesh::from(QuadPlane::new(size))),
+                material: custom_materials.add(GroundMaterial { color }),
                 ..default()
             },
             NotShadowCaster,
+            RigidBody::Fixed,
+            ColliderScale::Absolute(Vec3::ONE),
+            CollisionGroups::new(STATIC_GROUP, Group::ALL),
+            Friction::coefficient(1.),
+            Restitution::coefficient(0.),
+            Collider::heightfield(
+                vec![0.; rows * cols],
+                rows,
+                cols,
+                Vec3::new(size.x, 0., size.y),
+            ),
         ))
-        .insert(RigidBody::Fixed)
         .insert(TransformBundle::from_transform(Transform::from_xyz(
-            -350., -hy, 570.,
-        )))
-        .insert(Collider::heightfield(
-            heights,
-            num_rows,
-            num_cols,
-            ground_size.into(),
-        ))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction::coefficient(1.))
-        .insert(Restitution::coefficient(0.));
+            -350., 0., 570.,
+        )));
 }
 
 pub fn track_start_system(
@@ -504,12 +488,13 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut custom_materials: ResMut<Assets<GroundMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    spawn_ground(&mut commands, &mut meshes, &mut materials);
+    spawn_ground(&mut commands, &mut meshes, &mut custom_materials);
     spawn_road(
-        asset_server,
+        &asset_server,
         &mut commands,
         &mut meshes,
         &mut materials,
