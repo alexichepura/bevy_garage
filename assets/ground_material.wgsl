@@ -1,10 +1,11 @@
 // https://gpuweb.github.io/gpuweb/wgsl/
 // https://github.com/rust-adventure/bevy-examples/blob/main/libs/bevy_shader_utils/assets/shaders/custom_material.wgsl
 // https://iquilezles.org/articles/voronoise/
+// bevy_pbr::mesh
 #import bevy_pbr::mesh_view_bindings
 #import bevy_pbr::mesh_bindings
 
-// NOTE: Bindings must come before functions that use them!
+// // NOTE: Bindings must come before functions that use them!
 #import bevy_pbr::mesh_functions
 #import shaders::perlin_noise_3d
 
@@ -17,8 +18,12 @@ var<uniform> material: GroundMaterial;
 
 
 struct Vertex {
+#ifdef VERTEX_POSITIONS
     @location(0) position: vec3<f32>,
+#endif
+#ifdef VERTEX_NORMALS
     @location(1) normal: vec3<f32>,
+#endif
 #ifdef VERTEX_UVS
     @location(2) uv: vec2<f32>,
 #endif
@@ -42,36 +47,48 @@ struct VertexOutput {
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
+
 #ifdef SKINNED
     var model = skin_model(vertex.joint_indices, vertex.joint_weights);
-    out.world_normal = skin_normals(model, vertex.normal);
 #else
     var model = mesh.model;
+#endif
+
+#ifdef VERTEX_NORMALS
+#ifdef SKINNED
+    out.world_normal = skin_normals(model, vertex.normal);
+#else
     out.world_normal = mesh_normal_local_to_world(vertex.normal);
 #endif
+#endif
+
+#ifdef VERTEX_POSITIONS
     out.world_position = mesh_position_local_to_world(model, vec4<f32>(vertex.position, 1.0));
+    out.clip_position = mesh_position_world_to_clip(out.world_position);
+#endif
+
 #ifdef VERTEX_UVS
     out.uv = vertex.uv;
 #endif
+
 #ifdef VERTEX_TANGENTS
     out.world_tangent = mesh_tangent_local_to_world(model, vertex.tangent);
 #endif
+
 #ifdef VERTEX_COLORS
     out.color = vertex.color;
 #endif
 
-    out.clip_position = mesh_position_world_to_clip(out.world_position);
     return out;
 }
 
 struct FragmentInput {
-    @builtin(front_facing) is_front: bool,
     #import bevy_pbr::mesh_vertex_output
 };
 
 @fragment
 fn fragment(
-    in: VertexOutput,
+    in: FragmentInput,
 ) -> @location(0) vec4<f32> {
     var input: vec3<f32> = vec3<f32>(in.uv.x * 1000., in.uv.y * 1000., 1.);
     var noise = perlinNoise3(input);
