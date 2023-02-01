@@ -4,10 +4,8 @@ use bevy::prelude::*;
 pub fn keyboard_input_system(
     input: Res<Input<KeyCode>>,
     mut config: ResMut<Config>,
-    mut cars: Query<(&mut Car, &Transform, With<HID>)>,
+    mut cars: Query<(&mut Car, Entity, &Transform, With<HID>)>,
     mut commands: Commands,
-    q_car: Query<Entity, With<Car>>,
-    q_wheel: Query<Entity, With<Wheel>>,
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
     >,
@@ -15,20 +13,28 @@ pub fn keyboard_input_system(
     if input.just_pressed(KeyCode::N) {
         config.use_brain = !config.use_brain;
     }
-    // if input.just_pressed(KeyCode::Space) {
-    //     for e in q_wheel.iter() {
-    //         commands.entity(e).despawn_recursive();
-    //     }
-    //     for e in q_car.iter() {
-    //         commands.entity(e).despawn_recursive();
-    //     }
-    // }
     #[cfg(feature = "debug_lines")]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
         config.show_rays = debug_ctx.enabled;
     }
-    for (mut car, _transform, _hid) in cars.iter_mut() {
+    for (mut car, e, _transform, _hid) in cars.iter_mut() {
+        if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::LShift) {
+            commands.entity(e).despawn_recursive();
+            car.despawn_wheels(&mut commands);
+
+            let (transform, init_meters) = config.get_transform_random();
+            spawn_car(
+                &mut commands,
+                &config.car_scene.as_ref().unwrap(),
+                &config.wheel_scene.as_ref().unwrap(),
+                true,
+                transform,
+                0,
+                init_meters,
+                config.max_torque,
+            );
+        }
         if input.pressed(KeyCode::Up) {
             car.gas = 1.;
         }
