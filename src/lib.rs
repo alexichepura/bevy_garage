@@ -5,7 +5,6 @@ mod config;
 mod dash;
 mod esp;
 pub mod font;
-mod gamepad;
 mod input;
 mod light;
 mod mesh;
@@ -21,7 +20,6 @@ use config::*;
 use dash::*;
 use esp::*;
 use font::*;
-use gamepad::*;
 use input::*;
 use light::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
@@ -30,11 +28,11 @@ use shader::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 8;
-    c.integration_parameters.max_velocity_friction_iterations = 16;
-    c.integration_parameters.max_stabilization_iterations = 4;
-    c.integration_parameters.allowed_linear_error = 0.0001;
-    c.integration_parameters.erp = 0.99;
+    c.integration_parameters.max_velocity_iterations = 64;
+    c.integration_parameters.max_velocity_friction_iterations = 64;
+    c.integration_parameters.max_stabilization_iterations = 2;
+    // c.integration_parameters.allowed_linear_error = 0.;
+    // c.integration_parameters.erp = 1.;
     dbg!(c.integration_parameters);
 }
 
@@ -50,9 +48,9 @@ pub fn car_app(app: &mut App) -> &mut App {
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 30.,
+                max_dt: 1. / 60.,
                 time_scale: 1.,
-                substeps: 25,
+                substeps: 5,
             },
             ..default()
         })
@@ -64,7 +62,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .init_resource::<GamepadLobby>()
         .add_startup_system(dqn_exclusive_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
@@ -74,10 +71,8 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system(aero_system.label(CarSimLabel::Input))
-        .add_system(keyboard_input_system.label(CarSimLabel::Input))
-        .add_system(gamepad_input_system.label(CarSimLabel::Input))
+        .add_system(input_system.label(CarSimLabel::Input))
         .add_system(car_sensor_system.label(CarSimLabel::Input))
         .add_system(progress_system.label(CarSimLabel::Input))
         .add_system(

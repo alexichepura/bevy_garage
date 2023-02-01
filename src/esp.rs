@@ -96,7 +96,7 @@ pub fn esp_system(
         let prev_torque = if is_same_dir { car.prev_torque } else { 0. };
         let prev_steering = car.prev_steering;
         let (steering, mut torque) = (
-            prev_steering + (car.steering - prev_steering) * d_seconds * 10.,
+            prev_steering + (car.steering - prev_steering) * d_seconds * 5.,
             prev_torque + (car_torque - prev_torque) * d_seconds * 10.,
         );
         car.prev_steering = steering;
@@ -117,7 +117,7 @@ pub fn esp_system(
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                let max_slip = 10.;
+                let max_slip = 50.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
@@ -147,7 +147,7 @@ pub fn esp_system(
                 let radius_vel = v.angvel * wheel.radius;
                 let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
                 let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-                let max_slip = 10.;
+                let max_slip = 5.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
