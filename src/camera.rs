@@ -125,6 +125,25 @@ impl CameraConfig {
             prev: Transform::IDENTITY,
         }
     }
+    pub fn next_view(&mut self) {
+        let mode = match self.mode {
+            CameraMode::Follow(ref view, _, _) => {
+                let next_view: CameraFollowView = match view {
+                    CameraFollowView::Windshield => CameraFollowView::Driver,
+                    CameraFollowView::Driver => CameraFollowView::Near,
+                    CameraFollowView::Near => CameraFollowView::Mid,
+                    CameraFollowView::Mid => CameraFollowView::Far,
+                    CameraFollowView::Far => CameraFollowView::FrontWheel,
+                    CameraFollowView::FrontWheel => CameraFollowView::Windshield,
+                };
+
+                let (from, at) = follow_props_by_mode(&next_view);
+                CameraMode::Follow(next_view, from, at)
+            }
+            CameraMode::Free => CameraMode::Free,
+        };
+        self.mode = mode;
+    }
     pub fn free(&mut self) {
         self.mode = CameraMode::Free;
     }

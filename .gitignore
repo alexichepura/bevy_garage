@@ -15,4 +15,4 @@ STYLE.md
 .idea
 
 .env
-db-client/src/db.rs
+db_client/src/db.rs
