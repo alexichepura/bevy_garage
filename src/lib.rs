@@ -28,11 +28,11 @@ use shader::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 8;
-    c.integration_parameters.max_velocity_friction_iterations = 16;
-    c.integration_parameters.max_stabilization_iterations = 4;
-    c.integration_parameters.allowed_linear_error = 0.0001;
-    c.integration_parameters.erp = 0.99;
+    c.integration_parameters.max_velocity_iterations = 64;
+    c.integration_parameters.max_velocity_friction_iterations = 64;
+    c.integration_parameters.max_stabilization_iterations = 2;
+    // c.integration_parameters.allowed_linear_error = 0.;
+    // c.integration_parameters.erp = 1.;
     dbg!(c.integration_parameters);
 }
 
@@ -48,9 +48,9 @@ pub fn car_app(app: &mut App) -> &mut App {
         .init_resource::<FontHandle>()
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 30.,
+                max_dt: 1. / 60.,
                 time_scale: 1.,
-                substeps: 25,
+                substeps: 5,
             },
             ..default()
         })

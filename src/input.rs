@@ -104,13 +104,13 @@ pub fn input_system(
         if input.just_released(KeyCode::Right) {
             car.steering = 0.;
         }
-        if input.just_released(KeyCode::Space) {
-            car.gas = 0.;
-            car.brake = 0.;
-        }
-        if input.pressed(KeyCode::Space) {
-            car.gas = 0.;
-            car.brake = 1.;
-        }
+        // if input.just_released(KeyCode::Space) {
+        //     car.gas = 0.;
+        //     car.brake = 0.;
+        // }
+        // if input.pressed(KeyCode::Space) {
+        //     car.gas = 0.;
+        //     car.brake = 1.;
+        // }
     }
 }

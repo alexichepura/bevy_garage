@@ -4,7 +4,10 @@ use crate::{
     track::*,
 };
 use bevy::prelude::*;
-use bevy_rapier3d::{prelude::*, rapier::prelude::JointAxesMask};
+use bevy_rapier3d::{
+    prelude::*,
+    rapier::prelude::{JointAxesMask, JointAxis},
+};
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
 pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
@@ -220,7 +223,7 @@ pub fn spawn_car(
         let joint_mask: JointAxesMask = JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z
             | JointAxesMask::X
-            | JointAxesMask::Y
+            // | JointAxesMask::Y
             | JointAxesMask::Z;
         let wheel_axis = match is_left {
             true => -Vec3::Y,
@@ -232,7 +235,9 @@ pub fn spawn_car(
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
             // .set_motor(JointAxis::X, 0., 0., 1e10, 1.)
-            // .set_motor(JointAxis::Y, 0., 0., 1e8, 0.5e5)
+            // .set_motor(JointAxis::X, 0., 0., 1e6, 1e3)
+            .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
+            // .set_motor(JointAxis::Z, 0., 0., 1e6, 1e3)
             // .set_motor(JointAxis::Z, 0., 0., 1e10, 1.)
             // .motor_model(JointAxis::Y, MotorModel::ForceBased)
             .build();
