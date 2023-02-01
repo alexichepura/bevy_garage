@@ -581,8 +581,8 @@ fn kerb_texture() -> Image {
         },
         TextureDimension::D2,
         &[
-            255, 0, 0, 255, // red
-            255, 255, 255, 255, // white
+            210, 20, 20, 255, // red
+            210, 210, 210, 255, // white
         ],
         TextureFormat::Rgba8UnormSrgb,
     );
