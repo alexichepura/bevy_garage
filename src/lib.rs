@@ -72,8 +72,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
         .add_system(aero_system.label(CarSimLabel::Input))
-        .add_system(keyboard_input_system.label(CarSimLabel::Input))
-        .add_system(gamepad_input_system.label(CarSimLabel::Input))
+        .add_system(input_system.label(CarSimLabel::Input))
         .add_system(car_sensor_system.label(CarSimLabel::Input))
         .add_system(progress_system.label(CarSimLabel::Input))
         .add_system(
