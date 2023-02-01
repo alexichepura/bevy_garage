@@ -1,4 +1,4 @@
-use crate::{car::*, config::*, gamepad::GamepadLobby};
+use crate::{car::*, config::*};
 use bevy::prelude::*;
 
 pub fn keyboard_input_system(
@@ -69,36 +69,37 @@ pub fn keyboard_input_system(
 pub fn gamepad_input_system(
     buttons: Res<Input<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
-    lobby: Res<GamepadLobby>,
+    gamepads: Res<Gamepads>,
     mut cars: Query<(&mut Car, &Transform, With<HID>)>,
 ) {
     for (mut car, _transform, _hid) in cars.iter_mut() {
-        for gamepad in lobby.gamepads.iter().cloned() {
-            if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::South)) {
-                car.gas = 1.;
-            } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
-                car.gas = 0.;
-            }
-            if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::North)) {
-                car.brake = 1.;
-            } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::North)) {
-                car.brake = 0.;
-            }
+        for gamepad in gamepads.iter() {
             let left_stick_x = axes
                 .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
                 .unwrap();
             // dbg!(left_stick_x);
             car.steering = left_stick_x;
 
-            let left_stick_y = axes
-                .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickY))
+            let right_stick_y = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
                 .unwrap();
-            // dbg!(left_stick_y);
-            if left_stick_y < 0. {
-                car.brake = -left_stick_y / 0.75;
+            // dbg!(right_stick_y);
+            if right_stick_y < 0. {
+                car.brake = -right_stick_y / 0.75;
                 car.gas = 0.;
             } else {
-                car.gas = left_stick_y / 0.75;
+                car.gas = right_stick_y / 0.75;
+                car.brake = 0.;
+            }
+
+            if buttons.pressed(GamepadButton::new(gamepad, GamepadButtonType::North)) {
+                car.gas = 1.;
+            } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::North)) {
+                car.gas = 0.;
+            }
+            if buttons.pressed(GamepadButton::new(gamepad, GamepadButtonType::South)) {
+                car.brake = 1.;
+            } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
                 car.brake = 0.;
             }
         }

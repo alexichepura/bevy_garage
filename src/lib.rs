@@ -5,7 +5,6 @@ mod config;
 mod dash;
 mod esp;
 pub mod font;
-mod gamepad;
 mod input;
 mod light;
 mod mesh;
@@ -21,7 +20,6 @@ use config::*;
 use dash::*;
 use esp::*;
 use font::*;
-use gamepad::*;
 use input::*;
 use light::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
@@ -64,7 +62,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .init_resource::<GamepadLobby>()
         .add_startup_system(dqn_exclusive_start_system)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
@@ -74,7 +71,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
-        .add_system_to_stage(CoreStage::PreUpdate, gamepad_stage_preupdate_system)
         .add_system(aero_system.label(CarSimLabel::Input))
         .add_system(keyboard_input_system.label(CarSimLabel::Input))
         .add_system(gamepad_input_system.label(CarSimLabel::Input))
