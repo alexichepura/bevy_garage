@@ -9,6 +9,7 @@ mod esp;
 pub mod font;
 mod input;
 mod light;
+mod material;
 mod mesh;
 mod nn;
 mod progress;
@@ -24,6 +25,7 @@ use esp::*;
 use font::*;
 use input::*;
 use light::*;
+use material::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
 use progress::*;
 use shader::*;
@@ -52,6 +54,9 @@ pub enum CarSimLabel {
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
         .init_resource::<FontHandle>()
+        .add_plugin(ShadersPlugin)
+        .add_plugin(MaterialPlugin::<GroundMaterial>::default())
+        .init_resource::<MaterialHandle>()
         .insert_resource(RapierConfiguration {
             // timestep_mode: TimestepMode::Interpolated {
             //     dt: 1. / 60.,
@@ -69,8 +74,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(DirectionalLightShadowMap::default())
-        .add_plugin(ShadersPlugin)
-        .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_startup_system(dqn_exclusive_start_system)
