@@ -11,7 +11,7 @@ use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use nalgebra::Point2;
 use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
-type Vav = VertexAttributeValues;
+type VAV = VertexAttributeValues;
 
 // use obj::*;
 use std::f32::consts::{FRAC_PI_2, PI};
@@ -145,23 +145,8 @@ pub fn spawn_road(
         perceptual_roughness: 1.,
         ..default()
     });
-
     let (vertices, normals) = track.road();
-
-    // let mut ps: Vec<Point<f32>> = track
-    //     .left
-    //     .iter()
-    //     .map(|v| Point3::new(v[0], v[1], v[2]))
-    //     .collect();
-
-    // let y = -100.;
-    // ps.push(Point3::new(2000., y, 2000.));
-    // ps.push(Point3::new(2000., y, -2000.));
-    // ps.push(Point3::new(-2000., y, -2000.));
-    // ps.push(Point3::new(-2000., y, 2000.));
-    // let shape = parry3d::shape::SharedShape::convex_hull(&ps).unwrap();
-    // commands.spawn_empty().insert(Collider::from(shape));
-
+    // INNER
     let mut right3d: Vec<Vec3> = track.right.clone();
     right3d.pop();
     let mut right3dnorm: Vec<[f32; 3]> = vec![];
@@ -171,26 +156,25 @@ pub fn spawn_road(
 
     let right2d: Vec<Point2<f32>> = right3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
     let ind = triangulate_ear_clipping(&right2d).unwrap();
-    commands
-        .spawn_empty()
-        .insert(Collider::trimesh(right3d.clone(), ind.clone()))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
-            combine_rule: CoefficientCombineRule::Average,
-            coefficient: 3.,
-            ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+    // commands
+    //     .spawn_empty()
+    //     .insert(Collider::trimesh(right3d.clone(), ind.clone()))
+    //     .insert(ColliderScale::Absolute(Vec3::ONE))
+    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+    //     .insert(Friction {
+    //         combine_rule: CoefficientCombineRule::Average,
+    //         coefficient: 3.,
+    //         ..default()
+    //     })
+    //     .insert(Restitution::coefficient(0.));
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     for (_i, p) in right3d.iter().enumerate() {
         let x = 500.;
         uvs.push([p.x / x, p.z / x]);
     }
-
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, Vav::from(right3d.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, Vav::from(right3dnorm));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(right3d.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(right3dnorm));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     let ind_rev: Vec<[u32; 3]> = ind.iter().map(|indx| [indx[2], indx[1], indx[0]]).collect();
     mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
@@ -202,7 +186,36 @@ pub fn spawn_road(
         },
         NotShadowCaster,
     ));
+    // OUTER
+    let mut outer3d: Vec<Vec3> = track.left.clone();
+    outer3d.pop();
+    let mut outer3dnorm: Vec<[f32; 3]> = vec![];
+    for (_i, _) in outer3d.iter().enumerate() {
+        outer3dnorm.push(Vec3::Y.into());
+    }
 
+    let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
+    let ind = triangulate_ear_clipping(&outer2d).unwrap();
+    let mut outer_uvs: Vec<[f32; 2]> = Vec::new();
+    for (_i, p) in outer3d.iter().enumerate() {
+        let x = 500.;
+        outer_uvs.push([p.x / x, p.z / x]);
+    }
+    let mut outer_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    outer_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(outer3d.clone()));
+    outer_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(outer3dnorm));
+    outer_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, outer_uvs);
+    let outer_ind_rev: Vec<[u32; 3]> = ind.iter().map(|indx| [indx[2], indx[1], indx[0]]).collect();
+    outer_mesh.set_indices(Some(Indices::U32(outer_ind_rev.flatten().to_vec())));
+    commands.spawn((
+        MaterialMeshBundle::<GroundMaterial> {
+            mesh: meshes.add(outer_mesh),
+            material: handled_materials.ground.clone(),
+            ..default()
+        },
+        NotShadowCaster,
+    ));
+    // ASPHALT
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     for (i, _p) in track.points.iter().enumerate() {
         let left = track.left.get(i).unwrap();
@@ -212,8 +225,8 @@ pub fn spawn_road(
         uvs.push([right.x / x, right.z / x]);
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, Vav::from(vertices.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, Vav::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
     let generate_tangents = mesh.generate_tangents();
@@ -294,9 +307,9 @@ pub fn spawn_kerb(
         len += diff;
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, Vav::from(vertices.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, Vav::from(normals));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, Vav::from(uvs));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VAV::from(uvs));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     commands
@@ -346,9 +359,9 @@ pub fn spawn_kerb(
         len += diff;
     }
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, Vav::from(vertices.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, Vav::from(normals));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, Vav::from(uvs));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VAV::from(uvs));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
     commands
@@ -470,9 +483,9 @@ pub fn spawn_walls(
     let collider_indices: Vec<[u32; 3]> = indices.chunks(3).map(|i| [i[0], i[1], i[2]]).collect();
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, Vav::from(vertices.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, Vav::from(normals));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, Vav::from(uvs));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VAV::from(uvs));
     mesh.set_indices(Some(Indices::U32(indices)));
 
     commands
