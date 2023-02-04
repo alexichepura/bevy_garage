@@ -169,17 +169,17 @@ pub fn spawn_road(
 
     let right2d: Vec<Point2<f32>> = right3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
     let ind = triangulate_ear_clipping(&right2d).unwrap();
-    commands
-        .spawn_empty()
-        .insert(Collider::trimesh(right3d.clone(), ind.clone()))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
-            combine_rule: CoefficientCombineRule::Average,
-            coefficient: 3.,
-            ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+    // commands
+    //     .spawn_empty()
+    //     .insert(Collider::trimesh(right3d.clone(), ind.clone()))
+    //     .insert(ColliderScale::Absolute(Vec3::ONE))
+    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+    //     .insert(Friction {
+    //         combine_rule: CoefficientCombineRule::Average,
+    //         coefficient: 3.,
+    //         ..default()
+    //     })
+    //     .insert(Restitution::coefficient(0.));
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     mesh.insert_attribute(
@@ -190,11 +190,12 @@ pub fn spawn_road(
         Mesh::ATTRIBUTE_NORMAL,
         VertexAttributeValues::from(right3dnorm),
     );
-    mesh.set_indices(Some(Indices::U32(ind.flatten().to_vec())));
+    let ind_rev: Vec<[u32; 3]> = ind.iter().map(|indx| [indx[2], indx[1], indx[0]]).collect();
+    mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
     commands.spawn((PbrBundle {
         mesh: meshes.add(mesh),
         material: materials.add(Color::rgb(0.05, 0.85, 0.05).into()),
-        transform: Transform::from_xyz(0., 0.001, 0.),
+        // transform: Transform::from_xyz(0., 0.001, 0.),
         ..Default::default()
     },));
 
