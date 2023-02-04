@@ -188,11 +188,26 @@ pub fn spawn_road(
     ));
     // OUTER
     let mut outer3d: Vec<Vec3> = track.left.clone();
-    outer3d.pop();
+    // outer3d.pop();
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
-    for (_i, _) in outer3d.iter().enumerate() {
+    let mut ex = Vec3::ZERO; // extremum
+    let mut exi = 0; // extremum index
+    let l = 2000.;
+    for (i, p) in outer3d.iter().enumerate() {
+        if p.x > ex.x {
+            ex = Vec3::new(p.x, p.y, p.z);
+            exi = i;
+        }
         outer3dnorm.push(Vec3::Y.into());
     }
+    outer3d.insert(exi, ex);
+    outer3d.insert(exi + 1, Vec3::new(l, 0., ex.z));
+    outer3d.insert(exi + 2, Vec3::new(l, 0., l));
+    outer3d.insert(exi + 3, Vec3::new(-l, 0., l));
+    outer3d.insert(exi + 4, Vec3::new(-l, 0., -l));
+    outer3d.insert(exi + 5, Vec3::new(l, 0., -l));
+    outer3d.insert(exi + 6, Vec3::new(l, 0., -l));
+    outer3d.insert(exi + 7, Vec3::new(l, 0., l));
 
     let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
     let ind = triangulate_ear_clipping(&outer2d).unwrap();
