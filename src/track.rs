@@ -393,7 +393,7 @@ pub fn spawn_walls(
         ..default()
     });
     let material_lengh = 20.;
-    let width: f32 = 1.;
+    let width: f32 = 0.1;
     let height: f32 = 0.6;
     let heightv: Vec3 = Vec3::Y * height;
     let hw = width / 2.;
@@ -538,7 +538,6 @@ pub fn track_start_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut custom_materials: ResMut<Assets<GroundMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
@@ -561,27 +560,27 @@ pub fn track_start_system(
     let mut left_wall_points: Vec<Vec3> = vec![];
     let mut right_wall_points: Vec<Vec3> = vec![];
     for (i, p) in track.points.iter().enumerate() {
-        left_wall_points.push(*p + track.right_norm[i] * 8.);
-        right_wall_points.push(*p + track.right_norm[i] * -8.);
+        left_wall_points.push(*p + track.right_norm[i] * 7.5);
+        right_wall_points.push(*p + track.right_norm[i] * -7.5);
     }
-    // spawn_walls(
-    //     &mut commands,
-    //     &mut meshes,
-    //     &mut materials,
-    //     &mut images,
-    //     &track.indices,
-    //     &left_wall_points,
-    //     &track.right_norm,
-    // );
-    // spawn_walls(
-    //     &mut commands,
-    //     &mut meshes,
-    //     &mut materials,
-    //     &mut images,
-    //     &track.indices,
-    //     &right_wall_points,
-    //     &track.right_norm,
-    // );
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &mut images,
+        &track.indices,
+        &left_wall_points,
+        &track.right_norm,
+    );
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        &mut images,
+        &track.indices,
+        &right_wall_points,
+        &track.right_norm,
+    );
 }
 
 pub fn track_decorations_start_system(
