@@ -1,6 +1,6 @@
 use crate::{
     config::Config, ear_clipping::triangulate_ear_clipping, material::MaterialHandle,
-    mesh::QuadPlane, shader::GroundMaterial,
+    shader::GroundMaterial,
 };
 use bevy::{
     pbr::NotShadowCaster,
@@ -9,8 +9,6 @@ use bevy::{
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use nalgebra::Point2;
-use parry3d::{math::Point, shape::TriMesh};
-// use parry3d::transformation::triangulate_ear_clipping;
 use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
 type Vav = VertexAttributeValues;
@@ -196,11 +194,14 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     let ind_rev: Vec<[u32; 3]> = ind.iter().map(|indx| [indx[2], indx[1], indx[0]]).collect();
     mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
-    commands.spawn((MaterialMeshBundle::<GroundMaterial> {
-        mesh: meshes.add(mesh),
-        material: handled_materials.ground.clone(),
-        ..default()
-    },));
+    commands.spawn((
+        MaterialMeshBundle::<GroundMaterial> {
+            mesh: meshes.add(mesh),
+            material: handled_materials.ground.clone(),
+            ..default()
+        },
+        NotShadowCaster,
+    ));
 
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     for (i, _p) in track.points.iter().enumerate() {
@@ -495,26 +496,14 @@ pub fn spawn_walls(
         .insert(Restitution::coefficient(0.));
 }
 
-pub fn spawn_ground(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    custom_materials: &mut ResMut<Assets<GroundMaterial>>,
-) {
+pub fn spawn_ground_heightfield(commands: &mut Commands) {
     let multiplier: usize = 2;
     let scale = 280. / multiplier as f32;
     let (cols, rows): (usize, usize) = (2 * multiplier, 3 * multiplier);
     let size: Vec2 = 2. * Vec2::new(cols as f32 * scale, rows as f32 * scale);
-    let color = Color::hex("7b824e").unwrap();
-    let ground_material = custom_materials.add(GroundMaterial { color });
     commands
         .spawn((
             Name::new("road-heightfield"),
-            MaterialMeshBundle::<GroundMaterial> {
-                mesh: meshes.add(Mesh::from(QuadPlane::new(size))),
-                material: ground_material,
-                ..default()
-            },
-            NotShadowCaster,
             RigidBody::Fixed,
             ColliderScale::Absolute(Vec3::ONE),
             CollisionGroups::new(STATIC_GROUP, Group::ALL),
@@ -541,7 +530,7 @@ pub fn track_start_system(
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    // spawn_ground(&mut commands, &mut meshes, &mut custom_materials);
+    spawn_ground_heightfield(&mut commands);
     spawn_road(
         &asset_server,
         handled_materials,
