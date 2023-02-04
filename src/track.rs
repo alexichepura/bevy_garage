@@ -1,11 +1,15 @@
-use crate::{config::Config, mesh::QuadPlane, shader::GroundMaterial};
+use crate::{
+    config::Config, ear_clipping::triangulate_ear_clipping, mesh::QuadPlane, shader::GroundMaterial,
+};
 use bevy::{
     pbr::NotShadowCaster,
     prelude::*,
     render::{mesh::*, render_resource::*, texture::ImageSampler},
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
-use parry3d::math::Point;
+use nalgebra::Point2;
+use parry3d::{math::Point, shape::TriMesh};
+// use parry3d::transformation::triangulate_ear_clipping;
 use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
 // use obj::*;
@@ -137,7 +141,6 @@ pub fn spawn_road(
         normal_map_texture: Some(texture_normals_handle.clone()),
         metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
         perceptual_roughness: 1.,
-        // perceptual_roughness: 0.7,
         ..default()
     });
 
@@ -157,29 +160,43 @@ pub fn spawn_road(
     // let shape = parry3d::shape::SharedShape::convex_hull(&ps).unwrap();
     // commands.spawn_empty().insert(Collider::from(shape));
 
-    // let ps: Vec<Point<f32>> = track
-    //     .right
-    //     .iter()
-    //     .map(|v| Point3::new(v[0], v[1], v[2]))
-    //     .collect();
-    // let shape = parry3d::shape::SharedShape::convex_hull(&ps).unwrap();
-    // commands.spawn_empty().insert(Collider::from(shape));
+    let mut right3d: Vec<Vec3> = track.right.clone();
+    right3d.pop();
+    let mut right3dnorm: Vec<[f32; 3]> = vec![];
+    for (_i, _) in right3d.iter().enumerate() {
+        right3dnorm.push(Vec3::Y.into());
+    }
 
-    let collider_indices: Vec<[u32; 3]> = track
-        .indices
-        .chunks(3)
-        .map(|i| [i[0], i[1], i[2]])
-        .collect();
-    let collider_vertices: Vec<Vec3> = vertices
-        .iter()
-        .map(|v| Vec3::new(v[0], v[1], v[2]))
-        .collect();
+    let right2d: Vec<Point2<f32>> = right3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
+    let ind = triangulate_ear_clipping(&right2d).unwrap();
     commands
         .spawn_empty()
-        .insert(Collider::convex_decomposition(
-            &collider_vertices,
-            &collider_indices,
-        ));
+        .insert(Collider::trimesh(right3d.clone(), ind.clone()))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 3.,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
+
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        VertexAttributeValues::from(right3d.clone()),
+    );
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_NORMAL,
+        VertexAttributeValues::from(right3dnorm),
+    );
+    mesh.set_indices(Some(Indices::U32(ind.flatten().to_vec())));
+    commands.spawn((PbrBundle {
+        mesh: meshes.add(mesh),
+        material: materials.add(Color::rgb(0.05, 0.85, 0.05).into()),
+        transform: Transform::from_xyz(0., 0.001, 0.),
+        ..Default::default()
+    },));
 
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     for (i, _p) in track.points.iter().enumerate() {
@@ -552,24 +569,24 @@ pub fn track_start_system(
         left_wall_points.push(*p + track.right_norm[i] * 8.);
         right_wall_points.push(*p + track.right_norm[i] * -8.);
     }
-    spawn_walls(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &mut images,
-        &track.indices,
-        &left_wall_points,
-        &track.right_norm,
-    );
-    spawn_walls(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &mut images,
-        &track.indices,
-        &right_wall_points,
-        &track.right_norm,
-    );
+    // spawn_walls(
+    //     &mut commands,
+    //     &mut meshes,
+    //     &mut materials,
+    //     &mut images,
+    //     &track.indices,
+    //     &left_wall_points,
+    //     &track.right_norm,
+    // );
+    // spawn_walls(
+    //     &mut commands,
+    //     &mut meshes,
+    //     &mut materials,
+    //     &mut images,
+    //     &track.indices,
+    //     &right_wall_points,
+    //     &track.right_norm,
+    // );
 }
 
 pub fn track_decorations_start_system(
