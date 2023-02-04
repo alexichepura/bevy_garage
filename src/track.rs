@@ -5,6 +5,7 @@ use bevy::{
     render::{mesh::*, render_resource::*, texture::ImageSampler},
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
+use parry3d::math::Point;
 use wgpu::{Extent3d, TextureDimension, TextureFormat};
 
 // use obj::*;
@@ -141,6 +142,44 @@ pub fn spawn_road(
     });
 
     let (vertices, normals) = track.road();
+
+    // let mut ps: Vec<Point<f32>> = track
+    //     .left
+    //     .iter()
+    //     .map(|v| Point3::new(v[0], v[1], v[2]))
+    //     .collect();
+
+    // let y = -100.;
+    // ps.push(Point3::new(2000., y, 2000.));
+    // ps.push(Point3::new(2000., y, -2000.));
+    // ps.push(Point3::new(-2000., y, -2000.));
+    // ps.push(Point3::new(-2000., y, 2000.));
+    // let shape = parry3d::shape::SharedShape::convex_hull(&ps).unwrap();
+    // commands.spawn_empty().insert(Collider::from(shape));
+
+    // let ps: Vec<Point<f32>> = track
+    //     .right
+    //     .iter()
+    //     .map(|v| Point3::new(v[0], v[1], v[2]))
+    //     .collect();
+    // let shape = parry3d::shape::SharedShape::convex_hull(&ps).unwrap();
+    // commands.spawn_empty().insert(Collider::from(shape));
+
+    let collider_indices: Vec<[u32; 3]> = track
+        .indices
+        .chunks(3)
+        .map(|i| [i[0], i[1], i[2]])
+        .collect();
+    let collider_vertices: Vec<Vec3> = vertices
+        .iter()
+        .map(|v| Vec3::new(v[0], v[1], v[2]))
+        .collect();
+    commands
+        .spawn_empty()
+        .insert(Collider::convex_decomposition(
+            &collider_vertices,
+            &collider_indices,
+        ));
 
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     for (i, _p) in track.points.iter().enumerate() {
@@ -492,7 +531,7 @@ pub fn track_start_system(
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    spawn_ground(&mut commands, &mut meshes, &mut custom_materials);
+    // spawn_ground(&mut commands, &mut meshes, &mut custom_materials);
     spawn_road(
         &asset_server,
         &mut commands,
