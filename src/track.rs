@@ -3,7 +3,6 @@ use crate::{
     shader::GroundMaterial,
 };
 use bevy::{
-    math::Vec3A,
     pbr::NotShadowCaster,
     prelude::*,
     render::{mesh::*, primitives::Aabb, render_resource::*, texture::ImageSampler},
@@ -135,6 +134,7 @@ pub fn spawn_road(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     track: &Track,
+    padding: f32,
 ) -> Aabb {
     let texture_handle = asset_server.load("8k_asphalt.jpg");
     let texture_normals_handle = asset_server.load("8k_asphalt_normals.jpg");
@@ -248,8 +248,7 @@ pub fn spawn_road(
     let mut outer3d: Vec<Vec3> = vec![];
     let c = Vec3::new(aabb.center.x, 0., aabb.center.z);
     let hext = Vec3::new(aabb.half_extents.x, 0., aabb.half_extents.z);
-    let half = hext * 1.1;
-    dbg!((c, hext));
+    let half = hext + Vec3::new(padding, 0., padding);
     let outer_enclosure_ccw = [
         Vec3::new(half.x + c.x, 0., ex.z),
         Vec3::new(half.x + c.x, 0., -half.z + c.z),
@@ -540,11 +539,11 @@ pub fn spawn_walls(
         .insert(Restitution::coefficient(0.));
 }
 
-pub fn spawn_ground_heightfield(commands: &mut Commands, pos: Vec3) {
-    let multiplier: usize = 2;
-    let scale = 280. / multiplier as f32;
-    let (cols, rows): (usize, usize) = (2 * multiplier, 3 * multiplier);
-    let size: Vec2 = 2. * Vec2::new(cols as f32 * scale, rows as f32 * scale);
+pub fn spawn_ground_heightfield(commands: &mut Commands, aabb: &Aabb, padding: f32) {
+    let c: Vec3 = aabb.center.into();
+    let half: Vec3 = aabb.half_extents.into();
+    let size: Vec2 = 2. * Vec2::new(half.x, half.z) + padding * Vec2::ONE * 2.;
+    let (cols, rows) = (10, 10);
     commands
         .spawn((
             Name::new("road-heightfield"),
@@ -561,7 +560,7 @@ pub fn spawn_ground_heightfield(commands: &mut Commands, pos: Vec3) {
             ),
         ))
         .insert(TransformBundle::from_transform(
-            Transform::from_translation(pos),
+            Transform::from_translation(c),
         ));
 }
 
@@ -581,10 +580,9 @@ pub fn track_start_system(
         &mut meshes,
         &mut materials,
         &track,
+        100.,
     );
-    let c: Vec3A = aabb.center;
-    let v: Vec3 = Vec3::new(c.x, c.y, c.z);
-    spawn_ground_heightfield(&mut commands, v);
+    spawn_ground_heightfield(&mut commands, &aabb, 100.);
 
     spawn_kerb(
         &mut commands,
