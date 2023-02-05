@@ -3,9 +3,10 @@ use crate::{
     shader::GroundMaterial,
 };
 use bevy::{
+    math::Vec3A,
     pbr::NotShadowCaster,
     prelude::*,
-    render::{mesh::*, render_resource::*, texture::ImageSampler},
+    render::{mesh::*, primitives::Aabb, render_resource::*, texture::ImageSampler},
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use nalgebra::Point2;
@@ -134,7 +135,7 @@ pub fn spawn_road(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     track: &Track,
-) {
+) -> Aabb {
     let texture_handle = asset_server.load("8k_asphalt.jpg");
     let texture_normals_handle = asset_server.load("8k_asphalt_normals.jpg");
     let texture_metallic_roughness_handle = asset_server.load("8k_asphalt_metallic_roughness.jpg");
@@ -146,6 +147,52 @@ pub fn spawn_road(
         ..default()
     });
     let (vertices, normals) = track.road();
+    // ASPHALT
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    for (i, _p) in track.points.iter().enumerate() {
+        let left = track.left.get(i).unwrap();
+        let right = track.right.get(i).unwrap();
+        let x = 50.;
+        uvs.push([left.x / x, left.z / x]);
+        uvs.push([right.x / x, right.z / x]);
+    }
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+    let generate_tangents = mesh.generate_tangents();
+    if generate_tangents.is_ok() {
+        println!("Generated tangents");
+    }
+    let aabb = mesh.compute_aabb().unwrap();
+
+    commands
+        .spawn((
+            PbrBundle {
+                mesh: meshes.add(mesh),
+                material: material_handle,
+                transform: Transform::from_xyz(0., 0., 0.),
+                ..Default::default()
+            },
+            NotShadowCaster,
+        ))
+        .insert(TrackRoad)
+        .insert(Collider::from(ColliderShape::trimesh(
+            vertices
+                .iter()
+                .map(|v| Point3::new(v[0], v[1], v[2]))
+                .collect(),
+            track.collider_indices.clone(),
+        )))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 3.,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
     // INNER
     let mut right3d: Vec<Vec3> = track.right.clone();
     right3d.pop();
@@ -189,9 +236,8 @@ pub fn spawn_road(
     // OUTER
     let outer3d_init: Vec<Vec3> = (&track.left[1..]).to_vec();
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
-    let mut ex: Vec3 = *outer3d_init.get(0).unwrap(); // extremum
-    let mut exi = 0; // extremum index
-    let l = 1600.;
+    let mut ex: Vec3 = *outer3d_init.get(0).unwrap();
+    let mut exi = 0;
     for (i, p) in outer3d_init.iter().enumerate() {
         if p.x > ex.x {
             ex = Vec3::new(p.x, p.y, p.z);
@@ -200,13 +246,17 @@ pub fn spawn_road(
         outer3dnorm.push(Vec3::Y.into());
     }
     let mut outer3d: Vec<Vec3> = vec![];
+    let c = Vec3::new(aabb.center.x, 0., aabb.center.z);
+    let hext = Vec3::new(aabb.half_extents.x, 0., aabb.half_extents.z);
+    let half = hext * 1.1;
+    dbg!((c, hext));
     let outer_enclosure_ccw = [
-        Vec3::new(l, 0., ex.z),
-        Vec3::new(l, 0., -l),
-        Vec3::new(-l, 0., -l),
-        Vec3::new(-l, 0., l),
-        Vec3::new(l, 0., l),
-        Vec3::new(l, 0., ex.z + 0.00001),
+        Vec3::new(half.x + c.x, 0., ex.z),
+        Vec3::new(half.x + c.x, 0., -half.z + c.z),
+        Vec3::new(-half.x + c.x, 0., -half.z + c.z),
+        Vec3::new(-half.x + c.x, 0., half.z + c.z),
+        Vec3::new(half.x + c.x, 0., half.z + c.z),
+        Vec3::new(half.x + c.x, 0., ex.z + 0.00001),
         Vec3::new(ex.x + 0.00001, 0., ex.z + 0.00001),
     ];
     for (_i, outer_point) in outer_enclosure_ccw.iter().enumerate() {
@@ -217,17 +267,17 @@ pub fn spawn_road(
     outer3d.extend((&outer3d_init[..=exi]).to_vec());
     let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
     let ind = triangulate_ear_clipping(&outer2d).unwrap();
-    // commands
-    //     .spawn_empty()
-    //     .insert(Collider::trimesh(outer3d.clone(), ind.clone()))
-    //     .insert(ColliderScale::Absolute(Vec3::ONE))
-    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-    //     .insert(Friction {
-    //         combine_rule: CoefficientCombineRule::Average,
-    //         coefficient: 3.,
-    //         ..default()
-    //     })
-    //     .insert(Restitution::coefficient(0.));
+    commands
+        .spawn_empty()
+        .insert(Collider::trimesh(outer3d.clone(), ind.clone()))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 3.,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
     let mut outer_uvs: Vec<[f32; 2]> = Vec::new();
     for (_i, p) in outer3d.iter().enumerate() {
         let x = 500.;
@@ -246,57 +296,7 @@ pub fn spawn_road(
         },
         NotShadowCaster,
     ));
-    // ASPHALT
-    let mut uvs: Vec<[f32; 2]> = Vec::new();
-    for (i, _p) in track.points.iter().enumerate() {
-        let left = track.left.get(i).unwrap();
-        let right = track.right.get(i).unwrap();
-        let x = 50.;
-        uvs.push([left.x / x, left.z / x]);
-        uvs.push([right.x / x, right.z / x]);
-    }
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
-    let generate_tangents = mesh.generate_tangents();
-    if generate_tangents.is_ok() {
-        println!("Generated tangents");
-    }
-
-    commands
-        .spawn((
-            PbrBundle {
-                mesh: meshes.add(mesh),
-                material: material_handle,
-                // material: materials.add(Color::rgb(0.05, 0.05, 0.05).into()),
-                // material: materials.add(StandardMaterial {
-                //     base_color: Color::rgb(0.05, 0.05, 0.05),
-                //     perceptual_roughness: 0.7,
-                //     ..default()
-                // }),
-                transform: Transform::from_xyz(0., 0.001, 0.),
-                ..Default::default()
-            },
-            NotShadowCaster,
-        ))
-        .insert(TrackRoad)
-        .insert(Collider::from(ColliderShape::trimesh(
-            vertices
-                .iter()
-                .map(|v| Point3::new(v[0], v[1], v[2]))
-                .collect(),
-            track.collider_indices.clone(),
-        )))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
-            combine_rule: CoefficientCombineRule::Average,
-            coefficient: 3.,
-            ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+    aabb
 }
 
 pub fn spawn_kerb(
@@ -540,7 +540,7 @@ pub fn spawn_walls(
         .insert(Restitution::coefficient(0.));
 }
 
-pub fn spawn_ground_heightfield(commands: &mut Commands) {
+pub fn spawn_ground_heightfield(commands: &mut Commands, pos: Vec3) {
     let multiplier: usize = 2;
     let scale = 280. / multiplier as f32;
     let (cols, rows): (usize, usize) = (2 * multiplier, 3 * multiplier);
@@ -560,9 +560,9 @@ pub fn spawn_ground_heightfield(commands: &mut Commands) {
                 Vec3::new(size.x, 0., size.y),
             ),
         ))
-        .insert(TransformBundle::from_transform(Transform::from_xyz(
-            -350., 0., 570.,
-        )));
+        .insert(TransformBundle::from_transform(
+            Transform::from_translation(pos),
+        ));
 }
 
 pub fn track_start_system(
@@ -574,8 +574,7 @@ pub fn track_start_system(
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    spawn_ground_heightfield(&mut commands);
-    spawn_road(
+    let aabb = spawn_road(
         &asset_server,
         handled_materials,
         &mut commands,
@@ -583,6 +582,10 @@ pub fn track_start_system(
         &mut materials,
         &track,
     );
+    let c: Vec3A = aabb.center;
+    let v: Vec3 = Vec3::new(c.x, c.y, c.z);
+    spawn_ground_heightfield(&mut commands, v);
+
     spawn_kerb(
         &mut commands,
         &mut meshes,
