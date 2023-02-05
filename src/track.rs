@@ -176,44 +176,56 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(right3d.clone()));
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(right3dnorm));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-    let ind_rev: Vec<[u32; 3]> = ind.iter().map(|indx| [indx[2], indx[1], indx[0]]).collect();
+    let ind_rev: Vec<[u32; 3]> = ind.iter().map(|i| [i[2], i[1], i[0]]).collect();
     mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
-    commands.spawn((
-        MaterialMeshBundle::<GroundMaterial> {
-            mesh: meshes.add(mesh),
-            material: handled_materials.ground.clone(),
-            ..default()
-        },
-        NotShadowCaster,
-    ));
+    // commands.spawn((
+    //     MaterialMeshBundle::<GroundMaterial> {
+    //         mesh: meshes.add(mesh),
+    //         material: handled_materials.ground.clone(),
+    //         ..default()
+    //     },
+    //     NotShadowCaster,
+    // ));
     // OUTER
     // let mut outer3d: Vec<Vec3> = track.left.clone();
     // outer3d.pop();
-    let mut outer3d: Vec<Vec3> = (&track.left[..74]).to_vec();
+    // let outer3d_init: Vec<Vec3> = (&track.left[..71]).to_vec();
+    let mut outer3d_init: Vec<Vec3> = (&track.left[88..]).to_vec();
+    // outer3d_init.extend((&track.left[1..10]).to_vec());
+
+    // let mut outer3d: Vec<Vec3> = vec![];
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
-    let mut ex = Vec3::ZERO; // extremum
+    let mut ex: Vec3 = *outer3d_init.get(0).unwrap(); // extremum
     let mut exi = 0; // extremum index
-    let l = 2000.;
-    for (i, p) in outer3d.iter().enumerate() {
+    let l = 1600.;
+    for (i, p) in outer3d_init.iter().enumerate() {
         if p.x > ex.x {
             ex = Vec3::new(p.x, p.y, p.z);
             exi = i;
         }
         outer3dnorm.push(Vec3::Y.into());
     }
+    dbg!((exi, ex));
+    let mut outer3d = (&outer3d_init[(exi + 1)..]).to_vec();
     let outer_enclosure_ccw = [
-        // Vec3::new(l, 0., ex.z),
+        Vec3::new(l, 0., ex.z),
         Vec3::new(l, 0., -l),
+        // Vec3::new(0., 0., -l - 1.), // temp
         Vec3::new(-l, 0., -l),
+        // Vec3::new(-l - 1., 0., 0.), // temp
         Vec3::new(-l, 0., l),
+        // Vec3::new(0., 0., l + 1.), // temp
         Vec3::new(l, 0., l),
         // Vec3::new(l, 0., ex.z),
         // ex,
     ];
     for (i, outer_point) in outer_enclosure_ccw.iter().enumerate() {
-        outer3d.insert(exi + i + 1, *outer_point);
+        // outer3d.insert(exi + i + 1, *outer_point);
+        outer3d.push(*outer_point);
         outer3dnorm.push([0., 1., 0.]);
     }
+    outer3d.extend((&outer3d_init[..=exi]).to_vec());
+
     let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
     let ind = triangulate_ear_clipping(&outer2d).unwrap();
     commands
