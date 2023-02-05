@@ -178,18 +178,16 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     let ind_rev: Vec<[u32; 3]> = ind.iter().map(|i| [i[2], i[1], i[0]]).collect();
     mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
-    // commands.spawn((
-    //     MaterialMeshBundle::<GroundMaterial> {
-    //         mesh: meshes.add(mesh),
-    //         material: handled_materials.ground.clone(),
-    //         ..default()
-    //     },
-    //     NotShadowCaster,
-    // ));
+    commands.spawn((
+        MaterialMeshBundle::<GroundMaterial> {
+            mesh: meshes.add(mesh),
+            material: handled_materials.ground.clone(),
+            ..default()
+        },
+        NotShadowCaster,
+    ));
     // OUTER
-    // let mut outer3d_init: Vec<Vec3> = (&track.left[88..]).to_vec();
-    // outer3d_init.extend((&track.left[1..15]).to_vec());
-    let mut outer3d_init: Vec<Vec3> = (&track.left[1..]).to_vec();
+    let outer3d_init: Vec<Vec3> = (&track.left[1..]).to_vec();
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
     let mut ex: Vec3 = *outer3d_init.get(0).unwrap(); // extremum
     let mut exi = 0; // extremum index
@@ -201,40 +199,35 @@ pub fn spawn_road(
         }
         outer3dnorm.push(Vec3::Y.into());
     }
-    dbg!((exi, ex));
     let mut outer3d: Vec<Vec3> = vec![];
-    // let mut outer3d: Vec<Vec3> = (&outer3d_init[(exi + 1)..]).to_vec();
     let outer_enclosure_ccw = [
         Vec3::new(l, 0., ex.z),
         Vec3::new(l, 0., -l),
         Vec3::new(-l, 0., -l),
         Vec3::new(-l, 0., l),
         Vec3::new(l, 0., l),
-        // Vec3::new(l, 0., ex.z),
-        // ex,
+        Vec3::new(l, 0., ex.z + 0.00001),
+        Vec3::new(ex.x + 0.00001, 0., ex.z + 0.00001),
     ];
-    for (i, outer_point) in outer_enclosure_ccw.iter().enumerate() {
-        // outer3d.insert(exi + i + 1, *outer_point);
+    for (_i, outer_point) in outer_enclosure_ccw.iter().enumerate() {
         outer3d.push(*outer_point);
         outer3dnorm.push([0., 1., 0.]);
     }
-    // outer3d.extend((&outer3d_init[..]).to_vec());
     outer3d.extend((&outer3d_init[(exi + 1)..]).to_vec());
     outer3d.extend((&outer3d_init[..=exi]).to_vec());
-
     let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
     let ind = triangulate_ear_clipping(&outer2d).unwrap();
-    commands
-        .spawn_empty()
-        .insert(Collider::trimesh(outer3d.clone(), ind.clone()))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
-            combine_rule: CoefficientCombineRule::Average,
-            coefficient: 3.,
-            ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+    // commands
+    //     .spawn_empty()
+    //     .insert(Collider::trimesh(outer3d.clone(), ind.clone()))
+    //     .insert(ColliderScale::Absolute(Vec3::ONE))
+    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+    //     .insert(Friction {
+    //         combine_rule: CoefficientCombineRule::Average,
+    //         coefficient: 3.,
+    //         ..default()
+    //     })
+    //     .insert(Restitution::coefficient(0.));
     let mut outer_uvs: Vec<[f32; 2]> = Vec::new();
     for (_i, p) in outer3d.iter().enumerate() {
         let x = 500.;
