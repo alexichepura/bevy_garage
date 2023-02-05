@@ -187,9 +187,10 @@ pub fn spawn_road(
         NotShadowCaster,
     ));
     // OUTER
-    let mut outer3d: Vec<Vec3> = track.left.clone();
-    outer3d.pop();
-    outer3d.reverse();
+    // let mut outer3d: Vec<Vec3> = track.left.clone();
+    // outer3d.pop();
+    // let mut outer3d: Vec<Vec3> = vec![Vec3::new(0., 0., 0.)];
+    let mut outer3d: Vec<Vec3> = vec![track.left[0], track.left[1]];
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
     let mut ex = Vec3::ZERO; // extremum
     let mut exi = 0; // extremum index
@@ -201,22 +202,21 @@ pub fn spawn_road(
         }
         outer3dnorm.push(Vec3::Y.into());
     }
-    let outer_points = [
-        Vec3::new(l, 0., ex.z),
-        Vec3::new(l, 0., l),
-        Vec3::new(-l, 0., l),
-        Vec3::new(-l, 0., -l),
+    let outer_enclosure_ccw = [
+        // Vec3::new(l, 0., ex.z),
         Vec3::new(l, 0., -l),
+        Vec3::new(-l, 0., -l),
+        Vec3::new(-l, 0., l),
         Vec3::new(l, 0., l),
-        Vec3::new(l, 0., ex.z),
-        ex,
+        // Vec3::new(l, 0., ex.z),
+        // ex,
     ];
-    for (i, outer_point) in outer_points.iter().enumerate() {
-        outer3d.insert(exi + i, *outer_point);
+    for (i, outer_point) in outer_enclosure_ccw.iter().enumerate() {
+        outer3d.insert(exi + i + 1, *outer_point);
         outer3dnorm.push([0., 1., 0.]);
     }
 
-    let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
+    let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
     let ind = triangulate_ear_clipping(&outer2d).unwrap();
     let mut outer_uvs: Vec<[f32; 2]> = Vec::new();
     for (_i, p) in outer3d.iter().enumerate() {
@@ -227,8 +227,7 @@ pub fn spawn_road(
     outer_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(outer3d.clone()));
     outer_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(outer3dnorm));
     outer_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, outer_uvs);
-    let outer_ind_rev: Vec<[u32; 3]> = ind.iter().map(|indx| [indx[2], indx[1], indx[0]]).collect();
-    outer_mesh.set_indices(Some(Indices::U32(outer_ind_rev.flatten().to_vec())));
+    outer_mesh.set_indices(Some(Indices::U32(ind.flatten().to_vec())));
     commands.spawn((
         MaterialMeshBundle::<GroundMaterial> {
             mesh: meshes.add(outer_mesh),
