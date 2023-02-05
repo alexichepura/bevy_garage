@@ -187,8 +187,9 @@ pub fn spawn_road(
     //     NotShadowCaster,
     // ));
     // OUTER
-    let mut outer3d_init: Vec<Vec3> = (&track.left[88..]).to_vec();
-    // outer3d_init.extend((&track.left[1..10]).to_vec());
+    // let mut outer3d_init: Vec<Vec3> = (&track.left[88..]).to_vec();
+    // outer3d_init.extend((&track.left[1..15]).to_vec());
+    let mut outer3d_init: Vec<Vec3> = (&track.left[1..]).to_vec();
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
     let mut ex: Vec3 = *outer3d_init.get(0).unwrap(); // extremum
     let mut exi = 0; // extremum index
