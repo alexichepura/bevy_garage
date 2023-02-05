@@ -189,8 +189,7 @@ pub fn spawn_road(
     // OUTER
     // let mut outer3d: Vec<Vec3> = track.left.clone();
     // outer3d.pop();
-    // let mut outer3d: Vec<Vec3> = vec![Vec3::new(0., 0., 0.)];
-    let mut outer3d: Vec<Vec3> = vec![track.left[0], track.left[1]];
+    let mut outer3d: Vec<Vec3> = (&track.left[..74]).to_vec();
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
     let mut ex = Vec3::ZERO; // extremum
     let mut exi = 0; // extremum index
@@ -215,9 +214,19 @@ pub fn spawn_road(
         outer3d.insert(exi + i + 1, *outer_point);
         outer3dnorm.push([0., 1., 0.]);
     }
-
     let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
     let ind = triangulate_ear_clipping(&outer2d).unwrap();
+    commands
+        .spawn_empty()
+        .insert(Collider::trimesh(outer3d.clone(), ind.clone()))
+        .insert(ColliderScale::Absolute(Vec3::ONE))
+        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
+        .insert(Friction {
+            combine_rule: CoefficientCombineRule::Average,
+            coefficient: 3.,
+            ..default()
+        })
+        .insert(Restitution::coefficient(0.));
     let mut outer_uvs: Vec<[f32; 2]> = Vec::new();
     for (_i, p) in outer3d.iter().enumerate() {
         let x = 500.;
