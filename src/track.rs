@@ -187,13 +187,8 @@ pub fn spawn_road(
     //     NotShadowCaster,
     // ));
     // OUTER
-    // let mut outer3d: Vec<Vec3> = track.left.clone();
-    // outer3d.pop();
-    // let outer3d_init: Vec<Vec3> = (&track.left[..71]).to_vec();
     let mut outer3d_init: Vec<Vec3> = (&track.left[88..]).to_vec();
     // outer3d_init.extend((&track.left[1..10]).to_vec());
-
-    // let mut outer3d: Vec<Vec3> = vec![];
     let mut outer3dnorm: Vec<[f32; 3]> = vec![];
     let mut ex: Vec3 = *outer3d_init.get(0).unwrap(); // extremum
     let mut exi = 0; // extremum index
@@ -206,15 +201,13 @@ pub fn spawn_road(
         outer3dnorm.push(Vec3::Y.into());
     }
     dbg!((exi, ex));
-    let mut outer3d = (&outer3d_init[(exi + 1)..]).to_vec();
+    let mut outer3d: Vec<Vec3> = vec![];
+    // let mut outer3d: Vec<Vec3> = (&outer3d_init[(exi + 1)..]).to_vec();
     let outer_enclosure_ccw = [
         Vec3::new(l, 0., ex.z),
         Vec3::new(l, 0., -l),
-        // Vec3::new(0., 0., -l - 1.), // temp
         Vec3::new(-l, 0., -l),
-        // Vec3::new(-l - 1., 0., 0.), // temp
         Vec3::new(-l, 0., l),
-        // Vec3::new(0., 0., l + 1.), // temp
         Vec3::new(l, 0., l),
         // Vec3::new(l, 0., ex.z),
         // ex,
@@ -224,6 +217,8 @@ pub fn spawn_road(
         outer3d.push(*outer_point);
         outer3dnorm.push([0., 1., 0.]);
     }
+    // outer3d.extend((&outer3d_init[..]).to_vec());
+    outer3d.extend((&outer3d_init[(exi + 1)..]).to_vec());
     outer3d.extend((&outer3d_init[..=exi]).to_vec());
 
     let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
