@@ -769,6 +769,7 @@ dependencies = [
  "bevy_rapier3d",
  "crossbeam-channel",
  "dfdx",
+ "nalgebra",
  "obj-rs",
  "parry3d",
  "rand 0.8.5",

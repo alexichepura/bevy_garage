@@ -1,12 +1,15 @@
+#![feature(slice_flatten)]
 mod api_client;
 pub mod camera;
 pub mod car;
 mod config;
 mod dash;
+mod ear_clipping;
 mod esp;
 pub mod font;
 mod input;
 mod light;
+mod material;
 mod mesh;
 mod nn;
 mod progress;
@@ -22,17 +25,22 @@ use esp::*;
 use font::*;
 use input::*;
 use light::*;
+use material::*;
 use nn::{dqn::dqn_system, dqn_bevy::*};
 use progress::*;
 use shader::*;
 use track::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 64;
-    c.integration_parameters.max_velocity_friction_iterations = 64;
-    c.integration_parameters.max_stabilization_iterations = 2;
-    // c.integration_parameters.allowed_linear_error = 0.;
+    c.integration_parameters.max_velocity_iterations = 32;
+    c.integration_parameters.max_velocity_friction_iterations = 32;
+    c.integration_parameters.max_stabilization_iterations = 8;
+    // c.integration_parameters.max_ccd_substeps = 16;
+    // c.integration_parameters.allowed_linear_error = 0.000001;
+    c.integration_parameters.erp = 0.99;
     // c.integration_parameters.erp = 1.;
+    // c.integration_parameters.max_penetration_correction = 0.0001;
+    // c.integration_parameters.prediction_distance = 0.01;
     dbg!(c.integration_parameters);
 }
 
@@ -46,11 +54,19 @@ pub enum CarSimLabel {
 pub fn car_app(app: &mut App) -> &mut App {
     app.add_event::<StreamEvent>()
         .init_resource::<FontHandle>()
+        .add_plugin(ShadersPlugin)
+        .add_plugin(MaterialPlugin::<GroundMaterial>::default())
+        .init_resource::<MaterialHandle>()
         .insert_resource(RapierConfiguration {
+            // timestep_mode: TimestepMode::Interpolated {
+            //     dt: 1. / 60.,
+            //     time_scale: 1.,
+            //     substeps: 5,
+            // },
             timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 60.,
+                max_dt: 1. / 120.,
                 time_scale: 1.,
-                substeps: 5,
+                substeps: 30,
             },
             ..default()
         })
@@ -58,8 +74,6 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(Config::default())
         .insert_resource(DirectionalLightShadowMap::default())
-        .add_plugin(ShadersPlugin)
-        .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_startup_system(dqn_exclusive_start_system)
