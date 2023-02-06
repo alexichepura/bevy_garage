@@ -11,7 +11,7 @@ use bevy::{
     },
     DefaultPlugins,
 };
-use bevy_rapier_car_sim::{
+use bevy_garage::{
     camera::{CameraConfig, CameraFollowView},
     car::{Car, HID},
     car_app,

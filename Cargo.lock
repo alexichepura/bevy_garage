@@ -553,6 +553,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_garage"
+version = "0.2.0"
+dependencies = [
+ "bevy",
+ "bevy_atmosphere",
+ "bevy_prototype_debug_lines",
+ "bevy_rapier3d",
+ "crossbeam-channel",
+ "dfdx",
+ "nalgebra",
+ "obj-rs",
+ "parry3d",
+ "rand 0.8.5",
+ "reqwest",
+ "ron",
+ "serde",
+ "serde_json",
+ "tokio",
+ "wgpu",
+]
+
+[[package]]
+name = "bevy_garage_ios"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage",
+]
+
+[[package]]
 name = "bevy_gilrs"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -757,28 +787,6 @@ dependencies = [
  "nalgebra",
  "rapier3d",
  "serde",
-]
-
-[[package]]
-name = "bevy_rapier_car_sim"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_atmosphere",
- "bevy_prototype_debug_lines",
- "bevy_rapier3d",
- "crossbeam-channel",
- "dfdx",
- "nalgebra",
- "obj-rs",
- "parry3d",
- "rand 0.8.5",
- "reqwest",
- "ron",
- "serde",
- "serde_json",
- "tokio",
- "wgpu",
 ]
 
 [[package]]
@@ -1209,14 +1217,6 @@ name = "cache-padded"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1db59621ec70f09c5e9b597b220c7a2b43611f4710dc03ceb8748637775692c"
-
-[[package]]
-name = "car_sim"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_rapier_car_sim",
-]
 
 [[package]]
 name = "cc"

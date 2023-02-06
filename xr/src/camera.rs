@@ -1,7 +1,7 @@
 use bevy::openxr::XrPawn;
 use bevy::prelude::*;
-use bevy_rapier_car_sim::camera::{CameraConfig, CameraMode};
-use bevy_rapier_car_sim::car::HID;
+use bevy_garage::camera::{CameraConfig, CameraMode};
+use bevy_garage::car::HID;
 use core::f32::consts::PI;
 
 // fn camera_position(mut q: Query<(&mut Transform, &mut GlobalTransform, &XrPawn)>) {

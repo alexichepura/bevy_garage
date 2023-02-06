@@ -4,15 +4,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'sim-car'",
+            "name": "Debug executable 'bevy_garage'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=bevy_rapier_car_sim",
-                    "--package=bevy_rapier_car_sim"
+                    "--bin=bevy_garage",
+                    "--package=bevy_garage"
                 ],
                 "filter": {
-                    "name": "bevy_rapier_car_sim",
+                    "name": "bevy_garage",
                     "kind": "bin"
                 }
             },
@@ -25,16 +25,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'bevy_rapier_car_sim'",
+            "name": "Debug unit tests in executable 'bevy_garage'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=bevy_rapier_car_sim",
-                    "--package=bevy_rapier_car_sim"
+                    "--bin=bevy_garage",
+                    "--package=bevy_garage"
                 ],
                 "filter": {
-                    "name": "bevy_rapier_car_sim",
+                    "name": "bevy_garage",
                     "kind": "bin"
                 }
             },

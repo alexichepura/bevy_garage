@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier_car_sim::{
+use bevy_garage::{
     car::{Car, HID},
     font::FontHandle,
 };

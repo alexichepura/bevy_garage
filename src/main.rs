@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier_car_sim::{camera::CarCameraPlugin, car_app};
+use bevy_garage::{camera::CarCameraPlugin, car_app};
 use wgpu::{AddressMode, SamplerDescriptor};
 
 fn main() {
@@ -8,7 +8,7 @@ fn main() {
         DefaultPlugins
             .set(WindowPlugin {
                 window: WindowDescriptor {
-                    title: "bevy car sim".to_string(),
+                    title: "Bevy Garage playground".to_string(),
                     width: 720.,
                     height: 640.,
                     // monitor: MonitorSelection::Index(1),
