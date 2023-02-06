@@ -8,7 +8,7 @@ fn main() {
         DefaultPlugins
             .set(WindowPlugin {
                 window: WindowDescriptor {
-                    title: "Bevy Garage playground".to_string(),
+                    title: "Bevy Garage".to_string(),
                     width: 720.,
                     height: 640.,
                     // monitor: MonitorSelection::Index(1),
