@@ -1,15 +1,15 @@
 [package]
-name = "car_sim"
+name = "bevy_garage_ios"
 version = "0.1.0"
 edition = "2021"
-description = "Car sim with bevy and rapier"
+description = "bavy_garage ios"
 publish = false
 license = "MIT OR Apache-2.0"
 
 [lib]
-name = "car_sim"
+name = "bavy_garage"
 crate-type = ["staticlib"]
 
 [dependencies]
 bevy = { workspace = true }
-bevy_rapier_car_sim = { path = "../" }
+bevy_garage = { path = "../" }

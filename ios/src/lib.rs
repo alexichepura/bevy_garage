@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier_car_sim::{camera::CarCameraPlugin, car_app, CarSimLabel};
+use bevy_garage::{camera::CarCameraPlugin, car_app, CarSimLabel};
 mod touch;
 use touch::*;
 

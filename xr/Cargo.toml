@@ -1,8 +1,8 @@
 [package]
-name = "car_sim_xr"
+name = "bavy_garage_xr"
 version = "0.1.0"
 edition = "2021"
-description = "Car sim with bevy and rapier"
+description = "bavy_garage xr"
 publish = false
 license = "MIT OR Apache-2.0"
 
@@ -29,7 +29,7 @@ bevy = { git = "https://github.com/kcking/bevy", branch = "xr", default-features
     "trace",
     "jpeg",
 ] }
-bevy_rapier_car_sim = { path = "../", default-features = false, features = [] }
+bevy_garage = { path = "../", default-features = false, features = [] }
 
 [patch.'crates-io']
 bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }

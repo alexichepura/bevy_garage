@@ -1,4 +1,6 @@
-# car simulation in rust
+# Bevy Garage is gamelike playground, all about cars/driving with #BevyEngine and #Rapier3d physics
+
+NOTE renamed from bevy_rapier_car_sim
 
 Wasm online!
 https://dainty-churros-415c79.netlify.app
