@@ -404,6 +404,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_garage"
+version = "0.2.0"
+dependencies = [
+ "bevy",
+ "bevy_rapier3d",
+ "crossbeam-channel",
+ "dfdx",
+ "nalgebra",
+ "obj-rs",
+ "parry3d",
+ "rand",
+ "reqwest",
+ "ron",
+ "serde",
+ "serde_json",
+ "tokio",
+ "wgpu",
+]
+
+[[package]]
+name = "bevy_garage_xr"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage",
+]
+
+[[package]]
 name = "bevy_gilrs"
 version = "0.9.1"
 source = "git+https://github.com/kcking/bevy?branch=xr#eb39afd51bcbab38de6efbeeb0646e01e2ce4766"
@@ -637,25 +665,6 @@ dependencies = [
  "nalgebra",
  "rapier3d",
  "serde",
-]
-
-[[package]]
-name = "bevy_rapier_car_sim"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_rapier3d",
- "crossbeam-channel",
- "dfdx",
- "obj-rs",
- "parry3d",
- "rand",
- "reqwest",
- "ron",
- "serde",
- "serde_json",
- "tokio",
- "wgpu",
 ]
 
 [[package]]
@@ -1047,14 +1056,6 @@ dependencies = [
  "slotmap",
  "thiserror",
  "vec_map",
-]
-
-[[package]]
-name = "car_sim_xr"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_rapier_car_sim",
 ]
 
 [[package]]

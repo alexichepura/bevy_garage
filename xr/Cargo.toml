@@ -1,8 +1,8 @@
 [package]
-name = "bavy_garage_xr"
+name = "bevy_garage_xr"
 version = "0.1.0"
 edition = "2021"
-description = "bavy_garage xr"
+description = "bevy_garage xr"
 publish = false
 license = "MIT OR Apache-2.0"
 
@@ -48,7 +48,7 @@ bevy_pbr = { git = "https://github.com/kcking/bevy", branch = "xr" }
 
 [package.metadata.android]
 apk_label = "Bevy XR Example"
-package = "com.example.car_sim_xr"
+package = "com.github.alexichepura.bevy_garage"
 assets = "assets"
 res = "assets/android-res"
 icon = "@mipmap/ic_launcher"

@@ -26,7 +26,7 @@ pub fn game_main() {
     app.add_plugins(DefaultPlugins);
     app.add_startup_system(xr_startup);
     app.insert_resource(CameraConfig::from_view(CameraFollowView::Windshield));
-    car_app(&mut app, 30.);
+    car_app(&mut app);
     app.add_system(interaction);
     app.add_system(camera_controller_system);
     app.run();

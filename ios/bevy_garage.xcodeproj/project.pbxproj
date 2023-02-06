@@ -31,7 +31,7 @@
 		7A2159F629627EA700310237 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		7A215A0429627EA700310237 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7A215A1229627F2700310237 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
-		7A60F44D2960013D00A64E57 /* car-sim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "car-sim.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A60F44D2960013D00A64E57 /* bevy_garage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "bevy_garage.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A60F46F2960148800A64E57 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		7A60F4712960149300A64E57 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		7A60F4732960149A00A64E57 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -78,7 +78,7 @@
 		7A60F44E2960013D00A64E57 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7A60F44D2960013D00A64E57 /* car-sim.app */,
+				7A60F44D2960013D00A64E57 /* bevy_garage.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,9 +115,9 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		7A60F44C2960013D00A64E57 /* car-sim */ = {
+		7A60F44C2960013D00A64E57 /* bevy_garage */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7A60F45B2960013E00A64E57 /* Build configuration list for PBXNativeTarget "car-sim" */;
+			buildConfigurationList = 7A60F45B2960013E00A64E57 /* Build configuration list for PBXNativeTarget "bevy_garage" */;
 			buildPhases = (
 				7A60F4492960013D00A64E57 /* Sources */,
 				7A60F44A2960013D00A64E57 /* Frameworks */,
@@ -128,9 +128,9 @@
 			dependencies = (
 				7A60F46A296010A300A64E57 /* PBXTargetDependency */,
 			);
-			name = "car-sim";
-			productName = "car-sim";
-			productReference = 7A60F44D2960013D00A64E57 /* car-sim.app */;
+			name = "bevy_garage";
+			productName = "bevy_garage";
+			productReference = 7A60F44D2960013D00A64E57 /* bevy_garage.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -151,7 +151,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7A60F4482960013D00A64E57 /* Build configuration list for PBXProject "car-sim" */;
+			buildConfigurationList = 7A60F4482960013D00A64E57 /* Build configuration list for PBXProject "bevy_garage" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -164,7 +164,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7A60F44C2960013D00A64E57 /* car-sim */,
+				7A60F44C2960013D00A64E57 /* bevy_garage */,
 				7A60F46529600FFD00A64E57 /* cargo-ios */,
 			);
 		};
@@ -366,10 +366,10 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lcar_sim",
+					"-lbevy_garage",
 					"-lc++abi",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.car-sim";
+				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy_garage";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -402,10 +402,10 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lcar_sim",
+					"-lbevy_garage",
 					"-lc++abi",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.car-sim";
+				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy_garage";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -443,7 +443,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7A60F4482960013D00A64E57 /* Build configuration list for PBXProject "car-sim" */ = {
+		7A60F4482960013D00A64E57 /* Build configuration list for PBXProject "bevy_garage" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7A60F4592960013E00A64E57 /* Debug */,
@@ -452,7 +452,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7A60F45B2960013E00A64E57 /* Build configuration list for PBXNativeTarget "car-sim" */ = {
+		7A60F45B2960013E00A64E57 /* Build configuration list for PBXNativeTarget "bevy_garage" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7A60F45C2960013E00A64E57 /* Debug */,
