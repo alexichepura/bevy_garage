@@ -104,10 +104,6 @@ pub fn car_app(app: &mut App) -> &mut App {
             .add_system(api_read_stream_event_writer_system)
             .add_system(api_event_reader_system)
             .add_system(car_sensor_system.label(CarSimLabel::Input))
-            .add_system(car_sensor_system.label(CarSimLabel::Input))
-            .add_system(progress_system.label(CarSimLabel::Input))
-            .add_system(car_sensor_system.label(CarSimLabel::Input))
-            .add_system(progress_system.label(CarSimLabel::Input))
             .add_system(
                 dqn_system
                     .label(CarSimLabel::Brain)
