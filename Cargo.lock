@@ -340,6 +340,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
+name = "bavy_garage_track_convert"
+version = "0.1.0"
+dependencies = [
+ "obj-rs",
+ "ron",
+]
+
+[[package]]
 name = "bevy"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -563,11 +571,9 @@ dependencies = [
  "crossbeam-channel",
  "dfdx",
  "nalgebra",
- "obj-rs",
  "parry3d",
  "rand 0.8.5",
  "reqwest",
- "ron",
  "serde",
  "serde_json",
  "tokio",

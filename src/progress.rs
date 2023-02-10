@@ -1,19 +1,11 @@
 use crate::{car::*, config::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
-// use obj::*;
 use parry3d::query::PointQueryWithLocation;
 use parry3d::shape::{Polyline, SegmentPointLocation};
 use std::cmp::Ordering;
-// use std::fs::File;
-// use std::io::BufReader;
 
 pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Config>) {
-    // let obj_path = "assets/track-polyline.obj";
-    // let polyline_buf = BufReader::new(File::open(obj_path).unwrap());
-    // let model = raw::parse_obj(polyline_buf).unwrap();
-
-    // let positions = model.positions;
     let positions = TRACK_POSITIONS;
 
     let vertices: Vec<Point3<Real>> = positions

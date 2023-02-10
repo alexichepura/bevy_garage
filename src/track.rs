@@ -9,17 +9,11 @@ use bevy::{
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use nalgebra::Point2;
-use wgpu::{Extent3d, TextureDimension, TextureFormat};
-
-type VAV = VertexAttributeValues;
-
-// use obj::*;
 use std::f32::consts::{FRAC_PI_2, PI};
-// use std::fs::File;
-// use std::io::BufReader;
-// use std::io::Write;
 use std::ops::Mul;
 use std::ops::Sub;
+use wgpu::{Extent3d, TextureDimension, TextureFormat};
+type VAV = VertexAttributeValues;
 
 // https://google.github.io/filament/Filament.html#materialsystem/parameterization/
 // https://google.github.io/filament/Material%20Properties.pdf
@@ -54,17 +48,6 @@ impl Track {
         }
     }
     pub fn new() -> Self {
-        // let polyline_buf = BufReader::new(File::open("assets/track-polyline.obj").unwrap());
-        // let model = raw::parse_obj(polyline_buf).unwrap();
-        // let pretty_config = ron::ser::PrettyConfig::default()
-        //     .indentor("  ".to_string())
-        //     .new_line("\n".to_string());
-        // let pos_ron = ron::ser::to_string_pretty(&model.positions, pretty_config).unwrap();
-        // File::create(format!("assets/track-positions.ron"))
-        //     .and_then(|mut file| file.write(pos_ron.as_bytes()))
-        //     .expect("Error while writing scene to file");
-        // let positions = model.positions;
-
         let positions = TRACK_POSITIONS;
         let mut track = Track::empty();
         let mut points: Vec<Vec3> = vec![];

@@ -1,0 +1,8 @@
+[package]
+name = "bavy_garage_track_convert"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+obj-rs = { version = "0.7.0", default-features = false }
+ron = { version = "*" }
