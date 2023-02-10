@@ -11,6 +11,9 @@ Renamed from bevy_rapier_car_sim
 - api server and client https://github.com/tokio-rs/axum
 - db client https://github.com/Brendonovich/prisma-client-rust
 
+![Screenshot 2023-02-10](https://user-images.githubusercontent.com/5582266/218020620-d50663a7-a38f-4431-8abf-8d794e552b6f.jpeg)
+
+
 ### History
 - Deep Q learning NN - https://www.youtube.com/watch?v=aN49ZP4PS-c
 - First attempts with NN - https://www.youtube.com/watch?v=mVk1otSmySM
