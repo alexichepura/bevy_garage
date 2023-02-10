@@ -1,6 +1,5 @@
-use super::params::*;
+use super::{api_client::ApiClient, params::*};
 use crate::{
-    api_client::ApiClient,
     car::*,
     config::*,
     nn::{dqn_bevy::*, util::*},

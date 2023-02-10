@@ -1,7 +1,7 @@
 [package]
-name    = "bevy_garage"
+name = "bevy_garage"
 version = "0.2.0"
-authors = [ "Alexi Chepura <a.chepura@gmail.com>" ]
+authors = ["Alexi Chepura <a.chepura@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Bevy Garage is gamelike playground, all about cars/driving with #BevyEngine and #Rapier3d physics"
@@ -14,11 +14,18 @@ members = ["prisma-cli", "api", "trainer", "db_client", "ios"]
 default = ["debug_lines", "bevy_atmosphere"]
 debug_lines = ["dep:bevy_prototype_debug_lines"]
 bevy_atmosphere = ["dep:bevy_atmosphere"]
+brain = ["dep:dfdx", "dep:reqwest", "dep:tokio", "dep:crossbeam-channel"]
 [workspace.dependencies]
 bevy = { version = "0.9.1", features = ["jpeg"] }
 dfdx = "0.10"
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite", "sqlite-create-many"] }
-prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = [
+    "sqlite",
+    "sqlite-create-many",
+] }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = [
+    "sqlite",
+    "sqlite-create-many",
+] }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -28,45 +35,23 @@ tokio = { version = "1", features = ["full"] }
 codegen-units = 1
 [dependencies]
 bevy = { workspace = true }
-bevy_rapier3d = { version = "0.20", features=["serde-serialize"]}
-bevy_prototype_debug_lines = { version = "0.9.0", features = ["3d"], optional=true }
-crossbeam-channel = "0.5"
-dfdx = { workspace = true }
-obj-rs = { version =  "0.7.0", default-features = false }
+bevy_rapier3d = { version = "0.20", features = ["serde-serialize"] }
+obj-rs = { version = "0.7.0", default-features = false }
 parry3d = "0.13"
 nalgebra = "0.32.1"
 rand = { workspace = true }
-reqwest = { version = "0.11", default-features = false, features = ["json"] }
-ron = {version = "*"}
+ron = { version = "*" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 wgpu = { version = "0.14.2", features = ["spirv"] }
-bevy_atmosphere = {version = "0.5.0", optional=true}
-
+crossbeam-channel = { version = "0.5", optional = true }
+dfdx = { workspace = true, optional = true }
+bevy_prototype_debug_lines = { version = "0.9.0", features = [
+    "3d",
+], optional = true }
+reqwest = { version = "0.11", default-features = false, features = [
+    "json",
+], optional = true }
+bevy_atmosphere = { version = "0.5.0", optional = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tokio = { workspace = true }
-
-# [patch.'crates-io']
-# bevy = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_render = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_ecs = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_app = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_asset = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_core = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_hierarchy = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_log = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_math = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_reflect = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_utils = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_core_pipeline = { git = "https://github.com/kcking/bevy", branch = "xr" }
-# bevy_pbr = { git = "https://github.com/kcking/bevy", branch = "xr" }
-
-# [profile.dev.package.bevy_rapier3d]
-# opt-level = 3
-# [profile.dev.package.rapier3d]
-# opt-level = 3
-# [profile.release.package.bevy_rapier3d]
-# opt-level = 3
-# [profile.release.package.rapier3d]
-# opt-level = 3
-[dev-dependencies]
+tokio = { workspace = true, optional = true }
