@@ -3,7 +3,9 @@ use parry3d::shape::Polyline;
 use rand::Rng;
 use std::f32::consts::PI;
 
-use crate::nn::params::{CARS_COUNT, MAX_TOI, MAX_TORQUE};
+pub const CARS_COUNT: usize = 1;
+pub const MAX_TORQUE: f32 = 2000.;
+pub const MAX_TOI: f32 = 100.;
 
 #[derive(Resource)]
 pub struct Config {

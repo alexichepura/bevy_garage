@@ -1,5 +1,4 @@
-use super::{dqn::*, params::*};
-use crate::api_client::ReplayBufferRecord;
+use super::{api_client::ReplayBufferRecord, dqn::*, params::*};
 use dfdx::{
     prelude::HasArrayData,
     tensor::{Tensor1D, Tensor2D, TensorCreator},

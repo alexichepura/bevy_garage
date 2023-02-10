@@ -1,8 +1,4 @@
-use crate::{
-    config::*,
-    nn::{dqn_bevy::*, params::SENSOR_COUNT},
-    track::*,
-};
+use crate::{config::*, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     prelude::*,
@@ -11,6 +7,8 @@ use bevy_rapier3d::{
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
 pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
+
+pub const SENSOR_COUNT: usize = 31;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -345,12 +343,12 @@ pub fn spawn_car(
     };
 
     let car_id = commands
-        .spawn_empty()
-        .insert(Name::new("car"))
-        .insert(Sleeping::disabled())
-        .insert(carrr)
-        .insert(CarDqnPrev::new())
-        .insert(RigidBody::Dynamic)
+        .spawn((
+            Name::new("car"),
+            Sleeping::disabled(),
+            carrr,
+            RigidBody::Dynamic,
+        ))
         .insert(Ccd::enabled())
         .insert(Damping {
             linear_damping: 0.05,
@@ -396,6 +394,12 @@ pub fn spawn_car(
                 .insert(collider_mass);
         })
         .id();
+    #[cfg(feature = "brain")]
+    {
+        commands
+            .entity(car_id)
+            .insert(crate::nn::dqn_bevy::CarDqnPrev::new());
+    }
 
     if is_hid {
         commands.entity(car_id).insert(HID);
@@ -409,6 +413,7 @@ pub fn spawn_car(
     return car_id;
 }
 
+#[cfg(feature = "brain")]
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<Config>,

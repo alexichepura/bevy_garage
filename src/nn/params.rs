@@ -1,3 +1,5 @@
+use crate::{car::SENSOR_COUNT, esp::SPEED_LIMIT_KMH};
+
 pub const BATCH_SIZE: usize = 256;
 pub const EPOCHS: usize = 50;
 pub const DECAY: f32 = 0.001;
@@ -7,13 +9,7 @@ pub const BUFFER_SIZE: usize = 10_000_000;
 pub const HIDDEN_SIZE: usize = 16;
 
 pub const STEP_DURATION: f64 = 1. / 10.;
-pub const SENSOR_COUNT: usize = 31;
 pub const STATE_SIZE_BASE: usize = 3;
 pub const STATE_SIZE: usize = STATE_SIZE_BASE + SENSOR_COUNT;
 pub const ACTIONS: usize = 8;
-pub const CARS_COUNT: usize = 1;
-pub const SPEED_LIMIT_KMH: f32 = 300.;
 pub const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-pub const STEERING_SPEEDLIMIT_KMH: f32 = 230.;
-pub const MAX_TORQUE: f32 = 2000.;
-pub const MAX_TOI: f32 = 100.;

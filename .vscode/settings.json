@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.server.extraEnv": {
+        "RUSTFLAGS": "-Ctarget-feature=+brain"
+    },
+    "rust-analyzer.cargo.features": [
+        "brain"
+    ],
+}

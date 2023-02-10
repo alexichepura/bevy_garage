@@ -1,7 +1,10 @@
-use crate::{car::*, nn::params::*};
+use crate::car::*;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
+
+pub const SPEED_LIMIT_KMH: f32 = 300.;
+pub const STEERING_SPEEDLIMIT_KMH: f32 = 230.;
 
 pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
     for (velocity, transform, mut force) in car_query.iter_mut() {
