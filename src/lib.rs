@@ -120,16 +120,38 @@ pub fn car_app(app: &mut App) -> &mut App {
             dsp_manager: Res<DspManager>,
             mut dsp: ResMut<Dsp>,
             mut audio: ResMut<Audio<DspSource>>,
-            mut car_query: Query<(&Velocity, &Transform), With<HID>>,
+            // mut car_query: Query<(&Velocity, &Transform), With<HID>>,
+            audio_sinks: Res<Assets<AudioSink>>,
         ) {
-            if let None = dsp.noise_sink {
+            if let Some(sink_handle) = &dsp.noise_sink {
+                dbg!(sink_handle);
+                if let Some(sink) = audio_sinks.get(&sink_handle) {
+                    dbg!(sink.volume());
+                    // for (velocity, _transform) in car_query.iter_mut() {
+                    //     let car_mps = velocity.linvel.length();
+                    //     let volume = car_mps / 10.;
+                    //     dbg!(volume);
+                    //     sink.set_volume(volume);
+                    // }
+                } else {
+                    println!("no sink in audio_sinks");
+                }
+            } else {
                 let source = dsp_manager
                     .get_graph(white_noise)
                     .unwrap_or_else(|| panic!("DSP source not found!"));
-                let sink = audio.play_dsp(assets.as_mut(), source);
+                // let sink = audio.play_dsp(assets.as_mut(), source);
+                let sink = audio.play_dsp_with_settings(
+                    assets.as_mut(),
+                    source,
+                    PlaybackSettings {
+                        repeat: false,
+                        volume: 0.1,
+                        speed: 1.,
+                    },
+                );
                 dsp.noise_sink = Some(sink);
             }
-            for (velocity, transform) in car_query.iter_mut() {}
         }
     }
     #[cfg(feature = "brain")]
