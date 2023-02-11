@@ -27,6 +27,8 @@ use progress::*;
 use shader::*;
 use track::*;
 
+#[cfg(feature = "dsp")]
+mod dsp;
 #[cfg(feature = "brain")]
 mod nn;
 
@@ -94,6 +96,42 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_system(dash_fps_system)
         .add_system(dash_speed_update_system);
 
+    #[cfg(feature = "dsp")]
+    {
+        use bevy::audio::AudioSink;
+        use bevy_fundsp::prelude::*;
+
+        #[derive(Resource, Default)]
+        pub struct Dsp {
+            pub noise_sink: Option<Handle<AudioSink>>,
+        }
+
+        fn white_noise() -> impl AudioUnit32 {
+            white() >> split::<U2>() * 0.2
+        }
+
+        app.add_plugin(DspPlugin::default())
+            .add_dsp_source(white_noise, SourceType::Dynamic)
+            .add_system(dsp_system)
+            .insert_resource(Dsp::default());
+
+        pub fn dsp_system(
+            mut assets: ResMut<Assets<DspSource>>,
+            dsp_manager: Res<DspManager>,
+            mut dsp: ResMut<Dsp>,
+            mut audio: ResMut<Audio<DspSource>>,
+            mut car_query: Query<(&Velocity, &Transform), With<HID>>,
+        ) {
+            if let None = dsp.noise_sink {
+                let source = dsp_manager
+                    .get_graph(white_noise)
+                    .unwrap_or_else(|| panic!("DSP source not found!"));
+                let sink = audio.play_dsp(assets.as_mut(), source);
+                dsp.noise_sink = Some(sink);
+            }
+            for (velocity, transform) in car_query.iter_mut() {}
+        }
+    }
     #[cfg(feature = "brain")]
     {
         use nn::{api_client::*, dqn::dqn_system, dqn_bevy::*};
