@@ -6,7 +6,7 @@ Renamed from bevy_rapier_car_sim
 
 - game engine <https://bevyengine.org>
 - rigid body physics <https://rapier.rs>
-- Wasm [demo online](https://dainty-churros-415c79.netlify.app) (desktop only)
+- Wasm demo <https://alexi.chepura.space/bevy-garage> (desktop only)
 - xr bevy fork <https://github.com/kcking/bevy>
 - iOS, WIP gyroscope using <https://github.com/madsmtm/objc2>
 - kenney assets <https://www.kenney.nl/assets/car-kit>
