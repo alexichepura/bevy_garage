@@ -30,8 +30,8 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
                 .looking_at(Vec3::Y * 6., Vec3::Y),
                 ..default()
             },
-            #[cfg(feature = "bevy_atmosphere")]
-            bevy_atmosphere::prelude::AtmosphereCamera::default(),
+            // #[cfg(feature = "bevy_atmosphere")]
+            // bevy_atmosphere::prelude::AtmosphereCamera::default(),
         ))
         .insert(CameraController::default());
 }
