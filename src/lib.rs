@@ -43,7 +43,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     dbg!(c.integration_parameters);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
 pub enum CarSimLabel {
     Input,
     Brain,
