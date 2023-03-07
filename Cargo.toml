@@ -25,7 +25,7 @@ brain = [
     "dep:serde_json",
 ]
 [workspace.dependencies]
-bevy = { version = "0.9.1", features = ["jpeg"] }
+bevy = { version = "0.10.0", features = ["jpeg"] }
 dfdx = "0.10"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = [
     "sqlite",
@@ -41,11 +41,11 @@ serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 [dependencies]
 bevy = { workspace = true }
-bevy_rapier3d = { version = "0.20", features = ["serde-serialize"] }
+bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
 parry3d = "0.13"
 nalgebra = "0.32.1"
 rand = { workspace = true }
-wgpu = { version = "0.14.2", features = ["spirv"] }
+wgpu = { version = "0.15.0", features = ["spirv"] }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 crossbeam-channel = { version = "0.5", optional = true }
