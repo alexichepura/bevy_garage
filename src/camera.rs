@@ -10,7 +10,8 @@ impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
-            .add_system_to_stage(CoreStage::PostUpdate, camera_controller_system)
+            // .add_system_to_stage(CoreStage::PostUpdate, camera_controller_system)
+            .add_system(camera_controller_system)
             .add_system(camera_switch_system);
     }
 }

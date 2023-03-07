@@ -7,15 +7,15 @@ fn main() {
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
-                window: WindowDescriptor {
-                    title: "Bevy Garage".to_string(),
-                    width: 720.,
-                    height: 640.,
-                    // monitor: MonitorSelection::Index(1),
-                    position: WindowPosition::Centered,
-                    fit_canvas_to_parent: true,
-                    ..default()
-                },
+                // window: WindowDescriptor {
+                //     title: "Bevy Garage".to_string(),
+                //     width: 720.,
+                //     height: 640.,
+                //     // monitor: MonitorSelection::Index(1),
+                //     position: WindowPosition::Centered,
+                //     fit_canvas_to_parent: true,
+                //     ..default()
+                // },
                 ..default()
             })
             .set(ImagePlugin {
