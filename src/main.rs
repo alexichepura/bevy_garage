@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use bevy_garage::{camera::CarCameraPlugin, car_app};
 use wgpu::{AddressMode, SamplerDescriptor};
 
@@ -7,15 +7,12 @@ fn main() {
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
-                // window: WindowDescriptor {
-                //     title: "Bevy Garage".to_string(),
-                //     width: 720.,
-                //     height: 640.,
-                //     // monitor: MonitorSelection::Index(1),
-                //     position: WindowPosition::Centered,
-                //     fit_canvas_to_parent: true,
-                //     ..default()
-                // },
+                primary_window: Some(Window {
+                    title: "Bevy Garage".to_string(),
+                    resolution: WindowResolution::new(720., 640.),
+                    fit_canvas_to_parent: true,
+                    ..default()
+                }),
                 ..default()
             })
             .set(ImagePlugin {
