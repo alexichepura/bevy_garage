@@ -296,32 +296,8 @@ pub fn camera_controller_system(
         }
         tf
     };
-
-    // let d_seconds = time.delta_seconds();
-    // let d_seconds_min = if d_seconds == 0.0 {
-    //     1. / 120.
-    // } else {
-    //     d_seconds
-    // };
-    // let prev = config.prev;
-    // let k = d_seconds_min * 20.;
-    // let new_translation = prev.translation.lerp(tf.translation, k);
-    // let new_rotation = prev.rotation.slerp(tf.rotation, k);
-    // config.prev.translation = new_translation;
-    // config.prev.rotation = new_rotation;
-    let new_translation = tf.translation;
-    let new_rotation = tf.rotation;
-
     let mut p0 = pset.p0();
-    let (mut camera_tf, options) = p0.single_mut();
-    camera_tf.translation = new_translation;
-    camera_tf.rotation = new_rotation;
-    let yaw = options.yaw;
-
-    let mut p2 = pset.p2();
-    let mut dlight_tf = p2.single_mut();
-    let camera_xz = Vec3::new(tf.translation.x, dlight_tf.translation.y, tf.translation.z);
-    let camera_dir = -Quat::from_rotation_y(yaw).mul_vec3(Vec3::Z);
-    let light_shift = 50. * camera_dir;
-    dlight_tf.translation = camera_xz + light_shift;
+    let (mut camera_tf, _) = p0.single_mut();
+    camera_tf.translation = tf.translation;
+    camera_tf.rotation = tf.rotation;
 }
