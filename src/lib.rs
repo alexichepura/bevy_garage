@@ -73,7 +73,7 @@ pub fn car_app(app: &mut App) -> &mut App {
             },
             ..default()
         })
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
