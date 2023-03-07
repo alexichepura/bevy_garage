@@ -10,8 +10,9 @@
 #import bevy_pbr::clustered_forward
 #import bevy_pbr::lighting
 #import bevy_pbr::shadows
-// #import bevy_pbr::fog
+#import bevy_pbr::fog
 #import bevy_pbr::pbr_functions
+#import bevy_pbr::pbr_ambient
 #import bevy_pbr::mesh_functions
 
 #import shaders::perlin_noise_3d
