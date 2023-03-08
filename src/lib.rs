@@ -67,9 +67,9 @@ pub fn car_app(app: &mut App) -> &mut App {
             //     substeps: 5,
             // },
             timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 120.,
+                max_dt: 1. / 60.,
                 time_scale: 1.,
-                substeps: 30,
+                substeps: 10,
             },
             ..default()
         })
