@@ -4,13 +4,17 @@ use wgpu::{AddressMode, SamplerDescriptor};
 
 fn main() {
     let mut app = App::new();
+    #[cfg(not(target_arch = "wasm32"))]
+    let res = WindowResolution::default();
+    #[cfg(target_arch = "wasm32")]
+    let res = WindowResolution::new(720., 360.);
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Bevy Garage".to_string(),
-                    resolution: WindowResolution::new(720., 640.),
-                    fit_canvas_to_parent: true,
+                    resolution: res,
+                    canvas: Some("#bevy-garage".to_string()),
                     ..default()
                 }),
                 ..default()
