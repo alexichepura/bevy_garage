@@ -2,7 +2,7 @@ use crate::car::HID;
 use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::render::camera::Projection;
+use bevy::render::camera::{CameraUpdateSystem, Projection};
 
 pub struct CarCameraPlugin;
 
@@ -10,7 +10,7 @@ impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
-            .add_system(camera_controller_system.in_base_set(CoreSet::PostUpdate))
+            .add_system(camera_controller_system.in_set(CameraUpdateSystem))
             .add_system(camera_switch_system);
     }
 }
