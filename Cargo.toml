@@ -13,10 +13,8 @@ members = ["prisma-cli", "api", "trainer", "db_client", "ios", "track"]
 [profile.release]
 codegen-units = 1
 [features]
-# default = ["debug_lines", "bevy_atmosphere"]
 default = ["debug_lines"]
 debug_lines = ["dep:bevy_prototype_debug_lines"]
-# bevy_atmosphere = ["dep:bevy_atmosphere"]
 brain = [
     "dep:dfdx",
     "dep:reqwest",
@@ -60,6 +58,5 @@ bevy_prototype_debug_lines = { git = "https://github.com/Elabajaba/bevy_debug_li
 reqwest = { version = "0.11", default-features = false, features = [
     "json",
 ], optional = true }
-# bevy_atmosphere = { version = "0.5.0", optional = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { workspace = true, optional = true }
