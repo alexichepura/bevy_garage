@@ -133,17 +133,6 @@ pub fn car_app(app: &mut App) -> &mut App {
                 ..default()
             });
     }
-
-    // #[cfg(feature = "bevy_atmosphere")]
-    // {
-    //     use bevy_atmosphere::prelude::*;
-    //     app.insert_resource(AtmosphereModel::new(Nishita {
-    //         sun_position: Vec3::new(0.0, 1.0, 1.0),
-    //         ..default()
-    //     }))
-    //     .add_plugin(AtmospherePlugin);
-    // }
-
     app
 }
 
