@@ -57,6 +57,7 @@ pub fn car_app(app: &mut App) -> &mut App {
     let esp_run_after: CarSimLabel = CarSimLabel::Input;
 
     app.init_resource::<FontHandle>()
+        // .insert_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
         .add_plugin(ShadersPlugin)
         .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .init_resource::<MaterialHandle>()
