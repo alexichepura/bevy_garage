@@ -16,6 +16,7 @@ impl Plugin for CarCameraPlugin {
 }
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
+    let sky_blue = Color::hex("87CEEB").unwrap();
     commands
         .spawn((
             Camera3dBundle {
@@ -31,17 +32,15 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
                 ..default()
             },
             FogSettings {
-                color: Color::rgba(0.1, 0.2, 0.4, 1.0),
-                directional_light_color: Color::rgba(1.0, 0.95, 0.75, 0.5),
-                directional_light_exponent: 30.0,
+                color: sky_blue, // Color::rgba(0.1, 0.2, 0.4, 1.0),
+                directional_light_color: Color::rgba(1.0, 0.95, 0.75, 1.),
+                directional_light_exponent: 200.0,
                 falloff: FogFalloff::from_visibility_colors(
-                    15.0, // distance in world units up to which objects retain visibility (>= 5% contrast)
-                    Color::rgb(0.35, 0.5, 0.66), // atmospheric extinction color (after light is lost due to absorption by atmospheric particles)
-                    Color::rgb(0.8, 0.844, 1.0), // atmospheric inscattering color (light gained due to scattering from the sun)
+                    5000.,
+                    Color::rgb(0.35, 0.5, 0.66),
+                    Color::rgb(0.8, 0.844, 1.0),
                 ),
             },
-            // #[cfg(feature = "bevy_atmosphere")]
-            // bevy_atmosphere::prelude::AtmosphereCamera::default(),
         ))
         .insert(CameraController::default());
 }

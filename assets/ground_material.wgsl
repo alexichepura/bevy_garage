@@ -69,6 +69,10 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.flags = mesh.flags;
     output_color = pbr(pbr_input);
 
+
+    output_color = apply_fog(output_color, in.world_position.xyz, view.world_position.xyz);
+
+
 #ifdef TONEMAP_IN_SHADER
     output_color = tone_mapping(output_color);
 #endif

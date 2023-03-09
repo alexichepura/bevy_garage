@@ -33,7 +33,7 @@ pub fn light_start_system(
                 cull_mode: None,
                 ..default()
             }),
-            transform: Transform::from_scale(Vec3::splat(5000.0)),
+            transform: Transform::from_scale(Vec3::splat(10000.0)),
             ..default()
         },
         NotShadowCaster,
