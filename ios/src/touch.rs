@@ -120,7 +120,7 @@ fn spawn_button(
                         color: Color::rgba(0., 0., 0., 0.7),
                     },
                 )
-                .with_text_alignment(TextAlignment::CENTER),
+                .with_text_alignment(TextAlignment::Center),
             );
         });
 }

@@ -43,7 +43,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     dbg!(c.integration_parameters);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
 pub enum CarSimLabel {
     Input,
     Brain,
@@ -67,13 +67,13 @@ pub fn car_app(app: &mut App) -> &mut App {
             //     substeps: 5,
             // },
             timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 120.,
+                max_dt: 1. / 60.,
                 time_scale: 1.,
-                substeps: 30,
+                substeps: 10,
             },
             ..default()
         })
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
@@ -86,10 +86,10 @@ pub fn car_app(app: &mut App) -> &mut App {
         .add_startup_system(dash_speed_start_system)
         .add_startup_system(dash_fps_start_system)
         .add_startup_system(rapier_config_start_system)
-        .add_system(aero_system.label(CarSimLabel::Input))
-        .add_system(input_system.label(CarSimLabel::Input))
-        .add_system(progress_system.label(CarSimLabel::Input))
-        .add_system(esp_system.label(CarSimLabel::Esp).after(esp_run_after))
+        .add_system(aero_system.in_set(CarSimLabel::Input))
+        .add_system(input_system.in_set(CarSimLabel::Input))
+        .add_system(progress_system.in_set(CarSimLabel::Input))
+        .add_system(esp_system.in_set(CarSimLabel::Esp).after(esp_run_after))
         .add_system(dash_leaderboard_system)
         .add_system(dash_fps_system)
         .add_system(dash_speed_update_system);
@@ -103,10 +103,10 @@ pub fn car_app(app: &mut App) -> &mut App {
             .add_startup_system(api_start_system)
             .add_system(api_read_stream_event_writer_system)
             .add_system(api_event_reader_system)
-            .add_system(car_sensor_system.label(CarSimLabel::Input))
+            .add_system(car_sensor_system.in_set(CarSimLabel::Input))
             .add_system(
                 dqn_system
-                    .label(CarSimLabel::Brain)
+                    .in_set(CarSimLabel::Brain)
                     .after(CarSimLabel::Input),
             )
             .add_system(dqn_dash_update_system);
@@ -133,15 +133,15 @@ pub fn car_app(app: &mut App) -> &mut App {
             });
     }
 
-    #[cfg(feature = "bevy_atmosphere")]
-    {
-        use bevy_atmosphere::prelude::*;
-        app.insert_resource(AtmosphereModel::new(Nishita {
-            sun_position: Vec3::new(0.0, 1.0, 1.0),
-            ..default()
-        }))
-        .add_plugin(AtmospherePlugin);
-    }
+    // #[cfg(feature = "bevy_atmosphere")]
+    // {
+    //     use bevy_atmosphere::prelude::*;
+    //     app.insert_resource(AtmosphereModel::new(Nishita {
+    //         sun_position: Vec3::new(0.0, 1.0, 1.0),
+    //         ..default()
+    //     }))
+    //     .add_plugin(AtmospherePlugin);
+    // }
 
     app
 }

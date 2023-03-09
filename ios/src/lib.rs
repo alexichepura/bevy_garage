@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowMode};
 use bevy_garage::{camera::CarCameraPlugin, car_app, CarSimLabel};
 mod touch;
 use touch::*;
@@ -7,15 +7,15 @@ use touch::*;
 fn main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        window: WindowDescriptor {
+        primary_window: Some(Window {
             resizable: false,
             mode: WindowMode::BorderlessFullscreen,
             ..default()
-        },
+        }),
         ..default()
     }));
     app.add_startup_system(touch_input_start_system);
-    app.add_system(touch_input_system.label(CarSimLabel::Input));
+    app.add_system(touch_input_system.in_set(CarSimLabel::Input));
     app.add_plugin(CarCameraPlugin);
     car_app(&mut app).run();
 }

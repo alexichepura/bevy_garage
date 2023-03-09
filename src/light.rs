@@ -10,17 +10,6 @@ pub fn light_start_system(mut commands: Commands) {
         directional_light: DirectionalLight {
             illuminance: 40_000.,
             shadows_enabled: true,
-            shadow_projection: OrthographicProjection {
-                left: -50.,
-                right: 50.,
-                bottom: -20.,
-                top: 20.,
-                near: -50.,
-                far: 50.,
-                ..Default::default()
-            },
-            shadow_depth_bias: 0.3,
-            // shadow_normal_bias: 0.5,
             ..default()
         },
         transform: Transform {
