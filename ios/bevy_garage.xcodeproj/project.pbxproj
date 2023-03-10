@@ -366,7 +366,7 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lbevy_garage",
+					"-lbevy_garage_ios",
 					"-lc++abi",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy_garage";
@@ -402,7 +402,7 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-lbevy_garage",
+					"-lbevy_garage_ios",
 					"-lc++abi",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy_garage";
