@@ -119,16 +119,27 @@ pub fn spawn_road(
     track: &Track,
     padding: f32,
 ) -> Aabb {
-    // let texture_handle = asset_server.load("8k_asphalt.jpg");
-    // let texture_normals_handle = asset_server.load("8k_asphalt_normals.jpg");
-    // let texture_metallic_roughness_handle = asset_server.load("8k_asphalt_metallic_roughness.jpg");
-    let material_handle = materials.add(StandardMaterial {
-        // base_color_texture: Some(texture_handle.clone()),
-        // normal_map_texture: Some(texture_normals_handle.clone()),
-        // metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
-        perceptual_roughness: 1.,
-        ..default()
-    });
+    let material_handle = if cfg!(target_os = "ios") {
+        // ios throws error using asphalt textures
+        // TODO rework asphalt to precedure gen
+        materials.add(StandardMaterial {
+            base_color: Color::rgb(0.05, 0.05, 0.05),
+            perceptual_roughness: 1.,
+            ..default()
+        })
+    } else {
+        let texture_handle = asset_server.load("8k_asphalt.jpg");
+        let texture_normals_handle = asset_server.load("8k_asphalt_normals.jpg");
+        let texture_metallic_roughness_handle =
+            asset_server.load("8k_asphalt_metallic_roughness.jpg");
+        materials.add(StandardMaterial {
+            base_color_texture: Some(texture_handle.clone()),
+            normal_map_texture: Some(texture_normals_handle.clone()),
+            metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
+            perceptual_roughness: 1.,
+            ..default()
+        })
+    };
     let (vertices, normals) = track.road();
     // ASPHALT
     let mut uvs: Vec<[f32; 2]> = Vec::new();
