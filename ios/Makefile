@@ -15,10 +15,10 @@ install: xcodebuild-simulator boot-sim
 	xcrun simctl install $(DEVICE) build/Build/Products/Debug-iphonesimulator/bevy_garage.app
 
 xcodebuild-simulator:
-	IOS_TARGETS=x86_64-apple-ios xcodebuild -scheme bevy_garage -configuration Debug -derivedDataPath build -destination "id=$(DEVICE)"
+	IOS_TARGETS=x86_64-apple-ios xcodebuild -scheme bevy_garage_ios -configuration Debug -derivedDataPath build -destination "id=$(DEVICE)"
 
 xcodebuild-iphone:
-	IOS_TARGETS=aarch64-apple-ios xcodebuild -scheme bevy_garage -configuration Debug -derivedDataPath build -arch arm64
+	IOS_TARGETS=aarch64-apple-ios xcodebuild -scheme bevy_garage_ios -configuration Debug -derivedDataPath build -arch arm64
 
 clean:
 	rm -r build
