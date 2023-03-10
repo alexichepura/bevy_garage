@@ -257,7 +257,7 @@
 					"ios-src/",
 				);
 				INFOPLIST_FILE = "ios-src/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = (
 					"$(inherited)",
 					"../target/aarch64-apple-ios/release",
@@ -324,7 +324,7 @@
 					"ios-src/",
 				);
 				INFOPLIST_FILE = "ios-src/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = (
 					"$(inherited)",
 					"../target/aarch64-apple-ios/release",
