@@ -31,7 +31,7 @@
 		7A2159F629627EA700310237 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		7A215A0429627EA700310237 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7A215A1229627F2700310237 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
-		7A60F44D2960013D00A64E57 /* bevy_garage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "bevy_garage.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A60F44D2960013D00A64E57 /* bevy_garage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bevy_garage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A60F46F2960148800A64E57 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		7A60F4712960149300A64E57 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		7A60F4732960149A00A64E57 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -128,8 +128,8 @@
 			dependencies = (
 				7A60F46A296010A300A64E57 /* PBXTargetDependency */,
 			);
-			name = "bevy_garage";
-			productName = "bevy_garage";
+			name = bevy_garage;
+			productName = bevy_garage;
 			productReference = 7A60F44D2960013D00A64E57 /* bevy_garage.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -369,7 +369,7 @@
 					"-lbevy_garage_ios",
 					"-lc++abi",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy_garage";
+				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy-garage";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -405,7 +405,7 @@
 					"-lbevy_garage_ios",
 					"-lc++abi",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy_garage";
+				PRODUCT_BUNDLE_IDENTIFIER = "alexichepura.bevy-garage";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
