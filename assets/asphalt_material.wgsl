@@ -33,9 +33,14 @@ struct FragmentInput {
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    var input: vec3<f32> = vec3<f32>(in.uv.x * 2000., in.uv.y * 2000., 1.);
-    var noise = perlinNoise3(input);
-    var noise_01 = (noise + 1.0) / 2.0;
+    var input_s: vec3<f32> = vec3<f32>(in.uv.x * 1100., in.uv.y * 1100., 1.);
+    var noise_s = perlinNoise3(input_s);
+    var input_m: vec3<f32> = vec3<f32>(in.uv.x * 110., in.uv.y * 110., 1.);
+    var noise_m = perlinNoise3(input_m);
+    var input_l: vec3<f32> = vec3<f32>(in.uv.x * 20., in.uv.y * 20., 1.);
+    var noise_l = perlinNoise3(input_l);
+
+    var noise_01 = (noise_s + noise_m + noise_l + 1.0) / 2.0;
 
     var output_color: vec4<f32> = material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
 #ifdef VERTEX_COLORS
