@@ -7,7 +7,7 @@ pub fn light_start_system(
 ) {
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.2,
+        brightness: 0.5,
     });
 
     commands.spawn(DirectionalLightBundle {

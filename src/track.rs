@@ -134,10 +134,7 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
-    let generate_tangents = mesh.generate_tangents();
-    if generate_tangents.is_ok() {
-        println!("Generated tangents");
-    }
+    mesh.generate_tangents().unwrap();
     let aabb = mesh.compute_aabb().unwrap();
 
     commands
@@ -198,9 +195,10 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     let ind_rev: Vec<[u32; 3]> = ind.iter().map(|i| [i[2], i[1], i[0]]).collect();
     mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
+    mesh.generate_tangents().unwrap();
     commands.spawn((
         MaterialMeshBundle::<GroundMaterial> {
-            mesh: meshes.add(mesh),
+            mesh: meshes.add(mesh.clone()),
             material: handled_materials.ground.clone(),
             ..default()
         },
@@ -260,6 +258,7 @@ pub fn spawn_road(
     outer_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(outer3dnorm));
     outer_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, outer_uvs);
     outer_mesh.set_indices(Some(Indices::U32(ind.flatten().to_vec())));
+    outer_mesh.generate_tangents().unwrap();
     commands.spawn((
         MaterialMeshBundle::<GroundMaterial> {
             mesh: meshes.add(outer_mesh),

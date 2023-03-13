@@ -30,19 +30,25 @@ struct FragmentInput {
     #import bevy_pbr::mesh_vertex_output
 };
 
+fn height_uv(uv_x: f32, uv_y: f32) -> f32 {
+    var input_s: vec3<f32> = vec3<f32>(uv_x * 2000., uv_y * 2000., 1.);
+    var noise_s = perlinNoise3(input_s);
+    var input_m: vec3<f32> = vec3<f32>(uv_x * 100., uv_y * 100., 1.);
+    var noise_m = perlinNoise3(input_m);
+    var input_l: vec3<f32> = vec3<f32>(uv_x * 10., uv_y * 10., 1.);
+    var noise_l = perlinNoise3(input_l);
+    var noise_01 = (noise_s * 0.05 + noise_m * 0.3 + noise_l * 1.) / 4.0;
+    return noise_01;
+    // var input_l: vec3<f32> = vec3<f32>(uv_x * 11., uv_y * 11., 1.);
+    // var noise_l = perlinNoise3(input_l);
+    // var noise_01 = (noise_l + 1.) / 2.;
+    // return noise_01;
+}
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    var input_s: vec3<f32> = vec3<f32>(in.uv.x * 2000., in.uv.y * 2000., 1.);
-    var noise_s = perlinNoise3(input_s);
-    var input_m: vec3<f32> = vec3<f32>(in.uv.x * 100., in.uv.y * 100., 1.);
-    var noise_m = perlinNoise3(input_m);
-    var input_l: vec3<f32> = vec3<f32>(in.uv.x * 10., in.uv.y * 10., 1.);
-    var noise_l = perlinNoise3(input_l);
-
-    var noise_01 = (noise_s + noise_m + noise_l + 1.0) / 2.0;
-
-    var output_color: vec4<f32> = material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
+    var height = 1. - height_uv(in.uv.x, in.uv.y);
+    var output_color: vec4<f32> = material.color * vec4<f32>(height, height, height, 1.);
 #ifdef VERTEX_COLORS
     output_color = output_color * in.color;
 #endif
@@ -50,27 +56,24 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.material.base_color = output_color;
     pbr_input.material.reflectance = 0.5;
     pbr_input.material.alpha_cutoff = 0.5;
+    pbr_input.material.perceptual_roughness = 0.75;
     pbr_input.frag_coord = in.frag_coord;
     pbr_input.world_position = in.world_position;
     pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
-    pbr_input.N = apply_normal_mapping(
-        pbr_input.material.flags,
-        pbr_input.world_normal,
-#ifdef VERTEX_TANGENTS
-#ifdef STANDARDMATERIAL_NORMAL_MAP
-        in.world_tangent,
-#endif
-#endif
-#ifdef VERTEX_UVS
-        in.uv,
-#endif
-    );
+    var d: f32 = 1. / 1024.;
+    var du: f32 = height_uv(in.uv.x - d, in.uv.y) - height_uv(in.uv.x + d, in.uv.y);
+    var dv: f32 = height_uv(in.uv.x, in.uv.y - d) - height_uv(in.uv.x, in.uv.y + d);
+    var Nt: vec3<f32> = vec3<f32>(du, dv, 0.2);
+    Nt = normalize(Nt);
+    var N: vec3<f32> = in.world_normal;
+    var T: vec3<f32> = in.world_tangent.xyz;
+    var B: vec3<f32> = in.world_tangent.w * cross(N, T);
+    N = Nt.x * T + Nt.y * B + Nt.z * N;
+    pbr_input.N = normalize(N);
     pbr_input.V = calculate_view(in.world_position, pbr_input.is_orthographic);
     pbr_input.flags = mesh.flags;
     output_color = pbr(pbr_input);
-
-
     output_color = apply_fog(output_color, in.world_position.xyz, view.world_position.xyz);
 
 
