@@ -1,6 +1,8 @@
 use crate::{
-    config::Config, ear_clipping::triangulate_ear_clipping, material::MaterialHandle,
-    shader::GroundMaterial,
+    config::Config,
+    ear_clipping::triangulate_ear_clipping,
+    material::MaterialHandle,
+    shader::{AsphaltMaterial, GroundMaterial},
 };
 use bevy::{
     pbr::NotShadowCaster,
@@ -111,35 +113,12 @@ impl Track {
 }
 
 pub fn spawn_road(
-    asset_server: &Res<AssetServer>,
     handled_materials: Res<MaterialHandle>,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
     track: &Track,
     padding: f32,
 ) -> Aabb {
-    let material_handle = if cfg!(target_os = "ios") {
-        // ios throws error using asphalt textures
-        // TODO rework asphalt to precedure gen
-        materials.add(StandardMaterial {
-            base_color: Color::rgb(0.05, 0.05, 0.05),
-            perceptual_roughness: 1.,
-            ..default()
-        })
-    } else {
-        let texture_handle = asset_server.load("8k_asphalt.jpg");
-        let texture_normals_handle = asset_server.load("8k_asphalt_normals.jpg");
-        let texture_metallic_roughness_handle =
-            asset_server.load("8k_asphalt_metallic_roughness.jpg");
-        materials.add(StandardMaterial {
-            base_color_texture: Some(texture_handle.clone()),
-            normal_map_texture: Some(texture_normals_handle.clone()),
-            metallic_roughness_texture: Some(texture_metallic_roughness_handle.clone()),
-            perceptual_roughness: 1.,
-            ..default()
-        })
-    };
     let (vertices, normals) = track.road();
     // ASPHALT
     let mut uvs: Vec<[f32; 2]> = Vec::new();
@@ -163,9 +142,9 @@ pub fn spawn_road(
 
     commands
         .spawn((
-            PbrBundle {
+            MaterialMeshBundle::<AsphaltMaterial> {
                 mesh: meshes.add(mesh),
-                material: material_handle,
+                material: handled_materials.asphalt.clone(),
                 transform: Transform::from_xyz(0., 0., 0.),
                 ..Default::default()
             },
@@ -559,7 +538,6 @@ pub fn spawn_ground_heightfield(commands: &mut Commands, aabb: &Aabb, padding: f
 }
 
 pub fn track_start_system(
-    asset_server: Res<AssetServer>,
     handled_materials: Res<MaterialHandle>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -567,15 +545,7 @@ pub fn track_start_system(
     mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    let aabb = spawn_road(
-        &asset_server,
-        handled_materials,
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &track,
-        100.,
-    );
+    let aabb = spawn_road(handled_materials, &mut commands, &mut meshes, &track, 100.);
     spawn_ground_heightfield(&mut commands, &aabb, 100.);
 
     spawn_kerb(

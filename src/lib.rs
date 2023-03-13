@@ -60,6 +60,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         // .insert_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
         .add_plugin(ShadersPlugin)
         .add_plugin(MaterialPlugin::<GroundMaterial>::default())
+        .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
         .init_resource::<MaterialHandle>()
         .insert_resource(RapierConfiguration {
             // timestep_mode: TimestepMode::Interpolated {

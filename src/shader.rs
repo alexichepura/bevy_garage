@@ -53,3 +53,14 @@ impl Material for GroundMaterial {
         "ground_material.wgsl".into()
     }
 }
+#[derive(AsBindGroup, TypeUuid, Debug, Clone)]
+#[uuid = "C147EDEE-9A8A-4B8F-B759-EDB527E56CC9"]
+pub struct AsphaltMaterial {
+    #[uniform(0)]
+    pub color: Color,
+}
+impl Material for AsphaltMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "asphalt_material.wgsl".into()
+    }
+}

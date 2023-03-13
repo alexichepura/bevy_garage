@@ -33,9 +33,14 @@ struct FragmentInput {
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    var input: vec3<f32> = vec3<f32>(in.uv.x * 2000., in.uv.y * 2000., 1.);
-    var noise = perlinNoise3(input);
-    var noise_01 = (noise + 1.0) / 2.0;
+    var input_s: vec3<f32> = vec3<f32>(in.uv.x * 2000., in.uv.y * 2000., 1.);
+    var noise_s = perlinNoise3(input_s);
+    var input_m: vec3<f32> = vec3<f32>(in.uv.x * 100., in.uv.y * 100., 1.);
+    var noise_m = perlinNoise3(input_m);
+    var input_l: vec3<f32> = vec3<f32>(in.uv.x * 10., in.uv.y * 10., 1.);
+    var noise_l = perlinNoise3(input_l);
+
+    var noise_01 = (noise_s + noise_m + noise_l + 1.0) / 2.0;
 
     var output_color: vec4<f32> = material.color * vec4<f32>(noise_01, noise_01, noise_01, 1.);
 #ifdef VERTEX_COLORS
@@ -47,11 +52,7 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.material.alpha_cutoff = 0.5;
     pbr_input.frag_coord = in.frag_coord;
     pbr_input.world_position = in.world_position;
-    pbr_input.world_normal = prepare_world_normal(
-        in.world_normal,
-        (pbr_input.material.flags & STANDARD_MATERIAL_FLAGS_DOUBLE_SIDED_BIT) != 0u,
-        in.is_front,
-    );
+    pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
     pbr_input.N = apply_normal_mapping(
         pbr_input.material.flags,
