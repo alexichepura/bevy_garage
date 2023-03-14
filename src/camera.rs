@@ -3,6 +3,25 @@ use crate::config::Config;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};
+use bevy::window::CursorGrabMode;
+
+pub fn grab_mouse(
+    mut windows: Query<&mut Window>,
+    mouse: Res<Input<MouseButton>>,
+    key: Res<Input<KeyCode>>,
+) {
+    let mut window = windows.single_mut();
+
+    if mouse.just_pressed(MouseButton::Left) {
+        window.cursor.visible = false;
+        window.cursor.grab_mode = CursorGrabMode::Locked;
+    }
+
+    if key.just_pressed(KeyCode::Escape) {
+        window.cursor.visible = true;
+        window.cursor.grab_mode = CursorGrabMode::None;
+    }
+}
 
 pub struct CarCameraPlugin;
 
@@ -11,6 +30,7 @@ impl Plugin for CarCameraPlugin {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system.in_set(CameraUpdateSystem))
+            .add_system(grab_mouse)
             .add_system(camera_switch_system);
     }
 }
@@ -214,6 +234,7 @@ pub fn camera_controller_system(
         Query<&Transform, With<HID>>,
         Query<&mut Transform, With<DirectionalLight>>,
     )>,
+    windows: Query<&Window>,
 ) {
     let follow_option: Option<Transform> = match config.mode {
         CameraMode::Free => None,
@@ -238,6 +259,10 @@ pub fn camera_controller_system(
         options.yaw = yaw;
         tf
     } else {
+        let window = windows.single();
+        if window.cursor.grab_mode == CursorGrabMode::None {
+            return;
+        }
         let dt = time.delta_seconds();
 
         let mut mouse_delta = Vec2::ZERO;
