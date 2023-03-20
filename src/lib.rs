@@ -98,7 +98,7 @@ pub fn car_app(app: &mut App) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        use nn::{api_client::*, dqn::dqn_system, dqn_bevy::*};
+        use nn::{api_client::*, dqn::dqn_system, dqn_bevy::dqn_dash_update_system, dqn_bevy::*};
         app.insert_resource(DqnResource::default())
             .add_event::<StreamEvent>()
             .add_startup_system(dqn_exclusive_start_system)
