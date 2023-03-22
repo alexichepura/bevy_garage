@@ -17,6 +17,7 @@ default = ["debug_lines"]
 debug_lines = ["dep:bevy_prototype_debug_lines"]
 brain = [
     "dep:dfdx",
+    "dep:futures-lite",
     "dep:reqwest",
     "dep:tokio",
     "dep:crossbeam-channel",
@@ -49,6 +50,7 @@ serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 crossbeam-channel = { version = "0.5", optional = true }
 dfdx = { workspace = true, optional = true }
+futures-lite = { version = "1.12", optional = true }
 bevy_prototype_debug_lines = { version = "0.10", features = [
     "3d",
 ], optional = true }

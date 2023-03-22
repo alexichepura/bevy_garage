@@ -101,8 +101,12 @@ pub fn car_app(app: &mut App) -> &mut App {
         use nn::{api_client::*, dqn::dqn_system, dqn_bevy::dqn_dash_update_system, dqn_bevy::*};
         app.insert_resource(DqnResource::default())
             .add_event::<StreamEvent>()
-            .add_startup_system(dqn_exclusive_start_system)
+            .add_event::<DqnEvent>()
+            .add_startup_system(dqn_start_system)
+            .add_startup_system(dqn_x_start_system)
             .add_startup_system(api_start_system)
+            .add_system(dqn_rx_to_bevy_event_system)
+            .add_system(dqn_event_reader_system)
             .add_system(api_read_stream_event_writer_system)
             .add_system(api_event_reader_system)
             .add_system(car_sensor_system.in_set(CarSimLabel::Input))

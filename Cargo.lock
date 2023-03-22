@@ -618,6 +618,7 @@ dependencies = [
  "bevy_rapier3d",
  "crossbeam-channel",
  "dfdx",
+ "futures-lite",
  "nalgebra",
  "parry3d",
  "rand 0.8.5",

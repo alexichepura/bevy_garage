@@ -114,12 +114,49 @@ impl SgdResource {
     }
 }
 
-pub fn dqn_exclusive_start_system(world: &mut World) {
+use crossbeam_channel::{bounded, Receiver, Sender};
+
+pub struct DqnX {
+    pub loss_string: String,
+    pub duration_string: String,
+    pub qn: QNetworkBuilt,
+}
+
+#[derive(Resource, Deref)]
+pub struct DqnRx(Receiver<DqnX>);
+#[derive(Resource, Deref)]
+pub struct DqnTx(Sender<DqnX>);
+pub struct DqnEvent(DqnX);
+
+pub fn dqn_start_system(world: &mut World) {
     let device = AutoDevice::default();
     let mut qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
     qn.reset_params();
     world.insert_non_send_resource(SgdResource::new(&qn));
     world.insert_non_send_resource(CarsDqnResource::new(&qn, device));
+}
+pub fn dqn_x_start_system(mut commands: Commands) {
+    let (tx, rx) = bounded::<DqnX>(10);
+    commands.insert_resource(DqnRx(rx));
+    commands.insert_resource(DqnTx(tx));
+}
+pub fn dqn_rx_to_bevy_event_system(receiver: Res<DqnRx>, mut events: EventWriter<DqnEvent>) {
+    for from_stream in receiver.try_iter() {
+        events.send(DqnEvent(from_stream));
+    }
+}
+pub fn dqn_event_reader_system(
+    mut reader: EventReader<DqnEvent>,
+    mut cars_dqn: NonSendMut<CarsDqnResource>,
+) {
+    for event in reader.iter() {
+        // dbg!((&event.0.duration_string, &event.0.loss_string));
+        println!(
+            "dqn_event:{}:{}",
+            &event.0.duration_string, &event.0.loss_string
+        );
+        cars_dqn.qn = event.0.qn.clone();
+    }
 }
 
 pub fn dqn_dash_update_system(
