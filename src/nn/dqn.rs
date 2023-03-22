@@ -1,4 +1,4 @@
-use super::{api_client::ApiClient, params::*};
+use super::{api_client::ApiClient, gradient::AutoDevice, params::*};
 use crate::{
     car::*,
     config::*,
@@ -16,6 +16,7 @@ pub type QNetwork = (
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
     Linear<HIDDEN_SIZE, ACTIONS>,
 );
+pub type QNetworkBuilt = <QNetwork as BuildOnDevice<AutoDevice, f32>>::Built;
 pub type Observation = [f32; STATE_SIZE];
 
 pub fn dqn_system(

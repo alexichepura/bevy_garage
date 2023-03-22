@@ -1,7 +1,11 @@
-use super::{params::*, replay::ReplayBuffer};
+use super::{
+    gradient::{get_sgd, AutoDevice},
+    params::*,
+    replay::ReplayBuffer,
+};
 use crate::{dash::*, nn::dqn::*};
 use bevy::prelude::*;
-use dfdx::prelude::*;
+use dfdx::{optim::Sgd, prelude::*};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
 #[derive(Component, Debug)]
@@ -97,22 +101,19 @@ impl DqnResource {
 }
 
 pub struct SgdResource {
-    pub sgd: Sgd<QNetwork>,
+    pub sgd: Sgd<QNetworkBuilt, f32, AutoDevice>,
 }
 impl SgdResource {
     pub fn new() -> Self {
-        Self {
-            sgd: Sgd::new(SgdConfig {
-                lr: LEARNING_RATE,
-                momentum: Some(Momentum::Nesterov(0.9)),
-                weight_decay: None,
-            }),
-        }
+        let dev = AutoDevice::default();
+        let mut q_net = dev.build_module::<QNetwork, f32>();
+        let mut sgd = get_sgd(&q_net);
+        Self { sgd }
     }
 }
 
 pub fn dqn_exclusive_start_system(world: &mut World) {
-    world.insert_non_send_resource(SgdResource::new());
+    // world.insert_non_send_resource(SgdResource::new());
     world.insert_non_send_resource(CarsDqnResource::new());
 }
 
