@@ -26,12 +26,16 @@ impl CarDqnPrev {
 }
 
 pub struct CarsDqnResource {
-    pub qn: QNetwork,
-    pub tqn: QNetwork,
+    pub qn: QNetworkBuilt,
+    pub tqn: QNetworkBuilt,
+    pub device: AutoDevice,
+    pub gradients: Gradients<f32, Cpu>,
 }
 impl CarsDqnResource {
     pub fn act(&self, obs: Observation, epsilon: f32) -> (usize, bool) {
-        let obs_state_tensor = Tensor1D::new(obs);
+        let obs_state_tensor = self
+            .device
+            .tensor_from_vec(obs.to_vec(), (Const::<STATE_SIZE>,));
         let mut rng = rand::thread_rng();
         let random_number = rng.gen_range(0.0..1.0);
         let exploration = random_number < epsilon;
@@ -40,12 +44,12 @@ impl CarsDqnResource {
             rng.gen_range(0..ACTIONS - 1)
         } else {
             let q_values = self.qn.forward(obs_state_tensor.clone());
-            let max_q_value = *q_values.clone().max().data();
+            let max_q_value = q_values.clone().max::<Rank0, _>();
             let some_action = q_values
                 .clone()
-                .data()
+                .array()
                 .iter()
-                .position(|q| *q >= max_q_value);
+                .position(|q| *q >= max_q_value.array());
             if None == some_action {
                 dbg!(q_values);
                 panic!();
@@ -55,13 +59,16 @@ impl CarsDqnResource {
         };
         (action, exploration)
     }
-    pub fn new() -> Self {
+    pub fn new(qn: QNetworkBuilt, device: AutoDevice) -> Self {
         let mut rng = StdRng::seed_from_u64(0);
-        let mut qn = QNetwork::default();
-        qn.reset_params(&mut rng);
+        // let mut qn = QNetwork::default();
+        // qn.reset_params(&mut rng);
+        let mut gradients = qn.alloc_grads();
         Self {
             qn: qn.clone(),
             tqn: qn.clone(),
+            device,
+            gradients,
         }
     }
 }
@@ -104,17 +111,17 @@ pub struct SgdResource {
     pub sgd: Sgd<QNetworkBuilt, f32, AutoDevice>,
 }
 impl SgdResource {
-    pub fn new() -> Self {
-        let dev = AutoDevice::default();
-        let mut q_net = dev.build_module::<QNetwork, f32>();
-        let mut sgd = get_sgd(&q_net);
+    pub fn new(qn: QNetworkBuilt) -> Self {
+        let mut sgd = get_sgd(&qn);
         Self { sgd }
     }
 }
 
 pub fn dqn_exclusive_start_system(world: &mut World) {
-    // world.insert_non_send_resource(SgdResource::new());
-    world.insert_non_send_resource(CarsDqnResource::new());
+    let device = AutoDevice::default();
+    let mut qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
+    world.insert_non_send_resource(SgdResource::new(qn));
+    world.insert_non_send_resource(CarsDqnResource::new(qn, device));
 }
 
 pub fn dqn_dash_update_system(

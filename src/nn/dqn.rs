@@ -166,18 +166,20 @@ pub fn dqn_system(
                     let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
                         cars_dqn.tqn.forward(sn.clone());
                     let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max();
-                    let target_q = 0.99 * mul(max_next_q, 1.0 - done.clone()) + r.clone();
+                    let target_q = (max_next_q * (-done.clone() + 1.0)) * 0.99 + r.clone();
+
                     // forward through model, computing gradients
-                    let q_values: Tensor2D<BATCH_SIZE, ACTIONS, OwnedTape> =
-                        cars_dqn.qn.forward(s.trace());
-                    let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
+                    let q_values = cars_dqn.qn.forward(s.trace(cars_dqn.gradients));
+                    let action_qs = q_values.select(a.clone());
+                    // let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
+
                     let loss = huber_loss(action_qs, target_q, 1.);
-                    let loss_v = *loss.data();
+                    let loss_v = loss.array();
                     // run backprop
                     let gradients = loss.backward();
                     sgd_res
                         .sgd
-                        .update(&mut cars_dqn.qn, gradients)
+                        .update(&mut cars_dqn.qn, &gradients)
                         .expect("Unused params");
                     if _i_epoch % 4 == 0 {
                         loss_string.push_str(format!("{:.2} ", loss_v).as_str());
