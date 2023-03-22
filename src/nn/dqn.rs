@@ -160,7 +160,7 @@ pub fn dqn_system(
                 let start = Instant::now();
                 let mut rng = rand::thread_rng();
                 let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-                let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes);
+                let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes, cars_dqn.device);
                 let mut loss_string: String = String::from("");
                 for _i_epoch in 0..EPOCHS {
                     let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
