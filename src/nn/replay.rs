@@ -55,25 +55,37 @@ impl ReplayBuffer {
         sample_indexes: [usize; BATCH_SIZE],
         device: AutoDevice,
     ) -> StateTensorsTuple {
-        let dev = AutoDevice::default();
-
         let batch: [StateTuple; BATCH_SIZE] = self.get_batch(sample_indexes);
-        let mut states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+        let mut states: [[f32; STATE_SIZE]; BATCH_SIZE] = [[0.; STATE_SIZE]; BATCH_SIZE];
         let mut actions: [usize; BATCH_SIZE] = [0; BATCH_SIZE];
         let mut rewards: [f32; BATCH_SIZE] = [0.; BATCH_SIZE];
-        let mut next_states: Tensor2D<BATCH_SIZE, STATE_SIZE> = Tensor2D::zeros();
+        let mut next_states: [[f32; STATE_SIZE]; BATCH_SIZE] = [[0.; STATE_SIZE]; BATCH_SIZE];
         let mut done: [f32; BATCH_SIZE] = [0.; BATCH_SIZE];
         for (i, (s, a, r, s_n, d)) in batch.iter().enumerate() {
-            states.mut_data()[i] = *s;
-            actions[i] = 1 * a;
+            states[i] = *s;
+            actions[i] = *a;
             rewards[i] = *r;
-            next_states.mut_data()[i] = *s_n;
+            next_states[i] = *s_n;
             done[i] = *d;
         }
-        let actions = device.tensor_from_vec(actions.to_vec(), (Const::<BATCH_SIZE>,));
-        let rewards = device.tensor_from_vec(rewards.to_vec(), (Const::<BATCH_SIZE>,));
-        let done = device.tensor_from_vec(done.to_vec(), (Const::<BATCH_SIZE>,));
-        (states, actions, rewards, next_states, done)
+        let states_tensor: Tensor2D<BATCH_SIZE, STATE_SIZE> = device.tensor_from_vec(
+            states.flatten().to_vec(),
+            (Const::<BATCH_SIZE>, Const::<STATE_SIZE>),
+        );
+        let next_states_tensor: Tensor2D<BATCH_SIZE, STATE_SIZE> = device.tensor_from_vec(
+            next_states.flatten().to_vec(),
+            (Const::<BATCH_SIZE>, Const::<STATE_SIZE>),
+        );
+        let actions_tensor = device.tensor_from_vec(actions.to_vec(), (Const::<BATCH_SIZE>,));
+        let rewards_tensor = device.tensor_from_vec(rewards.to_vec(), (Const::<BATCH_SIZE>,));
+        let done_tensor = device.tensor_from_vec(done.to_vec(), (Const::<BATCH_SIZE>,));
+        (
+            states_tensor,
+            actions_tensor,
+            rewards_tensor,
+            next_states_tensor,
+            done_tensor,
+        )
     }
     pub fn store(&mut self, s: Observation, a: usize, r: f32, sn: Observation, done: bool) {
         let done_float = if done { 1. } else { 0. };
