@@ -5664,6 +5664,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "trainer"
+version = "0.1.0"
+dependencies = [
+ "db_client",
+ "dfdx",
+ "prisma-client-rust",
+ "rand 0.8.5",
+ "tokio",
+]
+
+[[package]]
 name = "try-lock"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
