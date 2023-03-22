@@ -160,7 +160,9 @@ pub fn dqn_system(
                 let start = Instant::now();
                 let mut rng = rand::thread_rng();
                 let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
-                let (s, a, r, sn, done) = dqn.rb.get_batch_tensors(batch_indexes, cars_dqn.device);
+                let (s, a, r, sn, done) = dqn
+                    .rb
+                    .get_batch_tensors(batch_indexes, cars_dqn.device.clone());
                 let mut loss_string: String = String::from("");
                 for _i_epoch in 0..EPOCHS {
                     let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
@@ -169,7 +171,7 @@ pub fn dqn_system(
                     let target_q = (max_next_q * (-done.clone() + 1.0)) * 0.99 + r.clone();
 
                     // forward through model, computing gradients
-                    let q_values = cars_dqn.qn.forward(s.trace(cars_dqn.gradients));
+                    let q_values = cars_dqn.qn.forward(s.trace(cars_dqn.gradients.clone()));
                     let action_qs = q_values.select(a.clone());
                     // let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
 

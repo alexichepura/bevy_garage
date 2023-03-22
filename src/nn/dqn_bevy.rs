@@ -59,11 +59,11 @@ impl CarsDqnResource {
         };
         (action, exploration)
     }
-    pub fn new(qn: QNetworkBuilt, device: AutoDevice) -> Self {
+    pub fn new(qn: &QNetworkBuilt, device: AutoDevice) -> Self {
         let mut rng = StdRng::seed_from_u64(0);
         // let mut qn = QNetwork::default();
         // qn.reset_params(&mut rng);
-        let mut gradients = qn.alloc_grads();
+        let gradients = qn.alloc_grads();
         Self {
             qn: qn.clone(),
             tqn: qn.clone(),
@@ -121,7 +121,7 @@ pub fn dqn_exclusive_start_system(world: &mut World) {
     let device = AutoDevice::default();
     let qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
     world.insert_non_send_resource(SgdResource::new(&qn));
-    world.insert_non_send_resource(CarsDqnResource::new(qn, device));
+    world.insert_non_send_resource(CarsDqnResource::new(&qn, device));
 }
 
 pub fn dqn_dash_update_system(
@@ -129,7 +129,7 @@ pub fn dqn_dash_update_system(
         Query<&mut Text, With<TrainerRecordDistanceText>>,
         Query<&mut Text, With<TrainerGenerationText>>,
     )>,
-    dqn: NonSend<DqnResource>,
+    dqn: Res<DqnResource>,
 ) {
     let mut q_generation_text = dash_set.p1();
     let mut generation_text = q_generation_text.single_mut();
