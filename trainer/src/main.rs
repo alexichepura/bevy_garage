@@ -22,7 +22,7 @@ async fn main() {
 
     let device = AutoDevice::default();
     let mut qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
-    // qn.reset_params();
+    qn.reset_params();
 
     let mut sgd = get_sgd(&qn);
     let rb_data: Vec<rb::Data> = db_client.rb().find_many(vec![]).exec().await.unwrap();
