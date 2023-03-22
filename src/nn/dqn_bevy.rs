@@ -111,16 +111,16 @@ pub struct SgdResource {
     pub sgd: Sgd<QNetworkBuilt, f32, AutoDevice>,
 }
 impl SgdResource {
-    pub fn new(qn: QNetworkBuilt) -> Self {
-        let mut sgd = get_sgd(&qn);
+    pub fn new(qn: &QNetworkBuilt) -> Self {
+        let sgd = get_sgd(qn);
         Self { sgd }
     }
 }
 
 pub fn dqn_exclusive_start_system(world: &mut World) {
     let device = AutoDevice::default();
-    let mut qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
-    world.insert_non_send_resource(SgdResource::new(qn));
+    let qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
+    world.insert_non_send_resource(SgdResource::new(&qn));
     world.insert_non_send_resource(CarsDqnResource::new(qn, device));
 }
 
