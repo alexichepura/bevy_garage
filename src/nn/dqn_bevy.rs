@@ -1,8 +1,12 @@
-use super::{params::*, replay::ReplayBuffer};
+use super::{
+    gradient::{get_sgd, AutoDevice},
+    params::*,
+    replay::ReplayBuffer,
+};
 use crate::{dash::*, nn::dqn::*};
 use bevy::prelude::*;
-use dfdx::prelude::*;
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use dfdx::{optim::Sgd, prelude::*};
+use rand::Rng;
 
 #[derive(Component, Debug)]
 pub struct CarDqnPrev {
@@ -22,12 +26,16 @@ impl CarDqnPrev {
 }
 
 pub struct CarsDqnResource {
-    pub qn: QNetwork,
-    pub tqn: QNetwork,
+    pub qn: QNetworkBuilt,
+    pub tqn: QNetworkBuilt,
+    pub device: AutoDevice,
+    pub gradients: Gradients<f32, Cpu>,
 }
 impl CarsDqnResource {
     pub fn act(&self, obs: Observation, epsilon: f32) -> (usize, bool) {
-        let obs_state_tensor = Tensor1D::new(obs);
+        let obs_state_tensor = self
+            .device
+            .tensor_from_vec(obs.to_vec(), (Const::<STATE_SIZE>,));
         let mut rng = rand::thread_rng();
         let random_number = rng.gen_range(0.0..1.0);
         let exploration = random_number < epsilon;
@@ -36,12 +44,12 @@ impl CarsDqnResource {
             rng.gen_range(0..ACTIONS - 1)
         } else {
             let q_values = self.qn.forward(obs_state_tensor.clone());
-            let max_q_value = *q_values.clone().max().data();
+            let max_q_value = q_values.clone().max::<Rank0, _>();
             let some_action = q_values
                 .clone()
-                .data()
+                .array()
                 .iter()
-                .position(|q| *q >= max_q_value);
+                .position(|q| *q >= max_q_value.array());
             if None == some_action {
                 dbg!(q_values);
                 panic!();
@@ -51,13 +59,13 @@ impl CarsDqnResource {
         };
         (action, exploration)
     }
-    pub fn new() -> Self {
-        let mut rng = StdRng::seed_from_u64(0);
-        let mut qn = QNetwork::default();
-        qn.reset_params(&mut rng);
+    pub fn new(qn: &QNetworkBuilt, device: AutoDevice) -> Self {
+        let gradients = qn.alloc_grads();
         Self {
             qn: qn.clone(),
             tqn: qn.clone(),
+            device,
+            gradients,
         }
     }
 }
@@ -97,23 +105,21 @@ impl DqnResource {
 }
 
 pub struct SgdResource {
-    pub sgd: Sgd<QNetwork>,
+    pub sgd: Sgd<QNetworkBuilt, f32, AutoDevice>,
 }
 impl SgdResource {
-    pub fn new() -> Self {
-        Self {
-            sgd: Sgd::new(SgdConfig {
-                lr: LEARNING_RATE,
-                momentum: Some(Momentum::Nesterov(0.9)),
-                weight_decay: None,
-            }),
-        }
+    pub fn new(qn: &QNetworkBuilt) -> Self {
+        let sgd = get_sgd(qn);
+        Self { sgd }
     }
 }
 
 pub fn dqn_exclusive_start_system(world: &mut World) {
-    world.insert_non_send_resource(SgdResource::new());
-    world.insert_non_send_resource(CarsDqnResource::new());
+    let device = AutoDevice::default();
+    let mut qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
+    qn.reset_params();
+    world.insert_non_send_resource(SgdResource::new(&qn));
+    world.insert_non_send_resource(CarsDqnResource::new(&qn, device));
 }
 
 pub fn dqn_dash_update_system(
@@ -121,7 +127,7 @@ pub fn dqn_dash_update_system(
         Query<&mut Text, With<TrainerRecordDistanceText>>,
         Query<&mut Text, With<TrainerGenerationText>>,
     )>,
-    dqn: NonSend<DqnResource>,
+    dqn: Res<DqnResource>,
 ) {
     let mut q_generation_text = dash_set.p1();
     let mut generation_text = q_generation_text.single_mut();

@@ -25,7 +25,7 @@ brain = [
 ]
 [workspace.dependencies]
 bevy = { version = "0.10.0", features = ["jpeg"] }
-dfdx = "0.10"
+dfdx = "0.11"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = [
     "sqlite",
     "sqlite-create-many",
