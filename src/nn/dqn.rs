@@ -173,7 +173,6 @@ pub fn dqn_system(
                     // forward through model, computing gradients
                     let q_values = cars_dqn.qn.forward(s.trace(cars_dqn.gradients.clone()));
                     let action_qs = q_values.select(a.clone());
-                    // let action_qs: Tensor1D<BATCH_SIZE, OwnedTape> = q_values.select(&a);
 
                     let loss = huber_loss(action_qs, target_q, 1.);
                     let loss_v = loss.array();

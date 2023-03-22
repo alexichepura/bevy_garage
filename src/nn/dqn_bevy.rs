@@ -6,7 +6,7 @@ use super::{
 use crate::{dash::*, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::{optim::Sgd, prelude::*};
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::Rng;
 
 #[derive(Component, Debug)]
 pub struct CarDqnPrev {
@@ -60,9 +60,6 @@ impl CarsDqnResource {
         (action, exploration)
     }
     pub fn new(qn: &QNetworkBuilt, device: AutoDevice) -> Self {
-        let mut rng = StdRng::seed_from_u64(0);
-        // let mut qn = QNetwork::default();
-        // qn.reset_params(&mut rng);
         let gradients = qn.alloc_grads();
         Self {
             qn: qn.clone(),
@@ -119,7 +116,8 @@ impl SgdResource {
 
 pub fn dqn_exclusive_start_system(world: &mut World) {
     let device = AutoDevice::default();
-    let qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
+    let mut qn: QNetworkBuilt = device.build_module::<QNetwork, f32>();
+    qn.reset_params();
     world.insert_non_send_resource(SgdResource::new(&qn));
     world.insert_non_send_resource(CarsDqnResource::new(&qn, device));
 }

@@ -8,6 +8,7 @@ pub fn log_training(
     start: Instant,
 ) {
     let log = [
+        "train".to_string(),
         String::from(if use_random { "?" } else { " " }),
         action.to_string(),
         " ".to_string(),
