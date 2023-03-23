@@ -2,6 +2,11 @@ use bevy::prelude::*;
 use crossbeam_channel::{bounded, Receiver, Sender};
 use serde::{Deserialize, Serialize};
 
+use super::replay::ReplayBuffer;
+use std::ops::RangeFrom;
+
+pub const PERSIST_BATCH_SIZE: usize = 100;
+
 #[derive(Deserialize, Serialize)]
 pub struct ReplayBufferRecord {
     pub state: Vec<f32>,
@@ -9,6 +14,27 @@ pub struct ReplayBufferRecord {
     pub reward: f64,
     pub next_state: Vec<f32>,
     pub done: bool,
+}
+
+pub fn get_replay_buffer_to_persist(rb: &ReplayBuffer) -> Vec<ReplayBufferRecord> {
+    let save_start_index = rb.state.len() - PERSIST_BATCH_SIZE;
+    let r: RangeFrom<usize> = save_start_index..;
+
+    let records: Vec<ReplayBufferRecord> = rb.state.as_slice()[r]
+        .iter()
+        .enumerate()
+        .map(|t| {
+            let i = save_start_index + t.0;
+            return ReplayBufferRecord {
+                state: rb.state[i].to_vec(),
+                action: rb.action[i] as i32,
+                reward: rb.reward[i] as f64,
+                next_state: rb.next_state[i].to_vec(),
+                done: rb.done[i] == 1.,
+            };
+        })
+        .collect();
+    return records;
 }
 
 #[derive(Resource)]

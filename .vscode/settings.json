@@ -4,5 +4,6 @@
     },
     "rust-analyzer.cargo.features": [
         "brain",
+        "brain_api"
     ],
 }

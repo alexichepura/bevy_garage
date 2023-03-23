@@ -1,20 +1,16 @@
-use super::{api_client::ReplayBufferRecord, dqn::*, gradient::AutoDevice, params::*};
+use super::{dqn::*, gradient::AutoDevice, params::*};
 use dfdx::prelude::*;
-use std::ops::RangeFrom;
 
 pub type Tensor1DUsize<const M: usize, Tape = NoneTape> = Tensor<Rank1<M>, usize, Cpu, Tape>;
 
 type StateTuple = (Observation, usize, f32, Observation, f32);
 type StateTensorsTuple = (
     Tensor2D<BATCH_SIZE, STATE_SIZE>, // s
-    // [usize; BATCH_SIZE],              // a
     Tensor1DUsize<BATCH_SIZE>,        // a
     Tensor1D<BATCH_SIZE>,             // r
     Tensor2D<BATCH_SIZE, STATE_SIZE>, // sn
     Tensor1D<BATCH_SIZE>,             // done
 );
-
-const PERSIST_BATCH_SIZE: usize = 100;
 
 pub struct ReplayBuffer {
     pub state: Vec<Observation>,
@@ -104,29 +100,5 @@ impl ReplayBuffer {
             self.done[i] = done_float;
         }
         self.i += 1;
-    }
-    pub fn should_persist(&self) -> bool {
-        return self.i % PERSIST_BATCH_SIZE == 0;
-    }
-
-    pub fn get_replay_buffer_to_persist(&self) -> Vec<ReplayBufferRecord> {
-        let save_start_index = self.state.len() - PERSIST_BATCH_SIZE;
-        let r: RangeFrom<usize> = save_start_index..;
-
-        let records: Vec<ReplayBufferRecord> = self.state.as_slice()[r]
-            .iter()
-            .enumerate()
-            .map(|t| {
-                let i = save_start_index + t.0;
-                return ReplayBufferRecord {
-                    state: self.state[i].to_vec(),
-                    action: self.action[i] as i32,
-                    reward: self.reward[i] as f64,
-                    next_state: self.next_state[i].to_vec(),
-                    done: self.done[i] == 1.,
-                };
-            })
-            .collect();
-        return records;
     }
 }

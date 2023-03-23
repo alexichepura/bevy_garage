@@ -1,5 +1,4 @@
 use super::{
-    api_client::ApiClient,
     gradient::{get_sgd, AutoDevice},
     params::*,
 };
@@ -40,7 +39,7 @@ pub fn dqn_system(
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut config: ResMut<Config>,
     mut commands: Commands,
-    api: Res<ApiClient>,
+    #[cfg(feature = "brain_api")] api: Res<super::api_client::ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
@@ -129,8 +128,9 @@ pub fn dqn_system(
         let (prev_action, prev_obs) = (car_dqn_prev.prev_action, car_dqn_prev.prev_obs);
         if config.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
-            if dqn.rb.should_persist() {
-                api.save_replay_buffer(dqn.rb.get_replay_buffer_to_persist());
+            #[cfg(feature = "brain_api")]
+            if dqn.rb.i % super::api_client::PERSIST_BATCH_SIZE == 0 {
+                api.save_replay_buffer(super::api_client::get_replay_buffer_to_persist(&dqn.rb));
             }
         }
 

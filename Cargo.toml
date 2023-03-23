@@ -13,17 +13,10 @@ members = ["prisma-cli", "api", "trainer", "db_client", "ios", "track"]
 [profile.release]
 codegen-units = 1
 [features]
+brain = ["dep:dfdx", "dep:futures-lite", "dep:crossbeam-channel"]
+brain_api = ["dep:reqwest", "dep:tokio", "dep:serde", "dep:serde_json"]
 default = ["debug_lines"]
 debug_lines = ["dep:bevy_prototype_debug_lines"]
-brain = [
-    "dep:dfdx",
-    "dep:futures-lite",
-    "dep:reqwest",
-    "dep:tokio",
-    "dep:crossbeam-channel",
-    "dep:serde",
-    "dep:serde_json",
-]
 [workspace.dependencies]
 bevy = { version = "0.10.0", features = ["jpeg"] }
 dfdx = "0.11"
