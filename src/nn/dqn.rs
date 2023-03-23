@@ -62,7 +62,7 @@ pub fn dqn_system(
         return;
     };
     let should_act: bool = seconds > dqn.seconds;
-    if should_act {
+    if should_act && config.use_brain {
         dqn.seconds = seconds + STEP_DURATION;
         dqn.step += 1;
     }
