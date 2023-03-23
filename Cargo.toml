@@ -34,7 +34,10 @@ serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 [dependencies]
 bevy = { workspace = true }
-bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
+# bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
+bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", features = [
+    "serde-serialize",
+] }
 parry3d = "0.13"
 nalgebra = "0.32.1"
 rand = { workspace = true }

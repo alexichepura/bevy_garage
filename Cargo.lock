@@ -833,8 +833,7 @@ checksum = "a96c24da064370917b92c2a84527e6a73b620c50ac5ef8b1af8c04ccf5256a7c"
 [[package]]
 name = "bevy_rapier3d"
 version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4bce8074f19467fd55ab172ae6c11fca3ca28f66804590ab10c930bd5e9cd24"
+source = "git+https://github.com/dimforge/bevy_rapier#e480225e80446657da1185dffeed0f701150f191"
 dependencies = [
  "bevy",
  "bitflags",
