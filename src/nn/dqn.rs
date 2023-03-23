@@ -13,7 +13,6 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;
-use std::time::Instant;
 
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
@@ -174,8 +173,8 @@ pub fn dqn_system(
                 let gradients = cars_dqn.gradients.clone();
                 let dqn_tx = dqn_tx.clone();
 
-                std::thread::spawn(move || {
-                    let start = Instant::now();
+                #[cfg(target_arch = "wasm32")]
+                {
                     let mut loss_string: String = String::from("");
                     let mut sgd = get_sgd(&qn);
                     for _i_epoch in 0..EPOCHS {
@@ -196,17 +195,51 @@ pub fn dqn_system(
                             loss_string.push_str(format!("{:.2} ", loss_v).as_str());
                         }
                     }
-                    let duration_string = start.elapsed().as_millis().to_string() + "ms";
                     dqn_tx
                         .send(DqnX {
                             loss_string,
                             qn,
-                            duration_string,
+                            duration_string: "-".to_string(),
                         })
                         .unwrap();
-                });
+                }
 
-                // log_training(exploration, action, reward);
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    std::thread::spawn(move || {
+                        let start = std::time::Instant::now();
+                        let mut loss_string: String = String::from("");
+                        let mut sgd = get_sgd(&qn);
+                        for _i_epoch in 0..EPOCHS {
+                            let next_q_values: Tensor2D<BATCH_SIZE, ACTIONS> =
+                                tqn.forward(sn.clone());
+                            let max_next_q: Tensor1D<BATCH_SIZE> = next_q_values.max();
+                            let target_q = (max_next_q * (-done.clone() + 1.0)) * 0.99 + r.clone();
+
+                            // forward through model, computing gradients
+                            let q_values = qn.forward(s.trace(gradients.clone()));
+                            let action_qs = q_values.select(a.clone());
+
+                            let loss = huber_loss(action_qs, target_q, 1.);
+                            let loss_v = loss.array();
+                            // run backprop
+                            let gradients = loss.backward();
+                            sgd.update(&mut qn, &gradients).expect("Unused params");
+                            if _i_epoch % 10 == 0 {
+                                loss_string.push_str(format!("{:.2} ", loss_v).as_str());
+                            }
+                        }
+                        let duration_string = start.elapsed().as_millis().to_string() + "ms";
+                        dqn_tx
+                            .send(DqnX {
+                                loss_string,
+                                qn,
+                                duration_string,
+                            })
+                            .unwrap();
+                    });
+                }
+
                 if dqn.step % SYNC_INTERVAL_STEPS == 0 && dqn.rb.len() > BATCH_SIZE * 2 {
                     dbg!("networks sync");
                     cars_dqn.tqn = cars_dqn.qn.clone();

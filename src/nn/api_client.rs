@@ -40,8 +40,13 @@ impl ApiClient {
                     .json(&rb)
                     .send()
                     .await;
-                let api_response_text = api_result.unwrap().text().await.unwrap();
-                println!("rb batch sent {:?}", api_response_text);
+                match api_result {
+                    Ok(api_result) => {
+                        let api_response_text = api_result.text().await.unwrap();
+                        println!("rb batch sent {:?}", api_response_text);
+                    }
+                    Err(e) => println!("rb batch sending error: {}", e),
+                }
             })
             .detach();
     }
@@ -54,8 +59,14 @@ impl ApiClient {
                 .json(&rb)
                 .send()
                 .await;
-            let api_response_text = api_result.unwrap().text().await.unwrap();
-            println!("rb batch sent {:?}", api_response_text);
+
+            match api_result {
+                Ok(api_result) => {
+                    let api_response_text = api_result.text().await.unwrap();
+                    println!("rb batch sent {:?}", api_response_text);
+                }
+                Err(e) => println!("rb batch sending error: {}", e),
+            }
         });
     }
 }

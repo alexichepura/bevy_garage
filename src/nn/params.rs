@@ -1,9 +1,17 @@
 use crate::{car::SENSOR_COUNT, esp::SPEED_LIMIT_KMH};
 
+#[cfg(target_arch = "wasm32")]
+pub const BATCH_SIZE: usize = 128;
+#[cfg(not(target_arch = "wasm32"))]
 pub const BATCH_SIZE: usize = 256;
+
+#[cfg(target_arch = "wasm32")]
+pub const EPOCHS: usize = 50;
+#[cfg(not(target_arch = "wasm32"))]
 pub const EPOCHS: usize = 200;
+
 pub const DECAY: f32 = 0.001;
-pub const LEARNING_RATE: f32 = 0.001;
+pub const LEARNING_RATE: f32 = 0.002;
 pub const SYNC_INTERVAL_STEPS: usize = 100;
 pub const BUFFER_SIZE: usize = 10_000_000;
 pub const HIDDEN_SIZE: usize = 16;

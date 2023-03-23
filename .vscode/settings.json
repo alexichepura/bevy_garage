@@ -3,6 +3,6 @@
         "RUSTFLAGS": "-Ctarget-feature=+brain"
     },
     "rust-analyzer.cargo.features": [
-        "brain"
+        "brain",
     ],
 }
