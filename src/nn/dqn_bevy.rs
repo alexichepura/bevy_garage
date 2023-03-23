@@ -26,6 +26,7 @@ impl CarDqnPrev {
 }
 
 pub struct CarsDqnResource {
+    pub processing: bool,
     pub qn: QNetworkBuilt,
     pub tqn: QNetworkBuilt,
     pub device: AutoDevice,
@@ -62,6 +63,7 @@ impl CarsDqnResource {
     pub fn new(qn: &QNetworkBuilt, device: AutoDevice) -> Self {
         let gradients = qn.alloc_grads();
         Self {
+            processing: false,
             qn: qn.clone(),
             tqn: qn.clone(),
             device,
@@ -156,6 +158,7 @@ pub fn dqn_event_reader_system(
             &event.0.duration_string, &event.0.loss_string
         );
         cars_dqn.qn = event.0.qn.clone();
+        cars_dqn.processing = false;
     }
 }
 

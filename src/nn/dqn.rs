@@ -161,7 +161,8 @@ pub fn dqn_system(
             let rb_len = dqn.rb.len();
             if rb_len < BATCH_SIZE {
                 log_action_reward(car_dqn_prev.prev_action, reward);
-            } else {
+            } else if !cars_dqn.processing {
+                cars_dqn.processing = true;
                 let mut rng = rand::thread_rng();
                 let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
                 let (s, a, r, sn, done) = dqn
