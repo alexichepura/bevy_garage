@@ -61,32 +61,6 @@ pub fn dash_fps_start_system(mut commands: Commands, font: Res<FontHandle>) {
             ..default()
         })
         .insert(TrainerRecordDistanceText);
-    commands
-        .spawn(TextBundle {
-            style: get_style(2.),
-            text: Text {
-                sections: vec![TextSection {
-                    value: "".to_string(),
-                    style: text_style.clone(),
-                }],
-                ..default()
-            },
-            ..default()
-        })
-        .insert(Leaderboard);
-    commands
-        .spawn(TextBundle {
-            style: get_style(60.),
-            text: Text {
-                sections: vec![TextSection {
-                    value: "".to_string(),
-                    style: text_style.clone(),
-                }],
-                ..default()
-            },
-            ..default()
-        })
-        .insert(FpsText);
 }
 
 pub fn dash_leaderboard_system(
@@ -101,13 +75,13 @@ pub fn dash_leaderboard_system(
         text_string = text_string + &distance.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
-    text.sections[0].value = format!("distances {:?}", text_string.as_str().trim_end());
+    text.sections[0].value = format!("{}", text_string.as_str().trim_end());
 }
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
-                text.sections[0].value = format!("fps {:.0}", average);
+                text.sections[0].value = format!("{:.0}", average);
             }
         }
     }
@@ -115,7 +89,7 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
 
 pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
-    let height = Val::Px(60.);
+    let height = Val::Px(70.);
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -143,6 +117,61 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                     ..default()
                 })
                 .with_children(|parent| {
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                position: UiRect {
+                                    top: Val::Px(4.),
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            text: Text {
+                                sections: vec![TextSection {
+                                    value: "fps".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 16.0,
+                                        color: Color::YELLOW_GREEN,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(FpsText);
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                position: UiRect {
+                                    top: Val::Px(4.),
+                                    right: Val::Px(4.),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "d".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 16.0,
+                                        color: Color::YELLOW,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(Leaderboard);
                     parent
                         .spawn(TextBundle {
                             text: Text {
