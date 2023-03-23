@@ -115,49 +115,69 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
 
 pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
-    let style = TextStyle {
-        font: medium.clone(),
-        font_size: 16.0,
-        color: Color::BLACK,
-    };
-    let get_style = |top: f32| -> Style {
-        return Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            position: UiRect {
-                top: Val::Px(top),
-                left: Val::Px(2.0),
-                ..default()
-            },
-            ..default()
-        };
-    };
+    let height = Val::Px(60.);
     commands
-        .spawn(TextBundle {
-            style: get_style(80.),
-            text: Text {
-                sections: vec![TextSection {
-                    value: "".to_string(),
-                    style: style.clone(),
-                }],
+        .spawn(NodeBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.), height.clone()),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                // flex_direction: FlexDirection::Column,
                 ..default()
             },
             ..default()
         })
-        .insert(MpsText);
-    commands
-        .spawn(TextBundle {
-            style: get_style(100.),
-            text: Text {
-                sections: vec![TextSection {
-                    value: "".to_string(),
-                    style: style.clone(),
-                }],
-                ..default()
-            },
-            ..default()
-        })
-        .insert(KmphText);
+        .with_children(|parent| {
+            let background_color: BackgroundColor = Color::rgba(0.15, 0.15, 0.15, 0.5).into();
+            parent
+                .spawn(NodeBundle {
+                    background_color,
+                    style: Style {
+                        size: Size::new(Val::Px(120.), height.clone()),
+                        padding: UiRect::all(Val::Px(4.0)),
+                        justify_content: JustifyContent::End,
+                        align_items: AlignItems::End,
+                        flex_direction: FlexDirection::Column,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn(TextBundle {
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 24.0,
+                                        color: Color::YELLOW_GREEN,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(MpsText);
+                    parent
+                        .spawn(TextBundle {
+                            text: Text {
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 24.0,
+                                        color: Color::YELLOW,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(KmphText);
+                });
+        });
 }
 
 pub fn dash_speed_update_system(
@@ -166,20 +186,11 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<KmphText>>,
     )>,
     mut cars: Query<(&Velocity, &Car, With<HID>)>,
-    wheels: Query<(&Velocity, &ExternalForce), With<Wheel>>,
 ) {
-    for (velocity, car, _) in cars.iter_mut() {
+    for (velocity, _car, _) in cars.iter_mut() {
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
-        texts.p0().single_mut().sections[0].value = format!("mps {:.1}", mps);
-        texts.p1().single_mut().sections[0].value = format!("kmph {:.1}", kmph);
-        let mut v_msg: String = "".to_string();
-        let mut f_msg: String = "".to_string();
-        for wheel_entity in car.wheels.iter() {
-            if let Ok((v, f)) = wheels.get(*wheel_entity) {
-                v_msg = v_msg + &format!("{:.1} ", v.angvel.length());
-                f_msg = f_msg + &format!("{:.1} ", f.torque.length());
-            }
-        }
+        texts.p0().single_mut().sections[0].value = format!("{:.1}m/s", mps);
+        texts.p1().single_mut().sections[0].value = format!("{:.1}km/h", kmph);
     }
 }
