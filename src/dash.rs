@@ -1,4 +1,4 @@
-use crate::{car::*, font::FontHandle};
+use crate::car::*;
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_rapier3d::prelude::*;
@@ -16,53 +16,6 @@ pub struct TrainerRecordDistanceText;
 #[derive(Component)]
 pub struct TrainerGenerationText;
 
-pub fn dash_fps_start_system(mut commands: Commands, font: Res<FontHandle>) {
-    let text_style = TextStyle {
-        font: font.medium.clone(),
-        font_size: 16.0,
-        color: Color::BLACK,
-    };
-    let text_section = TextSection {
-        value: "".to_string(),
-        style: text_style.clone(),
-    };
-    let sections = vec![text_section.clone()];
-
-    let get_style = |top: f32| -> Style {
-        return Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            position: UiRect {
-                top: Val::Px(top),
-                left: Val::Px(2.0),
-                ..default()
-            },
-            ..default()
-        };
-    };
-
-    commands
-        .spawn(TextBundle {
-            style: get_style(40.),
-            text: Text {
-                sections: sections.clone(),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(TrainerGenerationText);
-    commands
-        .spawn(TextBundle {
-            style: get_style(20.),
-            text: Text {
-                sections: sections.clone(),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(TrainerRecordDistanceText);
-}
-
 pub fn dash_leaderboard_system(
     q_cars: Query<&Car>,
     mut q_leaderboard: Query<&mut Text, With<Leaderboard>>,
@@ -75,7 +28,7 @@ pub fn dash_leaderboard_system(
         text_string = text_string + &distance.round().to_string() + " ";
     }
     let mut text = q_leaderboard.single_mut();
-    text.sections[0].value = format!("{}", text_string.as_str().trim_end());
+    text.sections[0].value = format!("{}m", text_string.as_str().trim_end());
 }
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {
@@ -87,7 +40,7 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
     }
 }
 
-pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn dash_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     let height = Val::Px(70.);
     commands
@@ -96,7 +49,6 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                 size: Size::new(Val::Percent(100.), height.clone()),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
-                // flex_direction: FlexDirection::Column,
                 ..default()
             },
             ..default()
@@ -146,10 +98,6 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                         .spawn(TextBundle {
                             style: Style {
                                 position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
                                 position: UiRect {
                                     top: Val::Px(4.),
                                     right: Val::Px(4.),
@@ -205,6 +153,66 @@ pub fn dash_speed_start_system(mut commands: Commands, asset_server: Res<AssetSe
                             ..default()
                         })
                         .insert(KmphText);
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                position: UiRect {
+                                    top: Val::Px(4.),
+                                    left: Val::Percent(100.),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 14.0,
+                                        color: Color::BLACK,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(TrainerGenerationText);
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                position: UiRect {
+                                    top: Val::Px(20.),
+                                    left: Val::Percent(100.),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 14.0,
+                                        color: Color::DARK_GRAY,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(TrainerRecordDistanceText);
                 });
         });
 }
