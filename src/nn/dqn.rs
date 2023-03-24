@@ -42,7 +42,7 @@ pub fn dqn_system(
     #[cfg(feature = "brain_api")] api: Res<super::api_client::ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
-    if dqn.respawn_at > 0. && seconds > dqn.respawn_at {
+    if dqn.respawn_in > 0. && seconds > dqn.respawn_in {
         let (transform, init_meters) = config.get_transform_random();
         spawn_car(
             &mut commands,
@@ -54,7 +54,7 @@ pub fn dqn_system(
             init_meters,
             config.max_torque,
         );
-        dqn.respawn_at = 0.;
+        dqn.respawn_in = 0.;
         dqn.respawn_is_hid = false;
         dqn.respawn_index = 0;
         config.use_brain = true;
@@ -145,7 +145,7 @@ pub fn dqn_system(
         }
         if crash {
             dqn.crashes += 1;
-            dqn.respawn_at = seconds + 0.5;
+            dqn.respawn_in = seconds;
             dqn.respawn_is_hid = is_hid;
             dqn.respawn_index = car.index;
             commands.entity(e).despawn_recursive();

@@ -83,7 +83,7 @@ pub struct DqnResource {
     pub min_eps: f32,
     pub done: f32,
 
-    pub respawn_at: f64,
+    pub respawn_in: f64,
     pub respawn_is_hid: bool,
     pub respawn_index: usize,
 }
@@ -99,7 +99,7 @@ impl DqnResource {
             min_eps: 0.01,
             done: 0.,
 
-            respawn_at: 0.,
+            respawn_in: 0.,
             respawn_is_hid: false,
             respawn_index: 0,
         }
