@@ -5,6 +5,7 @@
 - bevy 0.10
 - dfdx 0.11
 - dash
+- new car model
 
 ## Version 0.2.0
 
