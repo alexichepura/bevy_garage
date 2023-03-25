@@ -5,6 +5,7 @@ use super::{
 use crate::{
     car::*,
     config::*,
+    esp::SPEED_LIMIT_KMH,
     nn::{dqn_bevy::*, util::*},
     track::*,
 };
@@ -12,6 +13,8 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;
+
+const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
 
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
