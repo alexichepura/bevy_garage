@@ -30,10 +30,29 @@ use track::*;
 #[cfg(feature = "brain")]
 mod nn;
 
-fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 32;
-    c.integration_parameters.max_velocity_friction_iterations = 32;
-    c.integration_parameters.max_stabilization_iterations = 8;
+#[derive(Resource, Copy, Clone, Debug)]
+pub struct PhysicsParams {
+    pub max_velocity_iters: usize,
+    pub max_velocity_friction_iters: usize,
+    pub max_stabilization_iters: usize,
+    pub substeps: usize,
+}
+
+impl Default for PhysicsParams {
+    fn default() -> Self {
+        Self {
+            max_velocity_iters: 32,
+            max_velocity_friction_iters: 32,
+            max_stabilization_iters: 8,
+            substeps: 10,
+        }
+    }
+}
+
+fn rapier_config_start_system(mut c: ResMut<RapierContext>, ph: Res<PhysicsParams>) {
+    c.integration_parameters.max_velocity_iterations = ph.max_velocity_iters;
+    c.integration_parameters.max_velocity_friction_iterations = ph.max_velocity_friction_iters;
+    c.integration_parameters.max_stabilization_iterations = ph.max_stabilization_iters;
     // c.integration_parameters.max_ccd_substeps = 16;
     // c.integration_parameters.allowed_linear_error = 0.000001;
     c.integration_parameters.erp = 0.99;
@@ -50,28 +69,23 @@ pub enum CarSimLabel {
     Esp,
 }
 
-pub fn car_app(app: &mut App) -> &mut App {
+pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
     #[cfg(feature = "brain")]
     let esp_run_after: CarSimLabel = CarSimLabel::Brain;
     #[cfg(not(feature = "brain"))]
     let esp_run_after: CarSimLabel = CarSimLabel::Input;
 
     app.init_resource::<FontHandle>()
-        // .insert_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
+        .insert_resource(physics_params.clone())
         .add_plugin(ShadersPlugin)
         .add_plugin(MaterialPlugin::<GroundMaterial>::default())
         .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
         .init_resource::<MaterialHandle>()
         .insert_resource(RapierConfiguration {
-            // timestep_mode: TimestepMode::Interpolated {
-            //     dt: 1. / 60.,
-            //     time_scale: 1.,
-            //     substeps: 5,
-            // },
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
                 time_scale: 1.,
-                substeps: 10,
+                substeps: physics_params.substeps,
             },
             ..default()
         })

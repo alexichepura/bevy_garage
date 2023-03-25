@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::WindowMode};
-use bevy_garage::{camera::CarCameraPlugin, car_app, CarSimLabel};
+use bevy_garage::{camera::CarCameraPlugin, car_app, CarSimLabel, PhysicsParams};
 mod touch;
 use touch::*;
 
@@ -17,7 +17,15 @@ fn main() {
     app.add_startup_system(touch_input_start_system);
     app.add_system(touch_input_system.in_set(CarSimLabel::Input));
     app.add_plugin(CarCameraPlugin);
-    car_app(&mut app).run();
+
+    let physics_params = PhysicsParams {
+        max_velocity_iters: 32,
+        max_velocity_friction_iters: 32,
+        max_stabilization_iters: 8,
+        substeps: 10,
+        ..default()
+    };
+    car_app(&mut app, physics_params).run();
 }
 
 // fn touch_camera(
