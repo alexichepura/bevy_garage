@@ -119,7 +119,7 @@ pub fn dqn_system(
         let mps = v.linvel.length();
         let kmh = mps / 1000. * 3600.;
         let mut obs: Observation = [0.; STATE_SIZE];
-        for i in 0..obs.len() {
+        for i in 0..STATE_SIZE {
             obs[i] = match i {
                 0 => kmh / 100.,
                 1 => vel_cos,
