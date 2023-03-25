@@ -2,7 +2,7 @@
 
 Renamed from bevy_rapier_car_sim
 
-![Screenshot 2023-02-10](https://user-images.githubusercontent.com/5582266/218020620-d50663a7-a38f-4431-8abf-8d794e552b6f.jpeg)
+![Bevy Garage 0.3 screenshot 2023-03-25](https://user-images.githubusercontent.com/5582266/227719005-d22da207-188c-4a6e-9582-68aa8616e9ca.jpg)
 
 - game engine <https://bevyengine.org>
 - rigid body physics <https://rapier.rs>
@@ -28,6 +28,7 @@ Renamed from bevy_rapier_car_sim
 - Deep Q learning NN - <https://www.youtube.com/watch?v=aN49ZP4PS-c>
 - First attempts with NN - <https://www.youtube.com/watch?v=mVk1otSmySM>
 
+![Screenshot 2023-02-10](https://user-images.githubusercontent.com/5582266/218020620-d50663a7-a38f-4431-8abf-8d794e552b6f.jpeg)
 ![screenshot 2023-01-19](https://user-images.githubusercontent.com/5582266/214000445-8fa5ac99-2412-416e-9905-8640c8d51502.jpg)
 ![old screenshot 1](https://user-images.githubusercontent.com/5582266/188065552-f1abd35e-10f9-43fa-935e-3530f3292dde.png)
 ![old screenshot 2](https://user-images.githubusercontent.com/5582266/180704095-2d4d6819-0b35-4653-b8e6-a3a50f793a9c.png)
