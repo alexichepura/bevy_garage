@@ -159,7 +159,7 @@ pub fn spawn_road(
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction {
             combine_rule: CoefficientCombineRule::Average,
-            coefficient: 3.,
+            coefficient: 5.,
             ..default()
         })
         .insert(Restitution::coefficient(0.));
@@ -504,7 +504,7 @@ pub fn spawn_walls(
         .insert(ColliderScale::Absolute(Vec3::ONE))
         .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
         .insert(Friction {
-            combine_rule: CoefficientCombineRule::Average,
+            combine_rule: CoefficientCombineRule::Min,
             coefficient: 0.1,
             ..default()
         })
@@ -522,7 +522,7 @@ pub fn spawn_ground_heightfield(commands: &mut Commands, aabb: &Aabb, padding: f
             RigidBody::Fixed,
             ColliderScale::Absolute(Vec3::ONE),
             CollisionGroups::new(STATIC_GROUP, Group::ALL),
-            Friction::coefficient(1.),
+            Friction::coefficient(3.),
             Restitution::coefficient(0.),
             Collider::heightfield(
                 vec![0.; rows * cols],
