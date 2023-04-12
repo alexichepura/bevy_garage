@@ -14,11 +14,27 @@ Renamed from bevy_rapier_car_sim
 - api server and client <https://github.com/tokio-rs/axum>
 - db client <https://github.com/Brendonovich/prisma-client-rust>
 
+## Run
+
+```sh
+brew install llvm # macos
+sudo apt-get install lld # ubuntu
+sudo pacman -S lld # arch
+```
+
+```sh
+cargo run --release
+# or faster compile
+cargo run --release --features bevy/dynamic_linking
+```
+
+<https://bevyengine.org/learn/book/getting-started/setup/>
+
 ## Key bindings
 
 - UP, DOWN, LEFT, RIGHT - drive
 - 1, 2, 3, 4, 5 - camera views
-- 0 - free camera with WASDQE control and mouse
+- 0 - free camera with WASDQE(SHIFT) control and mouse
 - R - debug mode
 - SHIFT+SPACE - respawn at random position
 - N - toggle brain
