@@ -31,25 +31,35 @@ struct FragmentInput {
     #import bevy_pbr::mesh_vertex_output
 };
 
-fn height_uv(uv_x: f32, uv_y: f32) -> f32 {
-    var input_s: vec3<f32> = vec3<f32>(uv_x * 11000., uv_y * 11000., 1.);
-    var noise_s = perlinNoise3(input_s);
-    var input_m: vec3<f32> = vec3<f32>(uv_x * 50., uv_y * 50., 1.);
-    var noise_m = perlinNoise3(input_m);
-    var input_l: vec3<f32> = vec3<f32>(uv_x * 11., uv_y * 11., 1.);
+fn bump(uv_x: f32, uv_y: f32, bump_distance: f32) -> f32 {
+    var coeff_l: f32 = 5.;
+    var coeff_m: f32 = 50.;
+    var coeff_s: f32 = 3000.;
+    var noise: f32;
+    var input_l: vec3<f32> = vec3<f32>(uv_x * coeff_l, uv_y * coeff_l, 1.);
     var noise_l = perlinNoise3(input_l);
-    var noise_01 = (noise_s * 0.09 + noise_m * 0.3 + noise_l * 1.) / 4.0;
-    return noise_01;
-    // var input_l: vec3<f32> = vec3<f32>(uv_x * 11., uv_y * 11., 1.);
-    // var noise_l = perlinNoise3(input_l);
-    // var noise_01 = (noise_l + 1.) / 2.;
-    // return noise_01;
+
+    if bump_distance > 100. {
+        noise = noise_l;
+    } else {
+        var input_m: vec3<f32> = vec3<f32>(uv_x * coeff_m, uv_y * coeff_m, 1.);
+        var noise_m = perlinNoise3(input_m);
+        if bump_distance > 10. {
+            noise = noise_m * 0.05 + noise_l * 0.95;
+        } else {
+            var input_s: vec3<f32> = vec3<f32>(uv_x * coeff_s, uv_y * coeff_s, 1.);
+            var noise_s = perlinNoise3(input_s);
+            noise = noise_s * 0.03 + noise_m * 0.05 + noise_l * 0.92;
+        }
+    }
+    return noise * 0.5;
 }
 
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    var height = 1. - height_uv(in.uv.x, in.uv.y);
+    var bump_distance = distance(in.world_position.xyz, view.world_position.xyz);
+    var height = 1. - bump(in.uv.x, in.uv.y, bump_distance);
     var output_color: vec4<f32> = material.color * vec4<f32>(height, height, height, 1.);
 #ifdef VERTEX_COLORS
     output_color = output_color * in.color;
@@ -64,8 +74,8 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
     var d: f32 = 1. / 1024.;
-    var du: f32 = height_uv(in.uv.x - d, in.uv.y) - height_uv(in.uv.x + d, in.uv.y);
-    var dv: f32 = height_uv(in.uv.x, in.uv.y - d) - height_uv(in.uv.x, in.uv.y + d);
+    var du: f32 = bump(in.uv.x - d, in.uv.y, bump_distance) - bump(in.uv.x + d, in.uv.y, bump_distance);
+    var dv: f32 = bump(in.uv.x, in.uv.y - d, bump_distance) - bump(in.uv.x, in.uv.y + d, bump_distance);
     var Nt: vec3<f32> = vec3<f32>(du, dv, 0.2); // tangent-space normal
     Nt = normalize(Nt);
     var N: vec3<f32> = in.world_normal;

@@ -50,10 +50,7 @@ pub struct GroundMaterial {
 }
 impl Material for GroundMaterial {
     fn fragment_shader() -> ShaderRef {
-        #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
         return "ground_material.wgsl".into();
-        #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-        return "ground_material_simple.wgsl".into();
     }
 }
 #[derive(AsBindGroup, TypeUuid, Debug, Clone)]
@@ -65,9 +62,6 @@ pub struct AsphaltMaterial {
 
 impl Material for AsphaltMaterial {
     fn fragment_shader() -> ShaderRef {
-        #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
         return "asphalt_material.wgsl".into();
-        #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-        return "asphalt_material_simple.wgsl".into();
     }
 }
