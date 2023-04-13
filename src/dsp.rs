@@ -62,10 +62,15 @@ impl Plugin for EngineSoundPlugin {
     }
 }
 
+const VELOCITY_FREQ_K: f32 = 30.;
 fn engine_sound(mut car_query: Query<&Velocity, With<Car>>, pitch_var: Res<EngineSound>) {
     for velocity in car_query.iter_mut() {
         let vel = velocity.linvel.length();
-        let freq: f32 = if vel < 1. { 100. } else { vel * 1. };
+        let freq: f32 = if vel < 0.1 {
+            VELOCITY_FREQ_K
+        } else {
+            VELOCITY_FREQ_K + vel * 2.
+        };
         pitch_var.set_freq(Freq::from_freq(freq));
     }
 }
