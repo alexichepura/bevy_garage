@@ -15,7 +15,7 @@
 #import bevy_pbr::pbr_ambient
 #import bevy_pbr::mesh_functions
 
-#import shaders::perlin_noise_3d
+#import shaders::perlin_noise_2d
 
 struct GroundMaterial {
     color: vec4<f32>,
@@ -30,35 +30,51 @@ struct FragmentInput {
     #import bevy_pbr::mesh_vertex_output
 };
 
-fn bump(uv_x: f32, uv_y: f32, bump_distance: f32) -> f32 {
-    var coeff_l: f32 = 10.;
-    var coeff_m: f32 = 100.;
-    var coeff_s: f32 = 2000.;
+fn bump(x: f32, y: f32, bump_distance: f32) -> f32 {
+    // var rem_x: f32 = x % 1.;
+    // var rem_y: f32 = y % 1.;
+    // var height = inverseSqrt(rem_x * rem_x + rem_y * rem_y);
+    // return height;
+
+    var xy: vec2<f32> = vec2<f32>(x, y);
+    var coeff_l: f32 = 0.01;
+    var coeff_m: f32 = 0.1;
+    var coeff_s: f32 = 1.;
+    var coeff_xs: f32 = 100.;
     var noise: f32;
-    var input_l: vec3<f32> = vec3<f32>(uv_x * coeff_l, uv_y * coeff_l, 1.);
-    var noise_l = perlinNoise3(input_l);
+    var input_l: vec2<f32> = xy * coeff_l;
+    var noise_l: f32 = perlinNoise2(input_l);
 
     if bump_distance > 200. {
         noise = noise_l;
     } else {
-        var input_m: vec3<f32> = vec3<f32>(uv_x * coeff_m, uv_y * coeff_m, 1.);
-        var noise_m = perlinNoise3(input_m);
-        if bump_distance > 30. {
-            noise = noise_m * 0.05 + noise_l * 0.95;
+        var input_m: vec2<f32> = xy * coeff_m;
+        var noise_m: f32 = perlinNoise2(input_m);
+        if bump_distance > 100. {
+            noise = noise_m * 0.1 + noise_l * 0.9;
         } else {
-            var input_s: vec3<f32> = vec3<f32>(uv_x * coeff_s, uv_y * coeff_s, 1.);
-            var noise_s = perlinNoise3(input_s);
-            noise = noise_s * 0.02 + noise_m * 0.05 + noise_l * 0.93;
+            var input_s: vec2<f32> = xy * coeff_s;
+            var noise_s: f32 = perlinNoise2(input_s);
+            if bump_distance > 10. {
+                noise = noise_s * 0.02 + noise_m * 0.08 + noise_l * 0.9;
+            } else {
+                var input_xs: vec2<f32> = xy * coeff_xs;
+                var noise_xs: f32 = perlinNoise2(input_xs);
+                noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.07 + noise_l * 0.9;
+            }
         }
     }
-    return noise * 0.5;
+    return noise;
 }
 
 @fragment
 fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
-    var bump_distance = distance(in.world_position.xyz, view.world_position.xyz);
-    var height = 1. - bump(in.uv.x, in.uv.y, bump_distance);
-    var output_color: vec4<f32> = material.color * vec4<f32>(height, height, height, 1.);
+    var x: f32 = in.world_position.x;
+    var z: f32 = in.world_position.z;
+    var bump_distance: f32 = distance(in.world_position.xyz, view.world_position.xyz);
+    var height: f32 = bump(x, z, bump_distance);
+    var h_color: f32 = 0.8 + height * 0.2;
+    var output_color: vec4<f32> = material.color * vec4<f32>(height, h_color, h_color, 1.);
 #ifdef VERTEX_COLORS
     output_color = output_color * in.color;
 #endif
@@ -71,11 +87,12 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.world_position = in.world_position;
     pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
-    var d: f32 = 1. / 1024.;
-    var du: f32 = bump(in.uv.x - d, in.uv.y, bump_distance) - bump(in.uv.x + d, in.uv.y, bump_distance);
-    var dv: f32 = bump(in.uv.x, in.uv.y - d, bump_distance) - bump(in.uv.x, in.uv.y + d, bump_distance);
-    var Nt: vec3<f32> = vec3<f32>(du, dv, 0.2);
+    var d: f32 = 1. / 8.;
+    var du: f32 = bump(x - d, z, bump_distance) - height;
+    var dv: f32 = bump(x, z - d, bump_distance) - height;
+    var Nt: vec3<f32> = vec3<f32>(du, dv, 0.1);
     Nt = normalize(Nt);
+    Nt.y = -Nt.y;
     var N: vec3<f32> = in.world_normal;
     var T: vec3<f32> = in.world_tangent.xyz;
     var B: vec3<f32> = in.world_tangent.w * cross(N, T);
