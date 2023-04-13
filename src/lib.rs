@@ -3,6 +3,7 @@ pub mod camera;
 pub mod car;
 mod config;
 mod dash;
+mod dsp;
 mod ear_clipping;
 mod esp;
 pub mod font;
@@ -18,6 +19,7 @@ use bevy_rapier3d::prelude::*;
 use car::*;
 use config::*;
 use dash::*;
+use dsp::*;
 use esp::*;
 use font::*;
 use input::*;
@@ -94,6 +96,8 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(bevy_fundsp::DspPlugin::default())
+        .add_plugin(EngineSoundPlugin)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
