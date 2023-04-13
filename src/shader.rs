@@ -4,7 +4,7 @@ use bevy::{asset::HandleId, prelude::*};
 
 // https://github.com/rust-adventure/bevy-examples/tree/main/examples/shader-test-001
 
-pub const PERLIN_NOISE_3D: &str = include_str!("shader/perlin_noise_3d.wgsl");
+pub const PERLIN_NOISE_2D: &str = include_str!("shader/perlin_noise_2d.wgsl");
 
 pub struct ShadersPlugin;
 
@@ -17,7 +17,7 @@ impl Plugin for ShadersPlugin {
 #[allow(dead_code)]
 #[derive(Resource)]
 struct ShaderUtils {
-    perlin_noise_3d: HandleId,
+    perlin_noise_2d: HandleId,
 }
 
 impl FromWorld for ShaderUtils {
@@ -25,7 +25,7 @@ impl FromWorld for ShaderUtils {
         let mut shaders = world.get_resource_mut::<Assets<Shader>>().unwrap();
 
         ShaderUtils {
-            perlin_noise_3d: load_shader(&mut shaders, "perlin_noise_3d", PERLIN_NOISE_3D),
+            perlin_noise_2d: load_shader(&mut shaders, "perlin_noise_2d", PERLIN_NOISE_2D),
         }
     }
 }
@@ -50,10 +50,7 @@ pub struct GroundMaterial {
 }
 impl Material for GroundMaterial {
     fn fragment_shader() -> ShaderRef {
-        #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
         return "ground_material.wgsl".into();
-        #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-        return "ground_material_simple.wgsl".into();
     }
 }
 #[derive(AsBindGroup, TypeUuid, Debug, Clone)]
@@ -65,9 +62,6 @@ pub struct AsphaltMaterial {
 
 impl Material for AsphaltMaterial {
     fn fragment_shader() -> ShaderRef {
-        #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
         return "asphalt_material.wgsl".into();
-        #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-        return "asphalt_material_simple.wgsl".into();
     }
 }

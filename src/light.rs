@@ -7,7 +7,7 @@ pub fn light_start_system(
 ) {
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.5,
+        brightness: 0.9,
     });
 
     commands.spawn(DirectionalLightBundle {
@@ -38,4 +38,33 @@ pub fn light_start_system(
         },
         NotShadowCaster,
     ));
+}
+
+const K: f32 = 2.;
+
+pub fn animate_light_direction(
+    time: Res<Time>,
+    mut query: Query<&mut Transform, With<DirectionalLight>>,
+    input: Res<Input<KeyCode>>,
+) {
+    if input.pressed(KeyCode::H) {
+        for mut transform in &mut query {
+            transform.rotate_y(time.delta_seconds() * K);
+        }
+    }
+    if input.pressed(KeyCode::L) {
+        for mut transform in &mut query {
+            transform.rotate_y(-time.delta_seconds() * K);
+        }
+    }
+    if input.pressed(KeyCode::J) {
+        for mut transform in &mut query {
+            transform.rotate_x(time.delta_seconds() * K);
+        }
+    }
+    if input.pressed(KeyCode::K) {
+        for mut transform in &mut query {
+            transform.rotate_x(-time.delta_seconds() * K);
+        }
+    }
 }
