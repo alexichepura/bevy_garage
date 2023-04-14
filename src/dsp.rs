@@ -58,7 +58,7 @@ impl Plugin for EngineSoundPlugin {
             .insert_resource(EngineSound(pitch))
             .insert_resource(PianoId(piano_id))
             .add_system(engine_sound)
-            .add_startup_system(play_piano.in_base_set(StartupSet::PostStartup));
+            .add_system(engine_sound_switch);
     }
 }
 
@@ -74,15 +74,17 @@ fn engine_sound(mut car_query: Query<&Velocity, With<Car>>, pitch_var: Res<Engin
         pitch_var.set_freq(Freq::from_freq(freq));
     }
 }
-
-fn play_piano(
-    mut assets: ResMut<Assets<DspSource>>,
+fn engine_sound_switch(
+    input: Res<Input<KeyCode>>,
     dsp_manager: Res<DspManager>,
     mut audio: ResMut<Audio<DspSource>>,
+    mut assets: ResMut<Assets<DspSource>>,
     piano_id: Res<PianoId>,
 ) {
-    let source = dsp_manager
-        .get_graph_by_id(&piano_id.0)
-        .unwrap_or_else(|| panic!("DSP source not found!"));
-    audio.play_dsp(assets.as_mut(), source);
+    if input.just_pressed(KeyCode::X) {
+        let source = dsp_manager
+            .get_graph_by_id(&piano_id.0)
+            .unwrap_or_else(|| panic!("DSP source not found!"));
+        audio.play_dsp(assets.as_mut(), source);
+    }
 }
