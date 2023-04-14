@@ -33,9 +33,10 @@ fn main() {
 
     #[cfg(target_arch = "wasm32")]
     let physics_params = PhysicsParams {
-        max_velocity_iters: 42,
-        max_velocity_friction_iters: 42,
-        max_stabilization_iters: 12,
+        max_velocity_iters: 32,
+        max_velocity_friction_iters: 32,
+        max_stabilization_iters: 16,
+        substeps: 8,
         ..default()
     };
 
