@@ -13,6 +13,7 @@ Renamed from bevy_rapier_car_sim
 - neural networks <https://github.com/coreylowman/dfdx>
 - api server and client <https://github.com/tokio-rs/axum>
 - db client <https://github.com/Brendonovich/prisma-client-rust>
+- sound <https://github.com/harudagondi/bevy_fundsp> & <https://github.com/SamiPerttu/fundsp>
 
 ## Run
 
@@ -38,6 +39,8 @@ cargo run --release --features bevy/dynamic_linking
 - R - debug mode
 - SHIFT+SPACE - respawn at random position
 - N - toggle brain
+- H, J, K, L - directed light control
+- X - enable sound, Z - decrease volume, C - increase volume
 
 ## History
 

@@ -11,6 +11,7 @@
 * rapier examples
 * rust-adventure: bevy-examples, bevy_shader_utils
 * dfdx examples
+* bevy_fundsp and fundsp examples
 
 ## Assets
 
