@@ -30,6 +30,12 @@ struct FragmentInput {
     #import bevy_pbr::mesh_vertex_output
 };
 
+const coeff_l: f32 = 0.01;
+const coeff_m: f32 = 0.1;
+const coeff_s: f32 = 1.;
+const coeff_xs: f32 = 100.;
+const bump_d: f32 = 0.125; // 1/8
+
 fn bump(x: f32, y: f32, bump_distance: f32) -> f32 {
     // var rem_x: f32 = x % 1.;
     // var rem_y: f32 = y % 1.;
@@ -37,10 +43,6 @@ fn bump(x: f32, y: f32, bump_distance: f32) -> f32 {
     // return height;
 
     var xy: vec2<f32> = vec2<f32>(x, y);
-    var coeff_l: f32 = 0.01;
-    var coeff_m: f32 = 0.1;
-    var coeff_s: f32 = 1.;
-    var coeff_xs: f32 = 100.;
     var noise: f32;
     var input_l: vec2<f32> = xy * coeff_l;
     var noise_l: f32 = perlinNoise2(input_l);
@@ -87,9 +89,9 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.world_position = in.world_position;
     pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
-    var d: f32 = 1. / 8.;
-    var du: f32 = bump(x - d, z, bump_distance) - height;
-    var dv: f32 = bump(x, z - d, bump_distance) - height;
+
+    var du: f32 = bump(x - bump_d, z, bump_distance) - height;
+    var dv: f32 = bump(x, z - bump_d, bump_distance) - height;
     var Nt: vec3<f32> = vec3<f32>(du, dv, 0.1);
     Nt = normalize(Nt);
     Nt.y = -Nt.y;
