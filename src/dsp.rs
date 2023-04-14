@@ -19,72 +19,94 @@ impl<T: AudioUnit32 + 'static, F: Send + Sync + 'static + Fn() -> T> DspGraph fo
 struct PianoId(Uuid);
 
 #[derive(Resource)]
-struct EngineSound(Shared<f32>);
+struct CarSound {
+    pitch: Shared<f32>,
+    vol: Shared<f32>,
+}
 
-impl EngineSound {
-    fn set_freq(&self, freq: Freq) {
-        self.0.set_value(freq.into());
+impl CarSound {
+    fn set_pitch(&self, pitch: f32) {
+        self.pitch.set_value(pitch.into());
     }
-}
-#[derive(Debug, Clone, Copy)]
-struct Freq {
-    freq: f32,
-}
-impl Freq {
-    fn to_f32(self) -> f32 {
-        self.freq
-    }
-
-    fn from_freq(freq: f32) -> Freq {
-        Freq { freq }
-    }
-}
-impl From<Freq> for f32 {
-    fn from(freq: Freq) -> Self {
-        freq.to_f32()
+    fn set_vol(&self, vol: f32) {
+        self.vol.set_value(vol.into());
     }
 }
 
+#[derive(Resource, Default)]
+pub struct Dsp {
+    pub engine_sink: Option<Handle<AudioSink>>,
+}
+
+const VELOCITY_PITCH_K: f32 = 30.;
 impl Plugin for EngineSoundPlugin {
     fn build(&self, app: &mut App) {
-        let pitch = shared((100.).into());
+        let pitch = shared(VELOCITY_PITCH_K);
         let pitch2 = pitch.clone();
 
-        let piano = move || var(&pitch2) >> square() >> split::<U2>() * 0.2;
+        let vol = shared(0.5);
+        let vol_clone = vol.clone();
+
+        let piano = move || var(&pitch2) >> var(&vol_clone) * square() >> split::<U2>() * 0.2;
         let piano_dsp = PianoDsp(piano.clone());
         let piano_id = piano_dsp.id();
 
         app.add_dsp_source(piano_dsp, SourceType::Dynamic)
-            .insert_resource(EngineSound(pitch))
+            .insert_resource(CarSound { pitch, vol })
             .insert_resource(PianoId(piano_id))
+            .insert_resource(Dsp::default())
             .add_system(engine_sound)
+            .add_system(engine_sound_vol)
             .add_system(engine_sound_switch);
     }
 }
 
-const VELOCITY_FREQ_K: f32 = 30.;
-fn engine_sound(mut car_query: Query<&Velocity, With<Car>>, pitch_var: Res<EngineSound>) {
+fn engine_sound(mut car_query: Query<&Velocity, With<Car>>, car_sound: Res<CarSound>) {
     for velocity in car_query.iter_mut() {
         let vel = velocity.linvel.length();
-        let freq: f32 = if vel < 0.1 {
-            VELOCITY_FREQ_K
+        let pitch: f32 = if vel < 0.1 {
+            VELOCITY_PITCH_K
         } else {
-            VELOCITY_FREQ_K + vel * 2.
+            VELOCITY_PITCH_K + vel * 2.
         };
-        pitch_var.set_freq(Freq::from_freq(freq));
+        car_sound.set_pitch(pitch);
+    }
+}
+fn engine_sound_vol(input: Res<Input<KeyCode>>, car_sound: Res<CarSound>) {
+    if input.just_pressed(KeyCode::Z) {
+        let vol = car_sound.vol.value();
+        println!("volume {vol:.1}-0.1");
+        car_sound.set_vol(vol - 0.1);
+    } else if input.just_pressed(KeyCode::C) {
+        let vol = car_sound.vol.value();
+        println!("volume {vol:.1}+0.1");
+        car_sound.set_vol(vol + 0.1);
     }
 }
 fn engine_sound_switch(
     input: Res<Input<KeyCode>>,
     dsp_manager: Res<DspManager>,
     mut audio: ResMut<Audio<DspSource>>,
-    mut assets: ResMut<Assets<DspSource>>,
+    mut dsp_assets: ResMut<Assets<DspSource>>,
     piano_id: Res<PianoId>,
+    audio_sinks: Res<Assets<AudioSink>>,
+    mut dsp: ResMut<Dsp>,
 ) {
     if input.just_pressed(KeyCode::X) {
-        let source = dsp_manager
-            .get_graph_by_id(&piano_id.0)
-            .unwrap_or_else(|| panic!("DSP source not found!"));
-        audio.play_dsp(assets.as_mut(), source);
+        if let Some(sink_handle) = &dsp.engine_sink {
+            dbg!(sink_handle);
+            // TODO investigate this doesn't work
+            if let Some(sink) = audio_sinks.get(&sink_handle) {
+                dbg!(sink.volume());
+            } else {
+                println!("no sink in audio_sinks");
+            }
+        } else {
+            let source = dsp_manager
+                .get_graph_by_id(&piano_id.0)
+                .unwrap_or_else(|| panic!("DSP source not found!"));
+            let sink = audio.play_dsp(dsp_assets.as_mut(), source);
+            dsp.engine_sink = Some(sink);
+        }
     }
 }
