@@ -54,17 +54,17 @@ fn bump(x: f32, y: f32, bump_distance: f32) -> f32 {
         var input_m: vec2<f32> = xy * coeff_m;
         var noise_m: f32 = perlinNoise2(input_m);
         if bump_distance > 100. {
-            noise = noise_m * 0.1 + noise_l * 0.9;
+            noise = noise_m * 0.2 + noise_l * 0.8;
         } else {
             var input_s: vec2<f32> = xy * coeff_s;
             var noise_s: f32 = perlinNoise2(input_s);
-            if bump_distance > 10. {
-                noise = noise_s * 0.02 + noise_m * 0.18 + noise_l * 0.8;
-            } else {
-                var input_xs: vec2<f32> = xy * coeff_xs;
-                var noise_xs: f32 = perlinNoise2(input_xs);
-                noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.17 + noise_l * 0.8;
-            }
+            noise = noise_s * 0.1 + noise_m * 0.2 + noise_l * 0.7;
+            // if bump_distance > 10. {
+            // } else {
+            //     var input_xs: vec2<f32> = xy * coeff_xs;
+            //     var noise_xs: f32 = perlinNoise2(input_xs);
+            //     noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.17 + noise_l * 0.8;
+            // }
         }
     }
     return noise;
@@ -77,7 +77,7 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     var bump_distance: f32 = distance(in.world_position.xyz, view.world_position.xyz);
     var height: f32 = bump(x, z, bump_distance);
     var h_color: f32 = 0.6 + height * 0.4;
-    var output_color: vec4<f32> = material.color * vec4<f32>(h_color, h_color, h_color, 1.);
+    var output_color: vec4<f32> = material.color * vec4<f32>(height, h_color, h_color, 1.);
 #ifdef VERTEX_COLORS
     output_color = output_color * in.color;
 #endif

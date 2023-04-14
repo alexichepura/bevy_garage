@@ -53,17 +53,17 @@ fn bump(x: f32, y: f32, bump_distance: f32) -> f32 {
         var input_m: vec2<f32> = xy * coeff_m;
         var noise_m: f32 = perlinNoise2(input_m);
         if bump_distance > 100. {
-            noise = noise_m * 0.1 + noise_l * 0.9;
+            noise = noise_m * 0.2 + noise_l * 0.8;
         } else {
             var input_s: vec2<f32> = xy * coeff_s;
             var noise_s: f32 = perlinNoise2(input_s);
-            if bump_distance > 10. {
-                noise = noise_s * 0.02 + noise_m * 0.08 + noise_l * 0.9;
-            } else {
-                var input_xs: vec2<f32> = xy * coeff_xs;
-                var noise_xs: f32 = perlinNoise2(input_xs);
-                noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.07 + noise_l * 0.9;
-            }
+            noise = noise_s * 0.05 + noise_m * 0.15 + noise_l * 0.8;
+            // if bump_distance > 10. {
+            // } else {
+            //     var input_xs: vec2<f32> = xy * coeff_xs;
+            //     var noise_xs: f32 = perlinNoise2(input_xs);
+            //     noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.07 + noise_l * 0.9;
+            // }
         }
     }
     return noise;
