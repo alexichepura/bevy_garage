@@ -31,8 +31,8 @@ struct FragmentInput {
     #import bevy_pbr::mesh_vertex_output
 };
 
-const coeff_l: f32 = 0.02;
-const coeff_m: f32 = 0.08;
+const coeff_l: f32 = 0.035;
+const coeff_m: f32 = 0.35;
 const coeff_s: f32 = 0.5;
 const coeff_xs: f32 = 120.;
 const bump_d: f32 = 0.03125; // 1/32
@@ -53,19 +53,20 @@ fn bump(x: f32, y: f32, bump_distance: f32) -> f32 {
     } else {
         var input_m: vec2<f32> = xy * coeff_m;
         var noise_m: f32 = perlinNoise2(input_m);
-        if bump_distance > 100. {
-            noise = noise_m * 0.2 + noise_l * 0.8;
-        } else {
-            var input_s: vec2<f32> = xy * coeff_s;
-            var noise_s: f32 = perlinNoise2(input_s);
-            noise = noise_s * 0.1 + noise_m * 0.2 + noise_l * 0.7;
-            // if bump_distance > 10. {
-            // } else {
-            //     var input_xs: vec2<f32> = xy * coeff_xs;
-            //     var noise_xs: f32 = perlinNoise2(input_xs);
-            //     noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.17 + noise_l * 0.8;
-            // }
-        }
+        noise = noise_m * 0.2 + noise_l * 0.8;
+        // if bump_distance > 100. {
+        //     noise = noise_m * 0.2 + noise_l * 0.8;
+        // } else {
+        //     var input_s: vec2<f32> = xy * coeff_s;
+        //     var noise_s: f32 = perlinNoise2(input_s);
+        //     noise = noise_s * 0.1 + noise_m * 0.2 + noise_l * 0.7;
+        //     // if bump_distance > 10. {
+        //     // } else {
+        //     //     var input_xs: vec2<f32> = xy * coeff_xs;
+        //     //     var noise_xs: f32 = perlinNoise2(input_xs);
+        //     //     noise = noise_xs * 0.01 + noise_s * 0.02 + noise_m * 0.17 + noise_l * 0.8;
+        //     // }
+        // }
     }
     return noise;
 }

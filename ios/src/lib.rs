@@ -19,10 +19,10 @@ fn main() {
     app.add_plugin(CarCameraPlugin);
 
     let physics_params = PhysicsParams {
-        max_velocity_iters: 32,
-        max_velocity_friction_iters: 32,
+        max_velocity_iters: 16,
+        max_velocity_friction_iters: 16,
         max_stabilization_iters: 8,
-        substeps: 10,
+        substeps: 4,
         ..default()
     };
     car_app(&mut app, physics_params).run();
