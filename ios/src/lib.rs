@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::WindowMode};
-use bevy_garage::{camera::CarCameraPlugin, car_app, PhysicsParams};
+use bevy_garage::{camera::CarCameraPlugin, car_app, joystick::CarJoystickPlugin, PhysicsParams};
 
 #[bevy_main]
 fn main() {
@@ -13,6 +13,7 @@ fn main() {
         ..default()
     }));
     app.add_plugin(CarCameraPlugin);
+    app.add_plugin(CarJoystickPlugin);
 
     let physics_params = PhysicsParams {
         max_velocity_iters: 16,

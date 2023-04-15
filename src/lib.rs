@@ -8,7 +8,7 @@ mod ear_clipping;
 mod esp;
 pub mod font;
 mod input;
-mod joystick;
+pub mod joystick;
 mod light;
 mod material;
 mod mesh;
@@ -24,7 +24,6 @@ use dsp::*;
 use esp::*;
 use font::*;
 use input::*;
-use joystick::*;
 use light::*;
 use material::*;
 use progress::*;
@@ -100,7 +99,6 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(EngineSoundPlugin)
-        .add_plugin(CarJoystickPlugin)
         .add_startup_system(track_start_system)
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
