@@ -31,11 +31,11 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
         })
         .set_color(TintColor(Color::WHITE))
         .set_style(Style {
-            size: Size::all(Val::Px(100.)),
+            size: Size::all(Val::Px(150.)),
             position_type: PositionType::Absolute,
             position: UiRect {
-                right: Val::Px(20.),
-                bottom: Val::Px(20.),
+                right: Val::Px(30.),
+                bottom: Val::Px(30.),
                 ..default()
             },
             ..default()
