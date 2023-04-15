@@ -641,6 +641,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "uuid",
+ "virtual_joystick",
  "wgpu",
 ]
 
@@ -6203,6 +6204,15 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "virtual_joystick"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf97e742842ea0e4446dc0483aa654b3111e7378ddfecacf6abe9130415f00b8"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "void"
