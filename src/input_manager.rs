@@ -1,14 +1,19 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-use crate::{car::HID, font::FontHandle};
+use crate::{
+    car::{Car, HID},
+    font::FontHandle,
+    CarSimLabel,
+};
 
 pub struct CarInputManagerPlugin;
 
 impl Plugin for CarInputManagerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(InputManagerPlugin::<CarAction>::default())
-            .add_system(screen_input_spawn_system);
+            .add_system(screen_input_spawn_system.in_set(CarSimLabel::Input))
+            .add_system(move_player_system);
     }
 }
 
@@ -144,3 +149,38 @@ fn spawn_button(
 const BTN_WHITE: BackgroundColor = BackgroundColor(Color::rgba(1., 1., 1., 0.5));
 // const BTN_GRAY: BackgroundColor = BackgroundColor(Color::rgba(0.5, 0.5, 0.5, 0.5));
 // const BTN_BLUE: BackgroundColor = BackgroundColor(Color::rgba(0., 0., 1., 0.5));
+
+fn move_player_system(mut cars: Query<(&ActionState<CarAction>, &mut Car), With<HID>>) {
+    for (action_state, mut car) in cars.iter_mut() {
+        // LEFT
+        if action_state.pressed(CarAction::Left) {
+            car.steering = -1.;
+        }
+        if action_state.just_released(CarAction::Left) {
+            car.steering = 0.;
+        }
+        // RIGHT
+        if action_state.pressed(CarAction::Right) {
+            car.steering = 1.;
+        }
+        if action_state.just_released(CarAction::Right) {
+            car.steering = 0.;
+        }
+        // GAS
+        if action_state.pressed(CarAction::Gas) {
+            car.gas = 1.;
+            car.brake = 0.;
+        }
+        if action_state.released(CarAction::Gas) {
+            car.gas = 0.;
+        }
+        // BRAKE
+        if action_state.pressed(CarAction::Brake) {
+            car.brake = 1.;
+            car.gas = 0.;
+        }
+        if action_state.released(CarAction::Brake) {
+            car.brake = 0.;
+        }
+    }
+}
