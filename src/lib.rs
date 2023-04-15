@@ -8,6 +8,7 @@ mod ear_clipping;
 mod esp;
 pub mod font;
 mod input;
+mod input_manager;
 mod light;
 mod material;
 mod mesh;
@@ -23,6 +24,7 @@ use dsp::*;
 use esp::*;
 use font::*;
 use input::*;
+use input_manager::*;
 use light::*;
 use material::*;
 use progress::*;
@@ -96,6 +98,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(CarInputManagerPlugin)
         .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(EngineSoundPlugin)
         .add_startup_system(track_start_system)
@@ -116,7 +119,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        use nn::{dqn::dqn_system, dqn_bevy::dqn_dash_update_system, dqn_bevy::*};
+        use nn::{dqn::dqn_system, dqn_bevy::*};
         app.insert_resource(DqnResource::default())
             .add_event::<DqnEvent>()
             .add_startup_system(dqn_start_system)

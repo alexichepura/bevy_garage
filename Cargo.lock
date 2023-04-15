@@ -633,6 +633,7 @@ dependencies = [
  "crossbeam-channel",
  "dfdx",
  "futures-lite",
+ "leafwing-input-manager",
  "nalgebra",
  "parry3d",
  "rand 0.8.5",
@@ -1798,6 +1799,17 @@ dependencies = [
  "prisma-client-rust",
  "serde",
  "tokio",
+]
+
+[[package]]
+name = "derive_more"
+version = "0.99.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fb810d30a7c1953f91334de7244731fc3f3c10d7fe163338a35b9f640960321"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -3056,6 +3068,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
+name = "leafwing-input-manager"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cff07db1736e8796568bfd58c789714d4a36827ab68ffae477b092532bd907e7"
+dependencies = [
+ "bevy",
+ "derive_more",
+ "fixedbitset 0.4.2",
+ "itertools",
+ "leafwing_input_manager_macros",
+ "once_cell",
+ "petitset",
+ "serde",
+]
+
+[[package]]
+name = "leafwing_input_manager_macros"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11aefabfcc9ef0a78bc97eea053d2f1bb050d5278a4134bdc1b769064a90064a"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "lewton"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4134,6 +4174,15 @@ checksum = "4dd7d28ee937e54fe3080c91faa1c3a46c06de6252988a7f4592ba2310ef22a4"
 dependencies = [
  "fixedbitset 0.4.2",
  "indexmap",
+]
+
+[[package]]
+name = "petitset"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b1a50d821a2526af6d5756c23c68e453532a986e361a3e12c9cc7fe61d862ac"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

@@ -1,9 +1,10 @@
-use crate::{config::*, track::*};
+use crate::{config::*, input_manager::CarAction, track::*};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     prelude::*,
     rapier::prelude::{JointAxesMask, JointAxis},
 };
+use leafwing_input_manager::{prelude::InputMap, InputManagerBundle};
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
 pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
@@ -332,23 +333,30 @@ pub fn spawn_car(
             }
         };
     }
-    let carrr = Car {
-        size: size.clone(),
-        wheels: wheels.clone(),
-        wheel_max_torque: max_torque,
-        init_transform: transform,
-        init_meters,
-        index,
-        ..default()
-    };
+
+    let mut input_map = InputMap::default();
+    input_map.insert(KeyCode::Left, CarAction::Left);
+    input_map.insert(KeyCode::Right, CarAction::Right);
 
     let car_id = commands
         .spawn((
             Name::new("car"),
             Sleeping::disabled(),
-            carrr,
+            Car {
+                size: size.clone(),
+                wheels: wheels.clone(),
+                wheel_max_torque: max_torque,
+                init_transform: transform,
+                init_meters,
+                index,
+                ..default()
+            },
             RigidBody::Dynamic,
         ))
+        .insert(InputManagerBundle::<CarAction> {
+            input_map,
+            ..Default::default()
+        })
         .insert(Ccd::enabled())
         .insert(Damping {
             linear_damping: 0.05,
