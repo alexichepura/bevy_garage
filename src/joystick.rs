@@ -32,6 +32,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             ..default()
         }),
     )
+    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.3)))
     .insert(VirtualJoystickInteractionArea);
     cmd.spawn(
         VirtualJoystickBundle::new(VirtualJoystickNode {
@@ -52,6 +53,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             ..default()
         }),
     )
+    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.3)))
     .insert(VirtualJoystickInteractionArea);
 }
 
