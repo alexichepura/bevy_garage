@@ -15,7 +15,7 @@ impl Plugin for CarJoystickPlugin {
 pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn(
         VirtualJoystickBundle::new(VirtualJoystickNode {
-            border_image: asset_server.load("joystick/Horizontal_Outline_Arrows.png"),
+            border_image: asset_server.load("joystick/Outline_Arrows.png"),
             knob_image: asset_server.load("joystick/Outline.png"),
             knob_size: Vec2::new(80., 80.),
             dead_zone: 0.,
@@ -25,36 +25,57 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             size: Size::all(Val::Px(150.)),
             position_type: PositionType::Absolute,
             position: UiRect {
-                right: Val::Px(50.),
-                bottom: Val::Px(50.),
+                right: Val::Px(20.),
+                bottom: Val::Px(20.),
                 ..default()
             },
             ..default()
         }),
     )
-    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.3)))
+    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.2)))
     .insert(VirtualJoystickInteractionArea);
-    cmd.spawn(
-        VirtualJoystickBundle::new(VirtualJoystickNode {
-            border_image: asset_server.load("joystick/Vertical_Outline_Arrows.png"),
-            knob_image: asset_server.load("joystick/Outline.png"),
-            knob_size: Vec2::new(80., 80.),
-            dead_zone: 0.,
-        })
-        .set_color(TintColor(Color::WHITE))
-        .set_style(Style {
-            size: Size::all(Val::Px(150.)),
-            position_type: PositionType::Absolute,
-            position: UiRect {
-                left: Val::Px(50.),
-                bottom: Val::Px(50.),
-                ..default()
-            },
-            ..default()
-        }),
-    )
-    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.3)))
-    .insert(VirtualJoystickInteractionArea);
+    // cmd.spawn(
+    //     VirtualJoystickBundle::new(VirtualJoystickNode {
+    //         border_image: asset_server.load("joystick/Horizontal_Outline_Arrows.png"),
+    //         knob_image: asset_server.load("joystick/Outline.png"),
+    //         knob_size: Vec2::new(80., 80.),
+    //         dead_zone: 0.,
+    //     })
+    //     .set_color(TintColor(Color::WHITE))
+    //     .set_style(Style {
+    //         size: Size::all(Val::Px(150.)),
+    //         position_type: PositionType::Absolute,
+    //         position: UiRect {
+    //             right: Val::Px(50.),
+    //             bottom: Val::Px(50.),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     }),
+    // )
+    // .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.3)))
+    // .insert(VirtualJoystickInteractionArea);
+    // cmd.spawn(
+    //     VirtualJoystickBundle::new(VirtualJoystickNode {
+    //         border_image: asset_server.load("joystick/Vertical_Outline_Arrows.png"),
+    //         knob_image: asset_server.load("joystick/Outline.png"),
+    //         knob_size: Vec2::new(80., 80.),
+    //         dead_zone: 0.,
+    //     })
+    //     .set_color(TintColor(Color::WHITE))
+    //     .set_style(Style {
+    //         size: Size::all(Val::Px(150.)),
+    //         position_type: PositionType::Absolute,
+    //         position: UiRect {
+    //             left: Val::Px(50.),
+    //             bottom: Val::Px(50.),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     }),
+    // )
+    // .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.3)))
+    // .insert(VirtualJoystickInteractionArea);
 }
 
 fn update_joystick(
@@ -66,6 +87,13 @@ fn update_joystick(
         println!("x{x}, y{y}");
         for mut car in cars.iter_mut() {
             car.steering = x;
+            if y < 0. {
+                car.brake = -y / 0.75;
+                car.gas = 0.;
+            } else {
+                car.gas = y / 0.75;
+                car.brake = 0.;
+            }
         }
     }
 }
