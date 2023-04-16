@@ -83,7 +83,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
     )
     .insert(JoystickPrevValue {
         prev: 0.,
-        axis: JoystickTypeAxis::X,
+        axis: JoystickTypeAxis::Y,
     })
     .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.1)))
     .insert(VirtualJoystickInteractionArea);
