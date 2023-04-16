@@ -91,16 +91,20 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.world_position = in.world_position;
     pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
-    var du: f32 = bump(x - bump_d, z, bump_distance) - height;
-    var dv: f32 = bump(x, z - bump_d, bump_distance) - height;
-    var Nt: vec3<f32> = vec3<f32>(du, dv, 0.1);
-    Nt = normalize(Nt);
-    Nt.y = -Nt.y;
-    var N: vec3<f32> = in.world_normal;
-    var T: vec3<f32> = in.world_tangent.xyz;
-    var B: vec3<f32> = in.world_tangent.w * cross(N, T);
-    N = Nt.x * T + Nt.y * B + Nt.z * N;
-    pbr_input.N = normalize(N);
+    if bump_distance < 120. {
+        var du: f32 = bump(x - bump_d, z, bump_distance) - height;
+        var dv: f32 = bump(x, z - bump_d, bump_distance) - height;
+        var Nt: vec3<f32> = vec3<f32>(du, dv, 0.1);
+        Nt = normalize(Nt);
+        Nt.y = -Nt.y;
+        var N: vec3<f32> = in.world_normal;
+        var T: vec3<f32> = in.world_tangent.xyz;
+        var B: vec3<f32> = in.world_tangent.w * cross(N, T);
+        N = Nt.x * T + Nt.y * B + Nt.z * N;
+        pbr_input.N = normalize(N);
+    } else {
+        pbr_input.N = in.world_normal;
+    }
     pbr_input.V = calculate_view(in.world_position, pbr_input.is_orthographic);
     pbr_input.flags = mesh.flags;
     output_color = pbr(pbr_input);

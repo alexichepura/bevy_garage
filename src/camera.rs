@@ -40,27 +40,26 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
         .spawn((
             Camera3dBundle {
-                #[cfg(not(any(
-                    target_arch = "wasm32",
-                    target_os = "ios",
-                    target_os = "android"
-                )))]
-                projection: Projection::from(PerspectiveProjection {
-                    far: 5000.,
-                    near: 0.01,
-                    ..default()
-                }),
-                #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                // #[cfg(not(any(
+                //     target_arch = "wasm32",
+                //     target_os = "ios",
+                //     target_os = "android"
+                // )))]
+                // projection: Projection::from(PerspectiveProjection {
+                //     far: 5000.,
+                //     near: 0.01,
+                //     ..default()
+                // }),
+                // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
                 projection: Projection::from(PerspectiveProjection {
                     far: 500.,
                     near: 0.1,
                     ..default()
                 }),
-                #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-                tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::None,
-                #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-                dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
-
+                // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                // tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::None,
+                // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                // dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
                 transform: Transform::from_translation(
                     Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
                 )
