@@ -58,8 +58,12 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
                 }),
                 // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
                 // tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::None,
+                // #[cfg(any(target_os = "ios"))]
+                // tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::None,
                 // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
                 // dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
+                #[cfg(any(target_os = "ios"))]
+                dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
                 transform: Transform::from_translation(
                     Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
                 )
