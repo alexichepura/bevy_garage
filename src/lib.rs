@@ -4,7 +4,6 @@ pub mod car;
 mod config;
 mod dash;
 mod dsp;
-mod ear_clipping;
 mod esp;
 pub mod font;
 mod input;

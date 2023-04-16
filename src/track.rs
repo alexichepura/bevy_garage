@@ -1,20 +1,19 @@
 use crate::{
     config::Config,
-    ear_clipping::triangulate_ear_clipping,
     material::MaterialHandle,
+    mesh::QuadPlane,
     shader::{AsphaltMaterial, GroundMaterial},
 };
 use bevy::{
     pbr::NotShadowCaster,
     prelude::*,
-    render::{mesh::*, primitives::Aabb, render_resource::*, texture::ImageSampler},
+    render::{mesh::*, primitives::Aabb},
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
-use nalgebra::Point2;
 use std::f32::consts::{FRAC_PI_2, PI};
 use std::ops::Mul;
 use std::ops::Sub;
-use wgpu::{Extent3d, TextureDimension, TextureFormat};
+
 type VAV = VertexAttributeValues;
 
 // https://google.github.io/filament/Filament.html#materialsystem/parameterization/
@@ -113,11 +112,10 @@ impl Track {
 }
 
 pub fn spawn_road(
-    handled_materials: Res<MaterialHandle>,
+    handled_materials: &Res<MaterialHandle>,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     track: &Track,
-    padding: f32,
 ) -> Aabb {
     let (vertices, normals) = track.road();
     // ASPHALT
@@ -140,6 +138,7 @@ pub fn spawn_road(
     commands
         .spawn((
             MaterialMeshBundle::<AsphaltMaterial> {
+                // MaterialMeshBundle::<StandardMaterial> {
                 mesh: meshes.add(mesh),
                 material: handled_materials.asphalt.clone(),
                 transform: Transform::from_xyz(0., 0., 0.),
@@ -163,125 +162,15 @@ pub fn spawn_road(
             ..default()
         })
         .insert(Restitution::coefficient(0.));
-    // INNER
-    let mut right3d: Vec<Vec3> = track.right.clone();
-    right3d.pop();
-    let mut right3dnorm: Vec<[f32; 3]> = vec![];
-    for (_i, _) in right3d.iter().enumerate() {
-        right3dnorm.push(Vec3::Y.into());
-    }
-
-    let right2d: Vec<Point2<f32>> = right3d.iter().map(|v| Point2::new(v[0], v[2])).collect();
-    let ind = triangulate_ear_clipping(&right2d).unwrap();
-    // commands
-    //     .spawn_empty()
-    //     .insert(Collider::trimesh(right3d.clone(), ind.clone()))
-    //     .insert(ColliderScale::Absolute(Vec3::ONE))
-    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-    //     .insert(Friction {
-    //         combine_rule: CoefficientCombineRule::Average,
-    //         coefficient: 3.,
-    //         ..default()
-    //     })
-    //     .insert(Restitution::coefficient(0.));
-    let mut uvs: Vec<[f32; 2]> = Vec::new();
-    for (_i, p) in right3d.iter().enumerate() {
-        let x = 500.;
-        uvs.push([p.x / x, p.z / x]);
-    }
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(right3d.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(right3dnorm));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-    let ind_rev: Vec<[u32; 3]> = ind.iter().map(|i| [i[2], i[1], i[0]]).collect();
-    mesh.set_indices(Some(Indices::U32(ind_rev.flatten().to_vec())));
-    mesh.generate_tangents().unwrap();
-    commands.spawn((
-        MaterialMeshBundle::<GroundMaterial> {
-            mesh: meshes.add(mesh.clone()),
-            material: handled_materials.ground.clone(),
-            ..default()
-        },
-        NotShadowCaster,
-    ));
-    // OUTER
-    let outer3d_init: Vec<Vec3> = (&track.left[1..]).to_vec();
-    let mut outer3dnorm: Vec<[f32; 3]> = vec![];
-    let mut ex: Vec3 = *outer3d_init.get(0).unwrap();
-    let mut exi = 0;
-    for (i, p) in outer3d_init.iter().enumerate() {
-        if p.x > ex.x {
-            ex = Vec3::new(p.x, p.y, p.z);
-            exi = i;
-        }
-        outer3dnorm.push(Vec3::Y.into());
-    }
-    let mut outer3d: Vec<Vec3> = vec![];
-    let c = Vec3::new(aabb.center.x, 0., aabb.center.z);
-    let hext = Vec3::new(aabb.half_extents.x, 0., aabb.half_extents.z);
-    let half = hext + Vec3::new(padding, 0., padding);
-    let outer_enclosure_ccw = [
-        Vec3::new(half.x + c.x, 0., ex.z),
-        Vec3::new(half.x + c.x, 0., -half.z + c.z),
-        Vec3::new(-half.x + c.x, 0., -half.z + c.z),
-        Vec3::new(-half.x + c.x, 0., half.z + c.z),
-        Vec3::new(half.x + c.x, 0., half.z + c.z),
-        Vec3::new(half.x + c.x, 0., ex.z + 0.00001),
-        Vec3::new(ex.x + 0.00001, 0., ex.z + 0.00001),
-    ];
-    for (_i, outer_point) in outer_enclosure_ccw.iter().enumerate() {
-        outer3d.push(*outer_point);
-        outer3dnorm.push([0., 1., 0.]);
-    }
-    outer3d.extend((&outer3d_init[(exi + 1)..]).to_vec());
-    outer3d.extend((&outer3d_init[..=exi]).to_vec());
-    let outer2d: Vec<Point2<f32>> = outer3d.iter().map(|v| Point2::new(v[2], v[0])).collect(); // z is x, x is y
-    let ind = triangulate_ear_clipping(&outer2d).unwrap();
-    // commands
-    //     .spawn_empty()
-    //     .insert(Collider::trimesh(outer3d.clone(), ind.clone()))
-    //     .insert(ColliderScale::Absolute(Vec3::ONE))
-    //     .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-    //     .insert(Friction {
-    //         combine_rule: CoefficientCombineRule::Average,
-    //         coefficient: 3.,
-    //         ..default()
-    //     })
-    //     .insert(Restitution::coefficient(0.));
-    let mut outer_uvs: Vec<[f32; 2]> = Vec::new();
-    for (_i, p) in outer3d.iter().enumerate() {
-        let x = 500.;
-        outer_uvs.push([p.x / x, p.z / x]);
-    }
-    let mut outer_mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    outer_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(outer3d.clone()));
-    outer_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(outer3dnorm));
-    outer_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, outer_uvs);
-    outer_mesh.set_indices(Some(Indices::U32(ind.flatten().to_vec())));
-    outer_mesh.generate_tangents().unwrap();
-    commands.spawn((
-        MaterialMeshBundle::<GroundMaterial> {
-            mesh: meshes.add(outer_mesh),
-            material: handled_materials.ground.clone(),
-            ..default()
-        },
-        NotShadowCaster,
-    ));
     aabb
 }
 
 pub fn spawn_kerb(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    images: &mut ResMut<Assets<Image>>,
+    handled_materials: &Res<MaterialHandle>,
     track: &Track,
 ) {
-    let material = materials.add(StandardMaterial {
-        base_color_texture: Some(images.add(kerb_texture())),
-        perceptual_roughness: 0.7,
-        ..default()
-    });
     let kerb_length: f32 = 10.;
     let kerb_height: f32 = 0.002;
     let from_center: f32 = 5.;
@@ -318,7 +207,7 @@ pub fn spawn_kerb(
         .spawn((
             PbrBundle {
                 mesh: meshes.add(mesh),
-                material: material.clone(),
+                material: handled_materials.kerb.clone(),
                 transform: Transform::from_xyz(0., kerb_height, 0.),
                 ..Default::default()
             },
@@ -370,7 +259,7 @@ pub fn spawn_kerb(
         .spawn((
             PbrBundle {
                 mesh: meshes.add(mesh),
-                material: material.clone(),
+                material: handled_materials.kerb.clone(),
                 transform: Transform::from_xyz(0., kerb_height, 0.),
                 ..Default::default()
             },
@@ -396,18 +285,12 @@ pub fn spawn_kerb(
 pub fn spawn_walls(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    images: &mut ResMut<Assets<Image>>,
+    handled_materials: &Res<MaterialHandle>,
     indices_input: &Vec<u32>,
     points: &Vec<Vec3>,
     normals_input: &Vec<Vec3>,
 ) {
     let points_len = points.len() as u32;
-    let wall_material = materials.add(StandardMaterial {
-        base_color_texture: Some(images.add(wall_texture())),
-        perceptual_roughness: 0.7,
-        ..default()
-    });
     let material_lengh = 20.;
     let width: f32 = 0.1;
     let height: f32 = 0.6;
@@ -493,7 +376,7 @@ pub fn spawn_walls(
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(mesh),
-            material: wall_material.clone(),
+            material: handled_materials.wall.clone(),
             transform: Transform::from_xyz(0., 0., 0.),
             ..Default::default()
         })
@@ -511,14 +394,23 @@ pub fn spawn_walls(
         .insert(Restitution::coefficient(0.));
 }
 
-pub fn spawn_ground_heightfield(commands: &mut Commands, aabb: &Aabb, padding: f32) {
+pub fn spawn_ground_heightfield(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    handled_materials: &Res<MaterialHandle>,
+    aabb: &Aabb,
+    padding: f32,
+) {
     let c: Vec3 = aabb.center.into();
     let half: Vec3 = aabb.half_extents.into();
     let size: Vec2 = 2. * Vec2::new(half.x, half.z) + padding * Vec2::ONE * 2.;
     let (cols, rows) = (10, 10);
+
+    let mut mesh = Mesh::from(QuadPlane::new(size));
+    mesh.generate_tangents().unwrap();
     commands
         .spawn((
-            Name::new("road-heightfield"),
+            Name::new("ground-heightfield"),
             RigidBody::Fixed,
             ColliderScale::Absolute(Vec3::ONE),
             CollisionGroups::new(STATIC_GROUP, Group::ALL),
@@ -530,6 +422,13 @@ pub fn spawn_ground_heightfield(commands: &mut Commands, aabb: &Aabb, padding: f
                 cols,
                 Vec3::new(size.x, 0., size.y),
             ),
+            MaterialMeshBundle::<GroundMaterial> {
+                // MaterialMeshBundle::<StandardMaterial> {
+                mesh: meshes.add(mesh),
+                material: handled_materials.ground.clone(),
+                ..default()
+            },
+            NotShadowCaster,
         ))
         .insert(TransformBundle::from_transform(
             Transform::from_translation(c),
@@ -540,20 +439,12 @@ pub fn track_start_system(
     handled_materials: Res<MaterialHandle>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut images: ResMut<Assets<Image>>,
 ) {
     let track = Track::new();
-    let aabb = spawn_road(handled_materials, &mut commands, &mut meshes, &track, 100.);
-    spawn_ground_heightfield(&mut commands, &aabb, 100.);
+    let aabb = spawn_road(&handled_materials, &mut commands, &mut meshes, &track);
+    spawn_ground_heightfield(&mut commands, &mut meshes, &handled_materials, &aabb, 100.);
 
-    spawn_kerb(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &mut images,
-        &track,
-    );
+    spawn_kerb(&mut commands, &mut meshes, &handled_materials, &track);
     let mut left_wall_points: Vec<Vec3> = vec![];
     let mut right_wall_points: Vec<Vec3> = vec![];
     for (i, p) in track.points.iter().enumerate() {
@@ -563,8 +454,7 @@ pub fn track_start_system(
     spawn_walls(
         &mut commands,
         &mut meshes,
-        &mut materials,
-        &mut images,
+        &handled_materials,
         &track.indices,
         &left_wall_points,
         &track.right_norm,
@@ -572,8 +462,7 @@ pub fn track_start_system(
     spawn_walls(
         &mut commands,
         &mut meshes,
-        &mut materials,
-        &mut images,
+        &handled_materials,
         &track.indices,
         &right_wall_points,
         &track.right_norm,
@@ -594,86 +483,6 @@ pub fn track_decorations_start_system(
         ..default()
     });
 }
-
-fn wall_texture() -> Image {
-    let mut image = Image::new_fill(
-        Extent3d {
-            width: 2,
-            height: 1,
-            depth_or_array_layers: 1,
-        },
-        TextureDimension::D2,
-        &[
-            8, 8, 8, 255, // darker
-            128, 128, 128, 255, // dark
-        ],
-        TextureFormat::Rgba8UnormSrgb,
-    );
-
-    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-        address_mode_u: AddressMode::Repeat,
-        address_mode_v: AddressMode::Repeat,
-        address_mode_w: AddressMode::Repeat,
-        ..Default::default()
-    });
-
-    image
-}
-fn kerb_texture() -> Image {
-    let mut image = Image::new_fill(
-        Extent3d {
-            width: 2,
-            height: 1,
-            depth_or_array_layers: 1,
-        },
-        TextureDimension::D2,
-        &[
-            210, 20, 20, 255, // red
-            210, 210, 210, 255, // white
-        ],
-        TextureFormat::Rgba8UnormSrgb,
-    );
-
-    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-        address_mode_u: AddressMode::Repeat,
-        address_mode_v: AddressMode::Repeat,
-        address_mode_w: AddressMode::Repeat,
-        ..Default::default()
-    });
-
-    image
-}
-
-// fn uv_debug_texture() -> Image {
-//     const TEXTURE_SIZE: usize = 8;
-//     let mut palette: [u8; 32] = [
-//         255, 102, 159, 255, 255, 159, 102, 255, 236, 255, 102, 255, 121, 255, 102, 255, 102, 255,
-//         198, 255, 102, 198, 255, 255, 121, 102, 255, 255, 236, 102, 255, 255,
-//     ];
-//     let mut texture_data = [0; TEXTURE_SIZE * TEXTURE_SIZE * 4];
-//     for y in 0..TEXTURE_SIZE {
-//         let offset = TEXTURE_SIZE * y * 4;
-//         texture_data[offset..(offset + TEXTURE_SIZE * 4)].copy_from_slice(&palette);
-//         palette.rotate_right(4);
-//     }
-//     let mut image = Image::new_fill(
-//         Extent3d {
-//             width: TEXTURE_SIZE as u32,
-//             height: TEXTURE_SIZE as u32,
-//             depth_or_array_layers: 1,
-//         },
-//         TextureDimension::D2,
-//         &texture_data,
-//         TextureFormat::Rgba8UnormSrgb,
-//     );
-//     image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-//         address_mode_u: AddressMode::Repeat,
-//         address_mode_v: AddressMode::Repeat,
-//         address_mode_w: AddressMode::Repeat,
-//         ..Default::default()
-//     });
-//     image
-// }
 
 // fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
 //     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));
