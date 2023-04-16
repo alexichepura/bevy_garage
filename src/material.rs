@@ -20,14 +20,17 @@ impl FromWorld for MaterialHandle {
         let mut ground_materials = world.resource_mut::<Assets<GroundMaterial>>();
         let ground_handle = ground_materials.add(GroundMaterial {
             color: ground_color,
-            depth_bias: 1.,
+            depth_bias: 0.,
         });
 
         let asphalt_color = Color::hex("333355").unwrap();
         let mut asphalt_materials = world.resource_mut::<Assets<AsphaltMaterial>>();
         let asphalt_handle = asphalt_materials.add(AsphaltMaterial {
             color: asphalt_color,
-            depth_bias: 2.,
+            #[cfg(target_arch = "wasm32")]
+            depth_bias: 1.,
+            #[cfg(not(target_arch = "wasm32"))]
+            depth_bias: 10000.,
         });
 
         let mut images = world.resource_mut::<Assets<Image>>();
@@ -37,23 +40,23 @@ impl FromWorld for MaterialHandle {
         let wall_handle = standard_materials.add(StandardMaterial {
             base_color_texture: Some(wall_image_handle),
             perceptual_roughness: 0.7,
-            depth_bias: 4.,
+            depth_bias: 0.,
             ..default()
         });
         let kerb_handle = standard_materials.add(StandardMaterial {
             base_color_texture: Some(kerb_image_handle),
             perceptual_roughness: 0.7,
-            depth_bias: 3.,
+            depth_bias: 1.,
             ..default()
         });
         // let ground_handle = standard_materials.add(StandardMaterial {
         //     base_color: ground_color,
-        //     depth_bias: 1.,
+        //     depth_bias: 0.1,
         //     ..default()
         // });
         // let asphalt_handle = standard_materials.add(StandardMaterial {
         //     base_color: asphalt_color,
-        //     depth_bias: 2.,
+        //     depth_bias: 10.,
         //     ..default()
         // });
 
