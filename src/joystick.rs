@@ -6,12 +6,6 @@ use crate::{
     CarSimLabel,
 };
 
-#[derive(Component, Default)]
-pub struct JoystickPrevValue {
-    prev: f32,
-    axis: JoystickTypeAxis,
-}
-
 #[derive(Default, Reflect, Hash, Clone, PartialEq, Eq)]
 enum JoystickTypeAxis {
     #[default]
@@ -52,10 +46,6 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             ..default()
         }),
     )
-    .insert(JoystickPrevValue {
-        prev: 0.,
-        axis: JoystickTypeAxis::X,
-    })
     .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.1)))
     .insert(VirtualJoystickInteractionArea);
 
@@ -81,10 +71,6 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             ..default()
         }),
     )
-    .insert(JoystickPrevValue {
-        prev: 0.,
-        axis: JoystickTypeAxis::Y,
-    })
     .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.1)))
     .insert(VirtualJoystickInteractionArea);
 }
@@ -92,46 +78,21 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
 fn update_joystick(
     mut virtual_joystick_events: EventReader<VirtualJoystickEvent<JoystickTypeAxis>>,
     mut cars: Query<&mut Car, With<HID>>,
-    mut joysticks_prev: Query<&mut JoystickPrevValue>,
 ) {
     for mut car in cars.iter_mut() {
-        let mut last_x = 0.;
-        let mut last_y = 0.;
         for j in virtual_joystick_events.iter() {
             let Vec2 { x, y } = j.axis();
             match j.id() {
                 JoystickTypeAxis::X => {
-                    last_x = x;
                     car.steering = x;
                 }
                 JoystickTypeAxis::Y => {
-                    last_y = y;
                     if y < 0. {
                         car.brake = -y / 0.75;
                         car.gas = 0.;
                     } else {
                         car.gas = y / 0.75;
                         car.brake = 0.;
-                    }
-                }
-            }
-        }
-        for mut j_prev in joysticks_prev.iter_mut() {
-            // workaround to reset action
-            match j_prev.axis {
-                JoystickTypeAxis::X => {
-                    if last_x == 0. && j_prev.prev != 0. {
-                        car.steering = 0.;
-                    } else {
-                        j_prev.prev = last_x;
-                    }
-                }
-                JoystickTypeAxis::Y => {
-                    if last_y == 0. && j_prev.prev != 0. {
-                        car.gas = 0.;
-                        car.brake = 0.;
-                    } else {
-                        j_prev.prev = last_y;
                     }
                 }
             }
