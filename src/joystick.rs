@@ -23,12 +23,16 @@ impl Plugin for CarJoystickPlugin {
 }
 
 const MARGIN: Val = Val::Px(35.);
+const KNOB_SIZE: Vec2 = Vec2::new(70., 70.);
+const AREA_SIZE: Size = Size::all(Val::Px(150.));
+const BG: BackgroundColor = BackgroundColor(Color::rgba(1.0, 0.27, 0.0, 0.1));
+
 pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn(
         VirtualJoystickBundle::new(VirtualJoystickNode {
             border_image: asset_server.load("joystick/Horizontal_Outline_Arrows.png"),
             knob_image: asset_server.load("joystick/Outline.png"),
-            knob_size: Vec2::new(80., 80.),
+            knob_size: KNOB_SIZE,
             dead_zone: 0.,
             id: JoystickTypeAxis::X,
             axis: VirtualJoystickAxis::Horizontal,
@@ -36,7 +40,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
         })
         .set_color(TintColor(Color::WHITE))
         .set_style(Style {
-            size: Size::all(Val::Px(150.)),
+            size: AREA_SIZE,
             position_type: PositionType::Absolute,
             position: UiRect {
                 left: MARGIN,
@@ -46,14 +50,14 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             ..default()
         }),
     )
-    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.1)))
+    .insert(BG)
     .insert(VirtualJoystickInteractionArea);
 
     cmd.spawn(
         VirtualJoystickBundle::new(VirtualJoystickNode {
             border_image: asset_server.load("joystick/Vertical_Outline_Arrows.png"),
             knob_image: asset_server.load("joystick/Outline.png"),
-            knob_size: Vec2::new(80., 80.),
+            knob_size: KNOB_SIZE,
             dead_zone: 0.,
             id: JoystickTypeAxis::Y,
             axis: VirtualJoystickAxis::Vertical,
@@ -61,7 +65,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
         })
         .set_color(TintColor(Color::WHITE))
         .set_style(Style {
-            size: Size::all(Val::Px(150.)),
+            size: AREA_SIZE,
             position_type: PositionType::Absolute,
             position: UiRect {
                 right: MARGIN,
@@ -71,7 +75,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             ..default()
         }),
     )
-    .insert(BackgroundColor(Color::ORANGE_RED.with_a(0.1)))
+    .insert(BG)
     .insert(VirtualJoystickInteractionArea);
 }
 
@@ -82,16 +86,17 @@ fn update_joystick(
     for mut car in cars.iter_mut() {
         for j in virtual_joystick_events.iter() {
             let Vec2 { x, y } = j.axis();
+            println!("x{x}, y{y}");
             match j.id() {
                 JoystickTypeAxis::X => {
                     car.steering = x;
                 }
                 JoystickTypeAxis::Y => {
                     if y < 0. {
-                        car.brake = -y / 0.75;
+                        car.brake = -y;
                         car.gas = 0.;
                     } else {
-                        car.gas = y / 0.75;
+                        car.gas = y;
                         car.brake = 0.;
                     }
                 }
