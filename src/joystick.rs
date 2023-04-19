@@ -86,7 +86,7 @@ fn update_joystick(
     for mut car in cars.iter_mut() {
         for j in virtual_joystick_events.iter() {
             let Vec2 { x, y } = j.axis();
-            println!("x{x}, y{y}");
+            // println!("x{x}, y{y}");
             match j.id() {
                 JoystickTypeAxis::X => {
                     car.steering = x;

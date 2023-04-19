@@ -6233,8 +6233,9 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "virtual_joystick"
-version = "1.0.2"
-source = "git+https://github.com/alexichepura/virtual_joystick?branch=knob-delta-zone#269851c6d11c10e321cbdd1e4d65f2392c06fb06"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff9e13de0fb8187ba727d1c2ec4d710f3ba0b544a24e8b0b69c7b360a18a3c3c"
 dependencies = [
  "bevy",
 ]
