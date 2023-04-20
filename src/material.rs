@@ -22,7 +22,7 @@ pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
         #[cfg(any(target_os = "ios"))]
-        let quality = 5;
+        let quality = 3;
         #[cfg(not(target_os = "ios"))]
         let quality = 10;
 

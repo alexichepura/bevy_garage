@@ -97,6 +97,7 @@ pub struct AsphaltMaterial {
     #[uniform(0)]
     pub color: Color,
     pub depth_bias: f32,
+    #[uniform(0)]
     pub quality: i32,
 }
 impl Material for AsphaltMaterial {
