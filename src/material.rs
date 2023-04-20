@@ -21,11 +21,17 @@ pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
+        #[cfg(any(target_os = "ios"))]
+        let quality = 5;
+        #[cfg(not(target_os = "ios"))]
+        let quality = 10;
+
         let ground_color = Color::hex("7b824e").unwrap();
         let mut ground_materials = world.resource_mut::<Assets<GroundMaterial>>();
         let ground_handle = ground_materials.add(GroundMaterial {
             color: ground_color,
             depth_bias: 0.,
+            quality,
         });
 
         #[cfg(target_arch = "wasm32")]
@@ -38,6 +44,7 @@ impl FromWorld for MaterialHandle {
         let asphalt_handle = asphalt_materials.add(AsphaltMaterial {
             color: asphalt_color,
             depth_bias: asphalt_depth_bias,
+            quality,
         });
 
         let mut images = world.resource_mut::<Assets<Image>>();
