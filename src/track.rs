@@ -1,8 +1,7 @@
 use crate::{
     config::Config,
-    material::MaterialHandle,
+    material::{AsphaltPbr, GroundPbr, MaterialHandle},
     mesh::QuadPlane,
-    shader::{AsphaltMaterial, GroundMaterial},
 };
 use bevy::{
     pbr::NotShadowCaster,
@@ -137,8 +136,7 @@ pub fn spawn_road(
 
     commands
         .spawn((
-            MaterialMeshBundle::<AsphaltMaterial> {
-                // MaterialMeshBundle::<StandardMaterial> {
+            AsphaltPbr {
                 mesh: meshes.add(mesh),
                 material: handled_materials.asphalt.clone(),
                 transform: Transform::from_xyz(0., 0., 0.),
@@ -422,8 +420,7 @@ pub fn spawn_ground_heightfield(
                 cols,
                 Vec3::new(size.x, 0., size.y),
             ),
-            MaterialMeshBundle::<GroundMaterial> {
-                // MaterialMeshBundle::<StandardMaterial> {
+            GroundPbr {
                 mesh: meshes.add(mesh),
                 material: handled_materials.ground.clone(),
                 ..default()

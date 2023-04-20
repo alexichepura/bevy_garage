@@ -6,13 +6,18 @@ use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFo
 
 #[derive(Resource)]
 pub struct MaterialHandle {
-    // pub ground: Handle<StandardMaterial>,
-    // pub asphalt: Handle<StandardMaterial>,
-    pub ground: Handle<GroundMaterial>,
     pub asphalt: Handle<AsphaltMaterial>,
+    pub ground: Handle<GroundMaterial>,
+    // pub asphalt: Handle<StandardMaterial>,
+    // pub ground: Handle<StandardMaterial>,
     pub wall: Handle<StandardMaterial>,
     pub kerb: Handle<StandardMaterial>,
 }
+
+pub type AsphaltPbr = MaterialMeshBundle<AsphaltMaterial>;
+pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
+// pub type AsphaltPbr = MaterialMeshBundle<StandardMaterial>;
+// pub type GroundPbr = MaterialMeshBundle<StandardMaterial>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
@@ -23,14 +28,16 @@ impl FromWorld for MaterialHandle {
             depth_bias: 0.,
         });
 
+        #[cfg(target_arch = "wasm32")]
+        let asphalt_depth_bias = 1.;
+        #[cfg(not(target_arch = "wasm32"))]
+        let asphalt_depth_bias = 10000.;
+
         let asphalt_color = Color::hex("333355").unwrap();
         let mut asphalt_materials = world.resource_mut::<Assets<AsphaltMaterial>>();
         let asphalt_handle = asphalt_materials.add(AsphaltMaterial {
             color: asphalt_color,
-            #[cfg(target_arch = "wasm32")]
-            depth_bias: 1.,
-            #[cfg(not(target_arch = "wasm32"))]
-            depth_bias: 10000.,
+            depth_bias: asphalt_depth_bias,
         });
 
         let mut images = world.resource_mut::<Assets<Image>>();
@@ -51,12 +58,12 @@ impl FromWorld for MaterialHandle {
         });
         // let ground_handle = standard_materials.add(StandardMaterial {
         //     base_color: ground_color,
-        //     depth_bias: 0.1,
+        //     depth_bias: 0.,
         //     ..default()
         // });
         // let asphalt_handle = standard_materials.add(StandardMaterial {
         //     base_color: asphalt_color,
-        //     depth_bias: 10.,
+        //     depth_bias: asphalt_depth_bias,
         //     ..default()
         // });
 
