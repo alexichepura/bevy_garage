@@ -32,7 +32,7 @@ impl Plugin for CarCameraPlugin {
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system.in_set(CameraUpdateSystem))
             .add_system(grab_mouse)
-            .add_system(camera_vis)
+            .add_system(far_culling)
             .add_system(camera_switch_system);
     }
 }
@@ -42,7 +42,7 @@ const VISIBILITY: f32 = 500.;
 #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
 const VISIBILITY: f32 = 1000.;
 
-pub fn camera_vis(
+pub fn far_culling(
     mut pset: ParamSet<(
         Query<&Transform, With<Camera>>,
         Query<(&Transform, &mut Visibility, &ComputedVisibility), With<GroundCell>>,
