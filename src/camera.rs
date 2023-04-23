@@ -1,5 +1,6 @@
 use crate::car::HID;
 use crate::config::Config;
+use crate::track::GroundCell;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};
@@ -31,7 +32,32 @@ impl Plugin for CarCameraPlugin {
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system.in_set(CameraUpdateSystem))
             .add_system(grab_mouse)
+            .add_system(camera_vis)
             .add_system(camera_switch_system);
+    }
+}
+
+#[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+const VISIBILITY: f32 = 500.;
+#[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
+const VISIBILITY: f32 = 1000.;
+
+pub fn camera_vis(
+    mut pset: ParamSet<(
+        Query<&Transform, With<Camera>>,
+        Query<(&Transform, &mut Visibility, &ComputedVisibility), With<GroundCell>>,
+    )>,
+) {
+    let cam_translation = pset.p0().single().translation;
+
+    for (ground_cell, mut cell_visibility, computed_visibility) in pset.p1().iter_mut() {
+        if (cam_translation - ground_cell.translation).length() > VISIBILITY {
+            if computed_visibility.is_visible_in_view() {
+                *cell_visibility = Visibility::Hidden;
+            }
+        } else {
+            *cell_visibility = Visibility::Inherited;
+        }
     }
 }
 
@@ -40,19 +66,19 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
         .spawn((
             Camera3dBundle {
-                // #[cfg(not(any(
-                //     target_arch = "wasm32",
-                //     target_os = "ios",
-                //     target_os = "android"
-                // )))]
-                // projection: Projection::from(PerspectiveProjection {
-                //     far: 5000.,
-                //     near: 0.01,
-                //     ..default()
-                // }),
-                // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                #[cfg(not(any(
+                    target_arch = "wasm32",
+                    target_os = "ios",
+                    target_os = "android"
+                )))]
                 projection: Projection::from(PerspectiveProjection {
-                    far: 500.,
+                    far: 5000.,
+                    near: 0.01,
+                    ..default()
+                }),
+                #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                projection: Projection::from(PerspectiveProjection {
+                    far: 50.,
                     near: 0.1,
                     ..default()
                 }),

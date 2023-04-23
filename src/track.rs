@@ -4,6 +4,7 @@ use crate::{
     mesh::QuadPlane,
 };
 use bevy::{
+    math::Vec3Swizzles,
     pbr::NotShadowCaster,
     prelude::*,
     render::{mesh::*, primitives::Aabb},
@@ -392,6 +393,9 @@ pub fn spawn_walls(
         .insert(Restitution::coefficient(0.));
 }
 
+#[derive(Component, Debug)]
+pub struct GroundCell;
+
 pub fn spawn_ground_heightfield(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -399,13 +403,36 @@ pub fn spawn_ground_heightfield(
     aabb: &Aabb,
     padding: f32,
 ) {
-    let c: Vec3 = aabb.center.into();
-    let half: Vec3 = aabb.half_extents.into();
-    let size: Vec2 = 2. * Vec2::new(half.x, half.z) + padding * Vec2::ONE * 2.;
+    let aabb_center: Vec3 = aabb.center.into();
+    let size: Vec2 = 2. * (aabb.half_extents.xz() + padding * Vec2::ONE);
     let (cols, rows) = (10, 10);
 
-    let mut mesh = Mesh::from(QuadPlane::new(size));
+    let meshes_n_half = 10;
+    let size_s = size / (2 * meshes_n_half) as f32;
+    let mut mesh = Mesh::from(QuadPlane::new(size_s));
     mesh.generate_tangents().unwrap();
+    for x in -meshes_n_half..meshes_n_half {
+        for z in -meshes_n_half..meshes_n_half {
+            commands
+                .spawn((
+                    GroundPbr {
+                        mesh: meshes.add(mesh.clone()),
+                        material: handled_materials.ground.clone(),
+                        ..default()
+                    },
+                    NotShadowCaster,
+                    GroundCell,
+                ))
+                .insert(TransformBundle::from_transform(
+                    Transform::from_translation(Vec3::new(
+                        aabb_center.x + x as f32 * size_s.x + size_s.x / 2.,
+                        0.,
+                        aabb_center.z + z as f32 * size_s.y + size_s.y / 2.,
+                    )),
+                ));
+        }
+    }
+
     commands
         .spawn((
             Name::new("ground-heightfield"),
@@ -420,15 +447,9 @@ pub fn spawn_ground_heightfield(
                 cols,
                 Vec3::new(size.x, 0., size.y),
             ),
-            GroundPbr {
-                mesh: meshes.add(mesh),
-                material: handled_materials.ground.clone(),
-                ..default()
-            },
-            NotShadowCaster,
         ))
         .insert(TransformBundle::from_transform(
-            Transform::from_translation(c),
+            Transform::from_translation(aabb_center),
         ));
 }
 

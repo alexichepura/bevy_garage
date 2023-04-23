@@ -1,9 +1,6 @@
 use crate::{config::*, track::*};
 use bevy::prelude::*;
-use bevy_rapier3d::{
-    prelude::*,
-    rapier::prelude::{JointAxesMask, JointAxis},
-};
+use bevy_rapier3d::{prelude::*, rapier::prelude::JointAxesMask};
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
 pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
@@ -221,7 +218,7 @@ pub fn spawn_car(
         let joint_mask: JointAxesMask = JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z
             | JointAxesMask::X
-            // | JointAxesMask::Y
+            | JointAxesMask::Y
             | JointAxesMask::Z;
         let wheel_axis = match is_left {
             true => -Vec3::Y,
@@ -232,12 +229,6 @@ pub fn spawn_car(
             .local_axis2(wheel_axis)
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
-            // .set_motor(JointAxis::X, 0., 0., 1e10, 1.)
-            // .set_motor(JointAxis::X, 0., 0., 1e6, 1e3)
-            .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
-            // .set_motor(JointAxis::Z, 0., 0., 1e6, 1e3)
-            // .set_motor(JointAxis::Z, 0., 0., 1e10, 1.)
-            // .motor_model(JointAxis::Y, MotorModel::ForceBased)
             .build();
         joints.push(joint);
 
@@ -260,16 +251,6 @@ pub fn spawn_car(
                 ..default()
             })
             .insert(Sleeping::disabled())
-            // .insert(PbrBundle {
-            //     mesh: meshes.add(bevy_mesh(Cylinder::new(wheel_hw, wheel_r).to_trimesh(50))),
-            //     // material: materials.add(Color::rgb(0.1, 0.1, 0.1).into()),
-            //     material: materials.add(StandardMaterial {
-            //         base_color: Color::hex("353535").unwrap(),
-            //         perceptual_roughness: 0.9,
-            //         ..default()
-            //     }),
-            //     ..default()
-            // })
             .insert(TransformBundle::from(wheel_transform))
             .insert(RigidBody::Dynamic)
             .insert(Ccd::enabled())
