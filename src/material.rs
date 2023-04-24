@@ -5,6 +5,7 @@ use bevy::render::texture::ImageSampler;
 use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFormat};
 
 pub type HandleStandard = Handle<StandardMaterial>;
+pub type HandleAsphalt = Handle<AsphaltMaterial>;
 pub type HandleGround = Handle<GroundMaterial>;
 
 #[derive(Resource)]
@@ -19,8 +20,8 @@ pub struct MaterialHandle {
 
 pub type AsphaltPbr = MaterialMeshBundle<AsphaltMaterial>;
 pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
-pub type AsphaltColorPbr = MaterialMeshBundle<StandardMaterial>;
-pub type GroundColorPbr = MaterialMeshBundle<StandardMaterial>;
+// pub type AsphaltColorPbr = MaterialMeshBundle<StandardMaterial>;
+// pub type GroundColorPbr = MaterialMeshBundle<StandardMaterial>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {

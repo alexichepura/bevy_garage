@@ -26,15 +26,24 @@ pub fn far_culling(
             ),
             With<GroundCell>,
         >,
-        Query<(&Transform, &mut Visibility, &ComputedVisibility), With<AsphaltCell>>,
+        Query<
+            (
+                &Transform,
+                &mut Visibility,
+                &ComputedVisibility,
+                Entity,
+                &mut AsphaltCell,
+            ),
+            With<AsphaltCell>,
+        >,
     )>,
 ) {
     let cam_translation = pset.p0().single().translation;
 
-    for (ground_cell, mut cell_visibility, computed_visibility, entity, mut cell) in
+    for (transform, mut cell_visibility, computed_visibility, entity, mut cell) in
         pset.p1().iter_mut()
     {
-        let distance = (cam_translation - ground_cell.translation).length();
+        let distance = (cam_translation - transform.translation).length();
         if distance > VISIBILITY_COLOR {
             if !cell.is_color {
                 commands.entity(entity).remove::<HandleGround>();
@@ -60,8 +69,28 @@ pub fn far_culling(
             *cell_visibility = Visibility::Inherited;
         }
     }
-    for (asphalt_cell, mut cell_visibility, computed_visibility) in pset.p2().iter_mut() {
-        if (cam_translation - asphalt_cell.translation).length() > VISIBILITY {
+    for (transform, mut cell_visibility, computed_visibility, entity, mut cell) in
+        pset.p2().iter_mut()
+    {
+        let distance = (cam_translation - transform.translation).length();
+        if distance > VISIBILITY_COLOR {
+            if !cell.is_color {
+                commands.entity(entity).remove::<HandleAsphalt>();
+                commands
+                    .entity(entity)
+                    .insert(handled_materials.asphalt_color.clone());
+                cell.is_color = true;
+            }
+        } else {
+            if cell.is_color {
+                commands.entity(entity).remove::<HandleStandard>();
+                commands
+                    .entity(entity)
+                    .insert(handled_materials.asphalt.clone());
+                cell.is_color = false;
+            }
+        }
+        if distance > VISIBILITY {
             if computed_visibility.is_visible_in_view() {
                 *cell_visibility = Visibility::Hidden;
             }

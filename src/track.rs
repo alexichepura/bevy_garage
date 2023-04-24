@@ -112,7 +112,10 @@ impl Track {
 }
 
 #[derive(Component, Debug)]
-pub struct AsphaltCell;
+pub struct AsphaltCell {
+    // pub mesh_handle: Handle<Mesh>,
+    pub is_color: bool,
+}
 
 #[derive(Debug)]
 pub struct AsphaltBlock {
@@ -204,7 +207,7 @@ pub fn spawn_road(
                     ..default()
                 },
                 NotShadowCaster,
-                AsphaltCell,
+                AsphaltCell { is_color: false },
             ))
             .insert(TransformBundle::from_transform(
                 Transform::from_translation(tr),
@@ -479,7 +482,7 @@ pub fn spawn_walls(
 
 #[derive(Component, Debug)]
 pub struct GroundCell {
-    pub mesh_handle: Handle<Mesh>,
+    // pub mesh_handle: Handle<Mesh>,
     pub is_color: bool,
 }
 
@@ -510,7 +513,7 @@ pub fn spawn_ground_heightfield(
                     },
                     NotShadowCaster,
                     GroundCell {
-                        mesh_handle,
+                        // mesh_handle,
                         is_color: false,
                     },
                 ))
@@ -553,29 +556,29 @@ pub fn track_start_system(
     let aabb = spawn_road(&handled_materials, &mut commands, &mut meshes, &track);
     spawn_ground_heightfield(&mut commands, &mut meshes, &handled_materials, &aabb, 100.);
 
-    // spawn_kerb(&mut commands, &mut meshes, &handled_materials, &track);
-    // let mut left_wall_points: Vec<Vec3> = vec![];
-    // let mut right_wall_points: Vec<Vec3> = vec![];
-    // for (i, p) in track.points.iter().enumerate() {
-    //     left_wall_points.push(*p + track.right_norm[i] * 7.5);
-    //     right_wall_points.push(*p + track.right_norm[i] * -7.5);
-    // }
-    // spawn_walls(
-    //     &mut commands,
-    //     &mut meshes,
-    //     &handled_materials,
-    //     &track.indices,
-    //     &left_wall_points,
-    //     &track.right_norm,
-    // );
-    // spawn_walls(
-    //     &mut commands,
-    //     &mut meshes,
-    //     &handled_materials,
-    //     &track.indices,
-    //     &right_wall_points,
-    //     &track.right_norm,
-    // );
+    spawn_kerb(&mut commands, &mut meshes, &handled_materials, &track);
+    let mut left_wall_points: Vec<Vec3> = vec![];
+    let mut right_wall_points: Vec<Vec3> = vec![];
+    for (i, p) in track.points.iter().enumerate() {
+        left_wall_points.push(*p + track.right_norm[i] * 7.5);
+        right_wall_points.push(*p + track.right_norm[i] * -7.5);
+    }
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &handled_materials,
+        &track.indices,
+        &left_wall_points,
+        &track.right_norm,
+    );
+    spawn_walls(
+        &mut commands,
+        &mut meshes,
+        &handled_materials,
+        &track.indices,
+        &right_wall_points,
+        &track.right_norm,
+    );
 }
 
 pub fn track_decorations_start_system(
