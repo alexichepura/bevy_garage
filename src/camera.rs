@@ -38,7 +38,7 @@ impl Plugin for CarCameraPlugin {
 }
 
 #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-const VISIBILITY: f32 = 500.;
+const VISIBILITY: f32 = 200.;
 #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
 const VISIBILITY: f32 = 750.;
 

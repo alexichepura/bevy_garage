@@ -122,7 +122,7 @@ pub struct AsphaltBlock {
     uvs: Vec<[f32; 2]>,
 }
 
-const BLOCK_SPAN: usize = 1;
+const BLOCK_SPAN: usize = 2;
 
 pub fn spawn_road(
     handled_materials: &Res<MaterialHandle>,
@@ -546,29 +546,29 @@ pub fn track_start_system(
     let aabb = spawn_road(&handled_materials, &mut commands, &mut meshes, &track);
     spawn_ground_heightfield(&mut commands, &mut meshes, &handled_materials, &aabb, 100.);
 
-    spawn_kerb(&mut commands, &mut meshes, &handled_materials, &track);
-    let mut left_wall_points: Vec<Vec3> = vec![];
-    let mut right_wall_points: Vec<Vec3> = vec![];
-    for (i, p) in track.points.iter().enumerate() {
-        left_wall_points.push(*p + track.right_norm[i] * 7.5);
-        right_wall_points.push(*p + track.right_norm[i] * -7.5);
-    }
-    spawn_walls(
-        &mut commands,
-        &mut meshes,
-        &handled_materials,
-        &track.indices,
-        &left_wall_points,
-        &track.right_norm,
-    );
-    spawn_walls(
-        &mut commands,
-        &mut meshes,
-        &handled_materials,
-        &track.indices,
-        &right_wall_points,
-        &track.right_norm,
-    );
+    // spawn_kerb(&mut commands, &mut meshes, &handled_materials, &track);
+    // let mut left_wall_points: Vec<Vec3> = vec![];
+    // let mut right_wall_points: Vec<Vec3> = vec![];
+    // for (i, p) in track.points.iter().enumerate() {
+    //     left_wall_points.push(*p + track.right_norm[i] * 7.5);
+    //     right_wall_points.push(*p + track.right_norm[i] * -7.5);
+    // }
+    // spawn_walls(
+    //     &mut commands,
+    //     &mut meshes,
+    //     &handled_materials,
+    //     &track.indices,
+    //     &left_wall_points,
+    //     &track.right_norm,
+    // );
+    // spawn_walls(
+    //     &mut commands,
+    //     &mut meshes,
+    //     &handled_materials,
+    //     &track.indices,
+    //     &right_wall_points,
+    //     &track.right_norm,
+    // );
 }
 
 pub fn track_decorations_start_system(
