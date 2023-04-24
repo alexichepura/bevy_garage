@@ -1,7 +1,6 @@
 use crate::car::HID;
 use crate::config::Config;
 use crate::quality::far_culling;
-use crate::track::{AsphaltCell, GroundCell};
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};

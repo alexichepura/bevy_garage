@@ -4,6 +4,9 @@ use bevy::prelude::*;
 use bevy::render::texture::ImageSampler;
 use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFormat};
 
+pub type HandleStandard = Handle<StandardMaterial>;
+pub type HandleGround = Handle<GroundMaterial>;
+
 #[derive(Resource)]
 pub struct MaterialHandle {
     pub asphalt: Handle<AsphaltMaterial>,

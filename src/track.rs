@@ -140,7 +140,7 @@ pub fn spawn_road(
             }
         }
     }
-    dbg!(&blocks_indexes);
+    // dbg!(&blocks_indexes);
 
     let mut blocks: Vec<AsphaltBlock> = Vec::new();
     for block_indexes in blocks_indexes {
@@ -479,7 +479,8 @@ pub fn spawn_walls(
 
 #[derive(Component, Debug)]
 pub struct GroundCell {
-    mesh: Mesh,
+    pub mesh_handle: Handle<Mesh>,
+    pub is_color: bool,
 }
 
 pub fn spawn_ground_heightfield(
@@ -499,15 +500,19 @@ pub fn spawn_ground_heightfield(
     mesh.generate_tangents().unwrap();
     for x in -meshes_n_half..meshes_n_half {
         for z in -meshes_n_half..meshes_n_half {
+            let mesh_handle = meshes.add(mesh.clone());
             commands
                 .spawn((
                     GroundPbr {
-                        mesh: meshes.add(mesh.clone()),
+                        mesh: mesh_handle.clone(),
                         material: handled_materials.ground.clone(),
                         ..default()
                     },
                     NotShadowCaster,
-                    GroundCell { mesh: mesh.clone() },
+                    GroundCell {
+                        mesh_handle,
+                        is_color: false,
+                    },
                 ))
                 .insert(TransformBundle::from_transform(
                     Transform::from_translation(Vec3::new(
