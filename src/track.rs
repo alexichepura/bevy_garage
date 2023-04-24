@@ -111,14 +111,100 @@ impl Track {
     }
 }
 
+#[derive(Component, Debug)]
+pub struct AsphaltCell;
+
+#[derive(Debug)]
+pub struct AsphaltBlock {
+    vertices: Vec<[f32; 3]>,
+    normals: Vec<[f32; 3]>,
+    indices: Vec<u32>,
+    uvs: Vec<[f32; 2]>,
+}
+
+const BLOCK_LEN: usize = 2;
+
 pub fn spawn_road(
     handled_materials: &Res<MaterialHandle>,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     track: &Track,
 ) -> Aabb {
-    let (vertices, normals) = track.road();
-    // ASPHALT
+    let mut blocks: Vec<AsphaltBlock> = Vec::new();
+    for point_i in 0..track.points.len() {
+        if point_i % BLOCK_LEN == 0 {
+            // println!("point_i {point_i}");
+            let mut vertices: Vec<[f32; 3]> = vec![];
+            let mut normals: Vec<[f32; 3]> = vec![];
+            let mut indices: Vec<u32> = vec![];
+            let mut uvs: Vec<[f32; 2]> = vec![];
+            for block_i in 0..BLOCK_LEN {
+                let i = point_i + block_i;
+                if i + 1 >= track.points.len() {
+                    break;
+                }
+                // println!("i {i}");
+                let left = track.left[i];
+                let right = track.right[i];
+                vertices.push(left.to_array());
+                vertices.push(right.to_array());
+
+                normals.push(Vec3::Y.into());
+                normals.push(Vec3::Y.into());
+
+                let last: bool = block_i == BLOCK_LEN - 1;
+                if !last {
+                    // println!("!last {block_i}");
+                    let ix2: u32 = block_i as u32 * 2;
+                    let (i1, i2) = ([ix2, ix2 + 1, ix2 + 2], [ix2 + 2, ix2 + 1, ix2 + 3]);
+                    // 2---3
+                    // | \ |
+                    // 0---1
+                    // 1st triangle 0 1 2
+                    // 2nd triangle 2 1 3
+                    indices.extend(i1);
+                    indices.extend(i2);
+                } else {
+                }
+
+                let x = 50.;
+                uvs.push([left.x / x, left.z / x]);
+                uvs.push([right.x / x, right.z / x]);
+            }
+            if vertices.len() > 0 {
+                blocks.push(AsphaltBlock {
+                    vertices,
+                    normals,
+                    indices,
+                    uvs,
+                });
+            }
+        }
+    }
+    for block in blocks.iter() {
+        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(block.vertices.clone()));
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(block.normals.clone()));
+        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, block.uvs.clone());
+        mesh.set_indices(Some(Indices::U32(block.indices.clone())));
+        // dbg!(block);
+        mesh.generate_tangents().unwrap();
+
+        commands
+            .spawn((
+                AsphaltPbr {
+                    mesh: meshes.add(mesh.clone()),
+                    material: handled_materials.asphalt.clone(),
+                    ..default()
+                },
+                NotShadowCaster,
+                AsphaltCell,
+            ))
+            .insert(TransformBundle::from_transform(
+                Transform::from_translation(Vec3::new(0., 0., 0.)),
+            ));
+    }
+
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     for (i, _p) in track.points.iter().enumerate() {
         let left = track.left.get(i).unwrap();
@@ -127,27 +213,28 @@ pub fn spawn_road(
         uvs.push([left.x / x, left.z / x]);
         uvs.push([right.x / x, right.z / x]);
     }
+    let (track_vertices, track_normals) = track.road();
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices.clone()));
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(normals));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(track_vertices.clone()));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(track_normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
     mesh.generate_tangents().unwrap();
     let aabb = mesh.compute_aabb().unwrap();
 
     commands
-        .spawn((
-            AsphaltPbr {
-                mesh: meshes.add(mesh),
-                material: handled_materials.asphalt.clone(),
-                transform: Transform::from_xyz(0., 0., 0.),
-                ..Default::default()
-            },
-            NotShadowCaster,
-        ))
-        .insert(TrackRoad)
+        // .spawn((
+        //     AsphaltPbr {
+        //         mesh: meshes.add(mesh),
+        //         material: handled_materials.asphalt.clone(),
+        //         transform: Transform::from_xyz(0., 0., 0.),
+        //         ..Default::default()
+        //     },
+        //     NotShadowCaster,
+        // ))
+        .spawn(TrackRoad)
         .insert(Collider::from(ColliderShape::trimesh(
-            vertices
+            track_vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
@@ -507,16 +594,17 @@ pub fn track_decorations_start_system(
 //     (b - a).cross(c - a).normalize().into()
 // }
 
-pub const _TRACK_POSITIONS: [(f32, f32, f32, f32); 6] = [
+pub const TRACK_POSITIONS: [(f32, f32, f32, f32); 7] = [
     (0., 0.0, 0., 1.0),
     (100., 0.0, 0., 1.0),
     (100., 0.0, 100., 1.0),
+    (0.0, 0.0, 100., 1.0),
     (-100., 0.0, 100., 1.0),
     (-100., 0.0, 0., 1.0),
     (0., 0.0, 0., 1.0),
 ];
 
-pub const TRACK_POSITIONS: [(f32, f32, f32, f32); 365] = [
+pub const _TRACK_POSITIONS: [(f32, f32, f32, f32); 365] = [
     (-65.2042, 0.0, 80.13815, 1.0),
     (-115.01793, 0.0, 143.06631, 1.0),
     (-166.25946, 0.0, 207.94211, 1.0),
