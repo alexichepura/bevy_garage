@@ -140,7 +140,7 @@ pub fn spawn_road(
             }
         }
     }
-    // dbg!(&blocks_indexes);
+    dbg!(&blocks_indexes);
 
     let mut blocks: Vec<AsphaltBlock> = Vec::new();
     for block_indexes in blocks_indexes {
@@ -183,7 +183,13 @@ pub fn spawn_road(
     }
     for block in blocks.iter() {
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(block.vertices.clone()));
+        let tr: Vec3 = block.vertices[0].into();
+        let vertices: Vec<[f32; 3]> = block
+            .vertices
+            .iter()
+            .map(|v| (Vec3::new(v[0], v[1], v[2]) - tr).to_array())
+            .collect();
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, VAV::from(vertices));
         mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VAV::from(block.normals.clone()));
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, block.uvs.clone());
         mesh.set_indices(Some(Indices::U32(block.indices.clone())));
@@ -201,7 +207,7 @@ pub fn spawn_road(
                 AsphaltCell,
             ))
             .insert(TransformBundle::from_transform(
-                Transform::from_translation(Vec3::new(0., 0., 0.)),
+                Transform::from_translation(tr),
             ));
     }
 
