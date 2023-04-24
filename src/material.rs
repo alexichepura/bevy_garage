@@ -8,16 +8,16 @@ use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFo
 pub struct MaterialHandle {
     pub asphalt: Handle<AsphaltMaterial>,
     pub ground: Handle<GroundMaterial>,
-    // pub asphalt: Handle<StandardMaterial>,
-    // pub ground: Handle<StandardMaterial>,
+    pub asphalt_color: Handle<StandardMaterial>,
+    pub ground_color: Handle<StandardMaterial>,
     pub wall: Handle<StandardMaterial>,
     pub kerb: Handle<StandardMaterial>,
 }
 
 pub type AsphaltPbr = MaterialMeshBundle<AsphaltMaterial>;
 pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
-// pub type AsphaltPbr = MaterialMeshBundle<StandardMaterial>;
-// pub type GroundPbr = MaterialMeshBundle<StandardMaterial>;
+pub type AsphaltColorPbr = MaterialMeshBundle<StandardMaterial>;
+pub type GroundColorPbr = MaterialMeshBundle<StandardMaterial>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
@@ -50,7 +50,18 @@ impl FromWorld for MaterialHandle {
         let mut images = world.resource_mut::<Assets<Image>>();
         let wall_image_handle = images.add(wall_texture());
         let kerb_image_handle = images.add(kerb_texture());
+
         let mut standard_materials = world.resource_mut::<Assets<StandardMaterial>>();
+        let asphalt_color_handle = standard_materials.add(StandardMaterial {
+            base_color: asphalt_color,
+            depth_bias: asphalt_depth_bias,
+            ..default()
+        });
+        let ground_color_handle = standard_materials.add(StandardMaterial {
+            base_color: ground_color,
+            depth_bias: 0.,
+            ..default()
+        });
         let wall_handle = standard_materials.add(StandardMaterial {
             base_color_texture: Some(wall_image_handle),
             perceptual_roughness: 0.7,
@@ -63,22 +74,14 @@ impl FromWorld for MaterialHandle {
             depth_bias: 1.,
             ..default()
         });
-        // let ground_handle = standard_materials.add(StandardMaterial {
-        //     base_color: ground_color,
-        //     depth_bias: 0.,
-        //     ..default()
-        // });
-        // let asphalt_handle = standard_materials.add(StandardMaterial {
-        //     base_color: asphalt_color,
-        //     depth_bias: asphalt_depth_bias,
-        //     ..default()
-        // });
 
         Self {
-            ground: ground_handle,
             asphalt: asphalt_handle,
-            wall: wall_handle,
+            asphalt_color: asphalt_color_handle,
+            ground: ground_handle,
+            ground_color: ground_color_handle,
             kerb: kerb_handle,
+            wall: wall_handle,
         }
     }
 }

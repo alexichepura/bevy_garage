@@ -12,6 +12,7 @@ mod light;
 mod material;
 mod mesh;
 mod progress;
+mod quality;
 mod shader;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};

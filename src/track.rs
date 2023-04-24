@@ -478,7 +478,9 @@ pub fn spawn_walls(
 }
 
 #[derive(Component, Debug)]
-pub struct GroundCell;
+pub struct GroundCell {
+    mesh: Mesh,
+}
 
 pub fn spawn_ground_heightfield(
     commands: &mut Commands,
@@ -505,7 +507,7 @@ pub fn spawn_ground_heightfield(
                         ..default()
                     },
                     NotShadowCaster,
-                    GroundCell,
+                    GroundCell { mesh: mesh.clone() },
                 ))
                 .insert(TransformBundle::from_transform(
                     Transform::from_translation(Vec3::new(
