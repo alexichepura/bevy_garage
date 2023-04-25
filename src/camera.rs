@@ -1,6 +1,5 @@
 use crate::car::HID;
 use crate::config::Config;
-use crate::quality::far_culling;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};
@@ -32,7 +31,6 @@ impl Plugin for CarCameraPlugin {
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system.in_set(CameraUpdateSystem))
             .add_system(grab_mouse)
-            .add_system(far_culling)
             .add_system(camera_switch_system);
     }
 }

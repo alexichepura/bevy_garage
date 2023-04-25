@@ -3,6 +3,7 @@ pub mod decor;
 pub mod ground;
 pub mod kerb;
 pub mod material;
+pub mod quality;
 pub mod shader;
 pub mod track;
 pub mod wall;
@@ -11,6 +12,7 @@ pub use asphalt::*;
 pub use decor::*;
 pub use ground::*;
 pub use material::*;
+pub use quality::*;
 pub use shader::*;
 pub use track::*;
 
@@ -29,6 +31,7 @@ impl Plugin for TrackPlugin {
             .add_plugin(MaterialPlugin::<GroundMaterial>::default())
             .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
             .init_resource::<MaterialHandle>()
+            .add_system(far_culling)
             .add_startup_system(track_start_system)
             .add_startup_system(track_decorations_start_system);
     }

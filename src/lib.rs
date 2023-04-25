@@ -11,7 +11,6 @@ pub mod joystick;
 mod light;
 mod mesh;
 mod progress;
-mod quality;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_rapier3d::prelude::*;
