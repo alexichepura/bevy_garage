@@ -2,15 +2,16 @@ pub mod asphalt;
 pub mod decor;
 pub mod ground;
 pub mod kerb;
+pub mod material;
 pub mod track;
 pub mod wall;
 
 pub use asphalt::*;
 pub use decor::*;
 pub use ground::*;
+pub use material::*;
 pub use track::*;
 
-use crate::material::MaterialHandle;
 use bevy::prelude::*;
 
 use self::{

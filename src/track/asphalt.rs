@@ -1,12 +1,10 @@
-use crate::material::{AsphaltPbr, MaterialHandle};
+use super::{AsphaltPbr, MaterialHandle, Track, TrackRoad, STATIC_GROUP};
 use bevy::{
     pbr::NotShadowCaster,
     prelude::*,
     render::{mesh::*, primitives::Aabb},
 };
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
-
-use super::track::{Track, TrackRoad, STATIC_GROUP};
 
 #[derive(Component, Debug)]
 pub struct AsphaltCell {

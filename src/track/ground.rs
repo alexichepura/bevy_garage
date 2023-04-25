@@ -1,11 +1,7 @@
-use crate::{
-    material::{GroundPbr, MaterialHandle},
-    mesh::QuadPlane,
-};
+use super::{GroundPbr, MaterialHandle, STATIC_GROUP};
+use crate::mesh::QuadPlane;
 use bevy::{math::Vec3Swizzles, pbr::NotShadowCaster, prelude::*, render::primitives::Aabb};
 use bevy_rapier3d::prelude::*;
-
-use super::track::STATIC_GROUP;
 
 #[derive(Component, Debug)]
 pub struct GroundCell {
