@@ -1,5 +1,6 @@
 use crate::car::HID;
 use crate::config::Config;
+use crate::quality::far_culling;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};
@@ -31,6 +32,7 @@ impl Plugin for CarCameraPlugin {
             .add_startup_system(camera_start_system)
             .add_system(camera_controller_system.in_set(CameraUpdateSystem))
             .add_system(grab_mouse)
+            .add_system(far_culling)
             .add_system(camera_switch_system);
     }
 }
@@ -40,19 +42,19 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     commands
         .spawn((
             Camera3dBundle {
-                // #[cfg(not(any(
-                //     target_arch = "wasm32",
-                //     target_os = "ios",
-                //     target_os = "android"
-                // )))]
-                // projection: Projection::from(PerspectiveProjection {
-                //     far: 5000.,
-                //     near: 0.01,
-                //     ..default()
-                // }),
-                // #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                #[cfg(not(any(
+                    target_arch = "wasm32",
+                    target_os = "ios",
+                    target_os = "android"
+                )))]
                 projection: Projection::from(PerspectiveProjection {
-                    far: 500.,
+                    far: 5000.,
+                    near: 0.01,
+                    ..default()
+                }),
+                #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+                projection: Projection::from(PerspectiveProjection {
+                    far: 50.,
                     near: 0.1,
                     ..default()
                 }),

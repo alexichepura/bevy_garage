@@ -20,6 +20,7 @@
 
 struct AsphaltMaterial {
     color: vec4<f32>,
+    quality: i32 // 0-10
 };
 
 @group(1) @binding(0)
@@ -76,13 +77,20 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     var x: f32 = in.world_position.x;
     var z: f32 = in.world_position.z;
     var bump_distance: f32 = distance(in.world_position.xyz, view.world_position.xyz);
-    var height: f32 = bump(x, z, bump_distance);
-    var h_color: f32 = 0.6 + height * 0.4;
-    var output_color: vec4<f32> = material.color * vec4<f32>(height, h_color, h_color, 1.);
+
+    var output_color: vec4<f32>;
+    var height: f32;
+    if i32(bump_distance) < 20 * material.quality {
+        height = bump(x, z, bump_distance);
+        var h_color: f32 = 0.6 + height * 0.4;
+        output_color = material.color * vec4<f32>(height, h_color, h_color, 1.);
+    } else {
+        output_color = material.color;
+    }
 #ifdef VERTEX_COLORS
     output_color = output_color * in.color;
 #endif
-    var pbr_input: PbrInput;
+    var pbr_input: PbrInput = pbr_input_new();
     pbr_input.material.base_color = output_color;
     pbr_input.material.reflectance = 0.5;
     pbr_input.material.alpha_cutoff = 0.5;
@@ -91,7 +99,7 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     pbr_input.world_position = in.world_position;
     pbr_input.world_normal = in.world_normal;
     pbr_input.is_orthographic = view.projection[3].w == 1.0;
-    if bump_distance < 120. {
+    if i32(bump_distance) < 12 * material.quality {
         var du: f32 = bump(x - bump_d, z, bump_distance) - height;
         var dv: f32 = bump(x, z - bump_d, bump_distance) - height;
         var Nt: vec3<f32> = vec3<f32>(du, dv, 0.1);

@@ -4,39 +4,70 @@ use bevy::prelude::*;
 use bevy::render::texture::ImageSampler;
 use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFormat};
 
+pub type HandleStandard = Handle<StandardMaterial>;
+pub type HandleAsphalt = Handle<AsphaltMaterial>;
+pub type HandleGround = Handle<GroundMaterial>;
+
 #[derive(Resource)]
 pub struct MaterialHandle {
-    // pub ground: Handle<StandardMaterial>,
-    // pub asphalt: Handle<StandardMaterial>,
-    pub ground: Handle<GroundMaterial>,
     pub asphalt: Handle<AsphaltMaterial>,
+    pub ground: Handle<GroundMaterial>,
+    pub asphalt_color: Handle<StandardMaterial>,
+    pub ground_color: Handle<StandardMaterial>,
     pub wall: Handle<StandardMaterial>,
     pub kerb: Handle<StandardMaterial>,
 }
 
+pub type AsphaltPbr = MaterialMeshBundle<AsphaltMaterial>;
+pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
+
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
-        let ground_color = Color::hex("7b824e").unwrap();
+        #[cfg(any(target_os = "ios"))]
+        let quality = 2;
+        #[cfg(not(target_os = "ios"))]
+        let quality = 10;
+
+        let ground_color = Color::hex("6aa84f").unwrap();
         let mut ground_materials = world.resource_mut::<Assets<GroundMaterial>>();
         let ground_handle = ground_materials.add(GroundMaterial {
             color: ground_color,
             depth_bias: 0.,
+            quality,
         });
+
+        #[cfg(target_arch = "wasm32")]
+        let asphalt_depth_bias = 1.;
+        #[cfg(not(target_arch = "wasm32"))]
+        let asphalt_depth_bias = 10000.;
 
         let asphalt_color = Color::hex("333355").unwrap();
         let mut asphalt_materials = world.resource_mut::<Assets<AsphaltMaterial>>();
         let asphalt_handle = asphalt_materials.add(AsphaltMaterial {
             color: asphalt_color,
-            #[cfg(target_arch = "wasm32")]
-            depth_bias: 1.,
-            #[cfg(not(target_arch = "wasm32"))]
-            depth_bias: 10000.,
+            depth_bias: asphalt_depth_bias,
+            quality,
         });
 
         let mut images = world.resource_mut::<Assets<Image>>();
         let wall_image_handle = images.add(wall_texture());
         let kerb_image_handle = images.add(kerb_texture());
+
         let mut standard_materials = world.resource_mut::<Assets<StandardMaterial>>();
+        let asphalt_color_handle = standard_materials.add(StandardMaterial {
+            base_color: asphalt_color,
+            depth_bias: asphalt_depth_bias,
+            reflectance: 0.5,
+            perceptual_roughness: 0.7,
+            ..default()
+        });
+        let ground_color_handle = standard_materials.add(StandardMaterial {
+            base_color: ground_color,
+            depth_bias: 0.,
+            reflectance: 0.5,
+            perceptual_roughness: 0.75,
+            ..default()
+        });
         let wall_handle = standard_materials.add(StandardMaterial {
             base_color_texture: Some(wall_image_handle),
             perceptual_roughness: 0.7,
@@ -49,22 +80,14 @@ impl FromWorld for MaterialHandle {
             depth_bias: 1.,
             ..default()
         });
-        // let ground_handle = standard_materials.add(StandardMaterial {
-        //     base_color: ground_color,
-        //     depth_bias: 0.1,
-        //     ..default()
-        // });
-        // let asphalt_handle = standard_materials.add(StandardMaterial {
-        //     base_color: asphalt_color,
-        //     depth_bias: 10.,
-        //     ..default()
-        // });
 
         Self {
-            ground: ground_handle,
             asphalt: asphalt_handle,
-            wall: wall_handle,
+            asphalt_color: asphalt_color_handle,
+            ground: ground_handle,
+            ground_color: ground_color_handle,
             kerb: kerb_handle,
+            wall: wall_handle,
         }
     }
 }

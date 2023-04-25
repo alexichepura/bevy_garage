@@ -49,6 +49,7 @@ fn load_shader(
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct GarageMaterialKey {
     depth_bias: i32,
+    quality: i32,
 }
 
 #[derive(AsBindGroup, TypeUuid, Debug, Clone)]
@@ -58,6 +59,8 @@ pub struct GroundMaterial {
     #[uniform(0)]
     pub color: Color,
     pub depth_bias: f32,
+    #[uniform(0)]
+    pub quality: i32,
 }
 impl Material for GroundMaterial {
     fn fragment_shader() -> ShaderRef {
@@ -82,6 +85,7 @@ impl From<&GroundMaterial> for GarageMaterialKey {
     fn from(material: &GroundMaterial) -> Self {
         GarageMaterialKey {
             depth_bias: material.depth_bias as i32,
+            quality: material.quality,
         }
     }
 }
@@ -93,6 +97,8 @@ pub struct AsphaltMaterial {
     #[uniform(0)]
     pub color: Color,
     pub depth_bias: f32,
+    #[uniform(0)]
+    pub quality: i32,
 }
 impl Material for AsphaltMaterial {
     fn fragment_shader() -> ShaderRef {
@@ -117,6 +123,7 @@ impl From<&AsphaltMaterial> for GarageMaterialKey {
     fn from(material: &AsphaltMaterial) -> Self {
         GarageMaterialKey {
             depth_bias: material.depth_bias as i32,
+            quality: material.quality,
         }
     }
 }

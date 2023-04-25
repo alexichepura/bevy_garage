@@ -12,6 +12,7 @@ mod light;
 mod material;
 mod mesh;
 mod progress;
+mod quality;
 mod shader;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
@@ -98,7 +99,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(EngineSoundPlugin)
-        .add_startup_system(track_start_system)
+        .add_startup_system(track_start_system.after(track_polyline_start_system))
         .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
         .add_startup_system(car_start_system.after(track_polyline_start_system))
