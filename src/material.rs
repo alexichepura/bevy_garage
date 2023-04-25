@@ -20,8 +20,6 @@ pub struct MaterialHandle {
 
 pub type AsphaltPbr = MaterialMeshBundle<AsphaltMaterial>;
 pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
-// pub type AsphaltColorPbr = MaterialMeshBundle<StandardMaterial>;
-// pub type GroundColorPbr = MaterialMeshBundle<StandardMaterial>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
@@ -30,8 +28,6 @@ impl FromWorld for MaterialHandle {
         #[cfg(not(target_os = "ios"))]
         let quality = 10;
 
-        // let ground_color = Color::hex("7b824e").unwrap();
-        // let ground_color = Color::hex("75a22e").unwrap();
         let ground_color = Color::hex("6aa84f").unwrap();
         let mut ground_materials = world.resource_mut::<Assets<GroundMaterial>>();
         let ground_handle = ground_materials.add(GroundMaterial {
