@@ -41,7 +41,7 @@ impl Track {
         points.extend(
             positions
                 .iter()
-                .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
+                .map(|pos| Vec3::new(pos.0, pos.1 + 0.001, pos.2))
                 .collect::<Vec<Vec3>>(),
         );
         track.points = points;

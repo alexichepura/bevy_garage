@@ -38,7 +38,7 @@ impl FromWorld for MaterialHandle {
         #[cfg(target_arch = "wasm32")]
         let asphalt_depth_bias = 1.;
         #[cfg(not(target_arch = "wasm32"))]
-        let asphalt_depth_bias = 10000.;
+        let asphalt_depth_bias = 100.;
 
         let asphalt_color = Color::hex("333355").unwrap();
         let mut asphalt_materials = world.resource_mut::<Assets<AsphaltMaterial>>();
