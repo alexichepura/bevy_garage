@@ -8,7 +8,7 @@ use bevy::{asset::HandleId, prelude::*};
 
 // https://github.com/rust-adventure/bevy-examples/tree/main/examples/shader-test-001
 
-pub const PERLIN_NOISE_2D: &str = include_str!("shader/perlin_noise_2d.wgsl");
+pub const PERLIN_NOISE_2D: &str = include_str!("perlin_noise_2d.wgsl");
 
 pub struct ShadersPlugin;
 

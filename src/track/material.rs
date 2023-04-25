@@ -1,5 +1,4 @@
-use crate::shader::AsphaltMaterial;
-use crate::shader::GroundMaterial;
+use super::{AsphaltMaterial, GroundMaterial};
 use bevy::prelude::*;
 use bevy::render::texture::ImageSampler;
 use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFormat};

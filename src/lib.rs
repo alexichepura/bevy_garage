@@ -12,7 +12,6 @@ mod light;
 mod mesh;
 mod progress;
 mod quality;
-mod shader;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_rapier3d::prelude::*;
@@ -25,7 +24,6 @@ use font::*;
 use input::*;
 use light::*;
 use progress::*;
-use shader::*;
 use track::*;
 
 #[cfg(feature = "brain")]
@@ -78,10 +76,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     app.init_resource::<FontHandle>()
         .insert_resource(physics_params.clone())
-        .add_plugin(ShadersPlugin)
-        .add_plugin(MaterialPlugin::<GroundMaterial>::default())
-        .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
-        .init_resource::<MaterialHandle>()
+        .add_plugin(TrackPlugin)
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
@@ -97,8 +92,6 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(EngineSoundPlugin)
-        .add_startup_system(track_start_system.after(track_polyline_start_system))
-        .add_startup_system(track_decorations_start_system)
         .add_startup_system(track_polyline_start_system)
         .add_startup_system(car_start_system.after(track_polyline_start_system))
         .add_startup_system(light_start_system)
