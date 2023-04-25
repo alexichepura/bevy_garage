@@ -1,10 +1,17 @@
 use crate::{config::*, track::*};
 use bevy::prelude::*;
-use bevy_rapier3d::{prelude::*, rapier::prelude::JointAxesMask};
+use bevy_rapier3d::{
+    prelude::*,
+    rapier::prelude::{JointAxesMask, JointAxis},
+};
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
-pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
+pub type JointType = ImpulseJoint;
+// https://github.com/alexichepura/bevy_garage/issues/23
+// https://github.com/dimforge/bevy_rapier/issues/196
+// pub type JointType = MultibodyJoint;
 
+pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
 pub const SENSOR_COUNT: usize = 31;
 
 #[derive(Component)]
@@ -218,7 +225,7 @@ pub fn spawn_car(
         let joint_mask: JointAxesMask = JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z
             | JointAxesMask::X
-            | JointAxesMask::Y
+            // | JointAxesMask::Y
             | JointAxesMask::Z;
         let wheel_axis = match is_left {
             true => -Vec3::Y,
@@ -229,6 +236,7 @@ pub fn spawn_car(
             .local_axis2(wheel_axis)
             .local_anchor1(car_anchors[i])
             .local_anchor2(Vec3::ZERO)
+            .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
             .build();
         joints.push(joint);
 
@@ -388,7 +396,7 @@ pub fn spawn_car(
     for (i, wheel_id) in wheels.iter().enumerate() {
         commands
             .entity(*wheel_id)
-            .insert(ImpulseJoint::new(car_id, joints[i]));
+            .insert(JointType::new(car_id, joints[i]));
     }
     println!("car log: {car_id:?} {:?}", wheels);
     return car_id;
