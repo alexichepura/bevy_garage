@@ -1,7 +1,4 @@
-use crate::{
-    material::*,
-    track::{AsphaltCell, GroundCell},
-};
+use crate::{material::*, track::*};
 use bevy::prelude::*;
 
 #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
