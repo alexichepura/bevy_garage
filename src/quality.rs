@@ -9,7 +9,7 @@ const VISIBILITY: f32 = 200.;
 #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
 const VISIBILITY: f32 = 750.;
 
-const VISIBILITY_COLOR: f32 = VISIBILITY * 0.3;
+const VISIBILITY_COLOR: f32 = VISIBILITY * 0.4;
 
 pub fn far_culling(
     mut commands: Commands,

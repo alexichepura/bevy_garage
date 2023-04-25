@@ -91,7 +91,7 @@ fn fragment(in: FragmentInput) -> @location(0) vec4<f32> {
     output_color = output_color * in.color;
 #endif
 
-    var pbr_input: PbrInput;
+    var pbr_input: PbrInput = pbr_input_new();
     pbr_input.material.base_color = output_color;
     pbr_input.material.reflectance = 0.5;
     pbr_input.material.alpha_cutoff = 0.5;

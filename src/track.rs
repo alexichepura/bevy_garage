@@ -125,7 +125,7 @@ pub struct AsphaltBlock {
     uvs: Vec<[f32; 2]>,
 }
 
-const BLOCK_SPAN: usize = 2;
+const BLOCK_SPAN: usize = 1;
 
 pub fn spawn_road(
     handled_materials: &Res<MaterialHandle>,

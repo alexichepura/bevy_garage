@@ -30,7 +30,9 @@ impl FromWorld for MaterialHandle {
         #[cfg(not(target_os = "ios"))]
         let quality = 10;
 
-        let ground_color = Color::hex("7b824e").unwrap();
+        // let ground_color = Color::hex("7b824e").unwrap();
+        // let ground_color = Color::hex("75a22e").unwrap();
+        let ground_color = Color::hex("6aa84f").unwrap();
         let mut ground_materials = world.resource_mut::<Assets<GroundMaterial>>();
         let ground_handle = ground_materials.add(GroundMaterial {
             color: ground_color,
@@ -59,11 +61,15 @@ impl FromWorld for MaterialHandle {
         let asphalt_color_handle = standard_materials.add(StandardMaterial {
             base_color: asphalt_color,
             depth_bias: asphalt_depth_bias,
+            reflectance: 0.5,
+            perceptual_roughness: 0.7,
             ..default()
         });
         let ground_color_handle = standard_materials.add(StandardMaterial {
             base_color: ground_color,
             depth_bias: 0.,
+            reflectance: 0.5,
+            perceptual_roughness: 0.75,
             ..default()
         });
         let wall_handle = standard_materials.add(StandardMaterial {
