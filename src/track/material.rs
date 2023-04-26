@@ -22,9 +22,11 @@ pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
-        #[cfg(any(target_os = "ios"))]
+        #[cfg(any(target_os = "ios", target_os = "android"))]
         let quality = 2;
-        #[cfg(not(target_os = "ios"))]
+        #[cfg(any(target_arch = "wasm32"))]
+        let quality = 5;
+        #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
         let quality = 10;
 
         let ground_color = Color::hex("6aa84f").unwrap();

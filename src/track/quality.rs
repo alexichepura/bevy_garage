@@ -4,7 +4,7 @@ use bevy::prelude::*;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 const VISIBILITY: f32 = 200.;
 #[cfg(any(target_arch = "wasm32"))]
-const VISIBILITY: f32 = 500.;
+const VISIBILITY: f32 = 400.;
 #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
 const VISIBILITY: f32 = 750.;
 
