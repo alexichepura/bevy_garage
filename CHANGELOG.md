@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.4.0 (2023-04-26)
+
+- bevy 0.10.1
+- ground and asphalt shaders
+- use depth bias instead of ear clip for ground
+- simple engine sound with fundsp
+- virtual joystick for mobile touch
+
 ## Version 0.3.0 (2023-03-23)
 
 - bevy 0.10

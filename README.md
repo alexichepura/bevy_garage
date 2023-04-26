@@ -1,16 +1,13 @@
-# bevy_garage - space about cars and driving
-
-Renamed from bevy_rapier_car_sim
+# bevy_garage - gamelike car simulation playground
 
 ![Bevy Garage 0.3 screenshot 2023-03-25](https://user-images.githubusercontent.com/5582266/227719005-d22da207-188c-4a6e-9582-68aa8616e9ca.jpg)
 
+Wasm demo <https://alexi.chepura.space/bevy-garage>
+
 - game engine <https://bevyengine.org>
 - rigid body physics <https://rapier.rs>
-- Wasm demo <https://alexi.chepura.space/bevy-garage> (desktop only)
-- xr bevy fork <https://github.com/kcking/bevy>
-- iOS, WIP gyroscope using <https://github.com/madsmtm/objc2>
 - kenney assets <https://www.kenney.nl/assets/car-kit>
-- neural networks <https://github.com/coreylowman/dfdx>
+- neural network <https://github.com/coreylowman/dfdx>
 - api server and client <https://github.com/tokio-rs/axum>
 - db client <https://github.com/Brendonovich/prisma-client-rust>
 - sound <https://github.com/harudagondi/bevy_fundsp> & <https://github.com/SamiPerttu/fundsp>

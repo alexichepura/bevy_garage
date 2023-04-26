@@ -2,7 +2,6 @@
 
 ## Adapted Code
 
-* ear_clipping from [parry](https://github.com/dimforge/parry/blob/e058023d33976628731cc7421b57c38f53b6b2ec/src/transformation/ear_clipping.rs)
 * camera controller from bevy example [camera_controller_plugin.rs](https://github.com/bevyengine/bevy/blob/main/examples/tools/scene_viewer/camera_controller_plugin.rs)
 
 ## Inspiration
