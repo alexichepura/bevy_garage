@@ -1,8 +1,4 @@
-use super::{
-    gradient::{get_sgd, AutoDevice},
-    params::*,
-    replay::ReplayBuffer,
-};
+use super::{gradient::get_sgd, params::*, replay::ReplayBuffer};
 use crate::{dash::*, nn::dqn::*};
 use bevy::prelude::*;
 use dfdx::{optim::Sgd, prelude::*};

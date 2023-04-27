@@ -1,10 +1,8 @@
 use super::params::LEARNING_RATE;
-use dfdx::optim::{Momentum, Sgd, SgdConfig};
-
-#[cfg(not(feature = "cuda"))]
-pub type AutoDevice = dfdx::tensor::Cpu;
-#[cfg(feature = "cuda")]
-pub type AutoDevice = dfdx::tensor::Cuda;
+use dfdx::{
+    optim::{Momentum, Sgd, SgdConfig},
+    tensor::AutoDevice,
+};
 
 pub fn get_sgd<M>(m: &M) -> Sgd<M, f32, AutoDevice> {
     let sgd: Sgd<M, f32, AutoDevice> = Sgd::new(

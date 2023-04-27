@@ -1,7 +1,4 @@
-use super::{
-    gradient::{get_sgd, AutoDevice},
-    params::*,
-};
+use super::{gradient::get_sgd, params::*};
 use crate::{
     car::*,
     config::*,

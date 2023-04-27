@@ -1,4 +1,4 @@
-use super::{dqn::*, gradient::AutoDevice, params::*};
+use super::{dqn::*, params::*};
 use dfdx::prelude::*;
 
 pub type Tensor1DUsize<const M: usize, Tape = NoneTape> = Tensor<Rank1<M>, usize, Cpu, Tape>;
