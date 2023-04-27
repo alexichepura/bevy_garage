@@ -1,5 +1,4 @@
-use crate::nn::{AutoDevice, Observation, BATCH_SIZE, STATE_SIZE};
-// use dfdx::prelude::{NoneTape, Tensor1D, Tensor2D};
+use crate::nn::{Observation, BATCH_SIZE, STATE_SIZE};
 use dfdx::prelude::*;
 
 pub type Tensor1DUsize<const M: usize, Tape = NoneTape> = Tensor<Rank1<M>, usize, Cpu, Tape>;

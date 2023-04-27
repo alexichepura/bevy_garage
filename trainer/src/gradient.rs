@@ -1,6 +1,9 @@
-use dfdx::optim::{Momentum, Sgd, SgdConfig};
+use dfdx::{
+    optim::{Momentum, Sgd, SgdConfig},
+    tensor::AutoDevice,
+};
 
-use crate::nn::{AutoDevice, LEARNING_RATE};
+use crate::nn::LEARNING_RATE;
 
 pub fn get_sgd<M>(m: &M) -> Sgd<M, f32, AutoDevice> {
     let sgd: Sgd<M, f32, AutoDevice> = Sgd::new(

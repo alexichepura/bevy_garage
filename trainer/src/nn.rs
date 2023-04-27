@@ -1,13 +1,7 @@
-// use db_client::db::{rb, PrismaClient};
-use std::time::Instant;
-
-// use crate::replay::ReplayBuffer;
 use dfdx::prelude::*;
-
-#[cfg(not(feature = "cuda"))]
-pub type AutoDevice = dfdx::tensor::Cpu;
-#[cfg(feature = "cuda")]
-pub type AutoDevice = dfdx::tensor::Cuda;
+use std::time::Instant;
+// use db_client::db::{rb, PrismaClient};
+// use crate::replay::ReplayBuffer;
 
 pub const ACTIONS: usize = 8;
 pub const SENSOR_COUNT: usize = 31;
