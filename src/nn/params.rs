@@ -7,7 +7,7 @@ pub const EPOCHS: usize = 512;
 
 pub const BATCH_SIZE: usize = 128;
 pub const STEP_DURATION: f64 = 1. / 10.;
-pub const DECAY: f32 = 0.01;
+pub const DECAY: f32 = 0.001;
 pub const LEARNING_RATE: f32 = 0.002;
 pub const SYNC_INTERVAL_STEPS: usize = 100;
 pub const BUFFER_SIZE: usize = 10_000_000;
