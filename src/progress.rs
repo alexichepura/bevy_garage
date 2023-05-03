@@ -19,28 +19,29 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
     let (segment_i, segment_location) = point_location.1;
     let segment = polyline.segment(segment_i);
     config.polyline = Some(polyline.clone());
-    config.segment_i = segment_i;
+    config.start_segment_i = segment_i as usize;
 
     match segment_location {
         SegmentPointLocation::OnVertex(_i) => {
-            config.segment_m = 0.;
+            config.start_segment_shift = 0.;
         }
         SegmentPointLocation::OnEdge(uv) => {
-            config.segment_m = uv[1] * segment.length();
+            config.start_segment_shift = uv[1] * segment.length();
         }
     }
 
-    let mut meters = 0.;
+    let mut track_length = 0.;
     for s in polyline.segments() {
-        config.meters.push(meters);
-        meters += s.length();
+        config.segments.push(track_length);
+        track_length += s.length();
     }
-    config.meters_shift = config.meters[config.segment_i as usize];
-    config.track_length = meters;
+    let start_shift = config.segments[config.start_segment_i] + config.start_segment_shift;
+    config.start_shift = start_shift;
+    config.track_length = track_length;
 
     println!(
-        "track length: {meters:.1} polyline shift: {:.1}",
-        config.meters_shift
+        "track length: {track_length:.1}, start_shift: {:.1}, segment_shift: {:.1}, segment_i: {}",
+        start_shift, config.start_segment_shift, config.start_segment_i
     );
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
@@ -64,31 +65,48 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
         let point_location = polyline.project_local_point_and_get_location(&point, true);
         let (segment_i, segment_location) = point_location.1;
         let segment = polyline.segment(segment_i);
-        match segment_location {
-            SegmentPointLocation::OnVertex(_i) => {
-                // println!("vertex_i_{i:?}");
+        let segment_progress = match segment_location {
+            SegmentPointLocation::OnEdge(uv) => uv[1] * segment.length(),
+            _ => {
+                continue;
             }
-            SegmentPointLocation::OnEdge(uv) => {
-                let m = uv[1] * segment.length();
-                let mut meters = match segment_i {
-                    i if i >= config.segment_i => {
-                        m + config.meters[segment_i as usize] - config.meters_shift
-                    }
-                    _ => {
-                        m + config.meters[segment_i as usize] + config.track_length
-                            - config.meters_shift
-                    }
-                };
-                if meters - car.meters > config.track_length - 10. {
-                    meters = -(config.track_length - meters);
-                }
-                let dir = Vec3::from(segment.direction().unwrap());
-                car.line_dir = dir;
-                car.line_pos = Vec3::from(segment.a) + dir * m;
-                car.meters = meters;
-                board.push((e, meters));
-            }
+        };
+
+        let segments_progress: f32 =
+            config.segments[segment_i as usize] + segment_progress - config.start_shift;
+        let track_position: f32 = if segments_progress > 0. {
+            segments_progress
+        } else {
+            segments_progress + config.track_length
+        };
+
+        let mut ride_distance = if track_position >= car.start_shift {
+            track_position - car.start_shift
+        } else {
+            config.track_length + track_position - car.start_shift
+        };
+        let half = config.track_length / 2.;
+        if ride_distance - car.ride_distance > half {
+            // prevent increasing distance by going backward
+            ride_distance = ride_distance - config.track_length;
         }
+        if ride_distance.is_sign_positive() && car.ride_distance.is_sign_negative()
+            || ride_distance < half && car.ride_distance > half
+        {
+            car.lap += 1;
+        }
+        if ride_distance.is_sign_negative() && car.ride_distance.is_sign_positive()
+            || ride_distance > -half && car.ride_distance < -half
+        {
+            car.lap -= 1;
+        }
+        car.track_position = track_position;
+        car.ride_distance = ride_distance;
+
+        let dir = Vec3::from(segment.direction().unwrap());
+        car.line_dir = dir;
+        car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
+        board.push((e, track_position));
     }
     board.sort_by(|a, b| {
         if a.1 > b.1 {

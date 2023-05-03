@@ -67,6 +67,9 @@ pub fn input_system(
             car.despawn_wheels(&mut commands);
 
             let (transform, init_meters) = config.get_transform_random();
+            // let init_meters = 5088.;
+            // let (translate, quat) = config.get_transform_by_meter(init_meters);
+            // let transform = Transform::from_translation(translate).with_rotation(quat);
             spawn_car(
                 &mut commands,
                 &config.car_scene.as_ref().unwrap(),

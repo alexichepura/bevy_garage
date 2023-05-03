@@ -17,10 +17,10 @@ pub struct Config {
     pub max_torque: f32,
     pub max_toi: f32,
     pub polyline: Option<Polyline>,
-    pub segment_i: u32,
-    pub segment_m: f32,
-    pub meters: Vec<f32>,
-    pub meters_shift: f32,
+    pub segments: Vec<f32>,
+    pub start_segment_i: usize,
+    pub start_segment_shift: f32,
+    pub start_shift: f32,
     pub track_length: f32,
     pub car_scene: Option<Handle<Scene>>,
     pub wheel_scene: Option<Handle<Scene>>,
@@ -35,10 +35,10 @@ impl Default for Config {
             max_toi: MAX_TOI,
             quat: Quat::from_rotation_y(-PI * 0.225),
             polyline: None,
-            segment_i: 0,
-            segment_m: 0.,
-            meters: vec![],
-            meters_shift: 0.,
+            segments: vec![],
+            start_segment_i: 0,
+            start_segment_shift: 0.,
+            start_shift: 0.,
             track_length: 0.,
             car_scene: None,
             wheel_scene: None,
@@ -62,7 +62,7 @@ impl Config {
     pub fn get_transform_by_meter(&self, meters: f32) -> (Vec3, Quat) {
         let polyline = self.polyline.as_ref().unwrap();
         let mut seg_meters = 0.;
-        let mut shift = meters + self.meters_shift;
+        let mut shift = meters + self.start_shift;
         if shift > self.track_length {
             shift = shift - self.track_length * (shift / self.track_length).floor();
         }
@@ -75,7 +75,7 @@ impl Config {
                 let a: Vec3 = segment.a.into();
                 let dir: Vec3 = segment.direction().unwrap().into();
                 let mut pos: Vec3 = a + dir * (shift - seg_meters);
-                pos.y = 0.459;
+                pos.y = 0.46;
 
                 return (pos, Quat::from_rotation_arc(Vec3::Z, dir));
             }

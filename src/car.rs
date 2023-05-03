@@ -55,9 +55,10 @@ pub struct Car {
     pub reset_at: Option<f64>,
 
     pub index: usize,
-    pub init_meters: f32,
-    pub meters: f32,
-    pub lap: usize,
+    pub start_shift: f32,
+    pub track_position: f32,
+    pub ride_distance: f32,
+    pub lap: i32,
     pub line_dir: Vec3,
     pub line_pos: Vec3,
     pub place: usize,
@@ -124,8 +125,9 @@ impl Default for Car {
             reset_at: None,
 
             index: 0,
-            init_meters: 0.,
-            meters: 0.,
+            start_shift: 0.,
+            track_position: 0.,
+            ride_distance: 0.,
             place: 0,
             lap: 0,
             line_dir: Vec3::ZERO,
@@ -155,8 +157,7 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let init_meters = 42.;
-        // let (transform, init_meters) = config.get_transform_by_index(i);
+        let init_meters = 0.;
         let (translate, quat) = config.get_transform_by_meter(init_meters);
         let transform = Transform::from_translation(translate).with_rotation(quat);
         spawn_car(
@@ -326,7 +327,7 @@ pub fn spawn_car(
         wheels: wheels.clone(),
         wheel_max_torque: max_torque,
         init_transform: transform,
-        init_meters,
+        start_shift: init_meters,
         index,
         ..default()
     };
@@ -398,7 +399,7 @@ pub fn spawn_car(
             .entity(*wheel_id)
             .insert(JointType::new(car_id, joints[i]));
     }
-    println!("car log: {car_id:?} {:?}", wheels);
+    println!("car spawned: {car_id:?} at {init_meters}m");
     return car_id;
 }
 

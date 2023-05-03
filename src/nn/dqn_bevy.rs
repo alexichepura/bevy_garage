@@ -160,7 +160,7 @@ pub fn dqn_event_reader_system(
 
 pub fn dqn_dash_update_system(
     mut dash_set: ParamSet<(
-        Query<&mut Text, With<TrainerRecordDistanceText>>,
+        Query<&mut Text, With<TrainerEpsilonText>>,
         Query<&mut Text, With<TrainerGenerationText>>,
     )>,
     dqn: Res<DqnResource>,
