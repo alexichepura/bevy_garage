@@ -58,7 +58,7 @@ pub struct Car {
     pub start_shift: f32,
     pub track_position: f32,
     pub ride_distance: f32,
-    pub lap: usize,
+    pub lap: i32,
     pub line_dir: Vec3,
     pub line_pos: Vec3,
     pub place: usize,

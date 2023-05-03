@@ -109,7 +109,7 @@ pub fn dash_start_system(mut commands: Commands, asset_server: Res<AssetServer>)
                                     style: TextStyle {
                                         font: medium.clone(),
                                         font_size: 18.0,
-                                        color: Color::YELLOW,
+                                        color: Color::PURPLE,
                                     },
                                 }],
                                 ..default()

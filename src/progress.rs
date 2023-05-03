@@ -90,10 +90,10 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
             // prevent increasing distance by going backward
             ride_distance = ride_distance - config.track_length;
         }
-        if ride_distance < half && config.track_length - car.ride_distance < half {
+        if ride_distance < half && car.ride_distance > half {
             car.lap += 1;
         }
-        if ride_distance > -half && config.track_length + car.ride_distance < half {
+        if ride_distance > -half && car.ride_distance < -half {
             car.lap -= 1;
         }
         car.track_position = track_position;
