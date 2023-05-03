@@ -19,28 +19,29 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
     let (segment_i, segment_location) = point_location.1;
     let segment = polyline.segment(segment_i);
     config.polyline = Some(polyline.clone());
-    config.segment_i = segment_i;
+    config.start_segment_i = segment_i as usize;
 
     match segment_location {
         SegmentPointLocation::OnVertex(_i) => {
-            config.segment_m = 0.;
+            config.start_segment_shift = 0.;
         }
         SegmentPointLocation::OnEdge(uv) => {
-            config.segment_m = uv[1] * segment.length();
+            config.start_segment_shift = uv[1] * segment.length();
         }
     }
 
-    let mut meters = 0.;
+    let mut track_length = 0.;
     for s in polyline.segments() {
-        config.meters.push(meters);
-        meters += s.length();
+        config.segments.push(track_length);
+        track_length += s.length();
     }
-    config.meters_shift = config.meters[config.segment_i as usize];
-    config.track_length = meters;
+    let start_shift = config.segments[config.start_segment_i] + config.start_segment_shift;
+    config.start_shift = start_shift;
+    config.track_length = track_length;
 
     println!(
-        "track length: {meters:.1} polyline shift: {:.1}",
-        config.meters_shift
+        "track length: {track_length:.1}, start_shift: {:.1}, segment_shift: {:.1}, segment_i: {}",
+        start_shift, config.start_segment_shift, config.start_segment_i
     );
 
     let collider = Collider::from(ColliderShape::polyline(vertices, None));
@@ -71,12 +72,12 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
             SegmentPointLocation::OnEdge(uv) => {
                 let m = uv[1] * segment.length();
                 let mut meters = match segment_i {
-                    i if i >= config.segment_i => {
-                        m + config.meters[segment_i as usize] - config.meters_shift
+                    i if i >= config.start_segment_i as u32 => {
+                        m + config.segments[segment_i as usize] - config.start_shift
                     }
                     _ => {
-                        m + config.meters[segment_i as usize] + config.track_length
-                            - config.meters_shift
+                        m + config.segments[segment_i as usize] + config.track_length
+                            - config.start_shift
                     }
                 };
                 if meters - car.meters > config.track_length - 10. {

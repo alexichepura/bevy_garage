@@ -155,8 +155,7 @@ pub fn car_start_system(
 
     for i in 0..config.cars_count {
         let is_hid = i == 0;
-        let init_meters = 42.;
-        // let (transform, init_meters) = config.get_transform_by_index(i);
+        let init_meters = 0.;
         let (translate, quat) = config.get_transform_by_meter(init_meters);
         let transform = Transform::from_translation(translate).with_rotation(quat);
         spawn_car(
@@ -398,7 +397,7 @@ pub fn spawn_car(
             .entity(*wheel_id)
             .insert(JointType::new(car_id, joints[i]));
     }
-    println!("car log: {car_id:?} {:?}", wheels);
+    println!("car spawned: {car_id:?} at {init_meters}m");
     return car_id;
 }
 
