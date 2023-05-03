@@ -66,15 +66,10 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
         let (segment_i, segment_location) = point_location.1;
         let segment = polyline.segment(segment_i);
         let segment_progress = match segment_location {
-            SegmentPointLocation::OnVertex(i) => {
-                // println!("SegmentPointLocation::OnVertex segment_i_{segment_i} vertex_i_{i}");
-                if i == 0 {
-                    0.
-                } else {
-                    segment.length()
-                }
-            }
             SegmentPointLocation::OnEdge(uv) => uv[1] * segment.length(),
+            _ => {
+                continue;
+            }
         };
 
         let segments_progress: f32 =
@@ -89,20 +84,17 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
         if car.start_shift != 0. {
             ride_distance += config.track_length;
         }
-        if ride_distance - car.ride_distance > 10. {
+        let half = config.track_length / 2.;
+        if ride_distance - car.ride_distance > half {
             // prevent increasing distance by going backward
             ride_distance = ride_distance - config.track_length;
         }
-        // match segment_location {
-        //     SegmentPointLocation::OnVertex(i) => {
-        //         println!(
-        //             "segment_i_{segment_i} vertex_i_{i}, oldP {}, newP {track_position}, l{}",
-        //             car.track_position,
-        //             segment.length()
-        //         );
-        //     }
-        //     _ => {}
-        // }
+        if ride_distance < half && config.track_length - car.ride_distance < half {
+            car.lap += 1;
+        }
+        if ride_distance > -half && config.track_length + car.ride_distance < half {
+            car.lap -= 1;
+        }
         car.track_position = track_position;
         car.ride_distance = ride_distance;
 
