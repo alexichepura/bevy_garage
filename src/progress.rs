@@ -80,13 +80,13 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
                 };
 
                 let mut ride_distance = track_position - car.start_shift;
+                if car.start_shift != 0. {
+                    ride_distance += config.track_length;
+                }
                 if ride_distance - car.ride_distance > 10. {
                     // prevent increasing distance by going backward
                     ride_distance = ride_distance - config.track_length;
                 }
-                // if progress - car.progress > config.track_length - 10. {
-                //     progress = -(config.track_length - progress);
-                // }
                 car.track_position = track_position;
                 car.ride_distance = ride_distance;
 

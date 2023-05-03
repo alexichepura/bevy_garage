@@ -243,6 +243,13 @@ pub fn dash_speed_update_system(
         texts.p0().single_mut().sections[0].value = format!("{:.1}m/s", mps);
         texts.p1().single_mut().sections[0].value = format!("{:.1}km/h", kmph);
         texts.p2().single_mut().sections[0].value = format!("{:.1}m", car.track_position);
-        texts.p3().single_mut().sections[0].value = format!("{:.1}m", car.ride_distance);
+
+        let sign: &str = if car.ride_distance.is_sign_negative() {
+            "-"
+        } else {
+            "+"
+        };
+        texts.p3().single_mut().sections[0].value =
+            format!("{sign}{:.1}m", car.ride_distance.abs());
     }
 }
