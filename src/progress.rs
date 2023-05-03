@@ -73,26 +73,27 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
                 let segment_progress = uv[1] * segment.length();
                 let segments_progress: f32 =
                     config.segments[segment_i as usize] + segment_progress - config.start_shift;
-                let track_progress: f32 = if segments_progress > 0. {
+                let track_position: f32 = if segments_progress > 0. {
                     segments_progress
                 } else {
                     segments_progress + config.track_length
                 };
 
-                let mut ride_distance = track_progress - car.start_shift;
-                if ride_distance - car.ride_distance > config.track_length - 10. {
-                    ride_distance = -(config.track_length - ride_distance);
+                let mut ride_distance = track_position - car.start_shift;
+                if ride_distance - car.ride_distance > 10. {
+                    // prevent increasing distance by going backward
+                    ride_distance = ride_distance - config.track_length;
                 }
                 // if progress - car.progress > config.track_length - 10. {
                 //     progress = -(config.track_length - progress);
                 // }
-                car.track_position = track_progress;
+                car.track_position = track_position;
                 car.ride_distance = ride_distance;
 
                 let dir = Vec3::from(segment.direction().unwrap());
                 car.line_dir = dir;
                 car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
-                board.push((e, track_progress));
+                board.push((e, track_position));
             }
         }
     }
