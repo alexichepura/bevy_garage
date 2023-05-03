@@ -34,7 +34,7 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
-                text.sections[0].value = format!("{:.0}", average);
+                text.sections[0].value = format!("{:.0}fps", average);
             }
         }
     }
