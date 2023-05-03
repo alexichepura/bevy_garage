@@ -55,8 +55,9 @@ pub struct Car {
     pub reset_at: Option<f64>,
 
     pub index: usize,
-    pub init_meters: f32,
-    pub meters: f32,
+    pub start_shift: f32,
+    pub track_position: f32,
+    pub ride_distance: f32,
     pub lap: usize,
     pub line_dir: Vec3,
     pub line_pos: Vec3,
@@ -124,8 +125,9 @@ impl Default for Car {
             reset_at: None,
 
             index: 0,
-            init_meters: 0.,
-            meters: 0.,
+            start_shift: 0.,
+            track_position: 0.,
+            ride_distance: 0.,
             place: 0,
             lap: 0,
             line_dir: Vec3::ZERO,
@@ -325,7 +327,7 @@ pub fn spawn_car(
         wheels: wheels.clone(),
         wheel_max_torque: max_torque,
         init_transform: transform,
-        init_meters,
+        start_shift: init_meters,
         index,
         ..default()
     };

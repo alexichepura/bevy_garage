@@ -67,27 +67,32 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
         let segment = polyline.segment(segment_i);
         match segment_location {
             SegmentPointLocation::OnVertex(_i) => {
-                // println!("vertex_i_{i:?}");
+                println!("vertex_i_{_i:?}");
             }
             SegmentPointLocation::OnEdge(uv) => {
-                let m = uv[1] * segment.length();
-                let mut meters = match segment_i {
-                    i if i >= config.start_segment_i as u32 => {
-                        m + config.segments[segment_i as usize] - config.start_shift
-                    }
-                    _ => {
-                        m + config.segments[segment_i as usize] + config.track_length
-                            - config.start_shift
-                    }
+                let segment_progress = uv[1] * segment.length();
+                let segments_progress: f32 =
+                    config.segments[segment_i as usize] + segment_progress - config.start_shift;
+                let track_progress: f32 = if segments_progress > 0. {
+                    segments_progress
+                } else {
+                    segments_progress + config.track_length
                 };
-                if meters - car.meters > config.track_length - 10. {
-                    meters = -(config.track_length - meters);
+
+                let mut ride_distance = track_progress - car.start_shift;
+                if ride_distance - car.ride_distance > config.track_length - 10. {
+                    ride_distance = -(config.track_length - ride_distance);
                 }
+                // if progress - car.progress > config.track_length - 10. {
+                //     progress = -(config.track_length - progress);
+                // }
+                car.track_position = track_progress;
+                car.ride_distance = ride_distance;
+
                 let dir = Vec3::from(segment.direction().unwrap());
                 car.line_dir = dir;
-                car.line_pos = Vec3::from(segment.a) + dir * m;
-                car.meters = meters;
-                board.push((e, meters));
+                car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
+                board.push((e, track_progress));
             }
         }
     }

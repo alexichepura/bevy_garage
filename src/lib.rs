@@ -101,7 +101,6 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_system(progress_system.in_set(CarSimLabel::Input))
         .add_system(esp_system.in_set(CarSimLabel::Esp).after(esp_run_after))
         .add_system(animate_light_direction)
-        .add_system(dash_leaderboard_system)
         .add_system(dash_fps_system)
         .add_system(dash_speed_update_system);
 
