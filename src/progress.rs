@@ -65,37 +65,51 @@ pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Ca
         let point_location = polyline.project_local_point_and_get_location(&point, true);
         let (segment_i, segment_location) = point_location.1;
         let segment = polyline.segment(segment_i);
-        match segment_location {
-            SegmentPointLocation::OnVertex(_i) => {
-                println!("vertex_i_{_i:?}");
-            }
-            SegmentPointLocation::OnEdge(uv) => {
-                let segment_progress = uv[1] * segment.length();
-                let segments_progress: f32 =
-                    config.segments[segment_i as usize] + segment_progress - config.start_shift;
-                let track_position: f32 = if segments_progress > 0. {
-                    segments_progress
+        let segment_progress = match segment_location {
+            SegmentPointLocation::OnVertex(i) => {
+                // println!("SegmentPointLocation::OnVertex segment_i_{segment_i} vertex_i_{i}");
+                if i == 0 {
+                    0.
                 } else {
-                    segments_progress + config.track_length
-                };
-
-                let mut ride_distance = track_position - car.start_shift;
-                if car.start_shift != 0. {
-                    ride_distance += config.track_length;
+                    segment.length()
                 }
-                if ride_distance - car.ride_distance > 10. {
-                    // prevent increasing distance by going backward
-                    ride_distance = ride_distance - config.track_length;
-                }
-                car.track_position = track_position;
-                car.ride_distance = ride_distance;
-
-                let dir = Vec3::from(segment.direction().unwrap());
-                car.line_dir = dir;
-                car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
-                board.push((e, track_position));
             }
+            SegmentPointLocation::OnEdge(uv) => uv[1] * segment.length(),
+        };
+
+        let segments_progress: f32 =
+            config.segments[segment_i as usize] + segment_progress - config.start_shift;
+        let track_position: f32 = if segments_progress > 0. {
+            segments_progress
+        } else {
+            segments_progress + config.track_length
+        };
+
+        let mut ride_distance = track_position - car.start_shift;
+        if car.start_shift != 0. {
+            ride_distance += config.track_length;
         }
+        if ride_distance - car.ride_distance > 10. {
+            // prevent increasing distance by going backward
+            ride_distance = ride_distance - config.track_length;
+        }
+        // match segment_location {
+        //     SegmentPointLocation::OnVertex(i) => {
+        //         println!(
+        //             "segment_i_{segment_i} vertex_i_{i}, oldP {}, newP {track_position}, l{}",
+        //             car.track_position,
+        //             segment.length()
+        //         );
+        //     }
+        //     _ => {}
+        // }
+        car.track_position = track_position;
+        car.ride_distance = ride_distance;
+
+        let dir = Vec3::from(segment.direction().unwrap());
+        car.line_dir = dir;
+        car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
+        board.push((e, track_position));
     }
     board.sort_by(|a, b| {
         if a.1 > b.1 {
