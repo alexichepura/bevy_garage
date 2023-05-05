@@ -95,7 +95,10 @@ pub fn dqn_system(
         let mut d_from_center = car.line_pos - tr.translation;
         d_from_center.y = 0.;
         let d = d_from_center.length();
+        let d_norm = d / 4.;
 
+        let velocity = v.linvel.length();
+        let velocity_norm = velocity / SPEED_LIMIT_MPS;
         let shape_reward = || -> f32 {
             if crash {
                 return -1.;
@@ -103,7 +106,7 @@ pub fn dqn_system(
             // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
             // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
             // R = v(cos α − d)
-            let mut reward = v.linvel.length() / SPEED_LIMIT_MPS * (vel_cos - d / 5.);
+            let mut reward = velocity_norm * (vel_cos - d_norm);
             if vel_cos.is_sign_positive() && pos_cos.is_sign_negative() {
                 reward = -reward;
             }
@@ -113,15 +116,16 @@ pub fn dqn_system(
             return reward;
         };
         let reward = shape_reward();
-        let mps = v.linvel.length();
-        let kmh = mps / 1000. * 3600.;
         let mut obs: Observation = [0.; STATE_SIZE];
         for i in 0..STATE_SIZE {
             obs[i] = match i {
-                0 => kmh / 100.,
-                1 => vel_cos,
-                2 => pos_cos,
-                _ => car.sensor_inputs[i - STATE_SIZE_BASE],
+                0 => velocity_norm,
+                1 => v.angvel.y,
+                2 => d_norm,
+                3 => vel_cos,
+                4 => pos_cos,
+                STATE_SIZE_BASE..=STATE_SIZE => car.sensor_inputs[i - STATE_SIZE_BASE],
+                _ => panic!("unknown observation record"),
             };
         }
 
