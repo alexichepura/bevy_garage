@@ -98,23 +98,21 @@ pub fn spawn_walls(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(indices)));
 
-    commands
-        .spawn(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(mesh),
             material: handled_materials.wall.clone(),
             transform: Transform::from_xyz(0., 0., 0.),
             ..Default::default()
-        })
-        .insert(Collider::from(ColliderShape::trimesh(
-            collider_vertices,
-            collider_indices,
-        )))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
+        },
+        Friction {
             combine_rule: CoefficientCombineRule::Min,
             coefficient: 0.1,
             ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+        },
+        Collider::from(ColliderShape::trimesh(collider_vertices, collider_indices)),
+        ColliderScale::Absolute(Vec3::ONE),
+        CollisionGroups::new(STATIC_GROUP, Group::ALL),
+        Restitution::coefficient(0.),
+    ));
 }
