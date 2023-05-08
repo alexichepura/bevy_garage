@@ -28,7 +28,7 @@ const AREA_SIZE: Size = Size::all(Val::Px(150.));
 const BG: BackgroundColor = BackgroundColor(Color::rgba(1.0, 0.27, 0.0, 0.1));
 
 pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
-    cmd.spawn(
+    cmd.spawn((
         VirtualJoystickBundle::new(VirtualJoystickNode {
             border_image: asset_server.load("joystick/Horizontal_Outline_Arrows.png"),
             knob_image: asset_server.load("joystick/Outline.png"),
@@ -49,11 +49,11 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             },
             ..default()
         }),
-    )
-    .insert(BG)
-    .insert(VirtualJoystickInteractionArea);
+        BG,
+        VirtualJoystickInteractionArea,
+    ));
 
-    cmd.spawn(
+    cmd.spawn((
         VirtualJoystickBundle::new(VirtualJoystickNode {
             border_image: asset_server.load("joystick/Vertical_Outline_Arrows.png"),
             knob_image: asset_server.load("joystick/Outline.png"),
@@ -74,9 +74,9 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
             },
             ..default()
         }),
-    )
-    .insert(BG)
-    .insert(VirtualJoystickInteractionArea);
+        BG,
+        VirtualJoystickInteractionArea,
+    ));
 }
 
 fn update_joystick(
