@@ -249,7 +249,6 @@ pub fn spawn_car(
                         principal_inertia: Vec3::ONE * 0.3,
                         ..default()
                     }),
-                    ColliderScale::Absolute(Vec3::ONE),
                     CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
                     Damping {
                         linear_damping: 0.05,
@@ -260,12 +259,15 @@ pub fn spawn_car(
                         coefficient: 5.0,
                         ..default()
                     },
+                    Restitution::coefficient(0.),
+                ),
+                (
+                    Ccd::enabled(),
+                    ColliderScale::Absolute(Vec3::ONE),
                     ExternalForce::default(),
                     ExternalImpulse::default(),
-                    Restitution::coefficient(0.),
                     RigidBody::Dynamic,
                     Sleeping::disabled(),
-                    Ccd::enabled(),
                     Velocity::zero(),
                 ),
             ))
@@ -273,6 +275,7 @@ pub fn spawn_car(
         wheels.push(wheel_id);
     }
 
+    let radius_border_radius = 0.1;
     let car_id = commands
         .spawn((
             Name::new("car"),
@@ -290,42 +293,40 @@ pub fn spawn_car(
                 transform,
                 ..default()
             },
-            Sleeping::disabled(),
-            RigidBody::Dynamic,
-            Ccd::enabled(),
-            Damping {
-                linear_damping: 0.05,
-                angular_damping: 0.1,
-            },
-            Velocity::zero(),
-            ExternalForce::default(),
-            ReadMassProperties::default(),
-        ))
-        .with_children(|children| {
-            let radius = 0.1;
-            children.spawn((
-                Name::new("car_body_collider"),
+            (
                 Collider::round_cuboid(
-                    size.hw - radius,
-                    size.hh - radius,
-                    size.hl - radius,
-                    radius,
+                    size.hw - radius_border_radius,
+                    size.hh - radius_border_radius,
+                    size.hl - radius_border_radius,
+                    radius_border_radius,
                 ),
-                ColliderScale::Absolute(Vec3::ONE),
-                Friction::coefficient(0.5),
-                Restitution::coefficient(0.),
-                CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
-                CollidingEntities::default(),
-                ActiveEvents::COLLISION_EVENTS,
-                ContactForceEventThreshold(0.1),
                 ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -size.hh, 0.),
                     mass: 1000.0,
                     principal_inertia: Vec3::new(5000., 5000., 2000.), // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
                     ..default()
                 }),
-            ));
-        })
+                Damping {
+                    linear_damping: 0.05,
+                    angular_damping: 0.1,
+                },
+                Friction::coefficient(0.5),
+                Restitution::coefficient(0.),
+                CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
+                ActiveEvents::COLLISION_EVENTS,
+                ContactForceEventThreshold(0.1),
+            ),
+            (
+                Ccd::enabled(),
+                CollidingEntities::default(),
+                ColliderScale::Absolute(Vec3::ONE),
+                ExternalForce::default(),
+                ReadMassProperties::default(),
+                RigidBody::Dynamic,
+                Sleeping::disabled(),
+                Velocity::zero(),
+            ),
+        ))
         .id();
     #[cfg(feature = "brain")]
     {
