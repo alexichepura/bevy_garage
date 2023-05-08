@@ -21,29 +21,12 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
 pub fn esp_system(
     time: Res<Time>,
     mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
-    mut wheel_set: ParamSet<(
-        Query<
-            (
-                &Wheel,
-                &mut ExternalForce,
-                &Transform,
-                &Velocity,
-                &mut JointType,
-                Option<&WheelLeft>,
-            ),
-            With<WheelFront>,
-        >,
-        Query<
-            (
-                &Wheel,
-                &mut ExternalForce,
-                &Transform,
-                &Velocity,
-                &mut JointType,
-                Option<&WheelLeft>,
-            ),
-            With<WheelBack>,
-        >,
+    mut wheels: Query<(
+        &Wheel,
+        &mut ExternalForce,
+        &Transform,
+        &Velocity,
+        &mut JointType,
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
     #[cfg(feature = "debug_lines")] config: Res<crate::config::Config>,
@@ -67,12 +50,9 @@ pub fn esp_system(
         let car_kmh = car_mps / 1000. * 3600.;
         let torque_speed_x: f32 = match braking {
             true => 2.,
-            // _ => 1.,
             _ => match car_kmh / SPEED_LIMIT_KMH {
                 x if x >= 1. => 0.,
-                // x => 1. - x,
                 x => 0.5 + 0.5 * (1. - x),
-                // _ => 1.,
             },
         };
         let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
@@ -114,19 +94,18 @@ pub fn esp_system(
         let steering_torque_vec = quat.mul_vec3(torque_vec);
 
         for (_i, wheel_entity) in car.wheels.iter().enumerate() {
-            let mut q_front_wheels = wheel_set.p0();
-            let wheel_result = q_front_wheels.get_mut(*wheel_entity);
-            if let Ok((wheel, mut f, transform, v, mut j, is_left)) = wheel_result {
-                let radius_vel = v.angvel * wheel.radius;
-                let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
-                let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
+            let (wheel, mut f, transform, v, mut j) = wheels.get_mut(*wheel_entity).unwrap();
+            let radius_vel = v.angvel * wheel.radius;
+            let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
+            let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
+            if wheel.is_front {
                 let max_slip = 50.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
                 };
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
-                let wheel_torque = if let Some(_) = is_left {
+                let wheel_torque = if wheel.is_left {
                     -total_torque
                 } else {
                     total_torque
@@ -134,29 +113,21 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                {
-                    if config.show_rays {
-                        let start = transform.translation + Vec3::Y * 0.5;
-                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
-                        lines.line_colored(start, end, 0.0, Color::VIOLET);
-                    }
+                if config.show_rays {
+                    let start = transform.translation + Vec3::Y * 0.5;
+                    let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
+                    lines.line_colored(start, end, 0.0, Color::VIOLET);
                 }
-                j.data.set_local_basis1(quat);
-            }
 
-            if let Ok((wheel, mut f, transform, v, mut j, is_left)) =
-                wheel_set.p1().get_mut(*wheel_entity)
-            {
-                let radius_vel = v.angvel * wheel.radius;
-                let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
-                let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
+                j.data.set_local_basis1(quat);
+            } else {
                 let max_slip = 5.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
                 };
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
-                let wheel_torque = if let Some(_) = is_left {
+                let wheel_torque = if wheel.is_left {
                     -total_torque
                 } else {
                     total_torque
@@ -164,12 +135,10 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                {
-                    if config.show_rays {
-                        let start = transform.translation + Vec3::Y * 0.5;
-                        let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
-                        lines.line_colored(start, end, 0.0, Color::VIOLET);
-                    }
+                if config.show_rays {
+                    let start = transform.translation + Vec3::Y * 0.5;
+                    let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
+                    lines.line_colored(start, end, 0.0, Color::VIOLET);
                 }
                 let quat_back = -Quat::from_axis_angle(Vec3::Y, 0.);
                 j.data.set_local_basis1(quat_back);

@@ -18,19 +18,10 @@ pub const SENSOR_COUNT: usize = 31;
 pub struct Wheel {
     pub radius: f32,
     pub width: f32,
+    pub is_front: bool,
+    pub is_left: bool,
 }
-#[derive(Component)]
-pub struct WheelFront;
-#[derive(Component)]
-pub struct WheelBack;
-#[derive(Component)]
-pub struct WheelLeft;
-#[derive(Component)]
-pub struct WheelRight;
-// #[derive(Component)]
-// pub struct WheelFrontLeft;
-// #[derive(Component)]
-// pub struct WheelFrontRight;
+
 #[derive(Component)]
 pub struct HID;
 
@@ -188,16 +179,13 @@ pub fn spawn_car(
         hh: 0.35,
         hl: 2.2,
     };
-    let wheel_front_r: f32 = 0.4;
-    let wheel_back_r: f32 = 0.401;
-    let wheel_front_hw: f32 = 0.2;
-    let wheel_back_hw: f32 = wheel_front_hw;
-    // let wheel_back_hw: f32 = 0.2;
+    let wheel_r: f32 = 0.4;
+    let wheel_hw: f32 = 0.2;
     let ride_height = 0.08;
     let shift = Vec3::new(
-        size.hw - wheel_front_hw - 0.1,
-        -size.hh + wheel_front_r - ride_height,
-        size.hl - wheel_front_r - 0.5,
+        size.hw - wheel_hw - 0.1,
+        -size.hh + wheel_r - ride_height,
+        size.hl - wheel_r - 0.5,
     );
     let car_anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
@@ -215,30 +203,18 @@ pub fn spawn_car(
             2 => (false, false),
             _ => (false, true),
         };
-        let wheel_hw = match is_front {
-            true => wheel_front_hw,
-            false => wheel_back_hw,
-        };
-        let wheel_r = match is_front {
-            true => wheel_front_r,
-            false => wheel_back_r,
-        };
-        let joint_mask: JointAxesMask = JointAxesMask::ANG_Y
-            | JointAxesMask::ANG_Z
-            | JointAxesMask::X
-            // | JointAxesMask::Y
-            | JointAxesMask::Z;
-        let wheel_axis = match is_left {
+        let joint = GenericJointBuilder::new(
+            JointAxesMask::ANG_Y | JointAxesMask::ANG_Z | JointAxesMask::X | JointAxesMask::Z,
+        )
+        .local_axis1(Vec3::X)
+        .local_axis2(match is_left {
             true => -Vec3::Y,
             false => Vec3::Y,
-        };
-        let joint = GenericJointBuilder::new(joint_mask)
-            .local_axis1(Vec3::X)
-            .local_axis2(wheel_axis)
-            .local_anchor1(car_anchors[i])
-            .local_anchor2(Vec3::ZERO)
-            .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
-            .build();
+        })
+        .local_anchor1(car_anchors[i])
+        .local_anchor2(Vec3::ZERO)
+        .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
+        .build();
         joints.push(joint);
 
         let wheel_border_radius = 0.05;
@@ -246,142 +222,109 @@ pub fn spawn_car(
             transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
         )
         .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
-        .with_scale(Vec3::new(
-            wheel_front_r * 2.,
-            wheel_front_hw * 2.,
-            wheel_front_r * 2.,
-        ));
+        .with_scale(Vec3::new(wheel_r * 2., wheel_hw * 2., wheel_r * 2.));
         let wheel_id = commands
-            .spawn_empty()
-            .insert(Name::new("wheel"))
-            .insert(SceneBundle {
-                scene: wheel_gl.clone(),
-                transform: wheel_transform,
-                ..default()
-            })
-            .insert(Sleeping::disabled())
-            .insert(TransformBundle::from(wheel_transform))
-            .insert(RigidBody::Dynamic)
-            .insert(Ccd::enabled())
-            .insert(Velocity::zero())
-            .insert(Collider::round_cylinder(
-                wheel_hw - wheel_border_radius,
-                wheel_r - wheel_border_radius,
-                wheel_border_radius,
+            .spawn((
+                Name::new("wheel"),
+                Wheel {
+                    radius: wheel_r,
+                    width: wheel_hw * 2.,
+                    is_front,
+                    is_left,
+                },
+                SceneBundle {
+                    scene: wheel_gl.clone(),
+                    transform: wheel_transform,
+                    ..default()
+                },
+                (
+                    Collider::round_cylinder(
+                        wheel_hw - wheel_border_radius,
+                        wheel_r - wheel_border_radius,
+                        wheel_border_radius,
+                    ),
+                    ColliderMassProperties::MassProperties(MassProperties {
+                        local_center_of_mass: Vec3::ZERO,
+                        mass: 15.,
+                        principal_inertia: Vec3::ONE * 0.3,
+                        ..default()
+                    }),
+                    ColliderScale::Absolute(Vec3::ONE),
+                    CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
+                    Damping {
+                        linear_damping: 0.05,
+                        angular_damping: 0.05,
+                    },
+                    Friction {
+                        combine_rule: CoefficientCombineRule::Average,
+                        coefficient: 5.0,
+                        ..default()
+                    },
+                    ExternalForce::default(),
+                    ExternalImpulse::default(),
+                    Restitution::coefficient(0.),
+                    RigidBody::Dynamic,
+                    Sleeping::disabled(),
+                    Ccd::enabled(),
+                    Velocity::zero(),
+                ),
             ))
-            .insert(ColliderScale::Absolute(Vec3::ONE))
-            .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-            .insert(Friction {
-                combine_rule: CoefficientCombineRule::Average,
-                coefficient: 5.0,
-                ..default()
-            })
-            .insert(Restitution::coefficient(0.))
-            .insert(Damping {
-                linear_damping: 0.05,
-                angular_damping: 0.05,
-            })
-            .insert(ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::ZERO,
-                mass: 15.,
-                principal_inertia: Vec3::ONE * 0.3,
-                ..default()
-            }))
-            .insert(Wheel {
-                radius: wheel_r,
-                width: wheel_hw * 2.,
-            })
-            .insert(ExternalForce::default())
-            .insert(ExternalImpulse::default())
             .id();
         wheels.push(wheel_id);
-
-        if is_front {
-            if is_left {
-                commands
-                    .entity(wheel_id)
-                    .insert(WheelLeft)
-                    .insert(WheelFront);
-            } else {
-                commands
-                    .entity(wheel_id)
-                    .insert(WheelRight)
-                    .insert(WheelFront);
-            }
-        } else {
-            if is_left {
-                commands
-                    .entity(wheel_id)
-                    .insert(WheelLeft)
-                    .insert(WheelBack);
-            } else {
-                commands
-                    .entity(wheel_id)
-                    .insert(WheelRight)
-                    .insert(WheelBack);
-            }
-        };
     }
-    let carrr = Car {
-        size: size.clone(),
-        wheels: wheels.clone(),
-        wheel_max_torque: max_torque,
-        init_transform: transform,
-        start_shift: init_meters,
-        index,
-        ..default()
-    };
 
     let car_id = commands
         .spawn((
             Name::new("car"),
-            Sleeping::disabled(),
-            carrr,
-            RigidBody::Dynamic,
-        ))
-        .insert(Ccd::enabled())
-        .insert(Damping {
-            linear_damping: 0.05,
-            angular_damping: 0.1,
-        })
-        .insert(Velocity::zero())
-        .insert(ExternalForce::default())
-        .insert(TransformBundle::from(transform))
-        .insert(ReadMassProperties::default())
-        .insert(SceneBundle {
-            scene: car_gl.clone(),
-            transform,
-            // .with_translation(Vec3::new(0., -0.75, 0.2))
-            // .with_rotation(Quat::from_rotation_y(PI))
-            // .with_scale(Vec3::ONE * 1.7),
-            ..default()
-        })
-        .with_children(|children| {
-            let collider_mass = ColliderMassProperties::MassProperties(MassProperties {
-                local_center_of_mass: Vec3::new(0., -size.hh, 0.),
-                mass: 1000.0,
-                // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
-                principal_inertia: Vec3::new(5000., 5000., 2000.),
+            Car {
+                size: size.clone(),
+                wheels: wheels.clone(),
+                wheel_max_torque: max_torque,
+                init_transform: transform,
+                start_shift: init_meters,
+                index,
                 ..default()
-            });
-            let car_bradius = 0.1;
-            children
-                .spawn_empty()
-                .insert(Name::new("car_collider"))
-                .insert(Collider::round_cuboid(
-                    size.hw - car_bradius,
-                    size.hh - car_bradius,
-                    size.hl - car_bradius,
-                    car_bradius,
-                ))
-                .insert(ColliderScale::Absolute(Vec3::ONE))
-                .insert(Friction::coefficient(0.5))
-                .insert(Restitution::coefficient(0.))
-                .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-                .insert(CollidingEntities::default())
-                .insert(ActiveEvents::COLLISION_EVENTS)
-                .insert(ContactForceEventThreshold(0.1))
-                .insert(collider_mass);
+            },
+            SceneBundle {
+                scene: car_gl.clone(),
+                transform,
+                ..default()
+            },
+            Sleeping::disabled(),
+            RigidBody::Dynamic,
+            Ccd::enabled(),
+            Damping {
+                linear_damping: 0.05,
+                angular_damping: 0.1,
+            },
+            Velocity::zero(),
+            ExternalForce::default(),
+            ReadMassProperties::default(),
+        ))
+        .with_children(|children| {
+            let radius = 0.1;
+            children.spawn((
+                Name::new("car_body_collider"),
+                Collider::round_cuboid(
+                    size.hw - radius,
+                    size.hh - radius,
+                    size.hl - radius,
+                    radius,
+                ),
+                ColliderScale::Absolute(Vec3::ONE),
+                Friction::coefficient(0.5),
+                Restitution::coefficient(0.),
+                CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
+                CollidingEntities::default(),
+                ActiveEvents::COLLISION_EVENTS,
+                ContactForceEventThreshold(0.1),
+                ColliderMassProperties::MassProperties(MassProperties {
+                    local_center_of_mass: Vec3::new(0., -size.hh, 0.),
+                    mass: 1000.0,
+                    principal_inertia: Vec3::new(5000., 5000., 2000.), // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
+                    ..default()
+                }),
+            ));
         })
         .id();
     #[cfg(feature = "brain")]
@@ -399,7 +342,7 @@ pub fn spawn_car(
             .entity(*wheel_id)
             .insert(JointType::new(car_id, joints[i]));
     }
-    println!("car spawned: {car_id:?} at {init_meters}m");
+    println!("car spawned: {car_id:?} at {init_meters:.1}m");
     return car_id;
 }
 
