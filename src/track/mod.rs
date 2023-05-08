@@ -32,8 +32,7 @@ impl Plugin for TrackPlugin {
             .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
             .init_resource::<MaterialHandle>()
             .add_system(far_culling)
-            .add_startup_system(track_start_system)
-            .add_startup_system(track_decorations_start_system);
+            .add_startup_systems((track_start_system, track_decorations_start_system));
     }
 }
 

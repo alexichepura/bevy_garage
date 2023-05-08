@@ -58,9 +58,11 @@ impl Plugin for EngineSoundPlugin {
             .insert_resource(PianoId(piano_id))
             .insert_resource(Dsp::default())
             .add_startup_system(engine_sound_start.in_base_set(StartupSet::PostStartup))
-            .add_system(engine_sound)
-            .add_system(engine_sound_vol);
-        // .add_system(engine_sound_switch);
+            .add_systems((
+                engine_sound,
+                engine_sound_vol,
+                // engine_sound_switch
+            ));
     }
 }
 

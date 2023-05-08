@@ -30,9 +30,11 @@ impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
-            .add_system(camera_controller_system.in_set(CameraUpdateSystem))
-            .add_system(grab_mouse)
-            .add_system(camera_switch_system);
+            .add_systems((
+                camera_controller_system.in_set(CameraUpdateSystem),
+                grab_mouse,
+                camera_switch_system,
+            ));
     }
 }
 
