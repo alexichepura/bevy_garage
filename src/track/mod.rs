@@ -27,12 +27,12 @@ pub struct TrackPlugin;
 
 impl Plugin for TrackPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(ShadersPlugin)
+        app.init_resource::<MaterialHandle>()
+            .add_plugin(ShadersPlugin)
             .add_plugin(MaterialPlugin::<GroundMaterial>::default())
             .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
-            .init_resource::<MaterialHandle>()
-            .add_system(far_culling)
-            .add_startup_systems((track_start_system, track_decorations_start_system));
+            .add_startup_systems((track_start_system, track_decorations_start_system))
+            .add_system(far_culling);
     }
 }
 
