@@ -275,7 +275,7 @@ pub fn spawn_car(
         wheels.push(wheel_id);
     }
 
-    let radius_border_radius = 0.1;
+    let car_border_radius = 0.1;
     let car_id = commands
         .spawn((
             Name::new("car"),
@@ -295,10 +295,10 @@ pub fn spawn_car(
             },
             (
                 Collider::round_cuboid(
-                    size.hw - radius_border_radius,
-                    size.hh - radius_border_radius,
-                    size.hl - radius_border_radius,
-                    radius_border_radius,
+                    size.hw - car_border_radius,
+                    size.hh - car_border_radius,
+                    size.hl - car_border_radius,
+                    car_border_radius,
                 ),
                 ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::new(0., -size.hh, 0.),
