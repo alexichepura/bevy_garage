@@ -96,22 +96,18 @@ pub fn spawn_road(
         );
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, block.uvs.clone());
         mesh.set_indices(Some(Indices::U32(block.indices.clone())));
-        // dbg!(block);
         mesh.generate_tangents().unwrap();
 
-        commands
-            .spawn((
-                AsphaltPbr {
-                    mesh: meshes.add(mesh.clone()),
-                    material: handled_materials.asphalt.clone(),
-                    ..default()
-                },
-                NotShadowCaster,
-                AsphaltCell { is_color: false },
-            ))
-            .insert(TransformBundle::from_transform(
-                Transform::from_translation(tr),
-            ));
+        commands.spawn((
+            AsphaltCell { is_color: false },
+            AsphaltPbr {
+                mesh: meshes.add(mesh.clone()),
+                material: handled_materials.asphalt.clone(),
+                transform: Transform::from_translation(tr),
+                ..default()
+            },
+            NotShadowCaster,
+        ));
     }
 
     let mut uvs: Vec<[f32; 2]> = Vec::new();
@@ -137,22 +133,23 @@ pub fn spawn_road(
     mesh.generate_tangents().unwrap();
     let aabb = mesh.compute_aabb().unwrap();
 
-    commands
-        .spawn(TrackRoad)
-        .insert(Collider::from(ColliderShape::trimesh(
+    commands.spawn((
+        TrackRoad,
+        Collider::from(ColliderShape::trimesh(
             track_vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
             track.collider_indices.clone(),
-        )))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
+        )),
+        ColliderScale::Absolute(Vec3::ONE),
+        CollisionGroups::new(STATIC_GROUP, Group::ALL),
+        Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 5.,
             ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+        },
+        Restitution::coefficient(0.),
+    ));
     aabb
 }

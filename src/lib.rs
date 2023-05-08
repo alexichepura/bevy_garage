@@ -75,7 +75,6 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     app.init_resource::<FontHandle>()
         .insert_resource(physics_params.clone())
-        .add_plugin(TrackPlugin)
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
@@ -90,44 +89,47 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(bevy_fundsp::DspPlugin::default())
+        .add_plugin(TrackPlugin)
         .add_plugin(EngineSoundPlugin)
-        .add_startup_system(track_polyline_start_system)
-        .add_startup_system(car_start_system.after(track_polyline_start_system))
-        .add_startup_system(light_start_system)
-        .add_startup_system(dash_start_system)
-        .add_startup_system(rapier_config_start_system)
-        .add_system(aero_system.in_set(CarSimLabel::Input))
-        .add_system(input_system.in_set(CarSimLabel::Input))
-        .add_system(progress_system.in_set(CarSimLabel::Input))
-        .add_system(esp_system.in_set(CarSimLabel::Esp).after(esp_run_after))
-        .add_system(animate_light_direction)
-        .add_system(dash_fps_system)
-        .add_system(dash_speed_update_system);
+        .add_startup_systems((
+            track_polyline_start_system,
+            car_start_system.after(track_polyline_start_system),
+            light_start_system,
+            dash_start_system,
+            rapier_config_start_system,
+        ))
+        .add_systems((
+            aero_system.in_set(CarSimLabel::Input),
+            input_system.in_set(CarSimLabel::Input),
+            progress_system.in_set(CarSimLabel::Input),
+            esp_system.in_set(CarSimLabel::Esp).after(esp_run_after),
+            animate_light_direction,
+            dash_fps_system,
+            dash_speed_update_system,
+        ));
 
     #[cfg(feature = "brain")]
     {
         use nn::{dqn::dqn_system, dqn_bevy::*};
         app.insert_resource(DqnResource::default())
             .add_event::<DqnEvent>()
-            .add_startup_system(dqn_start_system)
-            .add_startup_system(dqn_x_start_system)
-            .add_system(dqn_rx_to_bevy_event_system)
-            .add_system(dqn_event_reader_system)
-            .add_system(car_sensor_system.in_set(CarSimLabel::Input))
-            .add_system(
+            .add_startup_systems((dqn_start_system, dqn_x_start_system))
+            .add_systems((
+                dqn_rx_to_bevy_event_system,
+                dqn_event_reader_system,
+                car_sensor_system.in_set(CarSimLabel::Input),
                 dqn_system
                     .in_set(CarSimLabel::Brain)
                     .after(CarSimLabel::Input),
-            )
-            .add_system(dqn_dash_update_system);
+                dqn_dash_update_system,
+            ));
 
         #[cfg(feature = "brain_api")]
         {
             use nn::api_client::*;
             app.add_event::<StreamEvent>()
                 .add_startup_system(api_start_system)
-                .add_system(api_read_stream_event_writer_system)
-                .add_system(api_event_reader_system);
+                .add_systems((api_read_stream_event_writer_system, api_event_reader_system));
         }
     }
 

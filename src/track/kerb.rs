@@ -45,31 +45,30 @@ pub fn spawn_kerb(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
-    commands
-        .spawn((
-            PbrBundle {
-                mesh: meshes.add(mesh),
-                material: handled_materials.kerb.clone(),
-                transform: Transform::from_xyz(0., kerb_height, 0.),
-                ..Default::default()
-            },
-            NotShadowCaster,
-        ))
-        .insert(Collider::from(ColliderShape::trimesh(
+    commands.spawn((
+        PbrBundle {
+            mesh: meshes.add(mesh),
+            material: handled_materials.kerb.clone(),
+            transform: Transform::from_xyz(0., kerb_height, 0.),
+            ..Default::default()
+        },
+        Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
             track.collider_indices.clone(),
-        )))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
+        )),
+        Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 3.,
             ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+        },
+        NotShadowCaster,
+        ColliderScale::Absolute(Vec3::ONE),
+        CollisionGroups::new(STATIC_GROUP, Group::ALL),
+        Restitution::coefficient(0.),
+    ));
 
     let normals_side = &track.right_norm;
     let mut vertices: Vec<[f32; 3]> = vec![];
@@ -100,29 +99,28 @@ pub fn spawn_kerb(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
-    commands
-        .spawn((
-            PbrBundle {
-                mesh: meshes.add(mesh),
-                material: handled_materials.kerb.clone(),
-                transform: Transform::from_xyz(0., kerb_height, 0.),
-                ..Default::default()
-            },
-            NotShadowCaster,
-        ))
-        .insert(Collider::from(ColliderShape::trimesh(
+    commands.spawn((
+        PbrBundle {
+            mesh: meshes.add(mesh),
+            material: handled_materials.kerb.clone(),
+            transform: Transform::from_xyz(0., kerb_height, 0.),
+            ..Default::default()
+        },
+        Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
             track.collider_indices.clone(),
-        )))
-        .insert(ColliderScale::Absolute(Vec3::ONE))
-        .insert(CollisionGroups::new(STATIC_GROUP, Group::ALL))
-        .insert(Friction {
+        )),
+        Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 3.,
             ..default()
-        })
-        .insert(Restitution::coefficient(0.));
+        },
+        NotShadowCaster,
+        ColliderScale::Absolute(Vec3::ONE),
+        CollisionGroups::new(STATIC_GROUP, Group::ALL),
+        Restitution::coefficient(0.),
+    ));
 }

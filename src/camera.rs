@@ -30,54 +30,51 @@ impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CameraConfig::default())
             .add_startup_system(camera_start_system)
-            .add_system(camera_controller_system.in_set(CameraUpdateSystem))
-            .add_system(grab_mouse)
-            .add_system(camera_switch_system);
+            .add_systems((
+                camera_controller_system.in_set(CameraUpdateSystem),
+                grab_mouse,
+                camera_switch_system,
+            ));
     }
 }
 
 pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
     let sky_blue = Color::hex("87CEEB").unwrap();
-    commands
-        .spawn((
-            Camera3dBundle {
-                #[cfg(not(any(
-                    target_arch = "wasm32",
-                    target_os = "ios",
-                    target_os = "android"
-                )))]
-                projection: Projection::from(PerspectiveProjection {
-                    far: 5000.,
-                    near: 0.01,
-                    ..default()
-                }),
-                #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-                projection: Projection::from(PerspectiveProjection {
-                    far: 50.,
-                    near: 0.1,
-                    ..default()
-                }),
-                #[cfg(any(target_os = "ios"))]
-                dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
-                tonemapping: Tonemapping::TonyMcMapface,
-                transform: Transform::from_translation(
-                    Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
-                )
-                .looking_at(Vec3::Y * 6., Vec3::Y),
+    commands.spawn((
+        Camera3dBundle {
+            #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
+            projection: Projection::from(PerspectiveProjection {
+                far: 5000.,
+                near: 0.01,
                 ..default()
-            },
-            FogSettings {
-                color: sky_blue, // Color::rgba(0.1, 0.2, 0.4, 1.0),
-                directional_light_color: Color::rgba(1.0, 0.95, 0.75, 1.),
-                directional_light_exponent: 200.0,
-                falloff: FogFalloff::from_visibility_colors(
-                    5000.,
-                    Color::rgb(0.35, 0.5, 0.66),
-                    Color::rgb(0.8, 0.844, 1.0),
-                ),
-            },
-        ))
-        .insert(CameraController::default());
+            }),
+            #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+            projection: Projection::from(PerspectiveProjection {
+                far: 50.,
+                near: 0.1,
+                ..default()
+            }),
+            #[cfg(any(target_os = "ios"))]
+            dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
+            tonemapping: Tonemapping::TonyMcMapface,
+            transform: Transform::from_translation(
+                Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+            )
+            .looking_at(Vec3::Y * 6., Vec3::Y),
+            ..default()
+        },
+        FogSettings {
+            color: sky_blue, // Color::rgba(0.1, 0.2, 0.4, 1.0),
+            directional_light_color: Color::rgba(1.0, 0.95, 0.75, 1.),
+            directional_light_exponent: 200.0,
+            falloff: FogFalloff::from_visibility_colors(
+                5000.,
+                Color::rgb(0.35, 0.5, 0.66),
+                Color::rgb(0.8, 0.844, 1.0),
+            ),
+        },
+        CameraController::default(),
+    ));
 }
 
 #[derive(Component)]

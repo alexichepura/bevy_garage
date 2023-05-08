@@ -44,17 +44,14 @@ pub fn track_polyline_start_system(mut commands: Commands, mut config: ResMut<Co
         start_shift, config.start_segment_shift, config.start_segment_i
     );
 
-    let collider = Collider::from(ColliderShape::polyline(vertices, None));
-    commands
-        .spawn_empty()
-        .insert(Name::new("Track polyline"))
-        .insert(collider)
-        .insert(RigidBody::Fixed)
-        .insert(Sensor)
-        .insert(CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP))
-        .insert(TransformBundle::from_transform(Transform::from_xyz(
-            0., 1., 0.,
-        )));
+    commands.spawn((
+        Name::new("Track polyline"),
+        Collider::from(ColliderShape::polyline(vertices, None)),
+        RigidBody::Fixed,
+        Sensor,
+        CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
+        TransformBundle::from_transform(Transform::from_xyz(0., 1., 0.)),
+    ));
 }
 
 pub fn progress_system(config: Res<Config>, mut cars: Query<(&Transform, &mut Car, Entity)>) {
