@@ -31,7 +31,6 @@ pub fn dqn_system(
         &mut Car,
         &Velocity,
         &Transform,
-        &Children,
         Entity,
         Option<&HID>,
         &mut CarDqnPrev,
@@ -66,17 +65,16 @@ pub fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, v, tr, children, e, hid, mut car_dqn_prev) in q_car.iter_mut() {
+    for (mut car, v, tr, e, hid, mut car_dqn_prev) in q_car.iter_mut() {
         let is_hid = hid.is_some();
         let mut crash: bool = false;
-        for &child in children.iter() {
-            let colliding_entities = q_colliding_entities.get(child);
-            if let Ok(colliding_entities) = colliding_entities {
-                for e in colliding_entities.iter() {
-                    let colliding_road = q_road.get(e);
-                    if !colliding_road.is_ok() {
-                        crash = true;
-                    }
+
+        let colliding_entities = q_colliding_entities.get(e);
+        if let Ok(colliding_entities) = colliding_entities {
+            for e in colliding_entities.iter() {
+                let colliding_road = q_road.get(e);
+                if !colliding_road.is_ok() {
+                    crash = true;
                 }
             }
         }
