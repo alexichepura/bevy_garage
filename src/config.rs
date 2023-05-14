@@ -4,7 +4,7 @@ use rand::Rng;
 use std::f32::consts::PI;
 
 pub const CARS_COUNT: usize = 1;
-pub const MAX_TORQUE: f32 = 2000.;
+pub const MAX_TORQUE: f32 = 1500.;
 pub const MAX_TOI: f32 = 100.;
 
 #[derive(Resource)]
@@ -75,7 +75,7 @@ impl Config {
                 let a: Vec3 = segment.a.into();
                 let dir: Vec3 = segment.direction().unwrap().into();
                 let mut pos: Vec3 = a + dir * (shift - seg_meters);
-                pos.y = 0.46;
+                pos.y = 0.47;
 
                 return (pos, Quat::from_rotation_arc(Vec3::Z, dir));
             }

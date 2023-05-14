@@ -179,9 +179,9 @@ pub fn spawn_car(
         hh: 0.35,
         hl: 2.2,
     };
-    let wheel_r: f32 = 0.4;
-    let wheel_hw: f32 = 0.2;
-    let ride_height = 0.08;
+    let wheel_r: f32 = 0.35;
+    let wheel_hw: f32 = 0.17;
+    let ride_height = 0.06;
     let shift = Vec3::new(
         size.hw - wheel_hw - 0.1,
         -size.hh + wheel_r - ride_height,

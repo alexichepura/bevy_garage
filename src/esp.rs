@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
 pub const SPEED_LIMIT_KMH: f32 = 300.;
-pub const STEERING_SPEEDLIMIT_KMH: f32 = 230.;
+pub const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
 
 pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
     for (velocity, transform, mut force) in car_query.iter_mut() {
@@ -52,7 +52,7 @@ pub fn esp_system(
             true => 2.,
             _ => match car_kmh / SPEED_LIMIT_KMH {
                 x if x >= 1. => 0.,
-                x => 0.5 + 0.5 * (1. - x),
+                x => 0.7 + 0.3 * (1. - x),
             },
         };
         let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
