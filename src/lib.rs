@@ -126,7 +126,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
                 dqn_dash_update_system,
             ));
 
-        #[cfg(feature = "bevy_garage_dqn/brain_api")]
+        #[cfg(feature = "brain_api")]
         {
             use bevy_garage_dqn::api_client::*;
             app.add_event::<StreamEvent>()

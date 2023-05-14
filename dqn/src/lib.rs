@@ -1,6 +1,6 @@
 #![feature(slice_flatten)]
 
-#[cfg(feature = "brain_api")]
+#[cfg(feature = "api")]
 pub mod api_client;
 
 pub mod dash;

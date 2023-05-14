@@ -40,7 +40,7 @@ pub fn dqn_system(
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut commands: Commands,
     mut car_spawn_events: EventWriter<SpawnCarEvent>,
-    #[cfg(feature = "brain_api")] api: Res<super::api_client::ApiClient>,
+    #[cfg(feature = "api")] api: Res<crate::api_client::ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_in > 0. && seconds > dqn.respawn_in {
@@ -123,9 +123,9 @@ pub fn dqn_system(
         let (prev_action, prev_obs) = (car_dqn.prev_action, car_dqn.prev_obs);
         if dqn.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
-            #[cfg(feature = "brain_api")]
-            if dqn.rb.i % super::api_client::PERSIST_BATCH_SIZE == 0 {
-                api.save_replay_buffer(super::api_client::get_replay_buffer_to_persist(&dqn.rb));
+            #[cfg(feature = "api")]
+            if dqn.rb.i % crate::api_client::PERSIST_BATCH_SIZE == 0 {
+                api.save_replay_buffer(crate::api_client::get_replay_buffer_to_persist(&dqn.rb));
             }
         }
 

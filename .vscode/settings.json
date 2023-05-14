@@ -4,6 +4,7 @@
     },
     "rust-analyzer.cargo.features": [
         "brain",
-        // "bevy_garage_dqn/brain_api"
+        "brain_api"
+        // "bevy_garage_dqn?/api"
     ],
 }
