@@ -13,7 +13,8 @@ mod progress;
 mod spawn;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent};
+use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent, CarSet};
+use bevy_garage_dqn::BrainPlugin;
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -58,18 +59,11 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>, ph: Res<PhysicsParam
     dbg!(c.integration_parameters);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
-pub enum CarSimLabel {
-    Input,
-    Brain,
-    Esp,
-}
-
 pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
     #[cfg(feature = "brain")]
-    let esp_run_after: CarSimLabel = CarSimLabel::Brain;
+    let esp_run_after: CarSet = CarSet::Brain;
     #[cfg(not(feature = "brain"))]
-    let esp_run_after: CarSimLabel = CarSimLabel::Input;
+    let esp_run_after: CarSet = CarSet::Input;
 
     app.init_resource::<FontHandle>()
         .insert_resource(physics_params.clone())
@@ -100,10 +94,10 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         ))
         .add_systems((
             spawn_car_system,
-            aero_system.in_set(CarSimLabel::Input),
-            input_system.in_set(CarSimLabel::Input),
-            progress_system.in_set(CarSimLabel::Input),
-            esp_system.in_set(CarSimLabel::Esp).after(esp_run_after),
+            aero_system.in_set(CarSet::Input),
+            input_system.in_set(CarSet::Input),
+            progress_system.in_set(CarSet::Input),
+            esp_system.in_set(CarSet::Esp).after(esp_run_after),
             animate_light_direction,
             dash_fps_system,
             dash_speed_update_system,
@@ -111,28 +105,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        use bevy_garage_dqn::{dqn::dqn_system, dqn_bevy::*, spawn::*};
-        app.insert_resource(DqnResource::default())
-            .add_event::<DqnEvent>()
-            .add_startup_systems((dqn_start_system, dqn_x_start_system))
-            .add_systems((
-                add_dqn_on_spawned_car_system,
-                dqn_rx_to_bevy_event_system,
-                dqn_event_reader_system,
-                bevy_garage_car::car::car_sensor_system.in_set(CarSimLabel::Input),
-                dqn_system
-                    .in_set(CarSimLabel::Brain)
-                    .after(CarSimLabel::Input),
-                dqn_dash_update_system,
-            ));
-
-        #[cfg(feature = "brain_api")]
-        {
-            use bevy_garage_dqn::api_client::*;
-            app.add_event::<StreamEvent>()
-                .add_startup_system(api_start_system)
-                .add_systems((api_read_stream_event_writer_system, api_event_reader_system));
-        }
+        app.add_plugin(BrainPlugin);
     }
 
     #[cfg(feature = "debug_lines")]

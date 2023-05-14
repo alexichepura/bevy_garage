@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_garage_car::car::{Car, HID};
 use virtual_joystick::*;
 
-use crate::CarSimLabel;
+use crate::CarSet;
 
 #[derive(Default, Reflect, Hash, Clone, PartialEq, Eq)]
 enum JoystickTypeAxis {
@@ -16,7 +16,7 @@ impl Plugin for CarJoystickPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(VirtualJoystickPlugin::<JoystickTypeAxis>::default())
             .add_startup_system(joystick_start_system)
-            .add_system(update_joystick.in_set(CarSimLabel::Input));
+            .add_system(update_joystick.in_set(CarSet::Input));
     }
 }
 
