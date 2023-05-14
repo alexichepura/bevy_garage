@@ -1,4 +1,3 @@
-use crate::config::Config;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
@@ -38,7 +37,7 @@ impl Plugin for CarCameraPlugin {
     }
 }
 
-pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
+pub fn camera_start_system(mut commands: Commands) {
     let sky_blue = Color::hex("87CEEB").unwrap();
     commands.spawn((
         Camera3dBundle {
@@ -57,10 +56,6 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
             #[cfg(any(target_os = "ios"))]
             dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
             tonemapping: Tonemapping::TonyMcMapface,
-            // transform: Transform::from_translation(
-            //     Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
-            // )
-            // .looking_at(Vec3::Y * 6., Vec3::Y),
             ..default()
         },
         FogSettings {

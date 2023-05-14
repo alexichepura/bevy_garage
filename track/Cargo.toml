@@ -9,5 +9,7 @@ edition = "2021"
 [dependencies]
 bevy = { workspace = true }
 bevy_rapier3d = { workspace = true }
-wgpu = { version = "0.15", features = ["spirv"] }
 bevy_garage_car = { workspace = true }
+parry3d = "0.13"
+rand = { workspace = true }
+wgpu = { version = "0.15", features = ["spirv"] }

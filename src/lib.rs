@@ -8,11 +8,10 @@ pub mod font;
 mod input;
 pub mod joystick;
 mod light;
-mod progress;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent, CarSet};
-use bevy_garage_track::TrackPlugin;
+use bevy_garage_track::{track_polyline_start_system, TrackPlugin};
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -21,7 +20,6 @@ use esp::*;
 use font::*;
 use input::*;
 use light::*;
-use progress::*;
 use spawn::*;
 
 #[derive(Resource, Copy, Clone, Debug)]
@@ -83,7 +81,6 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(EngineSoundPlugin)
         .add_event::<SpawnCarEvent>()
         .add_startup_systems((
-            track_polyline_start_system,
             car_start_system.after(track_polyline_start_system),
             light_start_system,
             dash_start_system,
@@ -93,7 +90,6 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
             spawn_car_system,
             aero_system.in_set(CarSet::Input),
             input_system.in_set(CarSet::Input),
-            progress_system.in_set(CarSet::Input),
             esp_system.in_set(CarSet::Esp).after(esp_run_after),
             animate_light_direction,
             dash_fps_system,

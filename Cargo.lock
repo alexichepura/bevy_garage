@@ -642,8 +642,6 @@ dependencies = [
  "bevy_garage_track",
  "bevy_prototype_debug_lines",
  "bevy_rapier3d",
- "parry3d",
- "rand 0.8.5",
  "uuid",
  "virtual_joystick",
 ]
@@ -688,6 +686,8 @@ dependencies = [
  "bevy",
  "bevy_garage_car",
  "bevy_rapier3d",
+ "parry3d",
+ "rand 0.8.5",
  "wgpu",
 ]
 
