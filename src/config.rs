@@ -10,7 +10,6 @@ pub struct Config {
     // pub translation: Vec3,
     pub quat: Quat,
     pub cars_count: usize,
-    pub show_rays: bool,
     pub polyline: Option<Polyline>,
     pub segments: Vec<f32>,
     pub start_segment_i: usize,
@@ -22,7 +21,6 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             cars_count: CARS_COUNT,
-            show_rays: false,
             quat: Quat::from_rotation_y(-PI * 0.225),
             polyline: None,
             segments: vec![],

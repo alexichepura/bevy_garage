@@ -16,7 +16,7 @@ codegen-units = 1
 brain = ["dep:bevy_garage_dqn"]
 brain_api = ["bevy_garage_dqn?/api"]
 default = ["debug_lines"]
-debug_lines = ["dep:bevy_prototype_debug_lines"]
+debug_lines = ["dep:bevy_prototype_debug_lines", "bevy_garage_car/debug_lines"]
 [workspace.dependencies]
 bevy = { version = "0.10", features = ["jpeg"] }
 bevy_garage_car = { path = "./car" }

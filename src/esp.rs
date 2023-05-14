@@ -26,7 +26,7 @@ pub fn esp_system(
         &mut JointType,
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] config: Res<crate::config::Config>,
+    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::config::CarConfig>,
 ) {
     let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
@@ -109,7 +109,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if config.show_rays {
+                if car_config.show_rays {
                     let start = transform.translation + Vec3::Y * 0.5;
                     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
@@ -131,7 +131,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if config.show_rays {
+                if car_config.show_rays {
                     let start = transform.translation + Vec3::Y * 0.5;
                     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);

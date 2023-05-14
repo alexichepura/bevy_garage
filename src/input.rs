@@ -1,4 +1,4 @@
-use crate::{camera::CameraConfig, config::*};
+use crate::camera::CameraConfig;
 use bevy::prelude::*;
 use bevy_garage_car::{
     car::{Car, HID},
@@ -10,7 +10,6 @@ pub fn input_system(
     buttons: Res<Input<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
     gamepads: Res<Gamepads>,
-    mut config: ResMut<Config>,
     mut camera_config: ResMut<CameraConfig>,
     mut cars: Query<(&mut Car, Entity, &Transform, With<HID>)>,
     mut commands: Commands,
@@ -18,6 +17,7 @@ pub fn input_system(
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
     >,
+    #[cfg(feature = "debug_lines")] mut car_config: ResMut<bevy_garage_car::config::CarConfig>,
     #[cfg(feature = "brain")] mut dqn: ResMut<bevy_garage_dqn::dqn_bevy::DqnResource>,
 ) {
     #[cfg(feature = "brain")]
@@ -27,7 +27,7 @@ pub fn input_system(
     #[cfg(feature = "debug_lines")]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
-        config.show_rays = debug_ctx.enabled;
+        car_config.show_rays = debug_ctx.enabled;
     }
     for (mut car, e, _transform, _hid) in cars.iter_mut() {
         for gamepad in gamepads.iter() {
@@ -62,7 +62,7 @@ pub fn input_system(
             #[cfg(feature = "debug_lines")]
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
                 debug_ctx.enabled = !debug_ctx.enabled;
-                config.show_rays = debug_ctx.enabled;
+                car_config.show_rays = debug_ctx.enabled;
             }
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger)) {
                 camera_config.next_view();
