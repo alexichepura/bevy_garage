@@ -1,10 +1,7 @@
-use crate::car::*;
 use bevy::prelude::*;
+use bevy_garage_car::car::{Car, JointType, Wheel};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
-
-pub const SPEED_LIMIT_KMH: f32 = 300.;
-pub const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
 
 pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
     for (velocity, transform, mut force) in car_query.iter_mut() {
@@ -29,7 +26,7 @@ pub fn esp_system(
         &mut JointType,
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] config: Res<crate::config::Config>,
+    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::config::CarConfig>,
 ) {
     let d_seconds = time.delta_seconds();
     let max_angle = PI / 4.;
@@ -46,16 +43,15 @@ pub fn esp_system(
             true => car.brake > 0.,
             false => car.gas > 0.,
         };
-        let car_mps = velocity.linvel.length();
-        let car_kmh = car_mps / 1000. * 3600.;
+        let linvel = velocity.linvel.length();
         let torque_speed_x: f32 = match braking {
             true => 2.,
-            _ => match car_kmh / SPEED_LIMIT_KMH {
+            _ => match linvel / car.speed_limit {
                 x if x >= 1. => 0.,
                 x => 0.7 + 0.3 * (1. - x),
             },
         };
-        let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
+        let steering_speed_x: f32 = match linvel / car.steering_speed_limit {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
@@ -113,7 +109,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if config.show_rays {
+                if car_config.show_rays {
                     let start = transform.translation + Vec3::Y * 0.5;
                     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
@@ -135,7 +131,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if config.show_rays {
+                if car_config.show_rays {
                     let start = transform.translation + Vec3::Y * 0.5;
                     let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);

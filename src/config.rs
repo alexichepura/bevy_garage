@@ -4,35 +4,23 @@ use rand::Rng;
 use std::f32::consts::PI;
 
 pub const CARS_COUNT: usize = 1;
-pub const MAX_TORQUE: f32 = 1500.;
-pub const MAX_TOI: f32 = 100.;
 
 #[derive(Resource)]
 pub struct Config {
     // pub translation: Vec3,
     pub quat: Quat,
     pub cars_count: usize,
-    pub show_rays: bool,
-    pub use_brain: bool,
-    pub max_torque: f32,
-    pub max_toi: f32,
     pub polyline: Option<Polyline>,
     pub segments: Vec<f32>,
     pub start_segment_i: usize,
     pub start_segment_shift: f32,
     pub start_shift: f32,
     pub track_length: f32,
-    pub car_scene: Option<Handle<Scene>>,
-    pub wheel_scene: Option<Handle<Scene>>,
 }
 impl Default for Config {
     fn default() -> Self {
         Self {
             cars_count: CARS_COUNT,
-            use_brain: false,
-            show_rays: false,
-            max_torque: MAX_TORQUE,
-            max_toi: MAX_TOI,
             quat: Quat::from_rotation_y(-PI * 0.225),
             polyline: None,
             segments: vec![],
@@ -40,8 +28,6 @@ impl Default for Config {
             start_segment_shift: 0.,
             start_shift: 0.,
             track_length: 0.,
-            car_scene: None,
-            wheel_scene: None,
         }
     }
 }

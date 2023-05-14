@@ -1,4 +1,4 @@
-use crate::car::SENSOR_COUNT;
+use bevy_garage_car::car::SENSOR_COUNT;
 
 #[cfg(target_arch = "wasm32")]
 pub const EPOCHS: usize = 32;
@@ -8,7 +8,7 @@ pub const EPOCHS: usize = 100;
 #[cfg(target_arch = "wasm32")]
 pub const BATCH_SIZE: usize = 32;
 #[cfg(not(target_arch = "wasm32"))]
-pub const BATCH_SIZE: usize = 64;
+pub const BATCH_SIZE: usize = 256;
 
 #[cfg(target_arch = "wasm32")]
 pub const LEARNING_RATE: f32 = 0.01;

@@ -1,26 +1,33 @@
-use crate::{camera::CameraConfig, car::*, config::*};
+use crate::camera::CameraConfig;
 use bevy::prelude::*;
+use bevy_garage_car::{
+    car::{Car, HID},
+    spawn::SpawnCarEvent,
+};
 
 pub fn input_system(
     input: Res<Input<KeyCode>>,
     buttons: Res<Input<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
     gamepads: Res<Gamepads>,
-    mut config: ResMut<Config>,
     mut camera_config: ResMut<CameraConfig>,
     mut cars: Query<(&mut Car, Entity, &Transform, With<HID>)>,
     mut commands: Commands,
+    mut car_spawn_events: EventWriter<SpawnCarEvent>,
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
     >,
+    #[cfg(feature = "debug_lines")] mut car_config: ResMut<bevy_garage_car::config::CarConfig>,
+    #[cfg(feature = "brain")] mut dqn: ResMut<bevy_garage_dqn::dqn_bevy::DqnResource>,
 ) {
+    #[cfg(feature = "brain")]
     if input.just_pressed(KeyCode::N) {
-        config.use_brain = !config.use_brain;
+        dqn.use_brain = !dqn.use_brain;
     }
     #[cfg(feature = "debug_lines")]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
-        config.show_rays = debug_ctx.enabled;
+        car_config.show_rays = debug_ctx.enabled;
     }
     for (mut car, e, _transform, _hid) in cars.iter_mut() {
         for gamepad in gamepads.iter() {
@@ -55,7 +62,7 @@ pub fn input_system(
             #[cfg(feature = "debug_lines")]
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
                 debug_ctx.enabled = !debug_ctx.enabled;
-                config.show_rays = debug_ctx.enabled;
+                car_config.show_rays = debug_ctx.enabled;
             }
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger)) {
                 camera_config.next_view();
@@ -66,20 +73,11 @@ pub fn input_system(
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
 
-            let (transform, init_meters) = config.get_transform_random();
-            // let init_meters = 5088.;
-            // let (translate, quat) = config.get_transform_by_meter(init_meters);
-            // let transform = Transform::from_translation(translate).with_rotation(quat);
-            spawn_car(
-                &mut commands,
-                &config.car_scene.as_ref().unwrap(),
-                &config.wheel_scene.as_ref().unwrap(),
-                true,
-                transform,
-                0,
-                init_meters,
-                config.max_torque,
-            );
+            car_spawn_events.send(SpawnCarEvent {
+                is_hid: true,
+                index: 0,
+                init_meters: None,
+            });
         }
         if input.pressed(KeyCode::Up) {
             car.gas = 1.;

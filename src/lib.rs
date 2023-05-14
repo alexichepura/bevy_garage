@@ -1,6 +1,5 @@
 #![feature(slice_flatten)]
 pub mod camera;
-pub mod car;
 mod config;
 mod dash;
 mod dsp;
@@ -11,10 +10,11 @@ pub mod joystick;
 mod light;
 mod mesh;
 mod progress;
+mod spawn;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
+use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent, CarSet};
 use bevy_rapier3d::prelude::*;
-use car::*;
 use config::*;
 use dash::*;
 use dsp::*;
@@ -23,10 +23,8 @@ use font::*;
 use input::*;
 use light::*;
 use progress::*;
+use spawn::*;
 use track::*;
-
-#[cfg(feature = "brain")]
-mod nn;
 
 #[derive(Resource, Copy, Clone, Debug)]
 pub struct PhysicsParams {
@@ -60,18 +58,11 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>, ph: Res<PhysicsParam
     dbg!(c.integration_parameters);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
-pub enum CarSimLabel {
-    Input,
-    Brain,
-    Esp,
-}
-
 pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
     #[cfg(feature = "brain")]
-    let esp_run_after: CarSimLabel = CarSimLabel::Brain;
+    let esp_run_after: CarSet = CarSet::Brain;
     #[cfg(not(feature = "brain"))]
-    let esp_run_after: CarSimLabel = CarSimLabel::Input;
+    let esp_run_after: CarSet = CarSet::Input;
 
     app.init_resource::<FontHandle>()
         .insert_resource(physics_params.clone())
@@ -85,12 +76,14 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         })
         .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
+        .insert_resource(CarConfig::default())
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(TrackPlugin)
         .add_plugin(EngineSoundPlugin)
+        .add_event::<SpawnCarEvent>()
         .add_startup_systems((
             track_polyline_start_system,
             car_start_system.after(track_polyline_start_system),
@@ -99,10 +92,11 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
             rapier_config_start_system,
         ))
         .add_systems((
-            aero_system.in_set(CarSimLabel::Input),
-            input_system.in_set(CarSimLabel::Input),
-            progress_system.in_set(CarSimLabel::Input),
-            esp_system.in_set(CarSimLabel::Esp).after(esp_run_after),
+            spawn_car_system,
+            aero_system.in_set(CarSet::Input),
+            input_system.in_set(CarSet::Input),
+            progress_system.in_set(CarSet::Input),
+            esp_system.in_set(CarSet::Esp).after(esp_run_after),
             animate_light_direction,
             dash_fps_system,
             dash_speed_update_system,
@@ -110,27 +104,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        use nn::{dqn::dqn_system, dqn_bevy::*};
-        app.insert_resource(DqnResource::default())
-            .add_event::<DqnEvent>()
-            .add_startup_systems((dqn_start_system, dqn_x_start_system))
-            .add_systems((
-                dqn_rx_to_bevy_event_system,
-                dqn_event_reader_system,
-                car_sensor_system.in_set(CarSimLabel::Input),
-                dqn_system
-                    .in_set(CarSimLabel::Brain)
-                    .after(CarSimLabel::Input),
-                dqn_dash_update_system,
-            ));
-
-        #[cfg(feature = "brain_api")]
-        {
-            use nn::api_client::*;
-            app.add_event::<StreamEvent>()
-                .add_startup_system(api_start_system)
-                .add_systems((api_read_stream_event_writer_system, api_event_reader_system));
-        }
+        app.add_plugin(bevy_garage_dqn::BrainPlugin);
     }
 
     #[cfg(feature = "debug_lines")]
@@ -141,10 +115,8 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
                 enabled: false,
                 style: DebugRenderStyle {
                     rigid_body_axes_length: 0.5,
-                    // subdivisions: 50,
                     ..default()
                 },
-                // | DebugRenderMode::COLLIDER_AABBS
                 mode: DebugRenderMode::COLLIDER_SHAPES
                     | DebugRenderMode::RIGID_BODY_AXES
                     | DebugRenderMode::JOINTS
@@ -155,19 +127,3 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
     }
     app
 }
-
-// fn display_events_system(
-//     mut e_collision: EventReader<CollisionEvent>,
-//     mut e_force: EventReader<ContactForceEvent>,
-// ) {
-//     for collision_e in e_collision.iter() {
-//         println!("main collision event: {:?}", collision_e);
-//     }
-
-//     for force_e in e_force.iter() {
-//         println!(
-//             "glomainbal force event: {:?} {:?}",
-//             force_e.total_force, force_e.total_force_magnitude
-//         );
-//     }
-// }

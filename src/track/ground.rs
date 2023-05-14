@@ -1,6 +1,7 @@
-use super::{GroundPbr, MaterialHandle, STATIC_GROUP};
+use super::{GroundPbr, MaterialHandle};
 use crate::mesh::QuadPlane;
 use bevy::{math::Vec3Swizzles, pbr::NotShadowCaster, prelude::*, render::primitives::Aabb};
+use bevy_garage_car::car::STATIC_GROUP;
 use bevy_rapier3d::prelude::*;
 
 #[derive(Component, Debug)]

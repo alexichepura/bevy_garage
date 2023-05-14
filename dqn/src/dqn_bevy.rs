@@ -1,19 +1,30 @@
-use super::{gradient::get_sgd, params::*, replay::ReplayBuffer};
-use crate::{dash::*, nn::dqn::*};
+use crate::{
+    dash::{TrainerEpsilonText, TrainerGenerationText},
+    dqn::*,
+    gradient::get_sgd,
+    params::*,
+    replay::ReplayBuffer,
+};
 use bevy::prelude::*;
+use crossbeam_channel::{bounded, Receiver, Sender};
 use dfdx::{optim::Sgd, prelude::*};
 use rand::Rng;
 
+const SPEED_LIMIT_KMH: f32 = 100.;
+const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
+
 #[derive(Component, Debug)]
-pub struct CarDqnPrev {
+pub struct CarDqn {
+    pub speed_limit: f32,
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
 }
 
-impl CarDqnPrev {
+impl CarDqn {
     pub fn new() -> Self {
         Self {
+            speed_limit: SPEED_LIMIT_MPS,
             prev_obs: [0.; STATE_SIZE],
             prev_action: 0,
             prev_reward: 0.,
@@ -70,6 +81,7 @@ impl CarsDqnResource {
 
 #[derive(Resource)]
 pub struct DqnResource {
+    pub use_brain: bool,
     pub seconds: f64,
     pub step: usize,
     pub crashes: usize,
@@ -86,6 +98,7 @@ pub struct DqnResource {
 impl DqnResource {
     pub fn default() -> Self {
         Self {
+            use_brain: false,
             seconds: 0.,
             step: 0,
             crashes: 0,
@@ -111,8 +124,6 @@ impl SgdResource {
         Self { sgd }
     }
 }
-
-use crossbeam_channel::{bounded, Receiver, Sender};
 
 pub struct DqnX {
     pub loss_string: String,

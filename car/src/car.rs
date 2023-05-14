@@ -1,4 +1,4 @@
-use crate::{config::*, track::*};
+use crate::{config::*, spawn::SpawnCarEvent};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     prelude::*,
@@ -6,13 +6,14 @@ use bevy_rapier3d::{
 };
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
+pub const SENSOR_COUNT: usize = 31;
+
 pub type JointType = ImpulseJoint;
 // https://github.com/alexichepura/bevy_garage/issues/23
 // https://github.com/dimforge/bevy_rapier/issues/196
 // pub type JointType = MultibodyJoint;
 
 pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
-pub const SENSOR_COUNT: usize = 31;
 
 #[derive(Component)]
 pub struct Wheel {
@@ -32,9 +33,16 @@ pub struct CarSize {
     pub hl: f32,
 }
 
+const SPEED_LIMIT_KMH: f32 = 300.;
+const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
+const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
+const STEERING_SPEEDLIMIT_MPS: f32 = STEERING_SPEEDLIMIT_KMH * 1000. / 3600.;
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub size: CarSize,
+    pub speed_limit: f32,
+    pub steering_speed_limit: f32,
     pub sensor_config: [(Vec3, Quat); SENSOR_COUNT],
     pub sensor_inputs: Vec<f32>,
     pub gas: f32,
@@ -65,6 +73,8 @@ impl Default for Car {
         let hl = 2.2;
         Self {
             size: CarSize { hw, hh, hl },
+            speed_limit: SPEED_LIMIT_MPS,
+            steering_speed_limit: STEERING_SPEEDLIMIT_MPS,
             sensor_inputs: vec![0.; SENSOR_COUNT],
             sensor_config: [
                 // front
@@ -135,33 +145,23 @@ impl Car {
     }
 }
 
+pub const STATIC_GROUP: Group = Group::GROUP_1;
 pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 pub fn car_start_system(
-    mut commands: Commands,
-    mut config: ResMut<Config>,
+    mut config: ResMut<CarConfig>,
     asset_server: Res<AssetServer>,
+    mut car_spawn_events: EventWriter<SpawnCarEvent>,
 ) {
     let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
     config.wheel_scene = Some(wheel_gl.clone());
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     config.car_scene = Some(car_gl.clone());
 
-    for i in 0..config.cars_count {
-        let is_hid = i == 0;
-        let init_meters = 0.;
-        let (translate, quat) = config.get_transform_by_meter(init_meters);
-        let transform = Transform::from_translation(translate).with_rotation(quat);
-        spawn_car(
-            &mut commands,
-            &car_gl,
-            &wheel_gl,
-            is_hid,
-            transform,
-            i,
-            init_meters,
-            config.max_torque,
-        );
-    }
+    car_spawn_events.send(SpawnCarEvent {
+        is_hid: true,
+        index: 0,
+        init_meters: Some(0.),
+    });
 }
 
 pub fn spawn_car(
@@ -328,12 +328,6 @@ pub fn spawn_car(
             ),
         ))
         .id();
-    #[cfg(feature = "brain")]
-    {
-        commands
-            .entity(car_id)
-            .insert(crate::nn::dqn_bevy::CarDqnPrev::new());
-    }
 
     if is_hid {
         commands.entity(car_id).insert(HID);
@@ -347,10 +341,9 @@ pub fn spawn_car(
     return car_id;
 }
 
-#[cfg(feature = "brain")]
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
-    config: Res<Config>,
+    config: Res<CarConfig>,
     mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
 ) {

@@ -1,11 +1,9 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 use std::f32::consts::FRAC_PI_2;
 
 // https://google.github.io/filament/Filament.html#materialsystem/parameterization/
 // https://google.github.io/filament/Material%20Properties.pdf
 
-pub const STATIC_GROUP: Group = Group::GROUP_1;
 #[derive(Component, Debug)]
 pub struct TrackRoad;
 

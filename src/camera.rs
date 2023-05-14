@@ -1,10 +1,10 @@
-use crate::car::HID;
 use crate::config::Config;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};
 use bevy::window::CursorGrabMode;
+use bevy_garage_car::car::HID;
 
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
