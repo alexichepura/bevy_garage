@@ -115,10 +115,8 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
                 enabled: false,
                 style: DebugRenderStyle {
                     rigid_body_axes_length: 0.5,
-                    // subdivisions: 50,
                     ..default()
                 },
-                // | DebugRenderMode::COLLIDER_AABBS
                 mode: DebugRenderMode::COLLIDER_SHAPES
                     | DebugRenderMode::RIGID_BODY_AXES
                     | DebugRenderMode::JOINTS
@@ -129,19 +127,3 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
     }
     app
 }
-
-// fn display_events_system(
-//     mut e_collision: EventReader<CollisionEvent>,
-//     mut e_force: EventReader<ContactForceEvent>,
-// ) {
-//     for collision_e in e_collision.iter() {
-//         println!("main collision event: {:?}", collision_e);
-//     }
-
-//     for force_e in e_force.iter() {
-//         println!(
-//             "glomainbal force event: {:?} {:?}",
-//             force_e.total_force, force_e.total_force_magnitude
-//         );
-//     }
-// }
