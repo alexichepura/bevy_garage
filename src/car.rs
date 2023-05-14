@@ -32,9 +32,16 @@ pub struct CarSize {
     pub hl: f32,
 }
 
+const SPEED_LIMIT_KMH: f32 = 300.;
+const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
+const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
+const STEERING_SPEEDLIMIT_MPS: f32 = STEERING_SPEEDLIMIT_KMH * 1000. / 3600.;
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub size: CarSize,
+    pub speed_limit: f32,
+    pub steering_speed_limit: f32,
     pub sensor_config: [(Vec3, Quat); SENSOR_COUNT],
     pub sensor_inputs: Vec<f32>,
     pub gas: f32,
@@ -65,6 +72,8 @@ impl Default for Car {
         let hl = 2.2;
         Self {
             size: CarSize { hw, hh, hl },
+            speed_limit: SPEED_LIMIT_MPS,
+            steering_speed_limit: STEERING_SPEEDLIMIT_MPS,
             sensor_inputs: vec![0.; SENSOR_COUNT],
             sensor_config: [
                 // front
@@ -332,7 +341,7 @@ pub fn spawn_car(
     {
         commands
             .entity(car_id)
-            .insert(crate::nn::dqn_bevy::CarDqnPrev::new());
+            .insert(crate::nn::dqn_bevy::CarDqn::new());
     }
 
     if is_hid {

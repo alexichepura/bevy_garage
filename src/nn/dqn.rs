@@ -2,7 +2,6 @@ use super::{gradient::get_sgd, params::*};
 use crate::{
     car::*,
     config::*,
-    esp::SPEED_LIMIT_KMH,
     nn::{dqn_bevy::*, util::*},
     track::*,
 };
@@ -11,10 +10,16 @@ use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;
 
-const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-
+#[cfg(target_arch = "wasm32")]
 pub type QNetwork = (
     (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
+    (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
+    Linear<HIDDEN_SIZE, ACTIONS>,
+);
+#[cfg(not(target_arch = "wasm32"))]
+pub type QNetwork = (
+    (Linear<STATE_SIZE, HIDDEN_SIZE>, ReLU),
+    (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
     (Linear<HIDDEN_SIZE, HIDDEN_SIZE>, ReLU),
     Linear<HIDDEN_SIZE, ACTIONS>,
 );
@@ -33,7 +38,7 @@ pub fn dqn_system(
         &Transform,
         Entity,
         Option<&HID>,
-        &mut CarDqnPrev,
+        &mut CarDqn,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut config: ResMut<Config>,
@@ -65,7 +70,7 @@ pub fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, v, tr, e, hid, mut car_dqn_prev) in q_car.iter_mut() {
+    for (mut car, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
         let is_hid = hid.is_some();
         let mut crash: bool = false;
 
@@ -96,7 +101,7 @@ pub fn dqn_system(
         let d_norm = d / 4.;
 
         let velocity = v.linvel.length();
-        let velocity_norm = velocity / SPEED_LIMIT_MPS;
+        let velocity_norm = velocity / car_dqn.speed_limit;
         let shape_reward = || -> f32 {
             if crash {
                 return -1.;
@@ -127,7 +132,7 @@ pub fn dqn_system(
             };
         }
 
-        let (prev_action, prev_obs) = (car_dqn_prev.prev_action, car_dqn_prev.prev_obs);
+        let (prev_action, prev_obs) = (car_dqn.prev_action, car_dqn.prev_obs);
         if config.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
             #[cfg(feature = "brain_api")]
@@ -138,9 +143,9 @@ pub fn dqn_system(
 
         let (action, _) = cars_dqn.act(obs, dqn.eps);
         if should_act && !crash {
-            car_dqn_prev.prev_obs = obs;
-            car_dqn_prev.prev_action = action;
-            car_dqn_prev.prev_reward = reward;
+            car_dqn.prev_obs = obs;
+            car_dqn.prev_action = action;
+            car_dqn.prev_reward = reward;
         }
         if !config.use_brain {
             return;
@@ -161,7 +166,7 @@ pub fn dqn_system(
         if let Some(_hid) = hid {
             let rb_len = dqn.rb.len();
             if rb_len < BATCH_SIZE {
-                log_action_reward(car_dqn_prev.prev_action, reward);
+                log_action_reward(car_dqn.prev_action, reward);
             } else if !cars_dqn.processing {
                 cars_dqn.processing = true;
                 let mut rng = rand::thread_rng();

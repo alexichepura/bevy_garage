@@ -3,9 +3,6 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
-pub const SPEED_LIMIT_KMH: f32 = 300.;
-pub const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
-
 pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
     for (velocity, transform, mut force) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
@@ -46,16 +43,15 @@ pub fn esp_system(
             true => car.brake > 0.,
             false => car.gas > 0.,
         };
-        let car_mps = velocity.linvel.length();
-        let car_kmh = car_mps / 1000. * 3600.;
+        let linvel = velocity.linvel.length();
         let torque_speed_x: f32 = match braking {
             true => 2.,
-            _ => match car_kmh / SPEED_LIMIT_KMH {
+            _ => match linvel / car.speed_limit {
                 x if x >= 1. => 0.,
                 x => 0.7 + 0.3 * (1. - x),
             },
         };
-        let steering_speed_x: f32 = match car_kmh / STEERING_SPEEDLIMIT_KMH {
+        let steering_speed_x: f32 = match linvel / car.steering_speed_limit {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
