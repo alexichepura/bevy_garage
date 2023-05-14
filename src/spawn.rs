@@ -1,22 +1,22 @@
-use crate::config::Config;
 use bevy::prelude::*;
 use bevy_garage_car::{car::spawn_car, config::CarConfig, spawn::SpawnCarEvent};
+use bevy_garage_track::TrackConfig;
 
 pub fn spawn_car_system(
     mut events: EventReader<SpawnCarEvent>,
     mut commands: Commands,
-    config: ResMut<Config>,
+    track_config: ResMut<TrackConfig>,
     car_config: ResMut<CarConfig>,
 ) {
     for spawn_event in events.iter() {
         dbg!(spawn_event);
 
         let (transform, init_meters) = if let Some(init_meters) = spawn_event.init_meters {
-            let (translate, quat) = config.get_transform_by_meter(init_meters);
+            let (translate, quat) = track_config.get_transform_by_meter(init_meters);
             let transform = Transform::from_translation(translate).with_rotation(quat);
             (transform, init_meters)
         } else {
-            config.get_transform_random()
+            track_config.get_transform_random()
         };
 
         spawn_car(

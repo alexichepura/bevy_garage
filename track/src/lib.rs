@@ -1,17 +1,23 @@
 pub mod asphalt;
+pub mod config;
 pub mod decor;
 pub mod ground;
 pub mod kerb;
 pub mod material;
+pub mod mesh;
+pub mod progress;
 pub mod quality;
 pub mod shader;
 pub mod track;
 pub mod wall;
 
 pub use asphalt::*;
+use bevy_garage_car::CarSet;
+pub use config::*;
 pub use decor::*;
 pub use ground::*;
 pub use material::*;
+pub use progress::*;
 pub use quality::*;
 pub use shader::*;
 pub use track::*;
@@ -27,12 +33,17 @@ pub struct TrackPlugin;
 
 impl Plugin for TrackPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(ShadersPlugin)
+        app.insert_resource(TrackConfig::default())
+            .add_plugin(ShadersPlugin)
             .add_plugin(MaterialPlugin::<GroundMaterial>::default())
             .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
             .init_resource::<MaterialHandle>()
-            .add_startup_systems((track_start_system, track_decorations_start_system))
-            .add_system(far_culling);
+            .add_startup_systems((
+                track_polyline_start_system,
+                track_start_system,
+                track_decorations_start_system.after(track_polyline_start_system),
+            ))
+            .add_systems((far_culling, progress_system.in_set(CarSet::Input)));
     }
 }
 

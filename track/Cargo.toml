@@ -1,8 +1,15 @@
 [package]
-name = "bavy_garage_track_convert"
+name = "bevy_garage_track"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+
+
 [dependencies]
-obj-rs = { version = "0.7.0", default-features = false }
-ron = { version = "*" }
+bevy = { workspace = true }
+bevy_rapier3d = { workspace = true }
+bevy_garage_car = { workspace = true }
+parry3d = "0.13"
+rand = { workspace = true }
+wgpu = { version = "0.15", features = ["spirv"] }

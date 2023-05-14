@@ -9,7 +9,7 @@ description = "Space about cars and driving"
 identifier = "io.github.alexichepura.bevy_garage"
 [workspace]
 resolver = "2"
-members = ["car", "dqn", "prisma-cli", "api", "trainer", "db_client", "ios", "track"]
+members = ["car", "track", "dqn", "prisma-cli", "api", "trainer", "db_client", "ios", "track-convert"]
 [profile.release]
 codegen-units = 1
 [features]
@@ -21,6 +21,7 @@ debug_lines = ["dep:bevy_prototype_debug_lines", "bevy_garage_car/debug_lines"]
 bevy = { version = "0.10", features = ["jpeg"] }
 bevy_garage_car = { path = "./car" }
 bevy_garage_dqn = { path = "./dqn" }
+bevy_garage_track = { path = "./track" }
 # bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
 bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", features = ["serde-serialize"] }
 dfdx = "0.11"
@@ -34,10 +35,8 @@ tokio = { version = "1", features = ["full"] }
 bevy = { workspace = true }
 bevy_garage_car = { workspace = true }
 bevy_garage_dqn = { workspace = true, optional = true }
+bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true }
-parry3d = "0.13"
-rand = { workspace = true }
-wgpu = { version = "0.15", features = ["spirv"] }
 bevy_prototype_debug_lines = { version = "0.10", features = ["3d"], optional = true }
 bevy_fundsp = {git = "https://github.com/harudagondi/bevy_fundsp"}
 uuid = "1.3.1"
