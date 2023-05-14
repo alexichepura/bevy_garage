@@ -9,4 +9,5 @@ pub mod dqn_bevy;
 pub mod gradient;
 pub mod params;
 pub mod replay;
+pub mod spawn;
 pub mod util;

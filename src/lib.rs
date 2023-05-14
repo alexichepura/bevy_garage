@@ -111,11 +111,12 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        use bevy_garage_dqn::{dqn::dqn_system, dqn_bevy::*};
+        use bevy_garage_dqn::{dqn::dqn_system, dqn_bevy::*, spawn::*};
         app.insert_resource(DqnResource::default())
             .add_event::<DqnEvent>()
             .add_startup_systems((dqn_start_system, dqn_x_start_system))
             .add_systems((
+                add_dqn_on_spawned_car_system,
                 dqn_rx_to_bevy_event_system,
                 dqn_event_reader_system,
                 bevy_garage_car::car::car_sensor_system.in_set(CarSimLabel::Input),

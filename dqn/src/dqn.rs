@@ -142,7 +142,7 @@ pub fn dqn_system(
             dqn.crashes += 1;
             dqn.respawn_in = seconds;
             dqn.respawn_is_hid = is_hid;
-            // dqn.respawn_index = car.index;
+            dqn.respawn_index = car.index;
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
             dqn.use_brain = false;

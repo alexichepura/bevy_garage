@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-# brain = ["dep:dfdx", "dep:futures-lite", "dep:crossbeam-channel"]
 brain_api = ["dep:reqwest", "dep:tokio", "dep:serde", "dep:serde_json"]
 default = []
 

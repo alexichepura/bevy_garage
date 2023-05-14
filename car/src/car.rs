@@ -328,12 +328,6 @@ pub fn spawn_car(
             ),
         ))
         .id();
-    #[cfg(feature = "brain")]
-    {
-        commands
-            .entity(car_id)
-            .insert(crate::nn::dqn_bevy::CarDqn::new());
-    }
 
     if is_hid {
         commands.entity(car_id).insert(HID);
