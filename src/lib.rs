@@ -14,7 +14,6 @@ mod spawn;
 mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent, CarSet};
-use bevy_garage_dqn::BrainPlugin;
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -105,7 +104,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        app.add_plugin(BrainPlugin);
+        app.add_plugin(bevy_garage_dqn::BrainPlugin);
     }
 
     #[cfg(feature = "debug_lines")]
