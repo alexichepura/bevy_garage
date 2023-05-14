@@ -9,7 +9,7 @@ description = "Space about cars and driving"
 identifier = "io.github.alexichepura.bevy_garage"
 [workspace]
 resolver = "2"
-members = ["car", "dqn", "prisma-cli", "api", "trainer", "db_client", "ios", "track"]
+members = ["car", "dqn", "prisma-cli", "api", "trainer", "db_client", "ios", "track-convert"]
 [profile.release]
 codegen-units = 1
 [features]
