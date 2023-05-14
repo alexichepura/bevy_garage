@@ -9,16 +9,20 @@ description = "Space about cars and driving"
 identifier = "io.github.alexichepura.bevy_garage"
 [workspace]
 resolver = "2"
-members = ["prisma-cli", "api", "trainer", "db_client", "ios", "track"]
+members = ["car", "dqn", "prisma-cli", "api", "trainer", "db_client", "ios", "track"]
 [profile.release]
 codegen-units = 1
 [features]
-brain = ["dep:dfdx", "dep:futures-lite", "dep:crossbeam-channel"]
-brain_api = ["dep:reqwest", "dep:tokio", "dep:serde", "dep:serde_json"]
+brain = ["dep:bevy_garage_dqn"]
+# brain_api = ["dep:bevy_garage_dqn", "bevy_garage_dqn/brain_api"]
 default = ["debug_lines"]
 debug_lines = ["dep:bevy_prototype_debug_lines"]
 [workspace.dependencies]
 bevy = { version = "0.10", features = ["jpeg"] }
+bevy_garage_car = { path = "./car" }
+bevy_garage_dqn = { path = "./dqn" }
+# bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
+bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", features = ["serde-serialize"] }
 dfdx = "0.11"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }
 prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }
@@ -28,8 +32,9 @@ serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 [dependencies]
 bevy = { workspace = true }
-# bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", features = ["serde-serialize"] }
+bevy_garage_car = { workspace = true }
+bevy_garage_dqn = { workspace = true, optional = true }
+bevy_rapier3d = { workspace = true }
 parry3d = "0.13"
 nalgebra = "0.32"
 rand = { workspace = true }

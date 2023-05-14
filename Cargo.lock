@@ -637,6 +637,8 @@ version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy_fundsp",
+ "bevy_garage_car",
+ "bevy_garage_dqn",
  "bevy_prototype_debug_lines",
  "bevy_rapier3d",
  "crossbeam-channel",
@@ -652,6 +654,30 @@ dependencies = [
  "uuid",
  "virtual_joystick",
  "wgpu",
+]
+
+[[package]]
+name = "bevy_garage_car"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_rapier3d",
+]
+
+[[package]]
+name = "bevy_garage_dqn"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage_car",
+ "bevy_rapier3d",
+ "crossbeam-channel",
+ "dfdx",
+ "rand 0.8.5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]

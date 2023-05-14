@@ -1,11 +1,9 @@
-use super::{gradient::get_sgd, params::*};
-use crate::{
-    car::*,
-    config::*,
-    nn::{dqn_bevy::*, util::*},
-    track::*,
-};
+use crate::{dqn_bevy::*, gradient::get_sgd, params::*, util::*};
 use bevy::prelude::*;
+use bevy_garage_car::{
+    car::{Car, HID},
+    spawn::SpawnCarEvent,
+};
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;
@@ -31,7 +29,6 @@ pub fn dqn_system(
     mut dqn: ResMut<DqnResource>,
     mut cars_dqn: NonSendMut<CarsDqnResource>,
     dqn_tx: Res<DqnTx>,
-    q_road: Query<&TrackRoad>,
     mut q_car: Query<(
         &mut Car,
         &Velocity,
@@ -41,31 +38,25 @@ pub fn dqn_system(
         &mut CarDqn,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
-    mut config: ResMut<Config>,
     mut commands: Commands,
+    mut car_spawn_events: EventWriter<SpawnCarEvent>,
     #[cfg(feature = "brain_api")] api: Res<super::api_client::ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_in > 0. && seconds > dqn.respawn_in {
-        let (transform, init_meters) = config.get_transform_random();
-        spawn_car(
-            &mut commands,
-            &config.car_scene.as_ref().unwrap(),
-            &config.wheel_scene.as_ref().unwrap(),
-            dqn.respawn_is_hid,
-            transform,
-            dqn.respawn_index,
-            init_meters,
-            config.max_torque,
-        );
+        car_spawn_events.send(SpawnCarEvent {
+            is_hid: dqn.respawn_is_hid,
+            index: dqn.respawn_index,
+            init_meters: None,
+        });
         dqn.respawn_in = 0.;
         dqn.respawn_is_hid = false;
         dqn.respawn_index = 0;
-        config.use_brain = true;
+        dqn.use_brain = true;
         return;
     };
     let should_act: bool = seconds > dqn.seconds;
-    if should_act && config.use_brain {
+    if should_act && dqn.use_brain {
         dqn.seconds = seconds + STEP_DURATION;
         dqn.step += 1;
     }
@@ -76,11 +67,8 @@ pub fn dqn_system(
 
         let colliding_entities = q_colliding_entities.get(e);
         if let Ok(colliding_entities) = colliding_entities {
-            for e in colliding_entities.iter() {
-                let colliding_road = q_road.get(e);
-                if !colliding_road.is_ok() {
-                    crash = true;
-                }
+            for _ in colliding_entities.iter() {
+                crash = true;
             }
         }
 
@@ -133,7 +121,7 @@ pub fn dqn_system(
         }
 
         let (prev_action, prev_obs) = (car_dqn.prev_action, car_dqn.prev_obs);
-        if config.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
+        if dqn.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
             #[cfg(feature = "brain_api")]
             if dqn.rb.i % super::api_client::PERSIST_BATCH_SIZE == 0 {
@@ -147,19 +135,19 @@ pub fn dqn_system(
             car_dqn.prev_action = action;
             car_dqn.prev_reward = reward;
         }
-        if !config.use_brain {
+        if !dqn.use_brain {
             return;
         }
         if crash {
             dqn.crashes += 1;
             dqn.respawn_in = seconds;
             dqn.respawn_is_hid = is_hid;
-            dqn.respawn_index = car.index;
+            // dqn.respawn_index = car.index;
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
-            config.use_brain = false;
+            dqn.use_brain = false;
         }
-        if !config.use_brain || !should_act || crash {
+        if !dqn.use_brain || !should_act || crash {
             return;
         }
 

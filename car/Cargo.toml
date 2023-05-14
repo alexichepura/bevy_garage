@@ -1,0 +1,11 @@
+[package]
+name = "bevy_garage_car"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+bevy_rapier3d = { workspace = true }
+# dfdx = { workspace = true }
+# rand = { workspace = true }
+# crossbeam-channel = { version = "0.5" }

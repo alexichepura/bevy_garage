@@ -1,10 +1,8 @@
 use bevy::prelude::*;
+use bevy_garage_car::car::{Car, HID};
 use virtual_joystick::*;
 
-use crate::{
-    car::{Car, HID},
-    CarSimLabel,
-};
+use crate::CarSimLabel;
 
 #[derive(Default, Reflect, Hash, Clone, PartialEq, Eq)]
 enum JoystickTypeAxis {

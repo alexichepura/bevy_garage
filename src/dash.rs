@@ -1,6 +1,6 @@
-use crate::car::*;
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
+use bevy_garage_car::car::{Car, HID};
 use bevy_rapier3d::prelude::*;
 
 #[derive(Component)]
@@ -20,12 +20,6 @@ pub struct TrackPositionText;
 
 #[derive(Component)]
 pub struct RideDistanceText;
-
-#[derive(Component)]
-pub struct TrainerEpsilonText;
-
-#[derive(Component)]
-pub struct TrainerGenerationText;
 
 pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in query.iter_mut() {
@@ -193,66 +187,71 @@ pub fn dash_start_system(mut commands: Commands, asset_server: Res<AssetServer>)
                             ..default()
                         })
                         .insert(KmphText);
-                    parent
-                        .spawn(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                position: UiRect {
-                                    top: Val::Px(4.),
-                                    left: Val::Percent(100.),
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 14.0,
-                                        color: Color::BLACK,
+
+                    #[cfg(feature = "brain")]
+                    {
+                        use bevy_garage_dqn::dash::{TrainerEpsilonText, TrainerGenerationText};
+                        parent
+                            .spawn(TextBundle {
+                                style: Style {
+                                    position_type: PositionType::Absolute,
+                                    margin: UiRect {
+                                        left: Val::Px(4.),
+                                        ..default()
                                     },
-                                }],
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(TrainerGenerationText);
-                    parent
-                        .spawn(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                position: UiRect {
-                                    top: Val::Px(20.),
-                                    left: Val::Percent(100.),
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 14.0,
-                                        color: Color::DARK_GRAY,
+                                    position: UiRect {
+                                        top: Val::Px(4.),
+                                        left: Val::Percent(100.),
+                                        ..default()
                                     },
-                                }],
+                                    ..default()
+                                },
+                                text: Text {
+                                    alignment: TextAlignment::Right,
+                                    sections: vec![TextSection {
+                                        value: "".to_string(),
+                                        style: TextStyle {
+                                            font: medium.clone(),
+                                            font_size: 14.0,
+                                            color: Color::BLACK,
+                                        },
+                                    }],
+                                    ..default()
+                                },
                                 ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(TrainerEpsilonText);
+                            })
+                            .insert(TrainerGenerationText);
+                        parent
+                            .spawn(TextBundle {
+                                style: Style {
+                                    position_type: PositionType::Absolute,
+                                    margin: UiRect {
+                                        left: Val::Px(4.),
+                                        ..default()
+                                    },
+                                    position: UiRect {
+                                        top: Val::Px(20.),
+                                        left: Val::Percent(100.),
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                                text: Text {
+                                    alignment: TextAlignment::Right,
+                                    sections: vec![TextSection {
+                                        value: "".to_string(),
+                                        style: TextStyle {
+                                            font: medium.clone(),
+                                            font_size: 14.0,
+                                            color: Color::DARK_GRAY,
+                                        },
+                                    }],
+                                    ..default()
+                                },
+                                ..default()
+                            })
+                            .insert(TrainerEpsilonText);
+                    }
                 });
         });
 }

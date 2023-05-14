@@ -1,5 +1,5 @@
-use crate::car::*;
 use bevy::prelude::*;
+use bevy_garage_car::car::{Car, JointType, Wheel};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 

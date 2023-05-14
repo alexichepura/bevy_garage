@@ -1,5 +1,6 @@
-use crate::{car::*, config::*, track::*};
+use crate::{config::*, track::*};
 use bevy::prelude::*;
+use bevy_garage_car::car::{Car, CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use parry3d::query::PointQueryWithLocation;
 use parry3d::shape::{Polyline, SegmentPointLocation};

@@ -1,6 +1,12 @@
-use super::{gradient::get_sgd, params::*, replay::ReplayBuffer};
-use crate::{dash::*, nn::dqn::*};
+use crate::{
+    dash::{TrainerEpsilonText, TrainerGenerationText},
+    dqn::*,
+    gradient::get_sgd,
+    params::*,
+    replay::ReplayBuffer,
+};
 use bevy::prelude::*;
+use crossbeam_channel::{bounded, Receiver, Sender};
 use dfdx::{optim::Sgd, prelude::*};
 use rand::Rng;
 
@@ -75,6 +81,7 @@ impl CarsDqnResource {
 
 #[derive(Resource)]
 pub struct DqnResource {
+    pub use_brain: bool,
     pub seconds: f64,
     pub step: usize,
     pub crashes: usize,
@@ -91,6 +98,7 @@ pub struct DqnResource {
 impl DqnResource {
     pub fn default() -> Self {
         Self {
+            use_brain: false,
             seconds: 0.,
             step: 0,
             crashes: 0,
@@ -116,8 +124,6 @@ impl SgdResource {
         Self { sgd }
     }
 }
-
-use crossbeam_channel::{bounded, Receiver, Sender};
 
 pub struct DqnX {
     pub loss_string: String,
