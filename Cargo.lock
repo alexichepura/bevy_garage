@@ -639,13 +639,13 @@ dependencies = [
  "bevy_fundsp",
  "bevy_garage_car",
  "bevy_garage_dqn",
+ "bevy_garage_track",
  "bevy_prototype_debug_lines",
  "bevy_rapier3d",
  "parry3d",
  "rand 0.8.5",
  "uuid",
  "virtual_joystick",
- "wgpu",
 ]
 
 [[package]]
@@ -679,6 +679,16 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_garage",
+]
+
+[[package]]
+name = "bevy_garage_track"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage_car",
+ "bevy_rapier3d",
+ "wgpu",
 ]
 
 [[package]]

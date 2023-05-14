@@ -1,0 +1,13 @@
+[package]
+name = "bevy_garage_track"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+
+[dependencies]
+bevy = { workspace = true }
+bevy_rapier3d = { workspace = true }
+wgpu = { version = "0.15", features = ["spirv"] }
+bevy_garage_car = { workspace = true }

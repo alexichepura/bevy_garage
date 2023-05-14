@@ -8,12 +8,11 @@ pub mod font;
 mod input;
 pub mod joystick;
 mod light;
-mod mesh;
 mod progress;
 mod spawn;
-mod track;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent, CarSet};
+use bevy_garage_track::TrackPlugin;
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -24,7 +23,6 @@ use input::*;
 use light::*;
 use progress::*;
 use spawn::*;
-use track::*;
 
 #[derive(Resource, Copy, Clone, Debug)]
 pub struct PhysicsParams {

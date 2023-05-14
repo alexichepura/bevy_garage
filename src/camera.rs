@@ -57,10 +57,10 @@ pub fn camera_start_system(mut commands: Commands, config: Res<Config>) {
             #[cfg(any(target_os = "ios"))]
             dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
             tonemapping: Tonemapping::TonyMcMapface,
-            transform: Transform::from_translation(
-                Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
-            )
-            .looking_at(Vec3::Y * 6., Vec3::Y),
+            // transform: Transform::from_translation(
+            //     Vec3::Y * 15. + config.quat.mul_vec3(-Vec3::Z * 30.),
+            // )
+            // .looking_at(Vec3::Y * 6., Vec3::Y),
             ..default()
         },
         FogSettings {
@@ -238,7 +238,6 @@ pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<K
 pub fn camera_controller_system(
     time: Res<Time>,
     config: Res<CameraConfig>,
-    // mut config: ResMut<CameraConfig>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
     mut pset: ParamSet<(

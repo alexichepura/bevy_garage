@@ -3,6 +3,7 @@ pub mod decor;
 pub mod ground;
 pub mod kerb;
 pub mod material;
+pub mod mesh;
 pub mod quality;
 pub mod shader;
 pub mod track;

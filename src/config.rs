@@ -7,7 +7,6 @@ pub const CARS_COUNT: usize = 1;
 
 #[derive(Resource)]
 pub struct Config {
-    // pub translation: Vec3,
     pub quat: Quat,
     pub cars_count: usize,
     pub polyline: Option<Polyline>,
