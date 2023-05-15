@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_garage_car::{
-    car::{car_start_system, spawn_car},
+    car::{car_start_system, spawn_car, Car},
     config::CarConfig,
 };
 use bevy_rapier3d::prelude::*;
@@ -23,6 +23,7 @@ fn main() {
             car_start_system,
             spawn_car_system.after(car_start_system),
         ))
+        .add_system(input_system)
         .run();
 }
 
@@ -72,7 +73,38 @@ fn plane_start(
     });
 
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 10., 25.).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0., 20., 50.).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
+}
+
+fn input_system(input: Res<Input<KeyCode>>, mut cars: Query<&mut Car>) {
+    for mut car in cars.iter_mut() {
+        if input.pressed(KeyCode::Up) {
+            car.gas = 1.;
+        }
+        if input.just_released(KeyCode::Up) {
+            car.gas = 0.;
+        }
+
+        if input.pressed(KeyCode::Down) {
+            car.brake = 1.;
+        }
+        if input.just_released(KeyCode::Down) {
+            car.brake = 0.;
+        }
+
+        if input.pressed(KeyCode::Left) {
+            car.steering = -1.;
+        }
+        if input.pressed(KeyCode::Right) {
+            car.steering = 1.;
+        }
+        if input.just_released(KeyCode::Left) {
+            car.steering = 0.;
+        }
+        if input.just_released(KeyCode::Right) {
+            car.steering = 0.;
+        }
+    }
 }
