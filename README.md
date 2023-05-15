@@ -46,7 +46,7 @@ cd api && cargo r -r
 # run app with saving replay buffer
 cargo r -r --features="brain,brain_api"
 # prisma studio https://github.com/Brendonovich/prisma-client-rust/issues/96
-npx prisma sudio
+npx prisma studio
 ```
 
 ## Key bindings
