@@ -1,8 +1,10 @@
 use bevy::prelude::*;
+use bevy_garage::esp::esp_system;
 use bevy_garage_car::{
     car::{car_start_system, spawn_car, Car},
     config::CarConfig,
 };
+use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 fn main() {
@@ -17,13 +19,18 @@ fn main() {
             ..default()
         })
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .insert_resource(CarConfig::default())
+        .add_plugin(DebugLinesPlugin::with_depth_test(true))
+        .add_plugin(RapierDebugRenderPlugin::default())
+        .insert_resource(CarConfig {
+            show_rays: true,
+            ..default()
+        })
         .add_startup_systems((
             plane_start,
             car_start_system,
             spawn_car_system.after(car_start_system),
         ))
-        .add_system(input_system)
+        .add_systems((input_system, esp_system.after(input_system)))
         .run();
 }
 
@@ -73,7 +80,7 @@ fn plane_start(
     });
 
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 20., 50.).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0., 10., 20.).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
 }

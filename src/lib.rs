@@ -3,7 +3,7 @@ pub mod camera;
 mod config;
 mod dash;
 mod dsp;
-mod esp;
+pub mod esp;
 pub mod font;
 mod input;
 pub mod joystick;
