@@ -25,8 +25,8 @@ bevy_garage_track = { path = "./track" }
 # bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
 bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", features = ["serde-serialize"] }
 dfdx = "0.11"
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }
-prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["sqlite","sqlite-create-many"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = ["sqlite","sqlite-create-many"] }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = ["sqlite","sqlite-create-many"] }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
