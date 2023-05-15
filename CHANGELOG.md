@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 0.5.0 (2023-05-15)
+
+- cargo update and prisma-client-rust 0.6.8
+- crates for car, track, dqn
+- plugins for dqn
+- split config into car_config, track_config, dqn_config
+- car spawn event
+- better neural network, 30 actions per sec
+- smaller wheels and torque
+- refactor to bundles for components
+- fixes for progress calc and lap count
+
 ## Version 0.4.0 (2023-04-26)
 
 - bevy 0.10.1

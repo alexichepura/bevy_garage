@@ -30,6 +30,25 @@ cargo run --release --features bevy/dynamic_linking
 
 <https://bevyengine.org/learn/book/getting-started/setup/>
 
+## Neural network
+```sh
+cargo r -r --features="brain"
+```
+
+### Api server for neural network (optional)
+```sh
+# generate prisma db client
+cargo prisma generate
+# push schema to database
+cargo prisma db push
+# run api server
+cd api && cargo r -r
+# run app with saving replay buffer
+cargo r -r --features="brain,brain_api"
+# prisma studio https://github.com/Brendonovich/prisma-client-rust/issues/96
+npx prisma sudio
+```
+
 ## Key bindings
 
 - UP, DOWN, LEFT, RIGHT - drive
