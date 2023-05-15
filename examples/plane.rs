@@ -26,12 +26,20 @@ fn main() {
             ..default()
         })
         .add_startup_systems((
+            rapier_config_start_system,
             plane_start,
             car_start_system,
             spawn_car_system.after(car_start_system),
         ))
         .add_systems((input_system, esp_system.after(input_system)))
         .run();
+}
+
+fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
+    c.integration_parameters.max_velocity_iterations = 64;
+    c.integration_parameters.max_velocity_friction_iterations = 64;
+    c.integration_parameters.max_stabilization_iterations = 16;
+    c.integration_parameters.erp = 0.99;
 }
 
 fn spawn_car_system(mut commands: Commands, car_config: Res<CarConfig>) {
