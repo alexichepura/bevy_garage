@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
-use bevy_garage_car::car::{Car, HID};
+use bevy_garage_car::car::HID;
+use bevy_garage_track::car_track::CarTrack;
 use bevy_rapier3d::prelude::*;
 
 #[derive(Component)]
@@ -264,24 +265,24 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<RideDistanceText>>,
         Query<&mut Text, With<LapText>>,
     )>,
-    mut cars: Query<(&Velocity, &Car, With<HID>)>,
+    mut cars: Query<(&Velocity, &CarTrack, With<HID>)>,
 ) {
-    for (velocity, car, _) in cars.iter_mut() {
+    for (velocity, car_track, _) in cars.iter_mut() {
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
         texts.p0().single_mut().sections[0].value = format!("{:.1}m/s", mps);
         texts.p1().single_mut().sections[0].value = format!("{:.1}km/h", kmph);
 
-        texts.p2().single_mut().sections[0].value = format!("{:.1}m", car.track_position);
+        texts.p2().single_mut().sections[0].value = format!("{:.1}m", car_track.track_position);
 
-        let sign: &str = if car.ride_distance.is_sign_negative() {
+        let sign: &str = if car_track.ride_distance.is_sign_negative() {
             "-"
         } else {
             "+"
         };
         texts.p3().single_mut().sections[0].value =
-            format!("{sign}{:.1}m", car.ride_distance.abs());
+            format!("{sign}{:.1}m", car_track.ride_distance.abs());
 
-        texts.p4().single_mut().sections[0].value = format!("lap {}", car.lap);
+        texts.p4().single_mut().sections[0].value = format!("lap {}", car_track.lap);
     }
 }

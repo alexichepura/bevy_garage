@@ -1,4 +1,4 @@
-use crate::{config::*, spawn::SpawnCarEvent};
+use crate::config::*;
 use bevy::prelude::*;
 use bevy_rapier3d::{
     prelude::*,
@@ -50,18 +50,8 @@ pub struct Car {
     pub steering: f32,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
+    pub wheel_max_angle: f32,
     pub init_transform: Transform,
-    pub reset_at: Option<f64>,
-
-    pub index: usize,
-    pub start_shift: f32,
-    pub track_position: f32,
-    pub ride_distance: f32,
-    pub lap: i32,
-    pub line_dir: Vec3,
-    pub line_pos: Vec3,
-    pub place: usize,
-
     pub prev_steering: f32,
     pub prev_torque: f32,
     pub prev_dir: f32,
@@ -122,17 +112,8 @@ impl Default for Car {
             prev_dir: 0.,
             wheels: Vec::new(),
             wheel_max_torque: 1000.,
+            wheel_max_angle: FRAC_PI_4,
             init_transform: Transform::default(),
-            reset_at: None,
-
-            index: 0,
-            start_shift: 0.,
-            track_position: 0.,
-            ride_distance: 0.,
-            place: 0,
-            lap: 0,
-            line_dir: Vec3::ZERO,
-            line_pos: Vec3::ZERO,
         }
     }
 }
@@ -147,21 +128,11 @@ impl Car {
 
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
-pub fn car_start_system(
-    mut config: ResMut<CarConfig>,
-    asset_server: Res<AssetServer>,
-    mut car_spawn_events: EventWriter<SpawnCarEvent>,
-) {
+pub fn car_start_system(mut config: ResMut<CarConfig>, asset_server: Res<AssetServer>) {
     let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
     config.wheel_scene = Some(wheel_gl.clone());
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
     config.car_scene = Some(car_gl.clone());
-
-    car_spawn_events.send(SpawnCarEvent {
-        is_hid: true,
-        index: 0,
-        init_meters: Some(0.),
-    });
 }
 
 pub fn spawn_car(
@@ -170,8 +141,6 @@ pub fn spawn_car(
     wheel_gl: &Handle<Scene>,
     is_hid: bool,
     transform: Transform,
-    index: usize,
-    init_meters: f32,
     max_torque: f32,
 ) -> Entity {
     let size = CarSize {
@@ -211,6 +180,7 @@ pub fn spawn_car(
             true => -Vec3::Y,
             false => Vec3::Y,
         })
+        .local_basis1(Quat::from_axis_angle(Vec3::Y, 0.)) // hackfix, prevents jumping on collider edges
         .local_anchor1(car_anchors[i])
         .local_anchor2(Vec3::ZERO)
         .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
@@ -284,8 +254,6 @@ pub fn spawn_car(
                 wheels: wheels.clone(),
                 wheel_max_torque: max_torque,
                 init_transform: transform,
-                start_shift: init_meters,
-                index,
                 ..default()
             },
             SceneBundle {
@@ -337,37 +305,24 @@ pub fn spawn_car(
             .entity(*wheel_id)
             .insert(JointType::new(car_id, joints[i]));
     }
-    println!("car spawned: {car_id:?} at {init_meters:.1}m");
+    println!("spawn_car: {car_id:?}");
     return car_id;
 }
 
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<CarConfig>,
-    mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
+    mut q_car: Query<(&mut Car, &Transform), With<Car>>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
 ) {
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     let dir = Vec3::Z * config.max_toi;
-    for (mut car, gt, t) in q_car.iter_mut() {
+    for (mut car, t) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
-        let g_translation = gt.translation();
-        #[cfg(feature = "debug_lines")]
-        {
-            if config.show_rays {
-                let h = Vec3::Y * 0.6;
-                lines.line_colored(
-                    h + g_translation,
-                    h + car.line_pos + Vec3::Y * g_translation.y,
-                    0.0,
-                    Color::rgba(0.5, 0.5, 0.5, 0.5),
-                );
-            }
-        }
         for a in 0..SENSOR_COUNT {
             let (pos, far_quat) = car.sensor_config[a];
-            let origin = g_translation + t.rotation.mul_vec3(pos);
+            let origin = t.translation + t.rotation.mul_vec3(pos);
             origins.push(origin);
             let mut dir_vec = t.rotation.mul_vec3(far_quat.mul_vec3(dir));
             dir_vec.y = 0.;

@@ -3,8 +3,9 @@
         "RUSTFLAGS": "-Ctarget-feature=+brain"
     },
     "rust-analyzer.cargo.features": [
+        "debug_lines",
         "brain",
-        "brain_api"
+        "brain_api",
         // "bevy_garage_dqn?/api"
     ],
 }

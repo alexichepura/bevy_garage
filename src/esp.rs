@@ -15,9 +15,24 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
     }
 }
 
+// Quat::from_axis_angle(-Vec3::Y, PI / 2.) = Quat(-0.0, -0.70710677, -0.0, 0.70710677);
+#[cfg(feature = "debug_lines")]
+const WHEEL_RAY_END_QUAT: Quat = Quat {
+    x: -0.0,
+    y: -0.70710677,
+    z: -0.0,
+    w: 0.70710677,
+};
+#[cfg(feature = "debug_lines")]
+const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
+    x: 0.,
+    y: 0.5,
+    z: 0.,
+};
+
 pub fn esp_system(
     time: Res<Time>,
-    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
+    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform)>,
     mut wheels: Query<(
         &Wheel,
         &mut ExternalForce,
@@ -29,10 +44,6 @@ pub fn esp_system(
     #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::config::CarConfig>,
 ) {
     let d_seconds = time.delta_seconds();
-    let max_angle = PI / 4.;
-    #[cfg(feature = "debug_lines")]
-    let wheel_torque_ray_quat = Quat::from_axis_angle(-Vec3::Y, PI / 2.);
-
     for (_entity, mut car, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();
@@ -84,7 +95,7 @@ pub fn esp_system(
 
         torque = dir * torque;
 
-        let angle: f32 = max_angle * steering * (0.1 + 0.9 * steering_speed_x);
+        let angle: f32 = car.wheel_max_angle * steering * (0.1 + 0.9 * steering_speed_x);
         let quat = -Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);
@@ -110,8 +121,8 @@ pub fn esp_system(
 
                 #[cfg(feature = "debug_lines")]
                 if car_config.show_rays {
-                    let start = transform.translation + Vec3::Y * 0.5;
-                    let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
+                    let start = transform.translation + WHEEL_RAY_SHIFT;
+                    let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
                 }
 
@@ -132,12 +143,10 @@ pub fn esp_system(
 
                 #[cfg(feature = "debug_lines")]
                 if car_config.show_rays {
-                    let start = transform.translation + Vec3::Y * 0.5;
-                    let end = start + wheel_torque_ray_quat.mul_vec3(f.torque) / 200.;
+                    let start = transform.translation + WHEEL_RAY_SHIFT;
+                    let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
                 }
-                let quat_back = -Quat::from_axis_angle(Vec3::Y, 0.);
-                j.data.set_local_basis1(quat_back);
             }
         }
     }

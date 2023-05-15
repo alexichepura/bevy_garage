@@ -661,6 +661,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_garage_car",
+ "bevy_garage_track",
  "bevy_rapier3d",
  "crossbeam-channel",
  "dfdx",
@@ -685,6 +686,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_garage_car",
+ "bevy_prototype_debug_lines",
  "bevy_rapier3d",
  "parry3d",
  "rand 0.8.5",
