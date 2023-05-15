@@ -50,6 +50,7 @@ pub struct Car {
     pub steering: f32,
     pub wheels: Vec<Entity>,
     pub wheel_max_torque: f32,
+    pub wheel_max_angle: f32,
     pub init_transform: Transform,
     pub prev_steering: f32,
     pub prev_torque: f32,
@@ -111,6 +112,7 @@ impl Default for Car {
             prev_dir: 0.,
             wheels: Vec::new(),
             wheel_max_torque: 1000.,
+            wheel_max_angle: FRAC_PI_4,
             init_transform: Transform::default(),
         }
     }
@@ -178,6 +180,7 @@ pub fn spawn_car(
             true => -Vec3::Y,
             false => Vec3::Y,
         })
+        .local_basis1(Quat::from_axis_angle(Vec3::Y, 0.)) // hackfix, prevents jumping on collider edges
         .local_anchor1(car_anchors[i])
         .local_anchor2(Vec3::ZERO)
         .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
