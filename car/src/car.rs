@@ -309,30 +309,17 @@ pub fn spawn_car(
 pub fn car_sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<CarConfig>,
-    mut q_car: Query<(&mut Car, &GlobalTransform, &Transform), With<Car>>,
+    mut q_car: Query<(&mut Car, &Transform), With<Car>>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
 ) {
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     let dir = Vec3::Z * config.max_toi;
-    for (mut car, gt, t) in q_car.iter_mut() {
+    for (mut car, t) in q_car.iter_mut() {
         let mut origins: Vec<Vec3> = Vec::new();
         let mut dirs: Vec<Vec3> = Vec::new();
-        let g_translation = gt.translation();
-        // #[cfg(feature = "debug_lines")]
-        // {
-        //     if config.show_rays {
-        //         let h = Vec3::Y * 0.6;
-        //         lines.line_colored(
-        //             h + g_translation,
-        //             h + car.line_pos + Vec3::Y * g_translation.y,
-        //             0.0,
-        //             Color::rgba(0.5, 0.5, 0.5, 0.5),
-        //         );
-        //     }
-        // }
         for a in 0..SENSOR_COUNT {
             let (pos, far_quat) = car.sensor_config[a];
-            let origin = g_translation + t.rotation.mul_vec3(pos);
+            let origin = t.translation + t.rotation.mul_vec3(pos);
             origins.push(origin);
             let mut dir_vec = t.rotation.mul_vec3(far_quat.mul_vec3(dir));
             dir_vec.y = 0.;

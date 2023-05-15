@@ -17,7 +17,7 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
 
 pub fn esp_system(
     time: Res<Time>,
-    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform), Changed<Car>>,
+    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform)>,
     mut wheels: Query<(
         &Wheel,
         &mut ExternalForce,
