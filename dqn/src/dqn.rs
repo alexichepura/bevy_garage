@@ -1,9 +1,7 @@
 use crate::{dqn_bevy::*, gradient::get_sgd, params::*, util::*};
 use bevy::prelude::*;
-use bevy_garage_car::{
-    car::{Car, HID},
-    spawn::SpawnCarEvent,
-};
+use bevy_garage_car::car::{Car, HID};
+use bevy_garage_track::car_track::{CarTrack, SpawnCarOnTrackEvent};
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;
@@ -31,6 +29,7 @@ pub fn dqn_system(
     dqn_tx: Res<DqnTx>,
     mut q_car: Query<(
         &mut Car,
+        &mut CarTrack,
         &Velocity,
         &Transform,
         Entity,
@@ -39,12 +38,12 @@ pub fn dqn_system(
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut commands: Commands,
-    mut car_spawn_events: EventWriter<SpawnCarEvent>,
+    mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     #[cfg(feature = "api")] api: Res<crate::api_client::ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_in > 0. && seconds > dqn.respawn_in {
-        car_spawn_events.send(SpawnCarEvent {
+        car_spawn_events.send(SpawnCarOnTrackEvent {
             is_hid: dqn.respawn_is_hid,
             index: dqn.respawn_index,
             init_meters: None,
@@ -61,7 +60,7 @@ pub fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
+    for (mut car, car_track, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
         let is_hid = hid.is_some();
         let mut crash: bool = false;
 
@@ -72,18 +71,18 @@ pub fn dqn_system(
             }
         }
 
-        let mut vel_angle = car.line_dir.angle_between(v.linvel);
+        let mut vel_angle = car_track.line_dir.angle_between(v.linvel);
         if vel_angle.is_nan() {
             vel_angle = 0.;
         }
         let pos_dir = tr.rotation.mul_vec3(Vec3::Z);
-        let mut pos_angle = car.line_dir.angle_between(pos_dir);
+        let mut pos_angle = car_track.line_dir.angle_between(pos_dir);
         if pos_angle.is_nan() {
             pos_angle = 0.;
         }
         let vel_cos = vel_angle.cos();
         let pos_cos = pos_angle.cos();
-        let mut d_from_center = car.line_pos - tr.translation;
+        let mut d_from_center = car_track.line_pos - tr.translation;
         d_from_center.y = 0.;
         let d = d_from_center.length();
         let d_norm = d / 4.;
@@ -142,7 +141,7 @@ pub fn dqn_system(
             dqn.crashes += 1;
             dqn.respawn_in = seconds;
             dqn.respawn_is_hid = is_hid;
-            dqn.respawn_index = car.index;
+            dqn.respawn_index = car_track.index;
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
             dqn.use_brain = false;

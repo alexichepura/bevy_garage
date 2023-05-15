@@ -10,8 +10,10 @@ pub mod joystick;
 mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_garage_car::{car::car_start_system, config::CarConfig, spawn::SpawnCarEvent, CarSet};
-use bevy_garage_track::{track_polyline_start_system, TrackPlugin};
+use bevy_garage_car::{car::car_start_system, config::CarConfig, CarSet};
+use bevy_garage_track::{
+    car_track::SpawnCarOnTrackEvent, track_polyline_start_system, TrackPlugin,
+};
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -79,9 +81,10 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(TrackPlugin)
         .add_plugin(EngineSoundPlugin)
-        .add_event::<SpawnCarEvent>()
+        .add_event::<SpawnCarOnTrackEvent>()
         .add_startup_systems((
             car_start_system.after(track_polyline_start_system),
+            spawn_car_start_system.after(car_start_system),
             light_start_system,
             dash_start_system,
             rapier_config_start_system,

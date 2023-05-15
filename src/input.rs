@@ -1,9 +1,7 @@
 use crate::camera::CameraConfig;
 use bevy::prelude::*;
-use bevy_garage_car::{
-    car::{Car, HID},
-    spawn::SpawnCarEvent,
-};
+use bevy_garage_car::car::{Car, HID};
+use bevy_garage_track::car_track::SpawnCarOnTrackEvent;
 
 pub fn input_system(
     input: Res<Input<KeyCode>>,
@@ -13,7 +11,7 @@ pub fn input_system(
     mut camera_config: ResMut<CameraConfig>,
     mut cars: Query<(&mut Car, Entity, &Transform, With<HID>)>,
     mut commands: Commands,
-    mut car_spawn_events: EventWriter<SpawnCarEvent>,
+    mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
     >,
@@ -73,7 +71,7 @@ pub fn input_system(
             commands.entity(e).despawn_recursive();
             car.despawn_wheels(&mut commands);
 
-            car_spawn_events.send(SpawnCarEvent {
+            car_spawn_events.send(SpawnCarOnTrackEvent {
                 is_hid: true,
                 index: 0,
                 init_meters: None,
