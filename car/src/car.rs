@@ -1,4 +1,4 @@
-use crate::{config::*, joint::build_joint, wheel::spawn_wheel, Wheel, WheelJoint};
+use crate::{joint::build_joint, spawn_wheel, CarRes, Wheel, WheelJoint};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::FRAC_PI_4;

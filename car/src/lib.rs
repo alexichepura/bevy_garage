@@ -1,14 +1,14 @@
 pub mod car;
-pub mod config;
 pub mod joint;
+pub mod res;
 pub mod sensor;
 pub mod spawn;
 pub mod wheel;
 
 pub use car::*;
-pub use config::CarRes;
 pub use joint::WheelJoint;
-pub use wheel::Wheel;
+pub use res::CarRes;
+pub use wheel::*;
 
 use bevy::prelude::SystemSet;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
