@@ -1,9 +1,7 @@
-use std::f32::consts::PI;
-
+use crate::car::{CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-
-use crate::car::{CAR_TRAINING_GROUP, STATIC_GROUP};
+use std::f32::consts::PI;
 
 #[derive(Component)]
 pub struct Wheel {
