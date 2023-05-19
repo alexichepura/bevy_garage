@@ -1,7 +1,7 @@
 use crate::camera::CameraConfig;
 use bevy::prelude::*;
-use bevy_garage_car::car::{Car, HID};
-use bevy_garage_track::car_track::SpawnCarOnTrackEvent;
+use bevy_garage_car::{Car, HID};
+use bevy_garage_track::SpawnCarOnTrackEvent;
 
 pub fn input_system(
     input: Res<Input<KeyCode>>,
@@ -15,8 +15,8 @@ pub fn input_system(
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
     >,
-    #[cfg(feature = "debug_lines")] mut car_config: ResMut<bevy_garage_car::config::CarConfig>,
-    #[cfg(feature = "brain")] mut dqn: ResMut<bevy_garage_dqn::dqn_bevy::DqnResource>,
+    #[cfg(feature = "debug_lines")] mut car_config: ResMut<bevy_garage_car::CarConfig>,
+    #[cfg(feature = "brain")] mut dqn: ResMut<bevy_garage_dqn::DqnResource>,
 ) {
     #[cfg(feature = "brain")]
     if input.just_pressed(KeyCode::N) {

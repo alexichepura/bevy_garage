@@ -14,6 +14,7 @@ pub mod wall;
 
 pub use asphalt::*;
 use bevy_garage_car::CarSet;
+pub use car_track::*;
 pub use config::*;
 pub use decor::*;
 pub use ground::*;

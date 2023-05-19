@@ -1,4 +1,4 @@
-use bevy_garage_car::car::Car;
+use bevy_garage_car::Car;
 use bevy_rapier3d::prelude::Velocity;
 use {bevy::prelude::*, bevy_fundsp::prelude::*, uuid::Uuid};
 

@@ -1,4 +1,4 @@
-use bevy_garage_car::car::SENSOR_COUNT;
+use bevy_garage_car::sensor::SENSOR_COUNT;
 
 #[cfg(target_arch = "wasm32")]
 pub const EPOCHS: usize = 32;

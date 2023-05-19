@@ -1,6 +1,6 @@
 use crate::material::MaterialHandle;
 use bevy::{prelude::*, render::mesh::*};
-use bevy_garage_car::car::STATIC_GROUP;
+use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::{Mul, Sub};
 

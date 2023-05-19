@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_garage_car::car::{Car, JointType, Wheel};
+use bevy_garage_car::{Car, Wheel, WheelJoint};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -38,10 +38,10 @@ pub fn esp_system(
         &mut ExternalForce,
         &Transform,
         &Velocity,
-        &mut JointType,
+        &mut WheelJoint,
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::config::CarConfig>,
+    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::CarConfig>,
 ) {
     let d_seconds = time.delta_seconds();
     for (_entity, mut car, velocity, transform) in car_query.iter_mut() {

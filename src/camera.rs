@@ -3,7 +3,7 @@ use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::render::camera::{CameraUpdateSystem, Projection};
 use bevy::window::CursorGrabMode;
-use bevy_garage_car::car::HID;
+use bevy_garage_car::HID;
 
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
