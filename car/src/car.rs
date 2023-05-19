@@ -11,7 +11,7 @@ pub struct Car {
     pub brake: f32,
     pub steering: f32,
     pub wheels: Vec<Entity>,
-    pub init_transform: Transform,
+    pub spawn_transform: Transform,
     pub prev_steering: f32,
     pub prev_torque: f32,
     pub prev_dir: f32,
@@ -26,15 +26,15 @@ impl Default for Car {
             prev_torque: 0.,
             prev_dir: 0.,
             wheels: Vec::new(),
-            init_transform: Transform::default(),
+            spawn_transform: Transform::default(),
         }
     }
 }
 impl Car {
-    pub fn new(wheels: Vec<Entity>, init_transform: Transform) -> Self {
+    pub fn new(wheels: Vec<Entity>, transform: Transform) -> Self {
         Self {
             wheels,
-            init_transform,
+            spawn_transform: transform,
             ..default()
         }
     }
@@ -111,7 +111,7 @@ pub fn spawn_car_body(
     );
     let scene = SceneBundle {
         scene: car_gl.clone(),
-        transform: car.init_transform,
+        transform: car.spawn_transform,
         ..default()
     };
     commands
