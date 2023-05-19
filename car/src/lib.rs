@@ -1,6 +1,7 @@
 pub mod car;
 pub mod config;
 pub mod joint;
+pub mod sensor;
 pub mod spawn;
 pub mod wheel;
 

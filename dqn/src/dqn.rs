@@ -1,6 +1,9 @@
 use crate::{dqn_bevy::*, gradient::get_sgd, params::*, util::*};
 use bevy::prelude::*;
-use bevy_garage_car::car::{Car, HID};
+use bevy_garage_car::{
+    car::{Car, HID},
+    sensor::CarSensors,
+};
 use bevy_garage_track::car_track::{CarTrack, SpawnCarOnTrackEvent};
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
@@ -30,6 +33,7 @@ pub fn dqn_system(
     mut q_car: Query<(
         &mut Car,
         &mut CarTrack,
+        &mut CarSensors,
         &Velocity,
         &Transform,
         Entity,
@@ -60,7 +64,7 @@ pub fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, car_track, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
+    for (mut car, car_track, car_sensors, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
         let is_hid = hid.is_some();
         let mut crash: bool = false;
 
@@ -114,7 +118,7 @@ pub fn dqn_system(
                 2 => d_norm,
                 3 => vel_cos,
                 4 => pos_cos,
-                STATE_SIZE_BASE..=STATE_SIZE => car.sensor_inputs[i - STATE_SIZE_BASE],
+                STATE_SIZE_BASE..=STATE_SIZE => car_sensors.sensor_inputs[i - STATE_SIZE_BASE],
                 _ => panic!("unknown observation record"),
             };
         }
