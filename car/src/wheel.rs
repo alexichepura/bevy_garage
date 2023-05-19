@@ -25,14 +25,15 @@ pub fn spawn_wheel(
         .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
         .with_scale(Vec3::new(diameter, width, diameter));
 
+    let collider = Collider::round_cylinder(
+        wheel.half_width - wheel_border_radius,
+        wheel.radius - wheel_border_radius,
+        wheel_border_radius,
+    );
+
     let wheel_id = commands
         .spawn((
             Name::new("wheel"),
-            Collider::round_cylinder(
-                wheel.half_width - wheel_border_radius,
-                wheel.radius - wheel_border_radius,
-                wheel_border_radius,
-            ),
             wheel,
             SceneBundle {
                 scene: wheel_gl.clone(),
@@ -40,6 +41,7 @@ pub fn spawn_wheel(
                 ..default()
             },
             (
+                collider,
                 ColliderMassProperties::MassProperties(MassProperties {
                     local_center_of_mass: Vec3::ZERO,
                     mass: 15.,

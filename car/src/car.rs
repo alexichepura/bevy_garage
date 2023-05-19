@@ -126,7 +126,7 @@ pub fn spawn_car(
     transform: Transform,
     max_torque: f32,
 ) -> Entity {
-    let size = CarSize {
+    let car_size = CarSize {
         hw: 1.,
         hh: 0.35,
         hl: 2.2,
@@ -135,9 +135,9 @@ pub fn spawn_car(
     let wheel_radius: f32 = 0.35;
     let wheel_half_width: f32 = 0.17;
     let shift = Vec3::new(
-        size.hw - wheel_half_width - 0.1,
-        -size.hh + wheel_radius - ride_height,
-        size.hl - wheel_radius - 0.5,
+        car_size.hw - wheel_half_width - 0.1,
+        -car_size.hh + wheel_radius - ride_height,
+        car_size.hl - wheel_radius - 0.5,
     );
     let anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
@@ -169,13 +169,49 @@ pub fn spawn_car(
         wheels.push(wheel_id);
     }
 
+    let car_id = spawn_car_body(
+        commands,
+        car_gl,
+        car_size,
+        transform,
+        max_torque,
+        wheels.clone(),
+    );
+
+    if is_hid {
+        commands.entity(car_id).insert(HID);
+    }
+    for (i, wheel_id) in wheels.iter().enumerate() {
+        commands
+            .entity(*wheel_id)
+            .insert(WheelJoint::new(car_id, joints[i]));
+    }
+    println!("spawn_car: {car_id:?}");
+    return car_id;
+}
+
+pub fn spawn_car_body(
+    commands: &mut Commands,
+    car_gl: &Handle<Scene>,
+    size: CarSize,
+    transform: Transform,
+    max_torque: f32,
+    wheels: Vec<Entity>,
+) -> Entity {
     let car_border_radius = 0.1;
-    let car_id = commands
+    let local_center_of_mass = Vec3::new(0., -size.hh, 0.);
+    let collider = Collider::round_cuboid(
+        size.hw - car_border_radius,
+        size.hh - car_border_radius,
+        size.hl - car_border_radius,
+        car_border_radius,
+    );
+    commands
         .spawn((
             Name::new("car"),
             Car {
-                size: size.clone(),
-                wheels: wheels.clone(),
+                size,
+                wheels,
                 wheel_max_torque: max_torque,
                 init_transform: transform,
                 ..default()
@@ -186,14 +222,9 @@ pub fn spawn_car(
                 ..default()
             },
             (
-                Collider::round_cuboid(
-                    size.hw - car_border_radius,
-                    size.hh - car_border_radius,
-                    size.hl - car_border_radius,
-                    car_border_radius,
-                ),
+                collider,
                 ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass: Vec3::new(0., -size.hh, 0.),
+                    local_center_of_mass,
                     mass: 1000.0,
                     principal_inertia: Vec3::new(5000., 5000., 2000.), // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
                     ..default()
@@ -219,18 +250,7 @@ pub fn spawn_car(
                 Velocity::zero(),
             ),
         ))
-        .id();
-
-    if is_hid {
-        commands.entity(car_id).insert(HID);
-    }
-    for (i, wheel_id) in wheels.iter().enumerate() {
-        commands
-            .entity(*wheel_id)
-            .insert(WheelJoint::new(car_id, joints[i]));
-    }
-    println!("spawn_car: {car_id:?}");
-    return car_id;
+        .id()
 }
 
 pub fn car_sensor_system(
