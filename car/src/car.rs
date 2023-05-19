@@ -68,7 +68,7 @@ impl Car {
 
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
-pub fn car_start_system(mut config: ResMut<CarConfig>, asset_server: Res<AssetServer>) {
+pub fn car_start_system(mut config: ResMut<CarRes>, asset_server: Res<AssetServer>) {
     let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
     config.wheel_scene = Some(wheel_gl.clone());
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");

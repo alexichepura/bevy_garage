@@ -41,7 +41,7 @@ pub fn esp_system(
         &mut WheelJoint,
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::CarConfig>,
+    #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let d_seconds = time.delta_seconds();
     for (_entity, mut car, velocity, transform) in car_query.iter_mut() {
@@ -120,7 +120,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if car_config.show_rays {
+                if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
@@ -142,7 +142,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if car_config.show_rays {
+                if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);

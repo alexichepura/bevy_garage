@@ -61,7 +61,7 @@ pub fn progress_system(
     track_config: Res<TrackConfig>,
     mut cars: Query<(&Transform, &mut CarTrack, Entity)>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::CarConfig>,
+    #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let polyline = track_config.polyline.as_ref().unwrap();
     let mut board: Vec<(Entity, f32)> = Vec::new();
@@ -112,7 +112,7 @@ pub fn progress_system(
         car.line_dir = dir;
         car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
         #[cfg(feature = "debug_lines")]
-        if car_config.show_rays {
+        if car_res.show_rays {
             let h = Vec3::Y * 0.6;
             lines.line_colored(
                 h + tr.translation,

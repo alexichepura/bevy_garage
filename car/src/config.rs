@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
 #[derive(Resource)]
-pub struct CarConfig {
+pub struct CarRes {
     pub max_torque: f32,
     pub car_scene: Option<Handle<Scene>>,
     pub wheel_scene: Option<Handle<Scene>>,
     pub show_rays: bool,
 }
-impl Default for CarConfig {
+impl Default for CarRes {
     fn default() -> Self {
         Self {
             max_torque: 1500.,
