@@ -20,6 +20,9 @@ pub struct CarSpec {
     pub wheel_max_angle: f32,
     pub speed_limit: f32,
     pub steering_speed_limit: f32,
+    // meta
+    pub wheel_is_front: [bool; 4],
+    pub wheel_is_left: [bool; 4],
 }
 
 impl Default for CarSpec {
@@ -46,10 +49,10 @@ impl Default for CarSpec {
         );
 
         let anchors: [Vec3; 4] = [
-            Vec3::new(shift.x, shift.y, shift.z),
-            Vec3::new(-shift.x, shift.y, shift.z),
-            Vec3::new(shift.x, shift.y, -shift.z),
-            Vec3::new(-shift.x, shift.y, -shift.z),
+            Vec3::new(shift.x, shift.y, shift.z),   // front right
+            Vec3::new(-shift.x, shift.y, shift.z),  // front left
+            Vec3::new(shift.x, shift.y, -shift.z),  // rear right
+            Vec3::new(-shift.x, shift.y, -shift.z), // rear left
         ];
 
         Self {
@@ -61,6 +64,8 @@ impl Default for CarSpec {
             anchors,
             wheel_radius,
             wheel_half_width,
+            wheel_is_front: [true, true, false, false],
+            wheel_is_left: [false, true, false, true],
         }
     }
 }

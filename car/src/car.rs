@@ -30,8 +30,14 @@ impl Default for Car {
         }
     }
 }
-
 impl Car {
+    pub fn new(wheels: Vec<Entity>, init_transform: Transform) -> Self {
+        Self {
+            wheels,
+            init_transform,
+            ..default()
+        }
+    }
     pub fn despawn_wheels(&mut self, commands: &mut Commands) {
         for e in self.wheels.iter() {
             commands.entity(*e).despawn_recursive();
@@ -55,42 +61,27 @@ pub fn spawn_car(
     is_hid: bool,
     transform: Transform,
 ) -> Entity {
-    let spec = CarSpec { ..default() };
-
-    let wheel_front_left: [(bool, bool); 4] =
-        [(true, false), (true, true), (false, false), (false, true)];
-
+    let spec = CarSpec::default();
     let mut wheels: Vec<Entity> = vec![];
     let mut joints: Vec<GenericJoint> = vec![];
     for i in 0..4 {
-        let (is_front, is_left) = wheel_front_left[i];
-        let anchor = spec.anchors[i];
         let wheel_id = spawn_wheel(
             commands,
             wheel_gl,
             Wheel {
-                is_front,
-                is_left,
+                is_front: spec.wheel_is_front[i],
+                is_left: spec.wheel_is_left[i],
                 radius: spec.wheel_radius,
                 half_width: spec.wheel_half_width,
             },
-            transform.translation + transform.rotation.mul_vec3(anchor),
+            transform.translation + transform.rotation.mul_vec3(spec.anchors[i]),
         );
-        let joint = build_joint(anchor, is_left);
+        let joint = build_joint(spec.anchors[i], spec.wheel_is_left[i]);
         joints.push(joint);
         wheels.push(wheel_id);
     }
 
-    let car_id = spawn_car_body(
-        commands,
-        car_gl,
-        Car {
-            wheels: wheels.clone(),
-            init_transform: transform,
-            ..default()
-        },
-        spec,
-    );
+    let car_id = spawn_car_body(commands, car_gl, Car::new(wheels.clone(), transform), spec);
 
     if is_hid {
         commands.entity(car_id).insert(HID);
