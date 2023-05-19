@@ -1,4 +1,4 @@
-use crate::car::{CAR_TRAINING_GROUP, STATIC_GROUP};
+use crate::{CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;

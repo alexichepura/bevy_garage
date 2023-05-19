@@ -5,7 +5,8 @@ pub mod sensor;
 pub mod spawn;
 pub mod wheel;
 
-pub use car::Car;
+pub use car::*;
+pub use config::CarConfig;
 pub use joint::WheelJoint;
 pub use wheel::Wheel;
 

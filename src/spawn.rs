@@ -1,9 +1,6 @@
 use bevy::prelude::*;
-use bevy_garage_car::config::CarConfig;
-use bevy_garage_track::{
-    car_track::{spawn_car_on_track, SpawnCarOnTrackEvent},
-    TrackConfig,
-};
+use bevy_garage_car::CarConfig;
+use bevy_garage_track::{spawn_car_on_track, SpawnCarOnTrackEvent, TrackConfig};
 
 pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>) {
     car_spawn_events.send(SpawnCarOnTrackEvent {

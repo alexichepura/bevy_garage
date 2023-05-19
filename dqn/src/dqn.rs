@@ -1,10 +1,10 @@
 use crate::{dqn_bevy::*, gradient::get_sgd, params::*, util::*};
 use bevy::prelude::*;
 use bevy_garage_car::{
-    car::{Car, HID},
     sensor::CarSensors,
+    {Car, HID},
 };
-use bevy_garage_track::car_track::{CarTrack, SpawnCarOnTrackEvent};
+use bevy_garage_track::{CarTrack, SpawnCarOnTrackEvent};
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
 use rand::Rng;

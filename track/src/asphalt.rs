@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
     render::{mesh::*, primitives::Aabb},
 };
-use bevy_garage_car::car::STATIC_GROUP;
+use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 
 #[derive(Component, Debug)]

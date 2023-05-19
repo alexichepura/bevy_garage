@@ -10,10 +10,8 @@ pub mod joystick;
 mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_garage_car::{car::car_start_system, config::CarConfig, CarSet};
-use bevy_garage_track::{
-    car_track::SpawnCarOnTrackEvent, track_polyline_start_system, TrackPlugin,
-};
+use bevy_garage_car::{car_start_system, CarConfig, CarSet};
+use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;

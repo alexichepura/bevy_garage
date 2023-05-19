@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
-use bevy_garage_car::car::HID;
-use bevy_garage_track::car_track::CarTrack;
+use bevy_garage_car::HID;
+use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
 
 #[derive(Component)]

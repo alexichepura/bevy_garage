@@ -1,7 +1,7 @@
 use crate::car_track::CarTrack;
 use crate::{TrackConfig, TRACK_POSITIONS};
 use bevy::prelude::*;
-use bevy_garage_car::car::{CAR_TRAINING_GROUP, STATIC_GROUP};
+use bevy_garage_car::{CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use parry3d::query::PointQueryWithLocation;
 use parry3d::shape::{Polyline, SegmentPointLocation};
@@ -61,7 +61,7 @@ pub fn progress_system(
     track_config: Res<TrackConfig>,
     mut cars: Query<(&Transform, &mut CarTrack, Entity)>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::config::CarConfig>,
+    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::CarConfig>,
 ) {
     let polyline = track_config.polyline.as_ref().unwrap();
     let mut board: Vec<(Entity, f32)> = Vec::new();
