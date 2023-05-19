@@ -128,10 +128,13 @@ pub fn spawn_car(
     let car_id = spawn_car_body(
         commands,
         car_gl,
-        car_size,
-        transform,
-        max_torque,
-        wheels.clone(),
+        Car {
+            size: car_size,
+            wheels: wheels.clone(),
+            wheel_max_torque: max_torque,
+            init_transform: transform,
+            ..default()
+        },
     );
 
     if is_hid {
@@ -146,37 +149,25 @@ pub fn spawn_car(
     return car_id;
 }
 
-pub fn spawn_car_body(
-    commands: &mut Commands,
-    car_gl: &Handle<Scene>,
-    size: CarSize,
-    transform: Transform,
-    max_torque: f32,
-    wheels: Vec<Entity>,
-) -> Entity {
+pub fn spawn_car_body(commands: &mut Commands, car_gl: &Handle<Scene>, car: Car) -> Entity {
     let car_border_radius = 0.1;
-    let local_center_of_mass = Vec3::new(0., -size.hh, 0.);
+    let local_center_of_mass = Vec3::new(0., -car.size.hh, 0.);
     let collider = Collider::round_cuboid(
-        size.hw - car_border_radius,
-        size.hh - car_border_radius,
-        size.hl - car_border_radius,
+        car.size.hw - car_border_radius,
+        car.size.hh - car_border_radius,
+        car.size.hl - car_border_radius,
         car_border_radius,
     );
+    let scene = SceneBundle {
+        scene: car_gl.clone(),
+        transform: car.init_transform,
+        ..default()
+    };
     commands
         .spawn((
             Name::new("car"),
-            Car {
-                size,
-                wheels,
-                wheel_max_torque: max_torque,
-                init_transform: transform,
-                ..default()
-            },
-            SceneBundle {
-                scene: car_gl.clone(),
-                transform,
-                ..default()
-            },
+            car,
+            scene,
             (
                 collider,
                 ColliderMassProperties::MassProperties(MassProperties {
