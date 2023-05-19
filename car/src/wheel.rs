@@ -15,18 +15,15 @@ pub fn spawn_wheel(
     commands: &mut Commands,
     wheel_gl: &Handle<Scene>,
     wheel: Wheel,
-    car_transform: Transform,
-    anchor: Vec3,
+    translation: Vec3,
 ) -> Entity {
     let wheel_border_radius = 0.05;
     let diameter = wheel.radius * 2.;
     let width = wheel.half_width * 2.;
 
-    let transform = Transform::from_translation(
-        car_transform.translation + car_transform.rotation.mul_vec3(anchor),
-    )
-    .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
-    .with_scale(Vec3::new(diameter, width, diameter));
+    let transform = Transform::from_translation(translation)
+        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
+        .with_scale(Vec3::new(diameter, width, diameter));
 
     let wheel_id = commands
         .spawn((

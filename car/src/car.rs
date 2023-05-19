@@ -145,17 +145,14 @@ pub fn spawn_car(
         Vec3::new(shift.x, shift.y, -shift.z),
         Vec3::new(-shift.x, shift.y, -shift.z),
     ];
+    let wheel_front_left: [(bool, bool); 4] =
+        [(true, false), (true, true), (false, false), (false, true)];
 
     let mut wheels: Vec<Entity> = vec![];
     let mut joints: Vec<GenericJoint> = vec![];
     for i in 0..4 {
-        let (is_front, is_left): (bool, bool) = match i {
-            0 => (true, false),
-            1 => (true, true),
-            2 => (false, false),
-            _ => (false, true),
-        };
-
+        let (is_front, is_left) = wheel_front_left[i];
+        let anchor = anchors[i];
         let wheel_id = spawn_wheel(
             commands,
             wheel_gl,
@@ -165,10 +162,9 @@ pub fn spawn_car(
                 radius: wheel_radius,
                 half_width: wheel_half_width,
             },
-            transform,
-            anchors[i],
+            transform.translation + transform.rotation.mul_vec3(anchor),
         );
-        let joint = build_joint(anchors[i], is_left);
+        let joint = build_joint(anchor, is_left);
         joints.push(joint);
         wheels.push(wheel_id);
     }
