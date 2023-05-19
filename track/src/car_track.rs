@@ -42,9 +42,8 @@ pub fn spawn_car_on_track(
     transform: Transform,
     index: usize,
     start_shift: f32,
-    max_torque: f32,
 ) -> Entity {
-    let car_id = spawn_car(commands, car_gl, wheel_gl, is_hid, transform, max_torque);
+    let car_id = spawn_car(commands, car_gl, wheel_gl, is_hid, transform);
     commands.entity(car_id).insert(CarTrack {
         index,
         start_shift,

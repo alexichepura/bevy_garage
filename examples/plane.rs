@@ -50,7 +50,6 @@ fn spawn_car_system(mut commands: Commands, car_res: Res<CarRes>) {
             y: 1.,
             z: 0.,
         }),
-        1200.,
     );
 }
 

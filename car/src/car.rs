@@ -1,34 +1,16 @@
-use crate::{joint::build_joint, spawn_wheel, CarRes, Wheel, WheelJoint};
+use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, Wheel, WheelJoint};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use std::f32::consts::FRAC_PI_4;
 
 #[derive(Component)]
 pub struct HID;
 
-#[derive(Debug, Clone)]
-pub struct CarSize {
-    pub hw: f32,
-    pub hh: f32,
-    pub hl: f32,
-}
-
-const SPEED_LIMIT_KMH: f32 = 300.;
-const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
-const STEERING_SPEEDLIMIT_MPS: f32 = STEERING_SPEEDLIMIT_KMH * 1000. / 3600.;
-
 #[derive(Component, Debug)]
 pub struct Car {
-    pub size: CarSize,
-    pub speed_limit: f32,
-    pub steering_speed_limit: f32,
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
     pub wheels: Vec<Entity>,
-    pub wheel_max_torque: f32,
-    pub wheel_max_angle: f32,
     pub init_transform: Transform,
     pub prev_steering: f32,
     pub prev_torque: f32,
@@ -37,13 +19,6 @@ pub struct Car {
 impl Default for Car {
     fn default() -> Self {
         Self {
-            size: CarSize {
-                hw: 1.,
-                hh: 0.35,
-                hl: 2.2,
-            },
-            speed_limit: SPEED_LIMIT_MPS,
-            steering_speed_limit: STEERING_SPEEDLIMIT_MPS,
             gas: 0.,
             brake: 0.,
             steering: 0.,
@@ -51,8 +26,6 @@ impl Default for Car {
             prev_torque: 0.,
             prev_dir: 0.,
             wheels: Vec::new(),
-            wheel_max_torque: 1000.,
-            wheel_max_angle: FRAC_PI_4,
             init_transform: Transform::default(),
         }
     }
@@ -81,27 +54,9 @@ pub fn spawn_car(
     wheel_gl: &Handle<Scene>,
     is_hid: bool,
     transform: Transform,
-    max_torque: f32,
 ) -> Entity {
-    let car_size = CarSize {
-        hw: 1.,
-        hh: 0.35,
-        hl: 2.2,
-    };
-    let ride_height = 0.06;
-    let wheel_radius: f32 = 0.35;
-    let wheel_half_width: f32 = 0.17;
-    let shift = Vec3::new(
-        car_size.hw - wheel_half_width - 0.1,
-        -car_size.hh + wheel_radius - ride_height,
-        car_size.hl - wheel_radius - 0.5,
-    );
-    let anchors: [Vec3; 4] = [
-        Vec3::new(shift.x, shift.y, shift.z),
-        Vec3::new(-shift.x, shift.y, shift.z),
-        Vec3::new(shift.x, shift.y, -shift.z),
-        Vec3::new(-shift.x, shift.y, -shift.z),
-    ];
+    let spec = CarSpec { ..default() };
+
     let wheel_front_left: [(bool, bool); 4] =
         [(true, false), (true, true), (false, false), (false, true)];
 
@@ -109,15 +64,15 @@ pub fn spawn_car(
     let mut joints: Vec<GenericJoint> = vec![];
     for i in 0..4 {
         let (is_front, is_left) = wheel_front_left[i];
-        let anchor = anchors[i];
+        let anchor = spec.anchors[i];
         let wheel_id = spawn_wheel(
             commands,
             wheel_gl,
             Wheel {
                 is_front,
                 is_left,
-                radius: wheel_radius,
-                half_width: wheel_half_width,
+                radius: spec.wheel_radius,
+                half_width: spec.wheel_half_width,
             },
             transform.translation + transform.rotation.mul_vec3(anchor),
         );
@@ -130,12 +85,11 @@ pub fn spawn_car(
         commands,
         car_gl,
         Car {
-            size: car_size,
             wheels: wheels.clone(),
-            wheel_max_torque: max_torque,
             init_transform: transform,
             ..default()
         },
+        spec,
     );
 
     if is_hid {
@@ -150,13 +104,18 @@ pub fn spawn_car(
     return car_id;
 }
 
-pub fn spawn_car_body(commands: &mut Commands, car_gl: &Handle<Scene>, car: Car) -> Entity {
+pub fn spawn_car_body(
+    commands: &mut Commands,
+    car_gl: &Handle<Scene>,
+    car: Car,
+    spec: CarSpec,
+) -> Entity {
     let car_border_radius = 0.1;
-    let local_center_of_mass = Vec3::new(0., -car.size.hh, 0.);
+    let local_center_of_mass = Vec3::new(0., -spec.size.hh, 0.);
     let collider = Collider::round_cuboid(
-        car.size.hw - car_border_radius,
-        car.size.hh - car_border_radius,
-        car.size.hl - car_border_radius,
+        spec.size.hw - car_border_radius,
+        spec.size.hh - car_border_radius,
+        spec.size.hl - car_border_radius,
         car_border_radius,
     );
     let scene = SceneBundle {
@@ -168,6 +127,7 @@ pub fn spawn_car_body(commands: &mut Commands, car_gl: &Handle<Scene>, car: Car)
         .spawn((
             Name::new("car"),
             car,
+            spec,
             scene,
             (
                 collider,

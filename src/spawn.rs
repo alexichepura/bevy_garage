@@ -35,7 +35,6 @@ pub fn spawn_car_system(
             transform,
             spawn_event.index,
             init_meters,
-            car_res.max_torque,
         );
     }
 }

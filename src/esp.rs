@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_garage_car::{Car, Wheel, WheelJoint};
+use bevy_garage_car::{Car, CarSpec, Wheel, WheelJoint};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -32,7 +32,7 @@ const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
 
 pub fn esp_system(
     time: Res<Time>,
-    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform)>,
+    mut car_query: Query<(Entity, &mut Car, &CarSpec, &Velocity, &Transform)>,
     mut wheels: Query<(
         &Wheel,
         &mut ExternalForce,
@@ -44,7 +44,7 @@ pub fn esp_system(
     #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let d_seconds = time.delta_seconds();
-    for (_entity, mut car, velocity, transform) in car_query.iter_mut() {
+    for (_entity, mut car, spec, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();
         let delta = velocity.linvel.normalize() - car_vector_norm;
@@ -57,12 +57,12 @@ pub fn esp_system(
         let linvel = velocity.linvel.length();
         let torque_speed_x: f32 = match braking {
             true => 2.,
-            _ => match linvel / car.speed_limit {
+            _ => match linvel / spec.speed_limit {
                 x if x >= 1. => 0.,
                 x => 0.7 + 0.3 * (1. - x),
             },
         };
-        let steering_speed_x: f32 = match linvel / car.steering_speed_limit {
+        let steering_speed_x: f32 = match linvel / spec.steering_speed_limit {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
@@ -82,7 +82,7 @@ pub fn esp_system(
         };
         let dir = pedal.signum();
         let is_same_dir = car.prev_dir == dir;
-        let car_torque = pedal.abs() * car.wheel_max_torque;
+        let car_torque = pedal.abs() * spec.wheel_max_torque;
         let prev_torque = if is_same_dir { car.prev_torque } else { 0. };
         let prev_steering = car.prev_steering;
         let (steering, mut torque) = (
@@ -95,7 +95,7 @@ pub fn esp_system(
 
         torque = dir * torque;
 
-        let angle: f32 = car.wheel_max_angle * steering * (0.1 + 0.9 * steering_speed_x);
+        let angle: f32 = spec.wheel_max_angle * steering * (0.1 + 0.9 * steering_speed_x);
         let quat = -Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);
