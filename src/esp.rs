@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_garage_car::{Car, CarSpec, Wheel, WheelJoint};
+use bevy_garage_car::{Car, CarSpec, CarWheels, Wheel, WheelJoint};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -32,8 +32,8 @@ const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
 
 pub fn esp_system(
     time: Res<Time>,
-    mut car_query: Query<(Entity, &mut Car, &CarSpec, &Velocity, &Transform)>,
-    mut wheels: Query<(
+    mut car_query: Query<(&mut Car, &CarSpec, &CarWheels, &Velocity, &Transform)>,
+    mut wheels_query: Query<(
         &Wheel,
         &mut ExternalForce,
         &Transform,
@@ -44,7 +44,7 @@ pub fn esp_system(
     #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let d_seconds = time.delta_seconds();
-    for (_entity, mut car, spec, velocity, transform) in car_query.iter_mut() {
+    for (mut car, spec, car_wheels, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();
         let delta = velocity.linvel.normalize() - car_vector_norm;
@@ -100,8 +100,8 @@ pub fn esp_system(
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);
 
-        for (_i, wheel_entity) in car.wheels.iter().enumerate() {
-            let (wheel, mut f, transform, v, mut j) = wheels.get_mut(*wheel_entity).unwrap();
+        for wheel_entity in car_wheels.entities.iter() {
+            let (wheel, mut f, transform, v, mut j) = wheels_query.get_mut(*wheel_entity).unwrap();
             let radius_vel = v.angvel * wheel.radius;
             let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
             let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();

@@ -1,6 +1,6 @@
 use crate::camera::CameraConfig;
 use bevy::prelude::*;
-use bevy_garage_car::{Car, HID};
+use bevy_garage_car::{Car, CarWheels, HID};
 use bevy_garage_track::SpawnCarOnTrackEvent;
 
 pub fn input_system(
@@ -9,7 +9,7 @@ pub fn input_system(
     axes: Res<Axis<GamepadAxis>>,
     gamepads: Res<Gamepads>,
     mut camera_config: ResMut<CameraConfig>,
-    mut cars: Query<(&mut Car, Entity, &Transform, With<HID>)>,
+    mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform, With<HID>)>,
     mut commands: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
@@ -27,7 +27,7 @@ pub fn input_system(
         debug_ctx.enabled = !debug_ctx.enabled;
         car_res.show_rays = debug_ctx.enabled;
     }
-    for (mut car, e, _transform, _hid) in cars.iter_mut() {
+    for (mut car, mut wheels, e, _transform, _hid) in cars.iter_mut() {
         for gamepad in gamepads.iter() {
             let left_stick_x = axes
                 .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
@@ -69,7 +69,7 @@ pub fn input_system(
 
         if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::LShift) {
             commands.entity(e).despawn_recursive();
-            car.despawn_wheels(&mut commands);
+            wheels.despawn(&mut commands);
 
             car_spawn_events.send(SpawnCarOnTrackEvent {
                 is_hid: true,

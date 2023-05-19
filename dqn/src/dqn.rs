@@ -2,7 +2,7 @@ use crate::{dqn_bevy::*, gradient::get_sgd, params::*, util::*};
 use bevy::prelude::*;
 use bevy_garage_car::{
     sensor::CarSensors,
-    {Car, HID},
+    CarWheels, {Car, HID},
 };
 use bevy_garage_track::{CarTrack, SpawnCarOnTrackEvent};
 use bevy_rapier3d::prelude::*;
@@ -39,6 +39,7 @@ pub fn dqn_system(
         Entity,
         Option<&HID>,
         &mut CarDqn,
+        &mut CarWheels,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut commands: Commands,
@@ -64,7 +65,9 @@ pub fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, car_track, car_sensors, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
+    for (mut car, car_track, car_sensors, v, tr, e, hid, mut car_dqn, mut wheels) in
+        q_car.iter_mut()
+    {
         let is_hid = hid.is_some();
         let mut crash: bool = false;
 
@@ -147,7 +150,7 @@ pub fn dqn_system(
             dqn.respawn_is_hid = is_hid;
             dqn.respawn_index = car_track.index;
             commands.entity(e).despawn_recursive();
-            car.despawn_wheels(&mut commands);
+            wheels.despawn(&mut commands);
             dqn.use_brain = false;
         }
         if !dqn.use_brain || !should_act || crash {

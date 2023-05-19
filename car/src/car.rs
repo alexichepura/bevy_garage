@@ -10,7 +10,6 @@ pub struct Car {
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
-    pub wheels: Vec<Entity>,
     pub spawn_transform: Transform,
     pub prev_steering: f32,
     pub prev_torque: f32,
@@ -25,21 +24,25 @@ impl Default for Car {
             prev_steering: 0.,
             prev_torque: 0.,
             prev_dir: 0.,
-            wheels: Vec::new(),
             spawn_transform: Transform::default(),
         }
     }
 }
 impl Car {
-    pub fn new(wheels: Vec<Entity>, transform: Transform) -> Self {
+    pub fn new(spawn_transform: Transform) -> Self {
         Self {
-            wheels,
-            spawn_transform: transform,
+            spawn_transform,
             ..default()
         }
     }
-    pub fn despawn_wheels(&mut self, commands: &mut Commands) {
-        for e in self.wheels.iter() {
+}
+#[derive(Component, Debug)]
+pub struct CarWheels {
+    pub entities: Vec<Entity>,
+}
+impl CarWheels {
+    pub fn despawn(&mut self, commands: &mut Commands) {
+        for e in self.entities.iter() {
             commands.entity(*e).despawn_recursive();
         }
     }
@@ -81,7 +84,7 @@ pub fn spawn_car(
         wheels.push(wheel_id);
     }
 
-    let car_id = spawn_car_body(commands, car_gl, Car::new(wheels.clone(), transform), spec);
+    let car_id = spawn_car_body(commands, car_gl, Car::new(transform), spec, wheels.clone());
 
     if is_hid {
         commands.entity(car_id).insert(HID);
@@ -100,6 +103,7 @@ pub fn spawn_car_body(
     car_gl: &Handle<Scene>,
     car: Car,
     spec: CarSpec,
+    wheels: Vec<Entity>,
 ) -> Entity {
     let car_border_radius = 0.1;
     let local_center_of_mass = Vec3::new(0., -spec.size.hh, 0.);
@@ -119,6 +123,7 @@ pub fn spawn_car_body(
             Name::new("car"),
             car,
             spec,
+            CarWheels { entities: wheels },
             scene,
             (
                 collider,
