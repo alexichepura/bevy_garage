@@ -36,11 +36,12 @@ pub struct Car {
 }
 impl Default for Car {
     fn default() -> Self {
-        let hw = 1.;
-        let hh = 0.35;
-        let hl = 2.2;
         Self {
-            size: CarSize { hw, hh, hl },
+            size: CarSize {
+                hw: 1.,
+                hh: 0.35,
+                hl: 2.2,
+            },
             speed_limit: SPEED_LIMIT_MPS,
             steering_speed_limit: STEERING_SPEEDLIMIT_MPS,
             gas: 0.,
