@@ -1,4 +1,4 @@
-use crate::config::*;
+use crate::{config::*, wheel::spawn_wheel};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     prelude::*,
@@ -14,14 +14,6 @@ pub type JointType = ImpulseJoint;
 // pub type JointType = MultibodyJoint;
 
 pub const FRAC_PI_16: f32 = FRAC_PI_8 / 2.;
-
-#[derive(Component)]
-pub struct Wheel {
-    pub radius: f32,
-    pub width: f32,
-    pub is_front: bool,
-    pub is_left: bool,
-}
 
 #[derive(Component)]
 pub struct HID;
@@ -187,61 +179,21 @@ pub fn spawn_car(
         .build();
         joints.push(joint);
 
-        let wheel_border_radius = 0.05;
         let wheel_transform = Transform::from_translation(
             transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
         )
         .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
         .with_scale(Vec3::new(wheel_r * 2., wheel_hw * 2., wheel_r * 2.));
-        let wheel_id = commands
-            .spawn((
-                Name::new("wheel"),
-                Wheel {
-                    radius: wheel_r,
-                    width: wheel_hw * 2.,
-                    is_front,
-                    is_left,
-                },
-                SceneBundle {
-                    scene: wheel_gl.clone(),
-                    transform: wheel_transform,
-                    ..default()
-                },
-                (
-                    Collider::round_cylinder(
-                        wheel_hw - wheel_border_radius,
-                        wheel_r - wheel_border_radius,
-                        wheel_border_radius,
-                    ),
-                    ColliderMassProperties::MassProperties(MassProperties {
-                        local_center_of_mass: Vec3::ZERO,
-                        mass: 15.,
-                        principal_inertia: Vec3::ONE * 0.3,
-                        ..default()
-                    }),
-                    CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
-                    Damping {
-                        linear_damping: 0.05,
-                        angular_damping: 0.05,
-                    },
-                    Friction {
-                        combine_rule: CoefficientCombineRule::Average,
-                        coefficient: 5.0,
-                        ..default()
-                    },
-                    Restitution::coefficient(0.),
-                ),
-                (
-                    Ccd::enabled(),
-                    ColliderScale::Absolute(Vec3::ONE),
-                    ExternalForce::default(),
-                    ExternalImpulse::default(),
-                    RigidBody::Dynamic,
-                    Sleeping::disabled(),
-                    Velocity::zero(),
-                ),
-            ))
-            .id();
+
+        let wheel_id = spawn_wheel(
+            commands,
+            wheel_gl,
+            wheel_transform,
+            wheel_r,
+            wheel_hw,
+            is_front,
+            is_left,
+        );
         wheels.push(wheel_id);
     }
 
