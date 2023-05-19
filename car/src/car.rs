@@ -1,4 +1,4 @@
-use crate::{config::*, wheel::spawn_wheel};
+use crate::{config::*, wheel::spawn_wheel, Wheel};
 use bevy::prelude::*;
 use bevy_rapier3d::{
     prelude::*,
@@ -140,15 +140,15 @@ pub fn spawn_car(
         hh: 0.35,
         hl: 2.2,
     };
-    let wheel_r: f32 = 0.35;
-    let wheel_hw: f32 = 0.17;
     let ride_height = 0.06;
+    let wheel_radius: f32 = 0.35;
+    let wheel_half_width: f32 = 0.17;
     let shift = Vec3::new(
-        size.hw - wheel_hw - 0.1,
-        -size.hh + wheel_r - ride_height,
-        size.hl - wheel_r - 0.5,
+        size.hw - wheel_half_width - 0.1,
+        -size.hh + wheel_radius - ride_height,
+        size.hl - wheel_radius - 0.5,
     );
-    let car_anchors: [Vec3; 4] = [
+    let anchors: [Vec3; 4] = [
         Vec3::new(shift.x, shift.y, shift.z),
         Vec3::new(-shift.x, shift.y, shift.z),
         Vec3::new(shift.x, shift.y, -shift.z),
@@ -173,26 +173,23 @@ pub fn spawn_car(
             false => Vec3::Y,
         })
         .local_basis1(Quat::from_axis_angle(Vec3::Y, 0.)) // hackfix, prevents jumping on collider edges
-        .local_anchor1(car_anchors[i])
+        .local_anchor1(anchors[i])
         .local_anchor2(Vec3::ZERO)
         .set_motor(JointAxis::Y, 0., 0., 1e6, 1e3)
         .build();
         joints.push(joint);
 
-        let wheel_transform = Transform::from_translation(
-            transform.translation + transform.rotation.mul_vec3(car_anchors[i]),
-        )
-        .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
-        .with_scale(Vec3::new(wheel_r * 2., wheel_hw * 2., wheel_r * 2.));
-
         let wheel_id = spawn_wheel(
             commands,
             wheel_gl,
-            wheel_transform,
-            wheel_r,
-            wheel_hw,
-            is_front,
-            is_left,
+            Wheel {
+                is_front,
+                is_left,
+                radius: wheel_radius,
+                half_width: wheel_half_width,
+            },
+            transform,
+            anchors[i],
         );
         wheels.push(wheel_id);
     }
