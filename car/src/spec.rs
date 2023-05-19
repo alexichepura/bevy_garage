@@ -24,10 +24,10 @@ pub struct CarSpec {
 
 impl Default for CarSpec {
     fn default() -> Self {
-        const SPEED_LIMIT_KMH: f32 = 300.;
-        const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-        const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
-        const STEERING_SPEEDLIMIT_MPS: f32 = STEERING_SPEEDLIMIT_KMH * 1000. / 3600.;
+        let speed_limit_kmh: f32 = 300.;
+        let speed_limit_mps: f32 = speed_limit_kmh * 1000. / 3600.;
+        let steering_speedlimit_kmh: f32 = 270.;
+        let steering_speedlimit_mps: f32 = steering_speedlimit_kmh * 1000. / 3600.;
 
         let ride_height = 0.06;
         let wheel_radius: f32 = 0.35;
@@ -54,8 +54,8 @@ impl Default for CarSpec {
 
         Self {
             size,
-            speed_limit: SPEED_LIMIT_MPS,
-            steering_speed_limit: STEERING_SPEEDLIMIT_MPS,
+            speed_limit: speed_limit_mps,
+            steering_speed_limit: steering_speedlimit_mps,
             wheel_max_torque: 1200.,
             wheel_max_angle: FRAC_PI_4,
             anchors,
