@@ -1,4 +1,4 @@
-use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, Wheel, WheelJoint};
+use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, Wheel};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -87,7 +87,7 @@ pub fn spawn_car(
     for (wheel_id, joint) in wheels_joints.iter() {
         commands
             .entity(*wheel_id)
-            .insert(WheelJoint::new(car_id, *joint));
+            .insert(ImpulseJoint::new(car_id, *joint));
     }
     println!("spawn_car: {car_id:?}");
     return car_id;

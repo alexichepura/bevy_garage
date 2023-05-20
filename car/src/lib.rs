@@ -7,7 +7,6 @@ pub mod spec;
 pub mod wheel;
 
 pub use car::*;
-pub use joint::WheelJoint;
 pub use res::CarRes;
 pub use spec::*;
 pub use wheel::*;
