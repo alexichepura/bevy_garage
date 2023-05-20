@@ -2,7 +2,7 @@ use crate::{dqn_bevy::*, gradient::get_sgd, params::*, util::*};
 use bevy::prelude::*;
 use bevy_garage_car::{
     sensor::CarSensors,
-    {Car, HID},
+    CarWheels, {Car, Player},
 };
 use bevy_garage_track::{CarTrack, SpawnCarOnTrackEvent};
 use bevy_rapier3d::prelude::*;
@@ -37,8 +37,9 @@ pub fn dqn_system(
         &Velocity,
         &Transform,
         Entity,
-        Option<&HID>,
+        Option<&Player>,
         &mut CarDqn,
+        &mut CarWheels,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut commands: Commands,
@@ -48,12 +49,12 @@ pub fn dqn_system(
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_in > 0. && seconds > dqn.respawn_in {
         car_spawn_events.send(SpawnCarOnTrackEvent {
-            is_hid: dqn.respawn_is_hid,
+            player: dqn.respawn_player,
             index: dqn.respawn_index,
             init_meters: None,
         });
         dqn.respawn_in = 0.;
-        dqn.respawn_is_hid = false;
+        dqn.respawn_player = false;
         dqn.respawn_index = 0;
         dqn.use_brain = true;
         return;
@@ -64,8 +65,10 @@ pub fn dqn_system(
         dqn.step += 1;
     }
 
-    for (mut car, car_track, car_sensors, v, tr, e, hid, mut car_dqn) in q_car.iter_mut() {
-        let is_hid = hid.is_some();
+    for (mut car, car_track, car_sensors, v, tr, e, hid, mut car_dqn, mut wheels) in
+        q_car.iter_mut()
+    {
+        let player = hid.is_some();
         let mut crash: bool = false;
 
         let colliding_entities = q_colliding_entities.get(e);
@@ -92,7 +95,7 @@ pub fn dqn_system(
         let d_norm = d / 4.;
 
         let velocity = v.linvel.length();
-        let velocity_norm = velocity / car_dqn.speed_limit;
+        let velocity_norm = velocity / car_dqn.max_speed;
         let shape_reward = || -> f32 {
             if crash {
                 return -1.;
@@ -144,10 +147,10 @@ pub fn dqn_system(
         if crash {
             dqn.crashes += 1;
             dqn.respawn_in = seconds;
-            dqn.respawn_is_hid = is_hid;
+            dqn.respawn_player = player;
             dqn.respawn_index = car_track.index;
             commands.entity(e).despawn_recursive();
-            car.despawn_wheels(&mut commands);
+            wheels.despawn(&mut commands);
             dqn.use_brain = false;
         }
         if !dqn.use_brain || !should_act || crash {

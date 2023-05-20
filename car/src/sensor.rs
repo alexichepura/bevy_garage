@@ -1,4 +1,4 @@
-use crate::{CarConfig, CarSize};
+use crate::{CarRes, CarSize};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
@@ -63,7 +63,7 @@ impl CarSensors {
 
 pub fn sensor_system(
     rapier_context: Res<RapierContext>,
-    config: Res<CarConfig>,
+    config: Res<CarRes>,
     mut q_car: Query<(&mut CarSensors, &Transform)>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
 ) {

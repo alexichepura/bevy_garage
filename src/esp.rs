@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_garage_car::{Car, Wheel, WheelJoint};
+use bevy_garage_car::{Car, CarSpec, CarWheels, Wheel};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -32,19 +32,19 @@ const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
 
 pub fn esp_system(
     time: Res<Time>,
-    mut car_query: Query<(Entity, &mut Car, &Velocity, &Transform)>,
-    mut wheels: Query<(
+    mut car_query: Query<(&mut Car, &CarSpec, &CarWheels, &Velocity, &Transform)>,
+    mut wheels_query: Query<(
         &Wheel,
         &mut ExternalForce,
         &Transform,
         &Velocity,
-        &mut WheelJoint,
+        &mut ImpulseJoint,
     )>,
     #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] car_config: Res<bevy_garage_car::CarConfig>,
+    #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let d_seconds = time.delta_seconds();
-    for (_entity, mut car, velocity, transform) in car_query.iter_mut() {
+    for (mut car, spec, car_wheels, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();
         let delta = velocity.linvel.normalize() - car_vector_norm;
@@ -57,12 +57,12 @@ pub fn esp_system(
         let linvel = velocity.linvel.length();
         let torque_speed_x: f32 = match braking {
             true => 2.,
-            _ => match linvel / car.speed_limit {
+            _ => match linvel / spec.max_speed {
                 x if x >= 1. => 0.,
                 x => 0.7 + 0.3 * (1. - x),
             },
         };
-        let steering_speed_x: f32 = match linvel / car.steering_speed_limit {
+        let steering_speed_x: f32 = match linvel / spec.max_steering_speed {
             x if x >= 1. => 0.,
             x => 1. - x,
         }
@@ -82,7 +82,7 @@ pub fn esp_system(
         };
         let dir = pedal.signum();
         let is_same_dir = car.prev_dir == dir;
-        let car_torque = pedal.abs() * car.wheel_max_torque;
+        let car_torque = pedal.abs() * spec.wheel_max_torque;
         let prev_torque = if is_same_dir { car.prev_torque } else { 0. };
         let prev_steering = car.prev_steering;
         let (steering, mut torque) = (
@@ -95,24 +95,24 @@ pub fn esp_system(
 
         torque = dir * torque;
 
-        let angle: f32 = car.wheel_max_angle * steering * (0.1 + 0.9 * steering_speed_x);
+        let angle: f32 = spec.wheel_max_angle * steering * (0.1 + 0.9 * steering_speed_x);
         let quat = -Quat::from_axis_angle(Vec3::Y, -angle);
         let torque_vec = Vec3::new(0., torque, 0.);
         let steering_torque_vec = quat.mul_vec3(torque_vec);
 
-        for (_i, wheel_entity) in car.wheels.iter().enumerate() {
-            let (wheel, mut f, transform, v, mut j) = wheels.get_mut(*wheel_entity).unwrap();
+        for wheel_entity in car_wheels.entities.iter() {
+            let (wheel, mut f, transform, v, mut j) = wheels_query.get_mut(*wheel_entity).unwrap();
             let radius_vel = v.angvel * wheel.radius;
             let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
             let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-            if wheel.is_front {
+            if wheel.front {
                 let max_slip = 50.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
                 };
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
-                let wheel_torque = if wheel.is_left {
+                let wheel_torque = if wheel.left {
                     -total_torque
                 } else {
                     total_torque
@@ -120,7 +120,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if car_config.show_rays {
+                if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);
@@ -134,7 +134,7 @@ pub fn esp_system(
                     x => 1. - x,
                 };
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
-                let wheel_torque = if wheel.is_left {
+                let wheel_torque = if wheel.left {
                     -total_torque
                 } else {
                     total_torque
@@ -142,7 +142,7 @@ pub fn esp_system(
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
                 #[cfg(feature = "debug_lines")]
-                if car_config.show_rays {
+                if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
                     lines.line_colored(start, end, 0.0, Color::VIOLET);

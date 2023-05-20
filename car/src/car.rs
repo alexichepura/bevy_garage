@@ -1,35 +1,16 @@
-use crate::{config::*, joint::build_joint, wheel::spawn_wheel, Wheel, WheelJoint};
+use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, WheelSpec};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use std::f32::consts::FRAC_PI_4;
 
 #[derive(Component)]
-pub struct HID;
-
-#[derive(Debug, Clone)]
-pub struct CarSize {
-    pub hw: f32,
-    pub hh: f32,
-    pub hl: f32,
-}
-
-const SPEED_LIMIT_KMH: f32 = 300.;
-const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-const STEERING_SPEEDLIMIT_KMH: f32 = 270.;
-const STEERING_SPEEDLIMIT_MPS: f32 = STEERING_SPEEDLIMIT_KMH * 1000. / 3600.;
+pub struct Player;
 
 #[derive(Component, Debug)]
 pub struct Car {
-    pub size: CarSize,
-    pub speed_limit: f32,
-    pub steering_speed_limit: f32,
     pub gas: f32,
     pub brake: f32,
     pub steering: f32,
-    pub wheels: Vec<Entity>,
-    pub wheel_max_torque: f32,
-    pub wheel_max_angle: f32,
-    pub init_transform: Transform,
+    pub spawn_transform: Transform,
     pub prev_steering: f32,
     pub prev_torque: f32,
     pub prev_dir: f32,
@@ -37,30 +18,34 @@ pub struct Car {
 impl Default for Car {
     fn default() -> Self {
         Self {
-            size: CarSize {
-                hw: 1.,
-                hh: 0.35,
-                hl: 2.2,
-            },
-            speed_limit: SPEED_LIMIT_MPS,
-            steering_speed_limit: STEERING_SPEEDLIMIT_MPS,
             gas: 0.,
             brake: 0.,
             steering: 0.,
             prev_steering: 0.,
             prev_torque: 0.,
             prev_dir: 0.,
-            wheels: Vec::new(),
-            wheel_max_torque: 1000.,
-            wheel_max_angle: FRAC_PI_4,
-            init_transform: Transform::default(),
+            spawn_transform: Transform::default(),
         }
     }
 }
-
 impl Car {
-    pub fn despawn_wheels(&mut self, commands: &mut Commands) {
-        for e in self.wheels.iter() {
+    pub fn new(spawn_transform: Transform) -> Self {
+        Self {
+            spawn_transform,
+            ..default()
+        }
+    }
+}
+#[derive(Component, Debug)]
+pub struct CarWheels {
+    pub entities: [Entity; 4],
+}
+impl CarWheels {
+    pub fn new(entities: [Entity; 4]) -> Self {
+        Self { entities }
+    }
+    pub fn despawn(&mut self, commands: &mut Commands) {
+        for e in self.entities.iter() {
             commands.entity(*e).despawn_recursive();
         }
     }
@@ -68,7 +53,7 @@ impl Car {
 
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
-pub fn car_start_system(mut config: ResMut<CarConfig>, asset_server: Res<AssetServer>) {
+pub fn car_start_system(mut config: ResMut<CarRes>, asset_server: Res<AssetServer>) {
     let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
     config.wheel_scene = Some(wheel_gl.clone());
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
@@ -76,98 +61,53 @@ pub fn car_start_system(mut config: ResMut<CarConfig>, asset_server: Res<AssetSe
 }
 
 pub fn spawn_car(
-    commands: &mut Commands,
-    car_gl: &Handle<Scene>,
-    wheel_gl: &Handle<Scene>,
-    is_hid: bool,
+    cmd: &mut Commands,
+    car_scene: &Handle<Scene>,
+    wheel_scene: &Handle<Scene>,
+    player: bool,
     transform: Transform,
-    max_torque: f32,
 ) -> Entity {
-    let car_size = CarSize {
-        hw: 1.,
-        hh: 0.35,
-        hl: 2.2,
-    };
-    let ride_height = 0.06;
-    let wheel_radius: f32 = 0.35;
-    let wheel_half_width: f32 = 0.17;
-    let shift = Vec3::new(
-        car_size.hw - wheel_half_width - 0.1,
-        -car_size.hh + wheel_radius - ride_height,
-        car_size.hl - wheel_radius - 0.5,
-    );
-    let anchors: [Vec3; 4] = [
-        Vec3::new(shift.x, shift.y, shift.z),
-        Vec3::new(-shift.x, shift.y, shift.z),
-        Vec3::new(shift.x, shift.y, -shift.z),
-        Vec3::new(-shift.x, shift.y, -shift.z),
-    ];
-    let wheel_front_left: [(bool, bool); 4] =
-        [(true, false), (true, true), (false, false), (false, true)];
+    let spec = CarSpec::default();
+    let wheel_spec = WheelSpec::new(spec.wheel_radius, spec.wheel_width);
+    let mounts = spec.wheel_mount.clone();
 
-    let mut wheels: Vec<Entity> = vec![];
-    let mut joints: Vec<GenericJoint> = vec![];
-    for i in 0..4 {
-        let (is_front, is_left) = wheel_front_left[i];
-        let anchor = anchors[i];
-        let wheel_id = spawn_wheel(
-            commands,
-            wheel_gl,
-            Wheel {
-                is_front,
-                is_left,
-                radius: wheel_radius,
-                half_width: wheel_half_width,
-            },
-            transform.translation + transform.rotation.mul_vec3(anchor),
-        );
-        let joint = build_joint(anchor, is_left);
-        joints.push(joint);
-        wheels.push(wheel_id);
+    let car_id = spawn_car_body(cmd, car_scene, Car::new(transform), spec);
+    let wheels = CarWheels::new(mounts.map(|mount| {
+        let joint = ImpulseJoint::new(car_id, build_joint(mount.anchor, mount.left));
+        let wheel_id = spawn_wheel(cmd, wheel_scene, &wheel_spec, &mount, transform, joint);
+        wheel_id
+    }));
+    cmd.entity(car_id).insert(wheels);
+    if player {
+        cmd.entity(car_id).insert(Player);
     }
-
-    let car_id = spawn_car_body(
-        commands,
-        car_gl,
-        Car {
-            size: car_size,
-            wheels: wheels.clone(),
-            wheel_max_torque: max_torque,
-            init_transform: transform,
-            ..default()
-        },
-    );
-
-    if is_hid {
-        commands.entity(car_id).insert(HID);
-    }
-    for (i, wheel_id) in wheels.iter().enumerate() {
-        commands
-            .entity(*wheel_id)
-            .insert(WheelJoint::new(car_id, joints[i]));
-    }
-    println!("spawn_car: {car_id:?}");
-    return car_id;
+    car_id
 }
 
-pub fn spawn_car_body(commands: &mut Commands, car_gl: &Handle<Scene>, car: Car) -> Entity {
+pub fn spawn_car_body(
+    commands: &mut Commands,
+    car_gl: &Handle<Scene>,
+    car: Car,
+    spec: CarSpec,
+) -> Entity {
     let car_border_radius = 0.1;
-    let local_center_of_mass = Vec3::new(0., -car.size.hh, 0.);
+    let local_center_of_mass = Vec3::new(0., -spec.size.hh, 0.);
     let collider = Collider::round_cuboid(
-        car.size.hw - car_border_radius,
-        car.size.hh - car_border_radius,
-        car.size.hl - car_border_radius,
+        spec.size.hw - car_border_radius,
+        spec.size.hh - car_border_radius,
+        spec.size.hl - car_border_radius,
         car_border_radius,
     );
     let scene = SceneBundle {
         scene: car_gl.clone(),
-        transform: car.init_transform,
+        transform: car.spawn_transform,
         ..default()
     };
     commands
         .spawn((
             Name::new("car"),
             car,
+            spec,
             scene,
             (
                 collider,

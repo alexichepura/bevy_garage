@@ -10,7 +10,7 @@ pub mod joystick;
 mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_garage_car::{car_start_system, CarConfig, CarSet};
+use bevy_garage_car::{car_start_system, CarRes, CarSet};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
 use bevy_rapier3d::prelude::*;
 use config::*;
@@ -72,7 +72,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         })
         .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
-        .insert_resource(CarConfig::default())
+        .insert_resource(CarRes::default())
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())

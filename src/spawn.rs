@@ -1,10 +1,10 @@
 use bevy::prelude::*;
-use bevy_garage_car::CarConfig;
+use bevy_garage_car::CarRes;
 use bevy_garage_track::{spawn_car_on_track, SpawnCarOnTrackEvent, TrackConfig};
 
 pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>) {
     car_spawn_events.send(SpawnCarOnTrackEvent {
-        is_hid: true,
+        player: true,
         index: 0,
         init_meters: Some(0.),
     });
@@ -14,7 +14,7 @@ pub fn spawn_car_system(
     mut events: EventReader<SpawnCarOnTrackEvent>,
     mut commands: Commands,
     track_config: ResMut<TrackConfig>,
-    car_config: ResMut<CarConfig>,
+    car_res: ResMut<CarRes>,
 ) {
     for spawn_event in events.iter() {
         dbg!(spawn_event);
@@ -29,13 +29,12 @@ pub fn spawn_car_system(
 
         spawn_car_on_track(
             &mut commands,
-            &car_config.car_scene.as_ref().unwrap(),
-            &car_config.wheel_scene.as_ref().unwrap(),
-            spawn_event.is_hid,
+            &car_res.car_scene.as_ref().unwrap(),
+            &car_res.wheel_scene.as_ref().unwrap(),
+            spawn_event.player,
             transform,
             spawn_event.index,
             init_meters,
-            car_config.max_torque,
         );
     }
 }

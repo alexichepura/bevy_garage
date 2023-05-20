@@ -4,11 +4,6 @@ use bevy_rapier3d::{
     rapier::prelude::{JointAxesMask, JointAxis},
 };
 
-pub type WheelJoint = bevy_rapier3d::prelude::ImpulseJoint;
-// https://github.com/alexichepura/bevy_garage/issues/23
-// https://github.com/dimforge/bevy_rapier/issues/196
-// pub type WheelJoint = bevy_rapier3d::prelude::MultibodyJoint;
-
 pub fn build_joint(anchor: Vec3, is_left: bool) -> GenericJoint {
     let joint = GenericJointBuilder::new(
         JointAxesMask::ANG_Y | JointAxesMask::ANG_Z | JointAxesMask::X | JointAxesMask::Z,

@@ -10,12 +10,9 @@ use crossbeam_channel::{bounded, Receiver, Sender};
 use dfdx::{optim::Sgd, prelude::*};
 use rand::Rng;
 
-const SPEED_LIMIT_KMH: f32 = 100.;
-const SPEED_LIMIT_MPS: f32 = SPEED_LIMIT_KMH * 1000. / 3600.;
-
 #[derive(Component, Debug)]
 pub struct CarDqn {
-    pub speed_limit: f32,
+    pub max_speed: f32,
     pub prev_obs: Observation,
     pub prev_action: usize,
     pub prev_reward: f32,
@@ -24,7 +21,7 @@ pub struct CarDqn {
 impl CarDqn {
     pub fn new() -> Self {
         Self {
-            speed_limit: SPEED_LIMIT_MPS,
+            max_speed: 100. * 1000. / 3600.,
             prev_obs: [0.; STATE_SIZE],
             prev_action: 0,
             prev_reward: 0.,
@@ -92,7 +89,7 @@ pub struct DqnResource {
     pub done: f32,
 
     pub respawn_in: f64,
-    pub respawn_is_hid: bool,
+    pub respawn_player: bool,
     pub respawn_index: usize,
 }
 impl DqnResource {
@@ -109,7 +106,7 @@ impl DqnResource {
             done: 0.,
 
             respawn_in: 0.,
-            respawn_is_hid: false,
+            respawn_player: false,
             respawn_index: 0,
         }
     }

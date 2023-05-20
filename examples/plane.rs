@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_garage::esp::esp_system;
-use bevy_garage_car::{car_start_system, spawn_car, Car, CarConfig};
+use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
@@ -18,7 +18,7 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .add_plugin(RapierDebugRenderPlugin::default())
-        .insert_resource(CarConfig {
+        .insert_resource(CarRes {
             show_rays: true,
             ..default()
         })
@@ -39,18 +39,17 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     c.integration_parameters.erp = 0.99;
 }
 
-fn spawn_car_system(mut commands: Commands, car_config: Res<CarConfig>) {
+fn spawn_car_system(mut commands: Commands, car_res: Res<CarRes>) {
     spawn_car(
         &mut commands,
-        &car_config.car_scene.as_ref().unwrap(),
-        &car_config.wheel_scene.as_ref().unwrap(),
+        &car_res.car_scene.as_ref().unwrap(),
+        &car_res.wheel_scene.as_ref().unwrap(),
         true,
         Transform::from_translation(Vec3 {
             x: 0.,
             y: 1.,
             z: 0.,
         }),
-        1200.,
     );
 }
 
