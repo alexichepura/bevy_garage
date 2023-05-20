@@ -38,7 +38,7 @@ impl Car {
 }
 #[derive(Component, Debug)]
 pub struct CarWheels {
-    pub entities: Vec<Entity>,
+    pub entities: [Entity; 4],
 }
 impl CarWheels {
     pub fn despawn(&mut self, commands: &mut Commands) {
@@ -65,25 +65,29 @@ pub fn spawn_car(
     transform: Transform,
 ) -> Entity {
     let spec = CarSpec::default();
-    let mut wheels: Vec<Entity> = vec![];
-    let mut joints: Vec<GenericJoint> = vec![];
-    for mount in spec.wheel_mount.iter() {
-        let wheel = Wheel::new(spec.wheel_radius, spec.wheel_width, mount.front, mount.left);
-        let translation: Vec3 = transform.translation + transform.rotation.mul_vec3(mount.anchor);
-        let wheel_id: Entity = spawn_wheel(commands, wheel_gl, wheel, translation);
-        let joint: GenericJoint = build_joint(mount.anchor, mount.left);
-        joints.push(joint);
-        wheels.push(wheel_id);
-    }
 
-    let car_id = spawn_car_body(commands, car_gl, Car::new(transform), spec, wheels.clone());
+    let wheels_joints: [(Entity, GenericJoint); 4] = spec.wheel_mount.clone().map(|m| {
+        let wheel = Wheel::new(spec.wheel_radius, spec.wheel_width, m.front, m.left);
+        let translation = transform.translation + transform.rotation.mul_vec3(m.anchor);
+        let wheel_id = spawn_wheel(commands, wheel_gl, wheel, translation);
+        let joint = build_joint(m.anchor, m.left);
+        (wheel_id, joint)
+    });
+
+    let car_id = spawn_car_body(
+        commands,
+        car_gl,
+        Car::new(transform),
+        spec,
+        wheels_joints.map(|wj| wj.0),
+    );
     if hid {
         commands.entity(car_id).insert(HID);
     }
-    for (i, wheel_id) in wheels.iter().enumerate() {
+    for (wheel_id, joint) in wheels_joints.iter() {
         commands
             .entity(*wheel_id)
-            .insert(WheelJoint::new(car_id, joints[i]));
+            .insert(WheelJoint::new(car_id, *joint));
     }
     println!("spawn_car: {car_id:?}");
     return car_id;
@@ -94,7 +98,7 @@ pub fn spawn_car_body(
     car_gl: &Handle<Scene>,
     car: Car,
     spec: CarSpec,
-    wheels: Vec<Entity>,
+    wheels: [Entity; 4],
 ) -> Entity {
     let car_border_radius = 0.1;
     let local_center_of_mass = Vec3::new(0., -spec.size.hh, 0.);
