@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 #[derive(Component)]
-pub struct HID;
+pub struct Player;
 
 #[derive(Component, Debug)]
 pub struct Car {
@@ -64,7 +64,7 @@ pub fn spawn_car(
     cmd: &mut Commands,
     car_scene: &Handle<Scene>,
     wheel_scene: &Handle<Scene>,
-    is_hid: bool,
+    player: bool,
     transform: Transform,
 ) -> Entity {
     let spec = CarSpec::default();
@@ -78,8 +78,8 @@ pub fn spawn_car(
         wheel_id
     }));
     cmd.entity(car_id).insert(wheels);
-    if is_hid {
-        cmd.entity(car_id).insert(HID);
+    if player {
+        cmd.entity(car_id).insert(Player);
     }
     return car_id;
 }

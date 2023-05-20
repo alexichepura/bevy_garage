@@ -4,7 +4,7 @@ use bevy_garage_track::{spawn_car_on_track, SpawnCarOnTrackEvent, TrackConfig};
 
 pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>) {
     car_spawn_events.send(SpawnCarOnTrackEvent {
-        is_hid: true,
+        player: true,
         index: 0,
         init_meters: Some(0.),
     });
@@ -31,7 +31,7 @@ pub fn spawn_car_system(
             &mut commands,
             &car_res.car_scene.as_ref().unwrap(),
             &car_res.wheel_scene.as_ref().unwrap(),
-            spawn_event.is_hid,
+            spawn_event.player,
             transform,
             spawn_event.index,
             init_meters,

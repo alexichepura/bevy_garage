@@ -1,6 +1,6 @@
 use crate::CarSet;
 use bevy::prelude::*;
-use bevy_garage_car::{Car, HID};
+use bevy_garage_car::{Car, Player};
 use virtual_joystick::*;
 
 #[derive(Default, Reflect, Hash, Clone, PartialEq, Eq)]
@@ -78,7 +78,7 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
 
 fn update_joystick(
     mut virtual_joystick_events: EventReader<VirtualJoystickEvent<JoystickTypeAxis>>,
-    mut cars: Query<&mut Car, With<HID>>,
+    mut cars: Query<&mut Car, With<Player>>,
 ) {
     for mut car in cars.iter_mut() {
         for j in virtual_joystick_events.iter() {

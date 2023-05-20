@@ -92,7 +92,7 @@ pub struct DqnResource {
     pub done: f32,
 
     pub respawn_in: f64,
-    pub respawn_is_hid: bool,
+    pub respawn_player: bool,
     pub respawn_index: usize,
 }
 impl DqnResource {
@@ -109,7 +109,7 @@ impl DqnResource {
             done: 0.,
 
             respawn_in: 0.,
-            respawn_is_hid: false,
+            respawn_player: false,
             respawn_index: 0,
         }
     }

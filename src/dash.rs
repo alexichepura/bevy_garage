@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
-use bevy_garage_car::HID;
+use bevy_garage_car::Player;
 use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
 
@@ -265,7 +265,7 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<RideDistanceText>>,
         Query<&mut Text, With<LapText>>,
     )>,
-    mut cars: Query<(&Velocity, &CarTrack, With<HID>)>,
+    mut cars: Query<(&Velocity, &CarTrack, With<Player>)>,
 ) {
     for (velocity, car_track, _) in cars.iter_mut() {
         let mps = velocity.linvel.length();
