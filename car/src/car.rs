@@ -1,4 +1,4 @@
-use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, Wheel};
+use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -58,38 +58,37 @@ pub fn car_start_system(mut config: ResMut<CarRes>, asset_server: Res<AssetServe
 }
 
 pub fn spawn_car(
-    commands: &mut Commands,
-    car_gl: &Handle<Scene>,
-    wheel_gl: &Handle<Scene>,
+    cmd: &mut Commands,
+    car_scene: &Handle<Scene>,
+    wheel_scene: &Handle<Scene>,
     hid: bool,
     transform: Transform,
 ) -> Entity {
     let spec = CarSpec::default();
-
-    let wheels_joints: [(Entity, GenericJoint); 4] = spec.wheel_mount.clone().map(|m| {
-        let wheel = Wheel::new(spec.wheel_radius, spec.wheel_width, m.front, m.left);
-        let translation = transform.translation + transform.rotation.mul_vec3(m.anchor);
-        let wheel_id = spawn_wheel(commands, wheel_gl, wheel, translation);
-        let generic_joint = build_joint(m.anchor, m.left);
-        (wheel_id, generic_joint)
+    let wheels_joints: [(Entity, GenericJoint); 4] = spec.wheel_mount.clone().map(|mount| {
+        let wheel_id = spawn_wheel(
+            cmd,
+            wheel_scene,
+            spec.wheel_radius,
+            spec.wheel_width,
+            mount.clone(),
+            transform,
+        );
+        (wheel_id, build_joint(mount.anchor, mount.left))
     });
 
-    let car_id = spawn_car_body(
-        commands,
-        car_gl,
-        Car::new(transform),
-        spec,
-        wheels_joints.map(|wj| wj.0),
-    );
+    let car_id = spawn_car_body(cmd, car_scene, Car::new(transform), spec);
+    for (w, j) in wheels_joints.iter() {
+        cmd.entity(*w).insert(ImpulseJoint::new(car_id, *j));
+    }
+
+    let mut car_cmd = cmd.entity(car_id);
+    car_cmd.insert(CarWheels {
+        entities: wheels_joints.map(|wj| wj.0),
+    });
     if hid {
-        commands.entity(car_id).insert(HID);
+        car_cmd.insert(HID);
     }
-    for (wheel_id, generic_joint) in wheels_joints.iter() {
-        commands
-            .entity(*wheel_id)
-            .insert(ImpulseJoint::new(car_id, *generic_joint));
-    }
-    println!("spawn_car: {car_id:?}");
     return car_id;
 }
 
@@ -98,7 +97,6 @@ pub fn spawn_car_body(
     car_gl: &Handle<Scene>,
     car: Car,
     spec: CarSpec,
-    wheels: [Entity; 4],
 ) -> Entity {
     let car_border_radius = 0.1;
     let local_center_of_mass = Vec3::new(0., -spec.size.hh, 0.);
@@ -118,7 +116,6 @@ pub fn spawn_car_body(
             Name::new("car"),
             car,
             spec,
-            CarWheels { entities: wheels },
             scene,
             (
                 collider,

@@ -1,4 +1,4 @@
-use crate::{CAR_TRAINING_GROUP, STATIC_GROUP};
+use crate::{WheelMount, CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
@@ -27,18 +27,22 @@ impl Wheel {
 pub fn spawn_wheel(
     commands: &mut Commands,
     wheel_gl: &Handle<Scene>,
-    wheel: Wheel,
-    translation: Vec3,
+    radius: f32,
+    width: f32,
+    mount: WheelMount,
+    car_transform: Transform,
 ) -> Entity {
+    let wheel = Wheel::new(radius, width, mount.front, mount.left);
     let diameter = wheel.radius * 2.;
 
+    let translation = car_transform.translation + car_transform.rotation.mul_vec3(mount.anchor);
     let transform = Transform::from_translation(translation)
         .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
-        .with_scale(Vec3::new(diameter, wheel.width, diameter));
+        .with_scale(Vec3::new(diameter, width, diameter));
 
     let collider = Collider::round_cylinder(
-        wheel.width / 2. - wheel.border_radius,
-        wheel.radius - wheel.border_radius,
+        width / 2. - wheel.border_radius,
+        radius - wheel.border_radius,
         wheel.border_radius,
     );
 
