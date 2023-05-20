@@ -42,7 +42,7 @@ pub fn dqn_system(
         &mut CarWheels,
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
-    mut commands: Commands,
+    mut cmd: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     #[cfg(feature = "api")] api: Res<crate::api_client::ApiClient>,
 ) {
@@ -149,8 +149,8 @@ pub fn dqn_system(
             dqn.respawn_in = seconds;
             dqn.respawn_player = player;
             dqn.respawn_index = car_track.index;
-            commands.entity(e).despawn_recursive();
-            wheels.despawn(&mut commands);
+            cmd.entity(e).despawn_recursive();
+            wheels.despawn(&mut cmd);
             dqn.use_brain = false;
         }
         if !dqn.use_brain || !should_act || crash {

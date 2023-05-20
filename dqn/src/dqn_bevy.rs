@@ -141,10 +141,10 @@ pub fn dqn_start_system(world: &mut World) {
     world.insert_non_send_resource(SgdResource::new(&qn));
     world.insert_non_send_resource(CarsDqnResource::new(&qn, device));
 }
-pub fn dqn_x_start_system(mut commands: Commands) {
+pub fn dqn_x_start_system(mut cmd: Commands) {
     let (tx, rx) = bounded::<DqnX>(10);
-    commands.insert_resource(DqnRx(rx));
-    commands.insert_resource(DqnTx(tx));
+    cmd.insert_resource(DqnRx(rx));
+    cmd.insert_resource(DqnTx(tx));
 }
 pub fn dqn_rx_to_bevy_event_system(receiver: Res<DqnRx>, mut events: EventWriter<DqnEvent>) {
     for from_stream in receiver.try_iter() {

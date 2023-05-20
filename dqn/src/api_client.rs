@@ -103,11 +103,11 @@ pub struct StreamReceiver(Receiver<String>);
 pub struct StreamSender(Sender<String>);
 pub struct StreamEvent(String);
 
-pub fn api_start_system(mut commands: Commands) {
+pub fn api_start_system(mut cmd: Commands) {
     let (tx, rx) = bounded::<String>(10);
-    commands.insert_resource(ApiClient::new());
-    commands.insert_resource(StreamReceiver(rx));
-    commands.insert_resource(StreamSender(tx));
+    cmd.insert_resource(ApiClient::new());
+    cmd.insert_resource(StreamReceiver(rx));
+    cmd.insert_resource(StreamSender(tx));
 }
 
 // pub fn api_send_system(input: Res<Input<KeyCode>>, api: Res<ApiClient>, sender: Res<StreamSender>) {

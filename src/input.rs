@@ -10,7 +10,7 @@ pub fn input_system(
     gamepads: Res<Gamepads>,
     mut camera_config: ResMut<CameraConfig>,
     mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform, With<Player>)>,
-    mut commands: Commands,
+    mut cmd: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
         bevy_rapier3d::render::DebugRenderContext,
@@ -68,8 +68,8 @@ pub fn input_system(
         }
 
         if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::LShift) {
-            commands.entity(e).despawn_recursive();
-            wheels.despawn(&mut commands);
+            cmd.entity(e).despawn_recursive();
+            wheels.despawn(&mut cmd);
 
             car_spawn_events.send(SpawnCarOnTrackEvent {
                 player: true,

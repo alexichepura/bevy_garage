@@ -51,14 +51,14 @@ impl Plugin for TrackPlugin {
 
 pub fn track_start_system(
     handled_materials: Res<MaterialHandle>,
-    mut commands: Commands,
+    mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     let track = Track::new();
-    let aabb = spawn_road(&handled_materials, &mut commands, &mut meshes, &track);
-    spawn_ground_heightfield(&mut commands, &mut meshes, &handled_materials, &aabb, 100.);
+    let aabb = spawn_road(&handled_materials, &mut cmd, &mut meshes, &track);
+    spawn_ground_heightfield(&mut cmd, &mut meshes, &handled_materials, &aabb, 100.);
 
-    spawn_kerb(&mut commands, &mut meshes, &handled_materials, &track);
+    spawn_kerb(&mut cmd, &mut meshes, &handled_materials, &track);
     let mut left_wall_points: Vec<Vec3> = vec![];
     let mut right_wall_points: Vec<Vec3> = vec![];
     for (i, p) in track.points.iter().enumerate() {
@@ -66,7 +66,7 @@ pub fn track_start_system(
         right_wall_points.push(*p + track.right_norm[i] * -7.5);
     }
     spawn_walls(
-        &mut commands,
+        &mut cmd,
         &mut meshes,
         &handled_materials,
         &track.indices,
@@ -74,7 +74,7 @@ pub fn track_start_system(
         &track.right_norm,
     );
     spawn_walls(
-        &mut commands,
+        &mut cmd,
         &mut meshes,
         &handled_materials,
         &track.indices,

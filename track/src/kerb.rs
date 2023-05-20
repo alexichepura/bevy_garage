@@ -6,7 +6,7 @@ use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::Sub;
 
 pub fn spawn_kerb(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     handled_materials: &Res<MaterialHandle>,
     track: &Track,
@@ -46,7 +46,7 @@ pub fn spawn_kerb(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
-    commands.spawn((
+    cmd.spawn((
         PbrBundle {
             mesh: meshes.add(mesh),
             material: handled_materials.kerb.clone(),
@@ -100,7 +100,7 @@ pub fn spawn_kerb(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(track.indices.clone())));
 
-    commands.spawn((
+    cmd.spawn((
         PbrBundle {
             mesh: meshes.add(mesh),
             material: handled_materials.kerb.clone(),

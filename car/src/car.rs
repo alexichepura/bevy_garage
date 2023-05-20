@@ -44,9 +44,9 @@ impl CarWheels {
     pub fn new(entities: [Entity; 4]) -> Self {
         Self { entities }
     }
-    pub fn despawn(&mut self, commands: &mut Commands) {
+    pub fn despawn(&mut self, cmd: &mut Commands) {
         for e in self.entities.iter() {
-            commands.entity(*e).despawn_recursive();
+            cmd.entity(*e).despawn_recursive();
         }
     }
 }
@@ -85,7 +85,7 @@ pub fn spawn_car(
 }
 
 pub fn spawn_car_body(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     car_gl: &Handle<Scene>,
     car: Car,
     spec: CarSpec,
@@ -103,40 +103,39 @@ pub fn spawn_car_body(
         transform: car.spawn_transform,
         ..default()
     };
-    commands
-        .spawn((
-            Name::new("car"),
-            car,
-            spec,
-            scene,
-            (
-                collider,
-                ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass,
-                    mass: 1000.0,
-                    principal_inertia: Vec3::new(5000., 5000., 2000.), // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
-                    ..default()
-                }),
-                Damping {
-                    linear_damping: 0.05,
-                    angular_damping: 0.1,
-                },
-                Friction::coefficient(0.5),
-                Restitution::coefficient(0.),
-                CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
-                ActiveEvents::COLLISION_EVENTS,
-                ContactForceEventThreshold(0.1),
-            ),
-            (
-                Ccd::enabled(),
-                CollidingEntities::default(),
-                ColliderScale::Absolute(Vec3::ONE),
-                ExternalForce::default(),
-                ReadMassProperties::default(),
-                RigidBody::Dynamic,
-                Sleeping::disabled(),
-                Velocity::zero(),
-            ),
-        ))
-        .id()
+    cmd.spawn((
+        Name::new("car"),
+        car,
+        spec,
+        scene,
+        (
+            collider,
+            ColliderMassProperties::MassProperties(MassProperties {
+                local_center_of_mass,
+                mass: 1000.0,
+                principal_inertia: Vec3::new(5000., 5000., 2000.), // https://www.nhtsa.gov/DOT/NHTSA/NRD/Multimedia/PDFs/VRTC/ca/capubs/sae1999-01-1336.pdf
+                ..default()
+            }),
+            Damping {
+                linear_damping: 0.05,
+                angular_damping: 0.1,
+            },
+            Friction::coefficient(0.5),
+            Restitution::coefficient(0.),
+            CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
+            ActiveEvents::COLLISION_EVENTS,
+            ContactForceEventThreshold(0.1),
+        ),
+        (
+            Ccd::enabled(),
+            CollidingEntities::default(),
+            ColliderScale::Absolute(Vec3::ONE),
+            ExternalForce::default(),
+            ReadMassProperties::default(),
+            RigidBody::Dynamic,
+            Sleeping::disabled(),
+            Velocity::zero(),
+        ),
+    ))
+    .id()
 }

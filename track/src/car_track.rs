@@ -35,7 +35,7 @@ impl Default for CarTrack {
 }
 
 pub fn spawn_car_on_track(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     car_gl: &Handle<Scene>,
     wheel_gl: &Handle<Scene>,
     player: bool,
@@ -43,8 +43,8 @@ pub fn spawn_car_on_track(
     index: usize,
     start_shift: f32,
 ) -> Entity {
-    let car_id = spawn_car(commands, car_gl, wheel_gl, player, transform);
-    commands.entity(car_id).insert(CarTrack {
+    let car_id = spawn_car(cmd, car_gl, wheel_gl, player, transform);
+    cmd.entity(car_id).insert(CarTrack {
         index,
         start_shift,
         ..default()

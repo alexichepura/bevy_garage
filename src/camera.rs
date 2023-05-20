@@ -37,9 +37,9 @@ impl Plugin for CarCameraPlugin {
     }
 }
 
-pub fn camera_start_system(mut commands: Commands) {
+pub fn camera_start_system(mut cmd: Commands) {
     let sky_blue = Color::hex("87CEEB").unwrap();
-    commands.spawn((
+    cmd.spawn((
         Camera3dBundle {
             #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
             projection: Projection::from(PerspectiveProjection {

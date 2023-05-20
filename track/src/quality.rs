@@ -11,7 +11,7 @@ const VISIBILITY: f32 = 750.;
 const VISIBILITY_COLOR: f32 = VISIBILITY * 0.4;
 
 pub fn far_culling(
-    mut commands: Commands,
+    mut cmd: Commands,
     handled_materials: Res<MaterialHandle>,
     mut pset: ParamSet<(
         Query<&Transform, With<Camera>>,
@@ -45,18 +45,15 @@ pub fn far_culling(
         let distance = (cam_translation - transform.translation).length();
         if distance > VISIBILITY_COLOR {
             if !cell.is_color {
-                commands.entity(entity).remove::<HandleGround>();
-                commands
-                    .entity(entity)
+                cmd.entity(entity).remove::<HandleGround>();
+                cmd.entity(entity)
                     .insert(handled_materials.ground_color.clone());
                 cell.is_color = true;
             }
         } else {
             if cell.is_color {
-                commands.entity(entity).remove::<HandleStandard>();
-                commands
-                    .entity(entity)
-                    .insert(handled_materials.ground.clone());
+                cmd.entity(entity).remove::<HandleStandard>();
+                cmd.entity(entity).insert(handled_materials.ground.clone());
                 cell.is_color = false;
             }
         }
@@ -74,18 +71,15 @@ pub fn far_culling(
         let distance = (cam_translation - transform.translation).length();
         if distance > VISIBILITY_COLOR {
             if !cell.is_color {
-                commands.entity(entity).remove::<HandleAsphalt>();
-                commands
-                    .entity(entity)
+                cmd.entity(entity).remove::<HandleAsphalt>();
+                cmd.entity(entity)
                     .insert(handled_materials.asphalt_color.clone());
                 cell.is_color = true;
             }
         } else {
             if cell.is_color {
-                commands.entity(entity).remove::<HandleStandard>();
-                commands
-                    .entity(entity)
-                    .insert(handled_materials.asphalt.clone());
+                cmd.entity(entity).remove::<HandleStandard>();
+                cmd.entity(entity).insert(handled_materials.asphalt.clone());
                 cell.is_color = false;
             }
         }

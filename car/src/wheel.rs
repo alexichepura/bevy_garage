@@ -36,7 +36,7 @@ impl Wheel {
 }
 
 pub fn spawn_wheel(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     wheel_gl: &Handle<Scene>,
     spec: &WheelSpec,
     mount: &WheelMount,
@@ -57,45 +57,44 @@ pub fn spawn_wheel(
         wheel.border_radius,
     );
 
-    commands
-        .spawn((
-            Name::new("wheel"),
-            wheel,
-            joint,
-            SceneBundle {
-                scene: wheel_gl.clone(),
-                transform,
+    cmd.spawn((
+        Name::new("wheel"),
+        wheel,
+        joint,
+        SceneBundle {
+            scene: wheel_gl.clone(),
+            transform,
+            ..default()
+        },
+        (
+            collider,
+            ColliderMassProperties::MassProperties(MassProperties {
+                local_center_of_mass: Vec3::ZERO,
+                mass: 15.,
+                principal_inertia: Vec3::ONE * 0.3,
+                ..default()
+            }),
+            CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
+            Damping {
+                linear_damping: 0.05,
+                angular_damping: 0.05,
+            },
+            Friction {
+                combine_rule: CoefficientCombineRule::Average,
+                coefficient: 5.0,
                 ..default()
             },
-            (
-                collider,
-                ColliderMassProperties::MassProperties(MassProperties {
-                    local_center_of_mass: Vec3::ZERO,
-                    mass: 15.,
-                    principal_inertia: Vec3::ONE * 0.3,
-                    ..default()
-                }),
-                CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
-                Damping {
-                    linear_damping: 0.05,
-                    angular_damping: 0.05,
-                },
-                Friction {
-                    combine_rule: CoefficientCombineRule::Average,
-                    coefficient: 5.0,
-                    ..default()
-                },
-                Restitution::coefficient(0.),
-            ),
-            (
-                Ccd::enabled(),
-                ColliderScale::Absolute(Vec3::ONE),
-                ExternalForce::default(),
-                ExternalImpulse::default(),
-                RigidBody::Dynamic,
-                Sleeping::disabled(),
-                Velocity::zero(),
-            ),
-        ))
-        .id()
+            Restitution::coefficient(0.),
+        ),
+        (
+            Ccd::enabled(),
+            ColliderScale::Absolute(Vec3::ONE),
+            ExternalForce::default(),
+            ExternalImpulse::default(),
+            RigidBody::Dynamic,
+            Sleeping::disabled(),
+            Velocity::zero(),
+        ),
+    ))
+    .id()
 }

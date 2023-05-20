@@ -7,7 +7,7 @@ use parry3d::query::PointQueryWithLocation;
 use parry3d::shape::{Polyline, SegmentPointLocation};
 use std::cmp::Ordering;
 
-pub fn track_polyline_start_system(mut commands: Commands, mut track_config: ResMut<TrackConfig>) {
+pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<TrackConfig>) {
     let positions = TRACK_POSITIONS;
 
     let vertices: Vec<Point3<Real>> = positions
@@ -47,7 +47,7 @@ pub fn track_polyline_start_system(mut commands: Commands, mut track_config: Res
         start_shift, track_config.start_segment_shift, track_config.start_segment_i
     );
 
-    commands.spawn((
+    cmd.spawn((
         Name::new("Track polyline"),
         Collider::from(ColliderShape::polyline(vertices, None)),
         RigidBody::Fixed,

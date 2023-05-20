@@ -12,7 +12,7 @@ pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackE
 
 pub fn spawn_car_system(
     mut events: EventReader<SpawnCarOnTrackEvent>,
-    mut commands: Commands,
+    mut cmd: Commands,
     track_config: ResMut<TrackConfig>,
     car_res: ResMut<CarRes>,
 ) {
@@ -28,7 +28,7 @@ pub fn spawn_car_system(
         };
 
         spawn_car_on_track(
-            &mut commands,
+            &mut cmd,
             &car_res.car_scene.as_ref().unwrap(),
             &car_res.wheel_scene.as_ref().unwrap(),
             spawn_event.player,

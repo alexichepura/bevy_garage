@@ -10,7 +10,7 @@ pub struct GroundCell {
 }
 
 pub fn spawn_ground_heightfield(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     handled_materials: &Res<MaterialHandle>,
     aabb: &Aabb,
@@ -28,7 +28,7 @@ pub fn spawn_ground_heightfield(
     let mesh_handle = meshes.add(mesh.clone());
     for x in -meshes_n_half..meshes_n_half {
         for z in -meshes_n_half..meshes_n_half {
-            commands.spawn((
+            cmd.spawn((
                 GroundPbr {
                     mesh: mesh_handle.clone(),
                     material: handled_materials.ground.clone(),
@@ -48,7 +48,7 @@ pub fn spawn_ground_heightfield(
         }
     }
 
-    commands.spawn((
+    cmd.spawn((
         Name::new("ground-heightfield"),
         RigidBody::Fixed,
         ColliderScale::Absolute(Vec3::ONE),

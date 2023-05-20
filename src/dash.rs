@@ -32,93 +32,206 @@ pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text
     }
 }
 
-pub fn dash_start_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     let height = Val::Px(90.);
     let width = Val::Px(150.);
-    commands
-        .spawn(NodeBundle {
-            style: Style {
-                size: Size::new(Val::Percent(100.), height.clone()),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..default()
-            },
+    cmd.spawn(NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(100.), height.clone()),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
             ..default()
-        })
-        .with_children(|parent| {
-            let background_color: BackgroundColor = Color::rgba(0.15, 0.15, 0.15, 0.5).into();
-            parent
-                .spawn(NodeBundle {
-                    background_color,
-                    style: Style {
-                        size: Size::new(width, height.clone()),
-                        padding: UiRect::all(Val::Px(4.0)),
-                        justify_content: JustifyContent::End,
-                        align_items: AlignItems::End,
-                        flex_direction: FlexDirection::Column,
-                        ..default()
-                    },
+        },
+        ..default()
+    })
+    .with_children(|parent| {
+        let background_color: BackgroundColor = Color::rgba(0.15, 0.15, 0.15, 0.5).into();
+        parent
+            .spawn(NodeBundle {
+                background_color,
+                style: Style {
+                    size: Size::new(width, height.clone()),
+                    padding: UiRect::all(Val::Px(4.0)),
+                    justify_content: JustifyContent::End,
+                    align_items: AlignItems::End,
+                    flex_direction: FlexDirection::Column,
                     ..default()
-                })
-                .with_children(|parent| {
+                },
+                ..default()
+            })
+            .with_children(|parent| {
+                parent
+                    .spawn(TextBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            position: UiRect {
+                                top: Val::Px(4.),
+                                left: Val::Px(4.),
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        text: Text {
+                            sections: vec![TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: medium.clone(),
+                                    font_size: 16.0,
+                                    color: Color::YELLOW_GREEN,
+                                },
+                            }],
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(FpsText);
+                parent
+                    .spawn(TextBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            position: UiRect {
+                                top: Val::Px(20.),
+                                left: Val::Px(4.),
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        text: Text {
+                            sections: vec![TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: medium.clone(),
+                                    font_size: 18.0,
+                                    color: Color::SALMON,
+                                },
+                            }],
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(LapText);
+                parent
+                    .spawn(TextBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            position: UiRect {
+                                top: Val::Px(4.),
+                                right: Val::Px(4.),
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        text: Text {
+                            alignment: TextAlignment::Right,
+                            sections: vec![TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: medium.clone(),
+                                    font_size: 16.0,
+                                    color: Color::YELLOW,
+                                },
+                            }],
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(TrackPositionText);
+                parent
+                    .spawn(TextBundle {
+                        text: Text {
+                            alignment: TextAlignment::Right,
+                            sections: vec![TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: medium.clone(),
+                                    font_size: 18.0,
+                                    color: Color::YELLOW,
+                                },
+                            }],
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(RideDistanceText);
+                parent
+                    .spawn(TextBundle {
+                        text: Text {
+                            alignment: TextAlignment::Right,
+                            sections: vec![TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: medium.clone(),
+                                    font_size: 24.0,
+                                    color: Color::YELLOW_GREEN,
+                                },
+                            }],
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(MpsText);
+                parent
+                    .spawn(TextBundle {
+                        text: Text {
+                            sections: vec![TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: medium.clone(),
+                                    font_size: 24.0,
+                                    color: Color::YELLOW,
+                                },
+                            }],
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .insert(KmphText);
+
+                #[cfg(feature = "brain")]
+                {
+                    use bevy_garage_dqn::dash::{TrainerEpsilonText, TrainerGenerationText};
                     parent
                         .spawn(TextBundle {
                             style: Style {
                                 position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
                                 position: UiRect {
                                     top: Val::Px(4.),
-                                    left: Val::Px(4.),
+                                    left: Val::Percent(100.),
                                     ..default()
                                 },
                                 ..default()
                             },
                             text: Text {
+                                alignment: TextAlignment::Right,
                                 sections: vec![TextSection {
                                     value: "".to_string(),
                                     style: TextStyle {
                                         font: medium.clone(),
-                                        font_size: 16.0,
-                                        color: Color::YELLOW_GREEN,
+                                        font_size: 14.0,
+                                        color: Color::BLACK,
                                     },
                                 }],
                                 ..default()
                             },
                             ..default()
                         })
-                        .insert(FpsText);
+                        .insert(TrainerGenerationText);
                     parent
                         .spawn(TextBundle {
                             style: Style {
                                 position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
                                 position: UiRect {
                                     top: Val::Px(20.),
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            text: Text {
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 18.0,
-                                        color: Color::SALMON,
-                                    },
-                                }],
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(LapText);
-                    parent
-                        .spawn(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Absolute,
-                                position: UiRect {
-                                    top: Val::Px(4.),
-                                    right: Val::Px(4.),
+                                    left: Val::Percent(100.),
                                     ..default()
                                 },
                                 ..default()
@@ -129,132 +242,18 @@ pub fn dash_start_system(mut commands: Commands, asset_server: Res<AssetServer>)
                                     value: "".to_string(),
                                     style: TextStyle {
                                         font: medium.clone(),
-                                        font_size: 16.0,
-                                        color: Color::YELLOW,
+                                        font_size: 14.0,
+                                        color: Color::DARK_GRAY,
                                     },
                                 }],
                                 ..default()
                             },
                             ..default()
                         })
-                        .insert(TrackPositionText);
-                    parent
-                        .spawn(TextBundle {
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 18.0,
-                                        color: Color::YELLOW,
-                                    },
-                                }],
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(RideDistanceText);
-                    parent
-                        .spawn(TextBundle {
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 24.0,
-                                        color: Color::YELLOW_GREEN,
-                                    },
-                                }],
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(MpsText);
-                    parent
-                        .spawn(TextBundle {
-                            text: Text {
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 24.0,
-                                        color: Color::YELLOW,
-                                    },
-                                }],
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(KmphText);
-
-                    #[cfg(feature = "brain")]
-                    {
-                        use bevy_garage_dqn::dash::{TrainerEpsilonText, TrainerGenerationText};
-                        parent
-                            .spawn(TextBundle {
-                                style: Style {
-                                    position_type: PositionType::Absolute,
-                                    margin: UiRect {
-                                        left: Val::Px(4.),
-                                        ..default()
-                                    },
-                                    position: UiRect {
-                                        top: Val::Px(4.),
-                                        left: Val::Percent(100.),
-                                        ..default()
-                                    },
-                                    ..default()
-                                },
-                                text: Text {
-                                    alignment: TextAlignment::Right,
-                                    sections: vec![TextSection {
-                                        value: "".to_string(),
-                                        style: TextStyle {
-                                            font: medium.clone(),
-                                            font_size: 14.0,
-                                            color: Color::BLACK,
-                                        },
-                                    }],
-                                    ..default()
-                                },
-                                ..default()
-                            })
-                            .insert(TrainerGenerationText);
-                        parent
-                            .spawn(TextBundle {
-                                style: Style {
-                                    position_type: PositionType::Absolute,
-                                    margin: UiRect {
-                                        left: Val::Px(4.),
-                                        ..default()
-                                    },
-                                    position: UiRect {
-                                        top: Val::Px(20.),
-                                        left: Val::Percent(100.),
-                                        ..default()
-                                    },
-                                    ..default()
-                                },
-                                text: Text {
-                                    alignment: TextAlignment::Right,
-                                    sections: vec![TextSection {
-                                        value: "".to_string(),
-                                        style: TextStyle {
-                                            font: medium.clone(),
-                                            font_size: 14.0,
-                                            color: Color::DARK_GRAY,
-                                        },
-                                    }],
-                                    ..default()
-                                },
-                                ..default()
-                            })
-                            .insert(TrainerEpsilonText);
-                    }
-                });
-        });
+                        .insert(TrainerEpsilonText);
+                }
+            });
+    });
 }
 
 pub fn dash_speed_update_system(

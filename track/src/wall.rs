@@ -5,7 +5,7 @@ use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::{Mul, Sub};
 
 pub fn spawn_walls(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     handled_materials: &Res<MaterialHandle>,
     indices_input: &Vec<u32>,
@@ -98,7 +98,7 @@ pub fn spawn_walls(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
     mesh.set_indices(Some(Indices::U32(indices)));
 
-    commands.spawn((
+    cmd.spawn((
         PbrBundle {
             mesh: meshes.add(mesh),
             material: handled_materials.wall.clone(),

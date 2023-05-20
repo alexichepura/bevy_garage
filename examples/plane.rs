@@ -39,9 +39,9 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     c.integration_parameters.erp = 0.99;
 }
 
-fn spawn_car_system(mut commands: Commands, car_res: Res<CarRes>) {
+fn spawn_car_system(mut cmd: Commands, car_res: Res<CarRes>) {
     spawn_car(
-        &mut commands,
+        &mut cmd,
         &car_res.car_scene.as_ref().unwrap(),
         &car_res.wheel_scene.as_ref().unwrap(),
         true,
@@ -54,13 +54,13 @@ fn spawn_car_system(mut commands: Commands, car_res: Res<CarRes>) {
 }
 
 fn plane_start(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let size = 100.;
     let (cols, rows) = (10, 10);
-    commands.spawn((
+    cmd.spawn((
         PbrBundle {
             mesh: meshes.add(shape::Plane::from_size(size).into()),
             material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
@@ -73,7 +73,7 @@ fn plane_start(
         Collider::heightfield(vec![0.; rows * cols], rows, cols, Vec3::new(size, 0., size)),
     ));
 
-    commands.spawn(PointLightBundle {
+    cmd.spawn(PointLightBundle {
         point_light: PointLight {
             intensity: 1500.0,
             shadows_enabled: true,
@@ -83,7 +83,7 @@ fn plane_start(
         ..default()
     });
 
-    commands.spawn(Camera3dBundle {
+    cmd.spawn(Camera3dBundle {
         transform: Transform::from_xyz(0., 10., 20.).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });

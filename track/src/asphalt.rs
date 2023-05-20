@@ -24,7 +24,7 @@ const BLOCK_SPAN: usize = 1;
 
 pub fn spawn_road(
     handled_materials: &Res<MaterialHandle>,
-    commands: &mut Commands,
+    cmd: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     track: &Track,
 ) -> Aabb {
@@ -99,7 +99,7 @@ pub fn spawn_road(
         mesh.set_indices(Some(Indices::U32(block.indices.clone())));
         mesh.generate_tangents().unwrap();
 
-        commands.spawn((
+        cmd.spawn((
             AsphaltCell { is_color: false },
             AsphaltPbr {
                 mesh: meshes.add(mesh.clone()),
@@ -134,7 +134,7 @@ pub fn spawn_road(
     mesh.generate_tangents().unwrap();
     let aabb = mesh.compute_aabb().unwrap();
 
-    commands.spawn((
+    cmd.spawn((
         TrackRoad,
         Collider::from(ColliderShape::trimesh(
             track_vertices
