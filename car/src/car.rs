@@ -70,8 +70,8 @@ pub fn spawn_car(
         let wheel = Wheel::new(spec.wheel_radius, spec.wheel_width, m.front, m.left);
         let translation = transform.translation + transform.rotation.mul_vec3(m.anchor);
         let wheel_id = spawn_wheel(commands, wheel_gl, wheel, translation);
-        let joint = build_joint(m.anchor, m.left);
-        (wheel_id, joint)
+        let generic_joint = build_joint(m.anchor, m.left);
+        (wheel_id, generic_joint)
     });
 
     let car_id = spawn_car_body(
@@ -84,10 +84,10 @@ pub fn spawn_car(
     if hid {
         commands.entity(car_id).insert(HID);
     }
-    for (wheel_id, joint) in wheels_joints.iter() {
+    for (wheel_id, generic_joint) in wheels_joints.iter() {
         commands
             .entity(*wheel_id)
-            .insert(ImpulseJoint::new(car_id, *joint));
+            .insert(ImpulseJoint::new(car_id, *generic_joint));
     }
     println!("spawn_car: {car_id:?}");
     return car_id;
