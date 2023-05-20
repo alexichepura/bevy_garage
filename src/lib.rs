@@ -56,7 +56,7 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>, ph: Res<PhysicsParam
 
 pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
     #[cfg(feature = "nn")]
-    let esp_run_after: CarSet = CarSet::Brain;
+    let esp_run_after: CarSet = CarSet::NeuralNetwork;
     #[cfg(not(feature = "nn"))]
     let esp_run_after: CarSet = CarSet::Input;
 
@@ -99,7 +99,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "nn")]
     {
-        app.add_plugin(bevy_garage_nn::BrainPlugin);
+        app.add_plugin(bevy_garage_nn::NeuralNetworkPlugin);
     }
 
     #[cfg(feature = "debug_lines")]

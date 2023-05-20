@@ -15,6 +15,6 @@ use bevy::prelude::SystemSet;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
 pub enum CarSet {
     Input,
-    Brain,
+    NeuralNetwork,
     Esp,
 }
