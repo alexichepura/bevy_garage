@@ -1,4 +1,4 @@
-use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec};
+use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, WheelSpec};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -41,6 +41,9 @@ pub struct CarWheels {
     pub entities: [Entity; 4],
 }
 impl CarWheels {
+    pub fn new(entities: [Entity; 4]) -> Self {
+        Self { entities }
+    }
     pub fn despawn(&mut self, commands: &mut Commands) {
         for e in self.entities.iter() {
             commands.entity(*e).despawn_recursive();
@@ -61,33 +64,22 @@ pub fn spawn_car(
     cmd: &mut Commands,
     car_scene: &Handle<Scene>,
     wheel_scene: &Handle<Scene>,
-    hid: bool,
+    is_hid: bool,
     transform: Transform,
 ) -> Entity {
     let spec = CarSpec::default();
-    let wheels_joints: [(Entity, GenericJoint); 4] = spec.wheel_mount.clone().map(|mount| {
-        let wheel_id = spawn_wheel(
-            cmd,
-            wheel_scene,
-            spec.wheel_radius,
-            spec.wheel_width,
-            mount.clone(),
-            transform,
-        );
-        (wheel_id, build_joint(mount.anchor, mount.left))
-    });
+    let wheel_spec = WheelSpec::new(spec.wheel_radius, spec.wheel_width);
+    let mounts = spec.wheel_mount.clone();
 
     let car_id = spawn_car_body(cmd, car_scene, Car::new(transform), spec);
-    for (w, j) in wheels_joints.iter() {
-        cmd.entity(*w).insert(ImpulseJoint::new(car_id, *j));
-    }
-
-    let mut car_cmd = cmd.entity(car_id);
-    car_cmd.insert(CarWheels {
-        entities: wheels_joints.map(|wj| wj.0),
-    });
-    if hid {
-        car_cmd.insert(HID);
+    let wheels = CarWheels::new(mounts.map(|mount| {
+        let joint = ImpulseJoint::new(car_id, build_joint(mount.anchor, mount.left));
+        let wheel_id = spawn_wheel(cmd, wheel_scene, &wheel_spec, &mount, transform, joint);
+        wheel_id
+    }));
+    cmd.entity(car_id).insert(wheels);
+    if is_hid {
+        cmd.entity(car_id).insert(HID);
     }
     return car_id;
 }

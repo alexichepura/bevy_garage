@@ -3,6 +3,17 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
+#[derive(Component, Debug)]
+pub struct WheelSpec {
+    pub radius: f32,
+    pub width: f32,
+}
+impl WheelSpec {
+    pub fn new(radius: f32, width: f32) -> Self {
+        Self { radius, width }
+    }
+}
+
 #[derive(Component)]
 pub struct Wheel {
     pub radius: f32,
@@ -13,10 +24,10 @@ pub struct Wheel {
 }
 
 impl Wheel {
-    pub fn new(radius: f32, width: f32, front: bool, left: bool) -> Self {
+    pub fn new(spec: &WheelSpec, front: bool, left: bool) -> Self {
         Self {
-            radius,
-            width,
+            radius: spec.radius,
+            width: spec.width,
             front,
             left,
             border_radius: 0.05,
@@ -27,22 +38,22 @@ impl Wheel {
 pub fn spawn_wheel(
     commands: &mut Commands,
     wheel_gl: &Handle<Scene>,
-    radius: f32,
-    width: f32,
-    mount: WheelMount,
+    spec: &WheelSpec,
+    mount: &WheelMount,
     car_transform: Transform,
+    joint: ImpulseJoint,
 ) -> Entity {
-    let wheel = Wheel::new(radius, width, mount.front, mount.left);
+    let wheel = Wheel::new(spec, mount.front, mount.left);
     let diameter = wheel.radius * 2.;
 
     let translation = car_transform.translation + car_transform.rotation.mul_vec3(mount.anchor);
     let transform = Transform::from_translation(translation)
         .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
-        .with_scale(Vec3::new(diameter, width, diameter));
+        .with_scale(Vec3::new(diameter, spec.width, diameter));
 
     let collider = Collider::round_cylinder(
-        width / 2. - wheel.border_radius,
-        radius - wheel.border_radius,
+        spec.width / 2. - wheel.border_radius,
+        spec.radius - wheel.border_radius,
         wheel.border_radius,
     );
 
@@ -50,6 +61,7 @@ pub fn spawn_wheel(
         .spawn((
             Name::new("wheel"),
             wheel,
+            joint,
             SceneBundle {
                 scene: wheel_gl.clone(),
                 transform,
