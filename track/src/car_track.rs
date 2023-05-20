@@ -49,5 +49,5 @@ pub fn spawn_car_on_track(
         start_shift,
         ..default()
     });
-    return car_id;
+    car_id
 }

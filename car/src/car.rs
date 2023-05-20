@@ -81,7 +81,7 @@ pub fn spawn_car(
     if player {
         cmd.entity(car_id).insert(Player);
     }
-    return car_id;
+    car_id
 }
 
 pub fn spawn_car_body(

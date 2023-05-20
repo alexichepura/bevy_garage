@@ -57,7 +57,7 @@ pub fn spawn_wheel(
         wheel.border_radius,
     );
 
-    let wheel_id = commands
+    commands
         .spawn((
             Name::new("wheel"),
             wheel,
@@ -97,7 +97,5 @@ pub fn spawn_wheel(
                 Velocity::zero(),
             ),
         ))
-        .id();
-
-    wheel_id
+        .id()
 }
