@@ -32,7 +32,7 @@ cargo run --release --features bevy/dynamic_linking
 
 ## Neural network
 ```sh
-cargo r -r --features="brain"
+cargo r -r --features="nn"
 ```
 
 ### Api server for neural network (optional)
@@ -44,7 +44,7 @@ cargo prisma db push
 # run api server
 cd api && cargo r -r
 # run app with saving replay buffer
-cargo r -r --features="brain,brain_api"
+cargo r -r --features="nn,nn_api"
 # prisma studio https://github.com/Brendonovich/prisma-client-rust/issues/96
 npx prisma studio
 ```
@@ -56,7 +56,7 @@ npx prisma studio
 - 0 - free camera with WASDQE(SHIFT) control and mouse
 - R - debug mode
 - SHIFT+SPACE - respawn at random position
-- N - toggle brain
+- N - toggle nn
 - H, J, K, L - directed light control
 - X - enable sound, Z - decrease volume, C - increase volume
 

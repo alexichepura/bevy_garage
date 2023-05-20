@@ -1,10 +1,10 @@
 {
     "rust-analyzer.server.extraEnv": {
-        "RUSTFLAGS": "-Ctarget-feature=+brain"
+        "RUSTFLAGS": "-Ctarget-feature=+nn"
     },
     "rust-analyzer.cargo.features": [
         "debug_lines",
-        "brain",
-        "brain_api",
+        "nn",
+        "nn_api",
     ],
 }

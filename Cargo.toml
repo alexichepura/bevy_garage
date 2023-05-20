@@ -13,8 +13,8 @@ members = ["car", "track", "nn", "prisma-cli", "api", "trainer", "db_client", "i
 [profile.release]
 codegen-units = 1
 [features]
-brain = ["dep:bevy_garage_nn"]
-brain_api = ["bevy_garage_nn?/api"]
+nn = ["dep:bevy_garage_nn"]
+nn_api = ["bevy_garage_nn?/api"]
 default = ["debug_lines"]
 debug_lines = ["dep:bevy_prototype_debug_lines", "bevy_garage_car/debug_lines", "bevy_garage_track/debug_lines"]
 [workspace.dependencies]

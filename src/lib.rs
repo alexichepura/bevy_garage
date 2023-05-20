@@ -55,9 +55,9 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>, ph: Res<PhysicsParam
 }
 
 pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
-    #[cfg(feature = "brain")]
+    #[cfg(feature = "nn")]
     let esp_run_after: CarSet = CarSet::Brain;
-    #[cfg(not(feature = "brain"))]
+    #[cfg(not(feature = "nn"))]
     let esp_run_after: CarSet = CarSet::Input;
 
     app.init_resource::<FontHandle>()
@@ -97,7 +97,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
             dash_speed_update_system,
         ));
 
-    #[cfg(feature = "brain")]
+    #[cfg(feature = "nn")]
     {
         app.add_plugin(bevy_garage_nn::BrainPlugin);
     }
