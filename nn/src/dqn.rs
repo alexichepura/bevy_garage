@@ -56,11 +56,11 @@ pub fn dqn_system(
         dqn.respawn_in = 0.;
         dqn.respawn_player = false;
         dqn.respawn_index = 0;
-        dqn.use_brain = true;
+        dqn.use_nn = true;
         return;
     };
     let should_act: bool = seconds > dqn.seconds;
-    if should_act && dqn.use_brain {
+    if should_act && dqn.use_nn {
         dqn.seconds = seconds + STEP_DURATION;
         dqn.step += 1;
     }
@@ -127,7 +127,7 @@ pub fn dqn_system(
         }
 
         let (prev_action, prev_obs) = (car_dqn.prev_action, car_dqn.prev_obs);
-        if dqn.use_brain && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
+        if dqn.use_nn && (should_act || crash) && !prev_obs.iter().all(|&x| x == 0.) {
             dqn.rb.store(prev_obs, prev_action, reward, obs, crash);
             #[cfg(feature = "api")]
             if dqn.rb.i % crate::api_client::PERSIST_BATCH_SIZE == 0 {
@@ -141,7 +141,7 @@ pub fn dqn_system(
             car_dqn.prev_action = action;
             car_dqn.prev_reward = reward;
         }
-        if !dqn.use_brain {
+        if !dqn.use_nn {
             return;
         }
         if crash {
@@ -151,9 +151,9 @@ pub fn dqn_system(
             dqn.respawn_index = car_track.index;
             cmd.entity(e).despawn_recursive();
             wheels.despawn(&mut cmd);
-            dqn.use_brain = false;
+            dqn.use_nn = false;
         }
-        if !dqn.use_brain || !should_act || crash {
+        if !dqn.use_nn || !should_act || crash {
             return;
         }
 

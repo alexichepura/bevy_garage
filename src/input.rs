@@ -20,7 +20,7 @@ pub fn input_system(
 ) {
     #[cfg(feature = "nn")]
     if input.just_pressed(KeyCode::N) {
-        dqn.use_brain = !dqn.use_brain;
+        dqn.use_nn = !dqn.use_nn;
     }
     #[cfg(feature = "debug_lines")]
     if input.just_pressed(KeyCode::R) {
