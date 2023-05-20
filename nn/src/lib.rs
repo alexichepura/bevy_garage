@@ -17,9 +17,9 @@ use bevy::prelude::{App, IntoSystemConfig, Plugin};
 use bevy_garage_car::CarSet;
 pub use dqn_bevy::DqnResource;
 
-pub struct BrainPlugin;
+pub struct NeuralNetworkPlugin;
 
-impl Plugin for BrainPlugin {
+impl Plugin for NeuralNetworkPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DqnResource::default())
             .add_event::<DqnEvent>()
@@ -29,7 +29,9 @@ impl Plugin for BrainPlugin {
                 dqn_rx_to_bevy_event_system,
                 dqn_event_reader_system,
                 bevy_garage_car::sensor::sensor_system.in_set(CarSet::Input),
-                dqn_system.in_set(CarSet::Brain).after(CarSet::Input),
+                dqn_system
+                    .in_set(CarSet::NeuralNetwork)
+                    .after(CarSet::Input),
                 dqn_dash_update_system,
             ));
 

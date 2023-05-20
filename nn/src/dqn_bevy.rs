@@ -78,7 +78,7 @@ impl CarsDqnResource {
 
 #[derive(Resource)]
 pub struct DqnResource {
-    pub use_brain: bool,
+    pub use_nn: bool,
     pub seconds: f64,
     pub step: usize,
     pub crashes: usize,
@@ -95,7 +95,7 @@ pub struct DqnResource {
 impl DqnResource {
     pub fn default() -> Self {
         Self {
-            use_brain: false,
+            use_nn: false,
             seconds: 0.,
             step: 0,
             crashes: 0,

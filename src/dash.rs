@@ -188,9 +188,9 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     })
                     .insert(KmphText);
 
-                #[cfg(feature = "brain")]
+                #[cfg(feature = "nn")]
                 {
-                    use bevy_garage_dqn::dash::{TrainerEpsilonText, TrainerGenerationText};
+                    use bevy_garage_nn::dash::{TrainerEpsilonText, TrainerGenerationText};
                     parent
                         .spawn(TextBundle {
                             style: Style {

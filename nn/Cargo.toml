@@ -1,5 +1,5 @@
 [package]
-name = "bevy_garage_dqn"
+name = "bevy_garage_nn"
 version = "0.1.0"
 edition = "2021"
 
