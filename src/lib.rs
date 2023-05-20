@@ -99,7 +99,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "brain")]
     {
-        app.add_plugin(bevy_garage_dqn::BrainPlugin);
+        app.add_plugin(bevy_garage_nn::BrainPlugin);
     }
 
     #[cfg(feature = "debug_lines")]

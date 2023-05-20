@@ -16,7 +16,7 @@ pub fn input_system(
         bevy_rapier3d::render::DebugRenderContext,
     >,
     #[cfg(feature = "debug_lines")] mut car_res: ResMut<bevy_garage_car::CarRes>,
-    #[cfg(feature = "brain")] mut dqn: ResMut<bevy_garage_dqn::DqnResource>,
+    #[cfg(feature = "brain")] mut dqn: ResMut<bevy_garage_nn::DqnResource>,
 ) {
     #[cfg(feature = "brain")]
     if input.just_pressed(KeyCode::N) {

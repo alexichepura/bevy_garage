@@ -190,7 +190,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
                 #[cfg(feature = "brain")]
                 {
-                    use bevy_garage_dqn::dash::{TrainerEpsilonText, TrainerGenerationText};
+                    use bevy_garage_nn::dash::{TrainerEpsilonText, TrainerGenerationText};
                     parent
                         .spawn(TextBundle {
                             style: Style {

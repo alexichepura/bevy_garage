@@ -638,7 +638,7 @@ dependencies = [
  "bevy",
  "bevy_fundsp",
  "bevy_garage_car",
- "bevy_garage_dqn",
+ "bevy_garage_nn",
  "bevy_garage_track",
  "bevy_prototype_debug_lines",
  "bevy_rapier3d",
@@ -656,7 +656,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_garage_dqn"
+name = "bevy_garage_ios"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage",
+]
+
+[[package]]
+name = "bevy_garage_nn"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -670,14 +678,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
-]
-
-[[package]]
-name = "bevy_garage_ios"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_garage",
 ]
 
 [[package]]

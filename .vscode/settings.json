@@ -6,6 +6,5 @@
         "debug_lines",
         "brain",
         "brain_api",
-        // "bevy_garage_dqn?/api"
     ],
 }
