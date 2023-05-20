@@ -10,19 +10,15 @@ pub struct CarSize {
 
 #[derive(Component, Debug)]
 pub struct CarSpec {
-    // geometry
     pub size: CarSize,
-    pub anchors: [Vec3; 4],
     pub wheel_radius: f32,
-    pub wheel_half_width: f32,
-    // drive
+    pub wheel_width: f32,
+    pub wheel_mount: [WheelMount; 4],
+
     pub wheel_max_torque: f32,
     pub wheel_max_angle: f32,
     pub speed_limit: f32,
     pub steering_speed_limit: f32,
-    // meta
-    pub wheel_is_front: [bool; 4],
-    pub wheel_is_left: [bool; 4],
 }
 
 impl Default for CarSpec {
@@ -34,7 +30,7 @@ impl Default for CarSpec {
 
         let ride_height = 0.06;
         let wheel_radius: f32 = 0.35;
-        let wheel_half_width: f32 = 0.17;
+        let wheel_width: f32 = 0.34;
 
         let size = CarSize {
             hw: 1.,
@@ -43,16 +39,16 @@ impl Default for CarSpec {
         };
 
         let shift = Vec3::new(
-            size.hw - wheel_half_width - 0.1,
+            size.hw - wheel_width / 2. - 0.1,
             -size.hh + wheel_radius - ride_height,
             size.hl - wheel_radius - 0.5,
         );
 
-        let anchors: [Vec3; 4] = [
-            Vec3::new(shift.x, shift.y, shift.z),   // front right
-            Vec3::new(-shift.x, shift.y, shift.z),  // front left
-            Vec3::new(shift.x, shift.y, -shift.z),  // rear right
-            Vec3::new(-shift.x, shift.y, -shift.z), // rear left
+        let anchors: [(Vec3, bool, bool); 4] = [
+            (Vec3::new(shift.x, shift.y, shift.z), true, false), // front right
+            (Vec3::new(-shift.x, shift.y, shift.z), true, true), // front left
+            (Vec3::new(shift.x, shift.y, -shift.z), false, false), // rear right
+            (Vec3::new(-shift.x, shift.y, -shift.z), false, true), // rear left
         ];
 
         Self {
@@ -61,11 +57,20 @@ impl Default for CarSpec {
             steering_speed_limit: steering_speedlimit_mps,
             wheel_max_torque: 1200.,
             wheel_max_angle: FRAC_PI_4,
-            anchors,
             wheel_radius,
-            wheel_half_width,
-            wheel_is_front: [true, true, false, false],
-            wheel_is_left: [false, true, false, true],
+            wheel_width,
+            wheel_mount: anchors.map(|a| WheelMount {
+                anchor: a.0,
+                front: a.1,
+                left: a.2,
+            }),
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct WheelMount {
+    pub anchor: Vec3,
+    pub front: bool,
+    pub left: bool,
 }

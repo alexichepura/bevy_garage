@@ -105,14 +105,14 @@ pub fn esp_system(
             let radius_vel = v.angvel * wheel.radius;
             let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
             let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
-            if wheel.is_front {
+            if wheel.front {
                 let max_slip = 50.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
                     x if x >= 1. => 0.,
                     x => 1. - x,
                 };
                 let total_torque = steering_torque_vec * slip_sq_x * torque_speed_x;
-                let wheel_torque = if wheel.is_left {
+                let wheel_torque = if wheel.left {
                     -total_torque
                 } else {
                     total_torque
@@ -134,7 +134,7 @@ pub fn esp_system(
                     x => 1. - x,
                 };
                 let total_torque = torque_vec * slip_sq_x * torque_speed_x;
-                let wheel_torque = if wheel.is_left {
+                let wheel_torque = if wheel.left {
                     -total_torque
                 } else {
                     total_torque

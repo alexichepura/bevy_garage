@@ -61,32 +61,23 @@ pub fn spawn_car(
     commands: &mut Commands,
     car_gl: &Handle<Scene>,
     wheel_gl: &Handle<Scene>,
-    is_hid: bool,
+    hid: bool,
     transform: Transform,
 ) -> Entity {
     let spec = CarSpec::default();
     let mut wheels: Vec<Entity> = vec![];
     let mut joints: Vec<GenericJoint> = vec![];
-    for i in 0..4 {
-        let wheel_id = spawn_wheel(
-            commands,
-            wheel_gl,
-            Wheel {
-                is_front: spec.wheel_is_front[i],
-                is_left: spec.wheel_is_left[i],
-                radius: spec.wheel_radius,
-                half_width: spec.wheel_half_width,
-            },
-            transform.translation + transform.rotation.mul_vec3(spec.anchors[i]),
-        );
-        let joint = build_joint(spec.anchors[i], spec.wheel_is_left[i]);
+    for mount in spec.wheel_mount.iter() {
+        let wheel = Wheel::new(spec.wheel_radius, spec.wheel_width, mount.front, mount.left);
+        let translation: Vec3 = transform.translation + transform.rotation.mul_vec3(mount.anchor);
+        let wheel_id: Entity = spawn_wheel(commands, wheel_gl, wheel, translation);
+        let joint: GenericJoint = build_joint(mount.anchor, mount.left);
         joints.push(joint);
         wheels.push(wheel_id);
     }
 
     let car_id = spawn_car_body(commands, car_gl, Car::new(transform), spec, wheels.clone());
-
-    if is_hid {
+    if hid {
         commands.entity(car_id).insert(HID);
     }
     for (i, wheel_id) in wheels.iter().enumerate() {

@@ -5,10 +5,23 @@ use std::f32::consts::PI;
 
 #[derive(Component)]
 pub struct Wheel {
-    pub is_front: bool,
-    pub is_left: bool,
     pub radius: f32,
-    pub half_width: f32,
+    pub width: f32,
+    pub front: bool,
+    pub left: bool,
+    pub border_radius: f32,
+}
+
+impl Wheel {
+    pub fn new(radius: f32, width: f32, front: bool, left: bool) -> Self {
+        Self {
+            radius,
+            width,
+            front,
+            left,
+            border_radius: 0.05,
+        }
+    }
 }
 
 pub fn spawn_wheel(
@@ -17,18 +30,16 @@ pub fn spawn_wheel(
     wheel: Wheel,
     translation: Vec3,
 ) -> Entity {
-    let wheel_border_radius = 0.05;
     let diameter = wheel.radius * 2.;
-    let width = wheel.half_width * 2.;
 
     let transform = Transform::from_translation(translation)
         .with_rotation(Quat::from_axis_angle(Vec3::Y, PI))
-        .with_scale(Vec3::new(diameter, width, diameter));
+        .with_scale(Vec3::new(diameter, wheel.width, diameter));
 
     let collider = Collider::round_cylinder(
-        wheel.half_width - wheel_border_radius,
-        wheel.radius - wheel_border_radius,
-        wheel_border_radius,
+        wheel.width / 2. - wheel.border_radius,
+        wheel.radius - wheel.border_radius,
+        wheel.border_radius,
     );
 
     let wheel_id = commands
