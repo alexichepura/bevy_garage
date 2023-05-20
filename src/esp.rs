@@ -57,12 +57,12 @@ pub fn esp_system(
         let linvel = velocity.linvel.length();
         let torque_speed_x: f32 = match braking {
             true => 2.,
-            _ => match linvel / spec.speed_limit {
+            _ => match linvel / spec.max_speed {
                 x if x >= 1. => 0.,
                 x => 0.7 + 0.3 * (1. - x),
             },
         };
-        let steering_speed_x: f32 = match linvel / spec.steering_speed_limit {
+        let steering_speed_x: f32 = match linvel / spec.max_steering_speed {
             x if x >= 1. => 0.,
             x => 1. - x,
         }

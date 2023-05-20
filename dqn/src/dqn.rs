@@ -95,7 +95,7 @@ pub fn dqn_system(
         let d_norm = d / 4.;
 
         let velocity = v.linvel.length();
-        let velocity_norm = velocity / car_dqn.speed_limit;
+        let velocity_norm = velocity / car_dqn.max_speed;
         let shape_reward = || -> f32 {
             if crash {
                 return -1.;
