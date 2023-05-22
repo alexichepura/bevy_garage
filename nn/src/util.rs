@@ -23,6 +23,15 @@ pub fn log_action_reward(action: usize, reward: f32) {
 
 const ONE: f32 = 1.;
 const ZERO: f32 = 0.;
+// 0 - forward
+// 1 - backward
+// 2 - left
+// 3 - right
+// 4 - forward-left
+// 5 - forward-right
+// 6 - backward-left
+// 7 - backward-right
+// 8 - nothing
 pub fn map_action_to_car(a: usize) -> (f32, f32, f32, f32) {
     let gas = match a {
         0 | 4 | 5 => ONE,
