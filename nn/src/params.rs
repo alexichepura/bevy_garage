@@ -3,7 +3,7 @@ use bevy_garage_car::sensor::SENSOR_COUNT;
 #[cfg(target_arch = "wasm32")]
 pub const EPOCHS: usize = 32;
 #[cfg(not(target_arch = "wasm32"))]
-pub const EPOCHS: usize = 100;
+pub const EPOCHS: usize = 64;
 
 #[cfg(target_arch = "wasm32")]
 pub const BATCH_SIZE: usize = 32;
@@ -13,7 +13,7 @@ pub const BATCH_SIZE: usize = 256;
 #[cfg(target_arch = "wasm32")]
 pub const LEARNING_RATE: f32 = 0.01;
 #[cfg(not(target_arch = "wasm32"))]
-pub const LEARNING_RATE: f32 = 0.002;
+pub const LEARNING_RATE: f32 = 0.005;
 
 #[cfg(target_arch = "wasm32")]
 pub const STEP_DURATION: f64 = 1. / 10.;

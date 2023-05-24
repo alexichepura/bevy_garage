@@ -122,7 +122,7 @@ pub fn dqn_system(
         let mut obs: Observation = [0.; STATE_SIZE];
         for i in 0..STATE_SIZE {
             obs[i] = match i {
-                0 => velocity_reward,
+                0 => velocity,
                 1 => v.angvel.y,
                 2 => d_norm,
                 3 => vel_cos,
