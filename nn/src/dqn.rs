@@ -51,7 +51,7 @@ pub fn dqn_system(
         car_spawn_events.send(SpawnCarOnTrackEvent {
             player: dqn.respawn_player,
             index: dqn.respawn_index,
-            init_meters: None,
+            position: None,
         });
         dqn.respawn_in = 0.;
         dqn.respawn_player = false;

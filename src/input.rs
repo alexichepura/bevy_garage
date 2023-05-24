@@ -74,7 +74,7 @@ pub fn input_system(
             car_spawn_events.send(SpawnCarOnTrackEvent {
                 player: true,
                 index: 0,
-                init_meters: None,
+                position: None,
             });
         }
         if input.pressed(KeyCode::Up) {
