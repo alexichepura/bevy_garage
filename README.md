@@ -8,11 +8,12 @@ Wasm demo <https://alexi.chepura.space/bevy-garage>
 
 - game engine <https://bevyengine.org>
 - rigid body physics <https://rapier.rs>
-- kenney assets <https://www.kenney.nl/assets/car-kit>
+- kenney assets <https://www.kenney.nl/assets/racing-kit>
 - neural network <https://github.com/coreylowman/dfdx>
 - api server and client <https://github.com/tokio-rs/axum>
 - db client <https://github.com/Brendonovich/prisma-client-rust>
 - sound <https://github.com/harudagondi/bevy_fundsp> & <https://github.com/SamiPerttu/fundsp>
+- virtual joystick <https://github.com/SergioRibera/virtual_joystick>
 
 ## Run
 
