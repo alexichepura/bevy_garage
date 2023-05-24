@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_garage_car::Player;
-use bevy_garage_nn::dash::TrainerRewardsText;
 use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
 
@@ -191,7 +190,9 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
                 #[cfg(feature = "nn")]
                 {
-                    use bevy_garage_nn::dash::{TrainerEpsilonText, TrainerGenerationText};
+                    use bevy_garage_nn::dash::{
+                        TrainerEpsilonText, TrainerGenerationText, TrainerRewardsText,
+                    };
                     parent
                         .spawn(TextBundle {
                             style: Style {
