@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.6.0 (2023-05-24)
+
+- added simple example
+- spec components for car and wheel
+- refactor car spawn
+- split into components: CarTrack, CarSensors
+- event to spawn car: SpawnCarOnTrackEvent
+- HID renamed to Player
+
 ## Version 0.5.0 (2023-05-15)
 
 - cargo update and prisma-client-rust 0.6.8
