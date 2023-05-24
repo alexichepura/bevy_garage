@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy_garage_car::Player;
+use bevy_garage_nn::dash::TrainerRewardsText;
 use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
 
@@ -251,6 +252,36 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                             ..default()
                         })
                         .insert(TrainerEpsilonText);
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                position: UiRect {
+                                    top: Val::Px(36.),
+                                    left: Val::Percent(100.),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 14.0,
+                                        color: Color::DARK_GRAY,
+                                    },
+                                }],
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .insert(TrainerRewardsText);
                 }
             });
     });
