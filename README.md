@@ -1,8 +1,7 @@
 # bevy_garage - gamelike car simulation playground
 
-![Bevy Garage 0.4 screenshot 2023-04-26](https://user-images.githubusercontent.com/5582266/234481952-f9c90a7e-70a5-4e04-ab25-4d150d8fff32.jpg)
-![Bevy Garage 0.4 iphone xs screenshot 2023-04-26](https://user-images.githubusercontent.com/5582266/234482437-bf04fd5f-c8d6-4272-a4ee-338f3ba90ad3.jpg)
-
+![Bevy Garage 0.6 screenshot 2023-05-24](https://github.com/alexichepura/bevy_garage/assets/5582266/264f622c-d98c-46c5-9eac-f195cbae2796)
+![Bevy Garage 0.6 iphone xs screenshot 2023-05-24](https://github.com/alexichepura/bevy_garage/assets/5582266/3300fb5e-0618-42b6-9fa3-d4a8397067c9)
 
 Wasm demo <https://alexi.chepura.space/bevy-garage>
 
