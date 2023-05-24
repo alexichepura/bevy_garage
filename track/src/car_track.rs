@@ -5,7 +5,7 @@ use bevy_garage_car::spawn_car;
 pub struct SpawnCarOnTrackEvent {
     pub player: bool,
     pub index: usize,
-    pub init_meters: Option<f32>,
+    pub position: Option<f32>,
 }
 
 #[derive(Component, Debug)]

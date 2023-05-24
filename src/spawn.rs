@@ -6,7 +6,7 @@ pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackE
     car_spawn_events.send(SpawnCarOnTrackEvent {
         player: true,
         index: 0,
-        init_meters: Some(0.),
+        position: Some(0.),
     });
 }
 
@@ -19,7 +19,7 @@ pub fn spawn_car_system(
     for spawn_event in events.iter() {
         dbg!(spawn_event);
 
-        let (transform, init_meters) = if let Some(init_meters) = spawn_event.init_meters {
+        let (transform, init_meters) = if let Some(init_meters) = spawn_event.position {
             let (translate, quat) = track_config.get_transform_by_meter(init_meters);
             let transform = Transform::from_translation(translate).with_rotation(quat);
             (transform, init_meters)

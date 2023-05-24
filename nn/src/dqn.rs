@@ -51,7 +51,7 @@ pub fn dqn_system(
         car_spawn_events.send(SpawnCarOnTrackEvent {
             player: dqn.respawn_player,
             index: dqn.respawn_index,
-            init_meters: None,
+            position: None,
         });
         dqn.respawn_in = 0.;
         dqn.respawn_player = false;
@@ -95,7 +95,11 @@ pub fn dqn_system(
         let d_norm = d / 4.;
 
         let velocity = v.linvel.length();
-        let velocity_norm = velocity / car_dqn.max_speed;
+        let mut velocity_reward = velocity / car_dqn.max_speed;
+        if velocity_reward > 1. {
+            // reduce reward when it's over desired speed
+            velocity_reward = 1. - (velocity_reward - 1.) / velocity_reward;
+        }
         let shape_reward = || -> f32 {
             if crash {
                 return -1.;
@@ -103,8 +107,10 @@ pub fn dqn_system(
             // https://team.inria.fr/rits/files/2018/02/ICRA18_EndToEndDriving_CameraReady.pdf
             // In [13] the reward is computed as a function of the difference of angle α between the road and car’s heading and the speed v.
             // R = v(cos α − d)
-            let mut reward = velocity_norm * (vel_cos - d_norm);
-            if vel_cos.is_sign_positive() && pos_cos.is_sign_negative() {
+            let mut reward = velocity_reward * (vel_cos - d_norm);
+            if vel_cos.is_sign_positive() && pos_cos.is_sign_negative() && reward.is_sign_positive()
+            {
+                // going backward
                 reward = -reward;
             }
             if reward.is_nan() {
@@ -116,7 +122,7 @@ pub fn dqn_system(
         let mut obs: Observation = [0.; STATE_SIZE];
         for i in 0..STATE_SIZE {
             obs[i] = match i {
-                0 => velocity_norm,
+                0 => velocity,
                 1 => v.angvel.y,
                 2 => d_norm,
                 3 => vel_cos,

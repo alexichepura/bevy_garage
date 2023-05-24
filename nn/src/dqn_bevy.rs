@@ -1,5 +1,5 @@
 use crate::{
-    dash::{TrainerEpsilonText, TrainerGenerationText},
+    dash::{TrainerEpsilonText, TrainerGenerationText, TrainerRewardsText},
     dqn::*,
     gradient::get_sgd,
     params::*,
@@ -170,8 +170,10 @@ pub fn dqn_dash_update_system(
     mut dash_set: ParamSet<(
         Query<&mut Text, With<TrainerEpsilonText>>,
         Query<&mut Text, With<TrainerGenerationText>>,
+        Query<&mut Text, With<TrainerRewardsText>>,
     )>,
     dqn: Res<DqnResource>,
+    cars: Query<&CarDqn>,
 ) {
     let mut q_generation_text = dash_set.p1();
     let mut generation_text = q_generation_text.single_mut();
@@ -185,4 +187,17 @@ pub fn dqn_dash_update_system(
     let mut q_timing_text = dash_set.p0();
     let mut timing_text = q_timing_text.single_mut();
     timing_text.sections[0].value = format!("epsilon {:.4}", dqn.eps);
+
+    let mut rewards: String = String::from("");
+    for car_dqn in cars.iter() {
+        let sign: &str = if car_dqn.prev_reward.is_sign_negative() {
+            "-"
+        } else {
+            "+"
+        };
+        rewards.push_str(format!("{sign}{:.2} ", car_dqn.prev_reward.abs()).as_str());
+    }
+    let mut q_rewards_text = dash_set.p2();
+    let mut rewards_text = q_rewards_text.single_mut();
+    rewards_text.sections[0].value = format!("reward {rewards}");
 }
