@@ -3,8 +3,9 @@
 ![Bevy Garage 0.6 screenshot 2023-05-24](https://github.com/alexichepura/bevy_garage/assets/5582266/264f622c-d98c-46c5-9eac-f195cbae2796)
 ![Bevy Garage 0.6 iphone xs screenshot 2023-05-24](https://github.com/alexichepura/bevy_garage/assets/5582266/3300fb5e-0618-42b6-9fa3-d4a8397067c9)
 
+Introductory walk-through <https://youtu.be/f6PcaTX58J4> \
+Deep Q-Learning car training for 1 hour <https://youtu.be/A2JMPIWGXBsf> \
 Wasm demo <https://alexi.chepura.space/bevy-garage>
-
 - game engine <https://bevyengine.org>
 - rigid body physics <https://rapier.rs>
 - kenney assets <https://www.kenney.nl/assets/racing-kit>
