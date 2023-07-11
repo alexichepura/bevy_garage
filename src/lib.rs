@@ -78,7 +78,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(TrackPlugin)
-        .add_plugin(EngineSoundPlugin)
+        // .add_plugin(EngineSoundPlugin)
         .add_event::<SpawnCarOnTrackEvent>()
         .add_startup_systems((
             car_start_system.after(track_polyline_start_system),

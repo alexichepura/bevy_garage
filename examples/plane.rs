@@ -16,7 +16,7 @@ fn main() {
             ..default()
         })
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(DebugLinesPlugin::with_depth_test(true))
+        // .add_plugin(DebugLinesPlugin::with_depth_test(true))
         .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(CarRes {
             show_rays: true,

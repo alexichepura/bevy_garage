@@ -67,7 +67,7 @@ pub fn input_system(
             }
         }
 
-        if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::LShift) {
+        if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::ShiftLeft) {
             cmd.entity(e).despawn_recursive();
             wheels.despawn(&mut cmd);
 
