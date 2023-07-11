@@ -61,12 +61,6 @@ struct AsphaltMaterial {
 @group(1) @binding(0)
 var<uniform> material: AsphaltMaterial;
 
-// struct MeshVertexOutput {
-//     @builtin(front_facing) is_front: bool,
-//     @builtin(position) frag_coord: vec4<f32>,
-//     #import bevy_pbr::mesh_vertex_output
-// };
-
 const coeff_l: f32 = 0.035;
 const coeff_m: f32 = 0.35;
 const coeff_s: f32 = 0.5;
