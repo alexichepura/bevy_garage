@@ -13,7 +13,7 @@ pub mod spawn;
 pub mod util;
 
 use crate::{dqn::dqn_system, dqn_bevy::*, spawn::*};
-use bevy::prelude::{App, IntoSystemConfig, Plugin};
+use bevy::prelude::{App, IntoSystemConfigs, Plugin, Update};
 use bevy_garage_car::CarSet;
 pub use dqn_bevy::DqnResource;
 

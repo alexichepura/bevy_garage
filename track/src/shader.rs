@@ -39,8 +39,7 @@ fn load_shader(
     name: &str,
     shader_str: &'static str,
 ) -> HandleId {
-    let mut shader = Shader::from_wgsl(shader_str);
-    shader.set_import_path(format!("shaders::{}", name));
+    let shader = Shader::from_wgsl(shader_str, format!("shaders::{}", name));
     let id = HandleId::random::<Shader>();
     shaders.set_untracked(id, shader);
     id

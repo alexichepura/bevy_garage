@@ -101,6 +101,7 @@ impl ApiClient {
 pub struct StreamReceiver(Receiver<String>);
 #[derive(Resource, Deref)]
 pub struct StreamSender(Sender<String>);
+#[derive(Event)]
 pub struct StreamEvent(String);
 
 pub fn api_start_system(mut cmd: Commands) {

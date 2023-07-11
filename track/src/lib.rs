@@ -45,7 +45,7 @@ impl Plugin for TrackPlugin {
                 track_start_system,
                 track_decorations_start_system.after(track_polyline_start_system),
             ))
-            .add_systems((far_culling, progress_system.in_set(CarSet::Input)));
+            .add_systems(Update, (far_culling, progress_system.in_set(CarSet::Input)));
     }
 }
 
