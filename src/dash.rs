@@ -1,5 +1,7 @@
-use bevy::prelude::*;
-use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_garage_car::Player;
 use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
@@ -22,7 +24,10 @@ pub struct TrackPositionText;
 #[derive(Component)]
 pub struct RideDistanceText;
 
-pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
+pub fn dash_fps_system(
+    diagnostics: Res<DiagnosticsStore>,
+    mut query: Query<&mut Text, With<FpsText>>,
+) {
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
