@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_garage::esp::esp_system;
 use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
-use bevy_prototype_debug_lines::DebugLinesPlugin;
+// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 fn main() {
@@ -28,7 +28,7 @@ fn main() {
             car_start_system,
             spawn_car_system.after(car_start_system),
         ))
-        .add_systems((input_system, esp_system.after(input_system)))
+        .add_systems(Update, (input_system, esp_system.after(input_system)))
         .run();
 }
 

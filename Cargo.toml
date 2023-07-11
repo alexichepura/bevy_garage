@@ -9,24 +9,44 @@ description = "Space about cars and driving"
 identifier = "io.github.alexichepura.bevy_garage"
 [workspace]
 resolver = "2"
-members = ["car", "track", "nn", "prisma-cli", "api", "trainer", "db_client", "ios", "track-convert"]
+members = [
+    "car",
+    "track",
+    "nn",
+    "prisma-cli",
+    "api",
+    "trainer",
+    "db_client",
+    "ios",
+    "track-convert",
+]
 [profile.release]
 codegen-units = 1
 [features]
 nn = ["dep:bevy_garage_nn"]
 nn_api = ["bevy_garage_nn?/api"]
-default = ["debug_lines"]
-debug_lines = ["dep:bevy_prototype_debug_lines", "bevy_garage_car/debug_lines", "bevy_garage_track/debug_lines"]
+default = []
+# default = ["debug_lines"]
+# debug_lines = [
+# "dep:bevy_prototype_debug_lines",
+# "bevy_garage_car/debug_lines",
+# "bevy_garage_track/debug_lines",
+# ]
 [workspace.dependencies]
-bevy = { version = "0.10", features = ["jpeg"] }
+bevy = { version = "0.11", features = ["jpeg"] }
 bevy_garage_car = { path = "./car" }
 bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
-# bevy_rapier3d = { version = "0.21", features = ["serde-serialize"] }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", features = ["serde-serialize"] }
+bevy_rapier3d = { version = "0.22", features = ["serde-serialize"] }
 dfdx = "0.11"
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = ["sqlite","sqlite-create-many"] }
-prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = ["sqlite","sqlite-create-many"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = [
+    "sqlite",
+    "sqlite-create-many",
+] }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = [
+    "sqlite",
+    "sqlite-create-many",
+] }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -37,7 +57,9 @@ bevy_garage_car = { workspace = true }
 bevy_garage_nn = { workspace = true, optional = true }
 bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true }
-bevy_prototype_debug_lines = { version = "0.10", features = ["3d"], optional = true }
-bevy_fundsp = {git = "https://github.com/harudagondi/bevy_fundsp"}
+# bevy_prototype_debug_lines = { version = "0.10", features = [
+#     "3d",
+# ], optional = true }
+# bevy_fundsp = { git = "https://github.com/harudagondi/bevy_fundsp" }
 uuid = "1.3"
-virtual_joystick = "1.1"
+# virtual_joystick = "1.1"

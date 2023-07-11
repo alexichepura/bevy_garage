@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-debug_lines = ["dep:bevy_prototype_debug_lines"]
+# debug_lines = ["dep:bevy_prototype_debug_lines"]
 
 [dependencies]
 bevy = { workspace = true }
@@ -12,5 +12,5 @@ bevy_rapier3d = { workspace = true }
 bevy_garage_car = { workspace = true }
 parry3d = "0.13"
 rand = { workspace = true }
-wgpu = { version = "0.15", features = ["spirv"] }
-bevy_prototype_debug_lines = { version = "0.10", features = ["3d"], optional = true }
+wgpu = { version = "0.16", features = ["spirv"] }
+# bevy_prototype_debug_lines = { version = "0.10", features = ["3d"], optional = true }

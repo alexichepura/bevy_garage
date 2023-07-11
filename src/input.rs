@@ -12,21 +12,21 @@ pub fn input_system(
     mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform, With<Player>)>,
     mut cmd: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
-    #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
-        bevy_rapier3d::render::DebugRenderContext,
-    >,
-    #[cfg(feature = "debug_lines")] mut car_res: ResMut<bevy_garage_car::CarRes>,
+    // #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
+    //     bevy_rapier3d::render::DebugRenderContext,
+    // >,
+    // #[cfg(feature = "debug_lines")] mut car_res: ResMut<bevy_garage_car::CarRes>,
     #[cfg(feature = "nn")] mut dqn: ResMut<bevy_garage_nn::DqnResource>,
 ) {
     #[cfg(feature = "nn")]
     if input.just_pressed(KeyCode::N) {
         dqn.use_nn = !dqn.use_nn;
     }
-    #[cfg(feature = "debug_lines")]
-    if input.just_pressed(KeyCode::R) {
-        debug_ctx.enabled = !debug_ctx.enabled;
-        car_res.show_rays = debug_ctx.enabled;
-    }
+    // #[cfg(feature = "debug_lines")]
+    // if input.just_pressed(KeyCode::R) {
+    //     debug_ctx.enabled = !debug_ctx.enabled;
+    //     car_res.show_rays = debug_ctx.enabled;
+    // }
     for (mut car, mut wheels, e, _transform, _hid) in cars.iter_mut() {
         for gamepad in gamepads.iter() {
             let left_stick_x = axes
@@ -57,11 +57,11 @@ pub fn input_system(
             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
                 car.brake = 0.;
             }
-            #[cfg(feature = "debug_lines")]
-            if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
-                debug_ctx.enabled = !debug_ctx.enabled;
-                car_res.show_rays = debug_ctx.enabled;
-            }
+            // #[cfg(feature = "debug_lines")]
+            // if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
+            //     debug_ctx.enabled = !debug_ctx.enabled;
+            //     car_res.show_rays = debug_ctx.enabled;
+            // }
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger)) {
                 camera_config.next_view();
             }

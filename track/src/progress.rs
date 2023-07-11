@@ -60,8 +60,8 @@ pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<T
 pub fn progress_system(
     track_config: Res<TrackConfig>,
     mut cars: Query<(&Transform, &mut CarTrack, Entity)>,
-    #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
+    // #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
+    // #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let polyline = track_config.polyline.as_ref().unwrap();
     let mut board: Vec<(Entity, f32)> = Vec::new();
@@ -111,16 +111,16 @@ pub fn progress_system(
         let dir = Vec3::from(segment.direction().unwrap());
         car.line_dir = dir;
         car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
-        #[cfg(feature = "debug_lines")]
-        if car_res.show_rays {
-            let h = Vec3::Y * 0.6;
-            lines.line_colored(
-                h + tr.translation,
-                h + car.line_pos + Vec3::Y * tr.translation.y,
-                0.0,
-                Color::rgba(0.5, 0.5, 0.5, 0.5),
-            );
-        }
+        // #[cfg(feature = "debug_lines")]
+        // if car_res.show_rays {
+        //     let h = Vec3::Y * 0.6;
+        //     lines.line_colored(
+        //         h + tr.translation,
+        //         h + car.line_pos + Vec3::Y * tr.translation.y,
+        //         0.0,
+        //         Color::rgba(0.5, 0.5, 0.5, 0.5),
+        //     );
+        // }
         board.push((e, track_position));
     }
     board.sort_by(|a, b| {

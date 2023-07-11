@@ -2,11 +2,11 @@
 pub mod camera;
 mod config;
 mod dash;
-mod dsp;
+// mod dsp;
 pub mod esp;
 pub mod font;
 mod input;
-pub mod joystick;
+// pub mod joystick;
 mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
@@ -15,7 +15,7 @@ use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, Track
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
-use dsp::*;
+// use dsp::*;
 use esp::*;
 use font::*;
 use input::*;
@@ -76,7 +76,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(bevy_fundsp::DspPlugin::default())
+        // .add_plugin(bevy_fundsp::DspPlugin::default())
         .add_plugin(TrackPlugin)
         .add_plugin(EngineSoundPlugin)
         .add_event::<SpawnCarOnTrackEvent>()
@@ -87,38 +87,41 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
             dash_start_system,
             rapier_config_start_system,
         ))
-        .add_systems((
-            spawn_car_system,
-            aero_system.in_set(CarSet::Input),
-            input_system.in_set(CarSet::Input),
-            esp_system.in_set(CarSet::Esp).after(esp_run_after),
-            animate_light_direction,
-            dash_fps_system,
-            dash_speed_update_system,
-        ));
+        .add_systems(
+            Update,
+            (
+                spawn_car_system,
+                aero_system.in_set(CarSet::Input),
+                input_system.in_set(CarSet::Input),
+                esp_system.in_set(CarSet::Esp).after(esp_run_after),
+                animate_light_direction,
+                dash_fps_system,
+                dash_speed_update_system,
+            ),
+        );
 
     #[cfg(feature = "nn")]
     {
         app.add_plugin(bevy_garage_nn::NeuralNetworkPlugin);
     }
 
-    #[cfg(feature = "debug_lines")]
-    {
-        use bevy_prototype_debug_lines::DebugLinesPlugin;
-        app.add_plugin(DebugLinesPlugin::with_depth_test(true))
-            .add_plugin(RapierDebugRenderPlugin {
-                enabled: false,
-                style: DebugRenderStyle {
-                    rigid_body_axes_length: 0.5,
-                    ..default()
-                },
-                mode: DebugRenderMode::COLLIDER_SHAPES
-                    | DebugRenderMode::RIGID_BODY_AXES
-                    | DebugRenderMode::JOINTS
-                    | DebugRenderMode::CONTACTS
-                    | DebugRenderMode::SOLVER_CONTACTS,
-                ..default()
-            });
-    }
+    // #[cfg(feature = "debug_lines")]
+    // {
+    //     use bevy_prototype_debug_lines::DebugLinesPlugin;
+    //     app.add_plugin(DebugLinesPlugin::with_depth_test(true))
+    //         .add_plugin(RapierDebugRenderPlugin {
+    //             enabled: false,
+    //             style: DebugRenderStyle {
+    //                 rigid_body_axes_length: 0.5,
+    //                 ..default()
+    //             },
+    //             mode: DebugRenderMode::COLLIDER_SHAPES
+    //                 | DebugRenderMode::RIGID_BODY_AXES
+    //                 | DebugRenderMode::JOINTS
+    //                 | DebugRenderMode::CONTACTS
+    //                 | DebugRenderMode::SOLVER_CONTACTS,
+    //             ..default()
+    //         });
+    // }
     app
 }
