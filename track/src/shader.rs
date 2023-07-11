@@ -1,5 +1,5 @@
 use bevy::pbr::{prelude::*, MaterialPipeline, MaterialPipelineKey};
-use bevy::reflect::TypeUuid;
+use bevy::reflect::{TypePath, TypeUuid};
 use bevy::render::mesh::MeshVertexBufferLayout;
 use bevy::render::render_resource::{
     AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
@@ -52,7 +52,7 @@ pub struct GarageMaterialKey {
     quality: i32,
 }
 
-#[derive(AsBindGroup, TypeUuid, Debug, Clone)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Debug, Clone)]
 #[uuid = "E7F8955A-CF83-480D-A0C2-C2171898E571"]
 #[bind_group_data(GarageMaterialKey)]
 pub struct GroundMaterial {
@@ -90,7 +90,7 @@ impl From<&GroundMaterial> for GarageMaterialKey {
     }
 }
 
-#[derive(AsBindGroup, TypeUuid, Debug, Clone)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Debug, Clone)]
 #[uuid = "C147EDEE-9A8A-4B8F-B759-EDB527E56CC9"]
 #[bind_group_data(GarageMaterialKey)]
 pub struct AsphaltMaterial {
