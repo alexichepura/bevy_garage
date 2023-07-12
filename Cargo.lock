@@ -638,7 +638,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_garage"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bevy",
  "bevy_garage_car",
