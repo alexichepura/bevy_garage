@@ -1,6 +1,6 @@
 use crate::camera::CameraConfig;
 use bevy::prelude::*;
-use bevy_garage_car::{Car, CarWheels, Player};
+use bevy_garage_car::{Car, CarRes, CarWheels, Player};
 use bevy_garage_track::SpawnCarOnTrackEvent;
 
 pub fn input_system(
@@ -13,7 +13,7 @@ pub fn input_system(
     mut cmd: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     mut debug_ctx: ResMut<bevy_rapier3d::render::DebugRenderContext>,
-    mut car_res: ResMut<bevy_garage_car::CarRes>,
+    mut car_res: ResMut<CarRes>,
     #[cfg(feature = "nn")] mut dqn: ResMut<bevy_garage_nn::DqnResource>,
 ) {
     #[cfg(feature = "nn")]

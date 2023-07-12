@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_garage::esp::esp_system;
 use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
-// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 fn main() {
@@ -18,7 +17,6 @@ fn main() {
             DefaultPlugins,
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
-            // DebugLinesPlugin::with_depth_test(true),
         ))
         .insert_resource(CarRes {
             show_rays: true,

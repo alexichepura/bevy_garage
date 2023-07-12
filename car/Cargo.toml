@@ -4,9 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-# debug_lines = ["dep:bevy_prototype_debug_lines"]
 
 [dependencies]
 bevy = { workspace = true }
 bevy_rapier3d = { workspace = true }
-# bevy_prototype_debug_lines = { version = "0.10", features = ["3d"], optional = true }
