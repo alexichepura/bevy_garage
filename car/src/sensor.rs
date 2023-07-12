@@ -63,7 +63,7 @@ impl CarSensors {
 
 pub fn sensor_system(
     rapier_context: Res<RapierContext>,
-    config: Res<CarRes>,
+    _config: Res<CarRes>,
     mut q_car: Query<(&mut CarSensors, &Transform)>,
     // #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
 ) {

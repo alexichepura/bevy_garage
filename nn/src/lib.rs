@@ -13,7 +13,7 @@ pub mod spawn;
 pub mod util;
 
 use crate::{dqn::dqn_system, dqn_bevy::*, spawn::*};
-use bevy::prelude::{App, IntoSystemConfigs, Plugin, Update};
+use bevy::prelude::{App, IntoSystemConfigs, Plugin, Startup, Update};
 use bevy_garage_car::CarSet;
 pub use dqn_bevy::DqnResource;
 
@@ -23,7 +23,7 @@ impl Plugin for NeuralNetworkPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DqnResource::default())
             .add_event::<DqnEvent>()
-            .add_startup_systems((dqn_start_system, dqn_x_start_system))
+            .add_systems(Startup, (dqn_start_system, dqn_x_start_system))
             .add_systems(
                 Update,
                 (
@@ -42,7 +42,7 @@ impl Plugin for NeuralNetworkPlugin {
         {
             use crate::api_client::*;
             app.add_event::<StreamEvent>()
-                .add_startup_system(api_start_system)
+                .add_systems(Startup, api_start_system)
                 .add_systems(
                     Update,
                     (api_read_stream_event_writer_system, api_event_reader_system),

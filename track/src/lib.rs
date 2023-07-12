@@ -26,7 +26,7 @@ pub use track::*;
 
 use bevy::prelude::*;
 
-use self::{
+pub use self::{
     asphalt::spawn_road, ground::spawn_ground_heightfield, kerb::spawn_kerb, track::Track,
     wall::spawn_walls,
 };
@@ -36,15 +36,20 @@ pub struct TrackPlugin;
 impl Plugin for TrackPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrackConfig::default())
-            .add_plugin(ShadersPlugin)
-            .add_plugin(MaterialPlugin::<GroundMaterial>::default())
-            .add_plugin(MaterialPlugin::<AsphaltMaterial>::default())
-            .init_resource::<MaterialHandle>()
-            .add_startup_systems((
-                track_polyline_start_system,
-                track_start_system,
-                track_decorations_start_system.after(track_polyline_start_system),
+            .add_plugins((
+                ShadersPlugin,
+                MaterialPlugin::<GroundMaterial>::default(),
+                MaterialPlugin::<AsphaltMaterial>::default(),
             ))
+            .init_resource::<MaterialHandle>()
+            .add_systems(
+                Startup,
+                (
+                    track_polyline_start_system,
+                    track_start_system,
+                    track_decorations_start_system.after(track_polyline_start_system),
+                ),
+            )
             .add_systems(Update, (far_culling, progress_system.in_set(CarSet::Input)));
     }
 }

@@ -6,7 +6,6 @@ use bevy_rapier3d::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
@@ -15,19 +14,25 @@ fn main() {
             },
             ..default()
         })
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(DebugLinesPlugin::with_depth_test(true))
-        .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugins((
+            DefaultPlugins,
+            RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierDebugRenderPlugin::default(),
+            // DebugLinesPlugin::with_depth_test(true),
+        ))
         .insert_resource(CarRes {
             show_rays: true,
             ..default()
         })
-        .add_startup_systems((
-            rapier_config_start_system,
-            plane_start,
-            car_start_system,
-            spawn_car_system.after(car_start_system),
-        ))
+        .add_systems(
+            Startup,
+            (
+                rapier_config_start_system,
+                plane_start,
+                car_start_system,
+                spawn_car_system.after(car_start_system),
+            ),
+        )
         .add_systems(Update, (input_system, esp_system.after(input_system)))
         .run();
 }

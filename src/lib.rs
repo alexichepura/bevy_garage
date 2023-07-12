@@ -74,19 +74,24 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .insert_resource(Config::default())
         .insert_resource(CarRes::default())
         .insert_resource(DirectionalLightShadowMap::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(bevy_fundsp::DspPlugin::default())
-        .add_plugin(TrackPlugin)
-        // .add_plugin(EngineSoundPlugin)
-        .add_event::<SpawnCarOnTrackEvent>()
-        .add_startup_systems((
-            car_start_system.after(track_polyline_start_system),
-            spawn_car_start_system.after(car_start_system),
-            light_start_system,
-            dash_start_system,
-            rapier_config_start_system,
+        .add_plugins((
+            FrameTimeDiagnosticsPlugin::default(),
+            RapierPhysicsPlugin::<NoUserData>::default(),
+            // bevy_fundsp::DspPlugin::default(),
+            // EngineSoundPlugin,
+            TrackPlugin,
         ))
+        .add_event::<SpawnCarOnTrackEvent>()
+        .add_systems(
+            Startup,
+            (
+                car_start_system.after(track_polyline_start_system),
+                spawn_car_start_system.after(car_start_system),
+                light_start_system,
+                dash_start_system,
+                rapier_config_start_system,
+            ),
+        )
         .add_systems(
             Update,
             (
@@ -102,7 +107,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
 
     #[cfg(feature = "nn")]
     {
-        app.add_plugin(bevy_garage_nn::NeuralNetworkPlugin);
+        app.add_plugins(bevy_garage_nn::NeuralNetworkPlugin);
     }
 
     // #[cfg(feature = "debug_lines")]

@@ -4,16 +4,18 @@ use bevy_garage::{camera::CarCameraPlugin, car_app, PhysicsParams};
 #[bevy_main]
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            resizable: false,
-            mode: WindowMode::BorderlessFullscreen,
+    app.add_plugins((
+        DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                resizable: false,
+                mode: WindowMode::BorderlessFullscreen,
+                ..default()
+            }),
             ..default()
         }),
-        ..default()
-    }));
-    app.add_plugin(CarCameraPlugin);
-    // app.add_plugin(CarJoystickPlugin);
+        CarCameraPlugin,
+        // CarJoystickPlugin,
+    ));
 
     let physics_params = PhysicsParams {
         max_velocity_iters: 16,
