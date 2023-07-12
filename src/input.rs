@@ -54,11 +54,10 @@ pub fn input_system(
             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
                 car.brake = 0.;
             }
-            // #[cfg(feature = "debug_lines")]
-            // if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
-            //     debug_ctx.enabled = !debug_ctx.enabled;
-            //     car_res.show_rays = debug_ctx.enabled;
-            // }
+            if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
+                debug_ctx.enabled = !debug_ctx.enabled;
+                car_res.show_rays = debug_ctx.enabled;
+            }
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger)) {
                 camera_config.next_view();
             }

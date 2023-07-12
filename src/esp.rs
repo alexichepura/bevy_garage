@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_garage_car::{Car, CarSpec, CarWheels, Wheel};
+use bevy_garage_car::{Car, CarRes, CarSpec, CarWheels, Wheel};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -16,19 +16,17 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
 }
 
 // Quat::from_axis_angle(-Vec3::Y, PI / 2.) = Quat(-0.0, -0.70710677, -0.0, 0.70710677);
-// #[cfg(feature = "debug_lines")]
-// const WHEEL_RAY_END_QUAT: Quat = Quat {
-//     x: -0.0,
-//     y: -0.70710677,
-//     z: -0.0,
-//     w: 0.70710677,
-// };
-// #[cfg(feature = "debug_lines")]
-// const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
-//     x: 0.,
-//     y: 0.5,
-//     z: 0.,
-// };
+const WHEEL_RAY_END_QUAT: Quat = Quat {
+    x: -0.0,
+    y: -0.70710677,
+    z: -0.0,
+    w: 0.70710677,
+};
+const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
+    x: 0.,
+    y: 0.5,
+    z: 0.,
+};
 
 pub fn esp_system(
     time: Res<Time>,
@@ -40,8 +38,8 @@ pub fn esp_system(
         &Velocity,
         &mut ImpulseJoint,
     )>,
-    // #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
-    // #[cfg(feature = "debug_lines")] car_res: Res<bevy_garage_car::CarRes>,
+    car_res: Res<CarRes>,
+    mut gizmos: Gizmos,
 ) {
     let d_seconds = time.delta_seconds();
     for (mut car, spec, car_wheels, velocity, transform) in car_query.iter_mut() {
@@ -119,12 +117,11 @@ pub fn esp_system(
                 };
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
-                // #[cfg(feature = "debug_lines")]
-                // if car_res.show_rays {
-                //     let start = transform.translation + WHEEL_RAY_SHIFT;
-                //     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
-                //     lines.line_colored(start, end, 0.0, Color::VIOLET);
-                // }
+                if car_res.show_rays {
+                    let start = transform.translation + WHEEL_RAY_SHIFT;
+                    let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
+                    gizmos.line(start, end, Color::VIOLET);
+                }
 
                 j.data.set_local_basis1(quat);
             } else {
@@ -141,12 +138,11 @@ pub fn esp_system(
                 };
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
-                // #[cfg(feature = "debug_lines")]
-                // if car_res.show_rays {
-                //     let start = transform.translation + WHEEL_RAY_SHIFT;
-                //     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
-                //     lines.line_colored(start, end, 0.0, Color::VIOLET);
-                // }
+                if car_res.show_rays {
+                    let start = transform.translation + WHEEL_RAY_SHIFT;
+                    let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
+                    gizmos.line(start, end, Color::VIOLET);
+                }
             }
         }
     }
