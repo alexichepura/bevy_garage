@@ -1,9 +1,10 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::render::camera::{CameraUpdateSystem, Projection};
+use bevy::render::camera::Projection;
 use bevy::window::CursorGrabMode;
 use bevy_garage_car::Player;
+use bevy_rapier3d::prelude::PhysicsSet;
 
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
@@ -28,14 +29,11 @@ pub struct CarCameraPlugin;
 impl Plugin for CarCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CameraConfig::default())
-            .add_systems(Startup, camera_start_system)
+            .add_systems(PostStartup, camera_start_system)
+            .add_systems(Update, (grab_mouse, camera_switch_system))
             .add_systems(
-                Update,
-                (
-                    camera_controller_system.in_set(CameraUpdateSystem),
-                    grab_mouse,
-                    camera_switch_system,
-                ),
+                PostUpdate,
+                camera_controller_system.after(PhysicsSet::Writeback),
             );
     }
 }
