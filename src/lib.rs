@@ -80,6 +80,19 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
             // bevy_fundsp::DspPlugin::default(),
             // EngineSoundPlugin,
             TrackPlugin,
+            RapierDebugRenderPlugin {
+                enabled: false,
+                style: DebugRenderStyle {
+                    rigid_body_axes_length: 0.5,
+                    ..default()
+                },
+                mode: DebugRenderMode::COLLIDER_SHAPES
+                    | DebugRenderMode::RIGID_BODY_AXES
+                    | DebugRenderMode::JOINTS
+                    | DebugRenderMode::CONTACTS
+                    | DebugRenderMode::SOLVER_CONTACTS,
+                ..default()
+            },
         ))
         .add_event::<SpawnCarOnTrackEvent>()
         .add_systems(
@@ -110,23 +123,5 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         app.add_plugins(bevy_garage_nn::NeuralNetworkPlugin);
     }
 
-    // #[cfg(feature = "debug_lines")]
-    // {
-    //     use bevy_prototype_debug_lines::DebugLinesPlugin;
-    //     app.add_plugin(DebugLinesPlugin::with_depth_test(true))
-    //         .add_plugin(RapierDebugRenderPlugin {
-    //             enabled: false,
-    //             style: DebugRenderStyle {
-    //                 rigid_body_axes_length: 0.5,
-    //                 ..default()
-    //             },
-    //             mode: DebugRenderMode::COLLIDER_SHAPES
-    //                 | DebugRenderMode::RIGID_BODY_AXES
-    //                 | DebugRenderMode::JOINTS
-    //                 | DebugRenderMode::CONTACTS
-    //                 | DebugRenderMode::SOLVER_CONTACTS,
-    //             ..default()
-    //         });
-    // }
     app
 }
