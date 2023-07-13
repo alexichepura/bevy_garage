@@ -1,5 +1,7 @@
-use bevy::prelude::*;
-use bevy::{diagnostic::Diagnostics, diagnostic::FrameTimeDiagnosticsPlugin};
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_garage_car::Player;
 use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
@@ -22,7 +24,10 @@ pub struct TrackPositionText;
 #[derive(Component)]
 pub struct RideDistanceText;
 
-pub fn dash_fps_system(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
+pub fn dash_fps_system(
+    diagnostics: Res<DiagnosticsStore>,
+    mut query: Query<&mut Text, With<FpsText>>,
+) {
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
@@ -38,7 +43,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
     let width = Val::Px(150.);
     cmd.spawn(NodeBundle {
         style: Style {
-            size: Size::new(Val::Percent(100.), height.clone()),
+            width: Val::Percent(100.),
+            height: height.clone(),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
@@ -51,7 +57,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
             .spawn(NodeBundle {
                 background_color,
                 style: Style {
-                    size: Size::new(width, height.clone()),
+                    width,
+                    height: height.clone(),
                     padding: UiRect::all(Val::Px(4.0)),
                     justify_content: JustifyContent::End,
                     align_items: AlignItems::End,
@@ -65,11 +72,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     .spawn(TextBundle {
                         style: Style {
                             position_type: PositionType::Absolute,
-                            position: UiRect {
-                                top: Val::Px(4.),
-                                left: Val::Px(4.),
-                                ..default()
-                            },
+                            top: Val::Px(4.),
+                            left: Val::Px(4.),
                             ..default()
                         },
                         text: Text {
@@ -90,11 +94,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     .spawn(TextBundle {
                         style: Style {
                             position_type: PositionType::Absolute,
-                            position: UiRect {
-                                top: Val::Px(20.),
-                                left: Val::Px(4.),
-                                ..default()
-                            },
+                            top: Val::Px(20.),
+                            left: Val::Px(4.),
                             ..default()
                         },
                         text: Text {
@@ -115,11 +116,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     .spawn(TextBundle {
                         style: Style {
                             position_type: PositionType::Absolute,
-                            position: UiRect {
-                                top: Val::Px(4.),
-                                right: Val::Px(4.),
-                                ..default()
-                            },
+                            top: Val::Px(4.),
+                            right: Val::Px(4.),
                             ..default()
                         },
                         text: Text {
@@ -201,11 +199,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                     left: Val::Px(4.),
                                     ..default()
                                 },
-                                position: UiRect {
-                                    top: Val::Px(4.),
-                                    left: Val::Percent(100.),
-                                    ..default()
-                                },
+                                top: Val::Px(4.),
+                                left: Val::Percent(100.),
                                 ..default()
                             },
                             text: Text {
@@ -231,11 +226,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                     left: Val::Px(4.),
                                     ..default()
                                 },
-                                position: UiRect {
-                                    top: Val::Px(20.),
-                                    left: Val::Percent(100.),
-                                    ..default()
-                                },
+                                top: Val::Px(20.),
+                                left: Val::Percent(100.),
                                 ..default()
                             },
                             text: Text {
@@ -261,11 +253,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                     left: Val::Px(4.),
                                     ..default()
                                 },
-                                position: UiRect {
-                                    top: Val::Px(36.),
-                                    left: Val::Percent(100.),
-                                    ..default()
-                                },
+                                top: Val::Px(36.),
+                                left: Val::Percent(100.),
                                 ..default()
                             },
                             text: Text {

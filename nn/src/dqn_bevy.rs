@@ -132,6 +132,7 @@ pub struct DqnX {
 pub struct DqnRx(Receiver<DqnX>);
 #[derive(Resource, Deref)]
 pub struct DqnTx(Sender<DqnX>);
+#[derive(Event)]
 pub struct DqnEvent(DqnX);
 
 pub fn dqn_start_system(world: &mut World) {

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_garage_car::spawn_car;
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub struct SpawnCarOnTrackEvent {
     pub player: bool,
     pub index: usize,

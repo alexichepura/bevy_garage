@@ -1,5 +1,7 @@
 // MIT License. © Stefan Gustavson, Munrocket
 //
+#define_import_path shaders::perlin_noise_2d
+
 fn permute4(x: vec4<f32>) -> vec4<f32> { return ((x * 34. + 1.) * x) % vec4<f32>(289.); }
 fn fade2(t: vec2<f32>) -> vec2<f32> { return t * t * t * (t * (t * 6. - 15.) + 10.); }
 

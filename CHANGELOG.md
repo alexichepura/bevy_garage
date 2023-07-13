@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.7.0 (2023-07-xx)
+- bevy 0.11
+
 ## Version 0.6.0 (2023-05-24)
 
 - added simple example

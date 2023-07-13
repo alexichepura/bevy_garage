@@ -65,7 +65,7 @@ pub fn sensor_system(
     rapier_context: Res<RapierContext>,
     config: Res<CarRes>,
     mut q_car: Query<(&mut CarSensors, &Transform)>,
-    #[cfg(feature = "debug_lines")] mut lines: ResMut<bevy_prototype_debug_lines::DebugLines>,
+    mut gizmos: Gizmos,
 ) {
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     for (mut car, t) in q_car.iter_mut() {
@@ -93,14 +93,8 @@ pub fn sensor_system(
                 hit_points[i] = ray_pos + ray_dir * toi;
                 if toi > 0. {
                     inputs[i] = 1. - toi / car.max_toi;
-                    #[cfg(feature = "debug_lines")]
                     if config.show_rays {
-                        lines.line_colored(
-                            ray_pos,
-                            hit_points[i],
-                            0.0,
-                            Color::rgba(0.5, 0.3, 0.3, 0.5),
-                        );
+                        gizmos.line(ray_pos, hit_points[i], Color::rgba(0.5, 0.3, 0.3, 0.5));
                     }
                 } else {
                     inputs[i] = 0.;

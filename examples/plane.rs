@@ -1,12 +1,10 @@
 use bevy::prelude::*;
 use bevy_garage::esp::esp_system;
 use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
-use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier3d::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
@@ -15,20 +13,25 @@ fn main() {
             },
             ..default()
         })
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(DebugLinesPlugin::with_depth_test(true))
-        .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugins((
+            DefaultPlugins,
+            RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierDebugRenderPlugin::default(),
+        ))
         .insert_resource(CarRes {
             show_rays: true,
             ..default()
         })
-        .add_startup_systems((
-            rapier_config_start_system,
-            plane_start,
-            car_start_system,
-            spawn_car_system.after(car_start_system),
-        ))
-        .add_systems((input_system, esp_system.after(input_system)))
+        .add_systems(
+            Startup,
+            (
+                rapier_config_start_system,
+                plane_start,
+                car_start_system,
+                spawn_car_system.after(car_start_system),
+            ),
+        )
+        .add_systems(Update, (input_system, esp_system.after(input_system)))
         .run();
 }
 

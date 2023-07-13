@@ -1,6 +1,6 @@
 use crate::camera::CameraConfig;
 use bevy::prelude::*;
-use bevy_garage_car::{Car, CarWheels, Player};
+use bevy_garage_car::{Car, CarRes, CarWheels, Player};
 use bevy_garage_track::SpawnCarOnTrackEvent;
 
 pub fn input_system(
@@ -12,17 +12,14 @@ pub fn input_system(
     mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform, With<Player>)>,
     mut cmd: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
-    #[cfg(feature = "debug_lines")] mut debug_ctx: ResMut<
-        bevy_rapier3d::render::DebugRenderContext,
-    >,
-    #[cfg(feature = "debug_lines")] mut car_res: ResMut<bevy_garage_car::CarRes>,
+    mut debug_ctx: ResMut<bevy_rapier3d::render::DebugRenderContext>,
+    mut car_res: ResMut<CarRes>,
     #[cfg(feature = "nn")] mut dqn: ResMut<bevy_garage_nn::DqnResource>,
 ) {
     #[cfg(feature = "nn")]
     if input.just_pressed(KeyCode::N) {
         dqn.use_nn = !dqn.use_nn;
     }
-    #[cfg(feature = "debug_lines")]
     if input.just_pressed(KeyCode::R) {
         debug_ctx.enabled = !debug_ctx.enabled;
         car_res.show_rays = debug_ctx.enabled;
@@ -57,7 +54,6 @@ pub fn input_system(
             } else if buttons.just_released(GamepadButton::new(gamepad, GamepadButtonType::South)) {
                 car.brake = 0.;
             }
-            #[cfg(feature = "debug_lines")]
             if buttons.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
                 debug_ctx.enabled = !debug_ctx.enabled;
                 car_res.show_rays = debug_ctx.enabled;
@@ -67,7 +63,7 @@ pub fn input_system(
             }
         }
 
-        if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::LShift) {
+        if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::ShiftLeft) {
             cmd.entity(e).despawn_recursive();
             wheels.despawn(&mut cmd);
 
