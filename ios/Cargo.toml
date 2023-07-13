@@ -2,7 +2,7 @@
 name = "bevy_garage_ios"
 version = "0.1.0"
 edition = "2021"
-description = "bavy_garage ios"
+description = "Bevy Garage mobile"
 publish = false
 license = "MIT OR Apache-2.0"
 
@@ -13,3 +13,21 @@ crate-type = ["staticlib", "cdylib"]
 [dependencies]
 bevy = { workspace = true }
 bevy_garage = { path = "../" }
+
+[package.metadata.android]
+package = "io.github.alexichepura.bevy_garage"
+apk_name = "bevy_garage"
+assets = "../assets"
+resources = "../assets/android-res"
+build_targets = ["aarch64-linux-android", "armv7-linux-androideabi"]
+
+[package.metadata.android.sdk]
+target_sdk_version = 31
+
+[package.metadata.android.application]
+icon = "@mipmap/ic_launcher"
+label = "Bevy Garage"
+
+[package.metadata.android.signing.release]
+path = "/Users/alexi/.android/debug.keystore"
+keystore_password = "android"
