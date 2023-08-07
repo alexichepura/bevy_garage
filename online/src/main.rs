@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_garage::{
     camera::CarCameraPlugin,
     esp::esp_system,
@@ -7,6 +7,10 @@ use bevy_garage::{
 use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
 use bevy_overture_maps::*;
 use bevy_rapier3d::prelude::*;
+
+use crate::dash::{dash_fps_system, dash_speed_update_system, dash_start_system};
+
+mod dash;
 
 fn main() {
     let lat = std::env::var("MAP_LAT").expect("MAP_LAT env");
@@ -48,6 +52,7 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
             CarCameraPlugin,
+            FrameTimeDiagnosticsPlugin::default(),
         ))
         .insert_resource(CarRes {
             show_rays: true,
@@ -63,6 +68,7 @@ fn main() {
                 light_start_system,
                 car_start_system,
                 spawn_car_system.after(car_start_system),
+                dash_start_system,
             ),
         )
         .add_systems(
@@ -71,6 +77,8 @@ fn main() {
                 input_system,
                 esp_system.after(input_system),
                 animate_light_direction,
+                dash_fps_system,
+                dash_speed_update_system,
             ),
         )
         .run();
