@@ -1,5 +1,9 @@
 use bevy::prelude::*;
-use bevy_garage::{camera::CarCameraPlugin, esp::esp_system, light::light_start_system};
+use bevy_garage::{
+    camera::CarCameraPlugin,
+    esp::esp_system,
+    light::{animate_light_direction, light_start_system},
+};
 use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
 use bevy_overture_maps::*;
 use bevy_rapier3d::prelude::*;
@@ -61,7 +65,14 @@ fn main() {
                 spawn_car_system.after(car_start_system),
             ),
         )
-        .add_systems(Update, (input_system, esp_system.after(input_system)))
+        .add_systems(
+            Update,
+            (
+                input_system,
+                esp_system.after(input_system),
+                animate_light_direction,
+            ),
+        )
         .run();
 }
 
