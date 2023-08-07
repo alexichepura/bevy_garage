@@ -1,10 +1,36 @@
 use bevy::prelude::*;
-use bevy_garage::esp::esp_system;
+use bevy_garage::{camera::CarCameraPlugin, esp::esp_system, light::light_start_system};
 use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
+use bevy_overture::*;
 use bevy_rapier3d::prelude::*;
 
 fn main() {
+    let lat = std::env::var("MAP_LAT").expect("MAP_LAT env");
+    let lat = lat.parse::<f64>().expect("lat to be f64");
+    let lon = std::env::var("MAP_LON").expect("MAP_LON env");
+    let lon = lon.parse::<f64>().expect("lon to be f64");
+    let name = std::env::var("MAP_NAME").expect("MAP_NAME env");
+    let lonlatname = format!("{lon}-{lat}-{name}");
+    println!("{lonlatname}");
+
+    let k = geodesic_to_coord(Coord { x: lon, y: lat });
+    let translate: [f64; 2] = [lon * k, lat * k];
+
+    let segments = query_transportation(TransportationQueryParams {
+        from_string: format!("read_parquet('parquet/{lonlatname}-transportation.parquet')"),
+        k,
+        translate,
+    });
+
+    let buildings = query_buildings(BuildingsQueryParams {
+        from_string: format!("read_parquet('parquet/{lonlatname}-building.parquet')"),
+        limit: None,
+        k,
+        translate,
+    });
     App::new()
+        .insert_resource(Buildings { buildings })
+        .insert_resource(SegmentsRes { segments })
         .insert_resource(RapierConfiguration {
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
@@ -17,6 +43,7 @@ fn main() {
             DefaultPlugins,
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
+            CarCameraPlugin,
         ))
         .insert_resource(CarRes {
             show_rays: true,
@@ -27,6 +54,9 @@ fn main() {
             (
                 rapier_config_start_system,
                 plane_start,
+                transportations_start,
+                buildings_start,
+                light_start_system,
                 car_start_system,
                 spawn_car_system.after(car_start_system),
             ),
@@ -61,7 +91,7 @@ fn plane_start(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let size = 100.;
+    let size = 5000.;
     let (cols, rows) = (10, 10);
     cmd.spawn((
         PbrBundle {
@@ -76,20 +106,20 @@ fn plane_start(
         Collider::heightfield(vec![0.; rows * cols], rows, cols, Vec3::new(size, 0., size)),
     ));
 
-    cmd.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 1500.0,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..default()
-    });
+    // cmd.spawn(PointLightBundle {
+    //     point_light: PointLight {
+    //         intensity: 1500.0,
+    //         shadows_enabled: true,
+    //         ..default()
+    //     },
+    //     transform: Transform::from_xyz(4.0, 8.0, 4.0),
+    //     ..default()
+    // });
 
-    cmd.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 10., 20.).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    // cmd.spawn(Camera3dBundle {
+    //     transform: Transform::from_xyz(0., 10., 20.).looking_at(Vec3::ZERO, Vec3::Y),
+    //     ..default()
+    // });
 }
 
 fn input_system(input: Res<Input<KeyCode>>, mut cars: Query<&mut Car>) {

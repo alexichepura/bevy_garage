@@ -17,3 +17,5 @@ STYLE.md
 .env
 db_client/src/db.rs
 dev.db
+*.parquet
+data.duckdb
