@@ -683,6 +683,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_garage_online"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage",
+ "bevy_garage_car",
+ "bevy_rapier3d",
+]
+
+[[package]]
 name = "bevy_garage_track"
 version = "0.1.0"
 dependencies = [

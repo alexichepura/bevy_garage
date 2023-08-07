@@ -19,6 +19,7 @@ members = [
     "db_client",
     "ios",
     "track-convert",
+    "online",
 ]
 [profile.release]
 codegen-units = 1
