@@ -8,4 +8,4 @@ bevy = { workspace = true }
 bevy_garage = { path = "../" }
 bevy_garage_car = { workspace = true }
 bevy_rapier3d = { workspace = true }
-bevy_overture_maps = { path = "../../bevy_overture" }
+bevy_overture_maps = { git = "https://github.com/alexichepura/bevy_overture_maps", rev = "ea8f3ae" }
