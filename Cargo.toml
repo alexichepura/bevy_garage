@@ -31,7 +31,9 @@ bevy = { version = "0.11", features = ["jpeg"] }
 bevy_garage_car = { path = "./car" }
 bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
-bevy_rapier3d = { version = "0.22", features = ["serde-serialize"] }
+bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "a149ff5", features = [
+    "serde-serialize",
+] }
 dfdx = "0.11"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = [
     "sqlite",
