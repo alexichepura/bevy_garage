@@ -53,4 +53,4 @@ bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true }
 # bevy_fundsp = { git = "https://github.com/harudagondi/bevy_fundsp" }
 uuid = "1.3"
-# virtual_joystick = "1.1"
+virtual_joystick = "2.0.1"

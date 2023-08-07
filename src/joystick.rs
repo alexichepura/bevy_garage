@@ -13,15 +13,15 @@ enum JoystickTypeAxis {
 pub struct CarJoystickPlugin;
 impl Plugin for CarJoystickPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(VirtualJoystickPlugin::<JoystickTypeAxis>::default())
-            .add_startup_system(joystick_start_system)
-            .add_system(update_joystick.in_set(CarSet::Input));
+        app.add_plugins(VirtualJoystickPlugin::<JoystickTypeAxis>::default())
+            .add_systems(Startup, joystick_start_system)
+            .add_systems(Update, update_joystick.in_set(CarSet::Input));
     }
 }
 
 const MARGIN: Val = Val::Px(35.);
 const KNOB_SIZE: Vec2 = Vec2::new(70., 70.);
-const AREA_SIZE: Size = Size::all(Val::Px(150.));
+const AREA_SIZE: Val = Val::Px(150.);
 const BG: BackgroundColor = BackgroundColor(Color::rgba(1.0, 0.27, 0.0, 0.1));
 
 pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
@@ -37,13 +37,11 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
         })
         .set_color(TintColor(Color::WHITE))
         .set_style(Style {
-            size: AREA_SIZE,
+            width: AREA_SIZE,
+            height: AREA_SIZE,
             position_type: PositionType::Absolute,
-            position: UiRect {
-                left: MARGIN,
-                bottom: MARGIN,
-                ..default()
-            },
+            left: MARGIN,
+            bottom: MARGIN,
             ..default()
         }),
         BG,
@@ -62,13 +60,11 @@ pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) 
         })
         .set_color(TintColor(Color::WHITE))
         .set_style(Style {
-            size: AREA_SIZE,
+            width: AREA_SIZE,
+            height: AREA_SIZE,
             position_type: PositionType::Absolute,
-            position: UiRect {
-                right: MARGIN,
-                bottom: MARGIN,
-                ..default()
-            },
+            right: MARGIN,
+            bottom: MARGIN,
             ..default()
         }),
         BG,

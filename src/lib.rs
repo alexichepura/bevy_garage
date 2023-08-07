@@ -6,7 +6,7 @@ mod dash;
 pub mod esp;
 pub mod font;
 mod input;
-// pub mod joystick;
+pub mod joystick;
 mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
