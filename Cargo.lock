@@ -930,7 +930,7 @@ dependencies = [
  "bevy",
  "bevy_garage",
  "bevy_garage_car",
- "bevy_overture",
+ "bevy_overture_maps",
  "bevy_rapier3d",
 ]
 
@@ -1130,7 +1130,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_overture"
+name = "bevy_overture_maps"
 version = "0.1.0"
 dependencies = [
  "arrow",
