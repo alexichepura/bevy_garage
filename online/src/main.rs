@@ -18,23 +18,23 @@ fn main() {
     let lon = std::env::var("MAP_LON").expect("MAP_LON env");
     let lon = lon.parse::<f64>().expect("lon to be f64");
     let name = std::env::var("MAP_NAME").expect("MAP_NAME env");
-    let lonlatname = format!("{lon}-{lat}-{name}");
+    let lonlatname = format!("{lon}_{lat}_{name}");
     println!("{lonlatname}");
 
     let k = geodesic_to_coord(Coord { x: lon, y: lat });
-    let translate: [f64; 2] = [lon * k, lat * k];
+    let center: [f64; 2] = [lon * k, -lat * k]; // Yto-Z
 
     let segments = query_transportation(TransportationQueryParams {
-        from_string: format!("read_parquet('parquet/{lonlatname}-transportation.parquet')"),
-        k,
-        translate,
-    });
-
-    let buildings = query_buildings(BuildingsQueryParams {
-        from_string: format!("read_parquet('parquet/{lonlatname}-building.parquet')"),
+        from_string: format!("read_parquet('parquet/{lonlatname}_transportation.parquet')"),
         limit: None,
         k,
-        translate,
+        center,
+    });
+    let buildings = query_buildings(BuildingsQueryParams {
+        from_string: format!("read_parquet('parquet/{lonlatname}_building.parquet')"),
+        limit: None,
+        k,
+        center,
     });
     App::new()
         .insert_resource(Buildings { buildings })

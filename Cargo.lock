@@ -1132,7 +1132,6 @@ dependencies = [
 [[package]]
 name = "bevy_overture_maps"
 version = "0.1.0"
-source = "git+https://github.com/alexichepura/bevy_overture_maps?rev=ea8f3ae#ea8f3ae6f0719d3725adc2d78bc706325c87efed"
 dependencies = [
  "arrow",
  "bevy",
