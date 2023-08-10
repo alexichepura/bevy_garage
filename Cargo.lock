@@ -1132,7 +1132,7 @@ dependencies = [
 [[package]]
 name = "bevy_overture_maps"
 version = "0.2.0"
-source = "git+https://github.com/alexichepura/bevy_overture_maps?rev=438c97e#438c97ef967f529de2b08631fbb8471814a3ccc9"
+source = "git+https://github.com/alexichepura/bevy_overture_maps?rev=a71dc0f#a71dc0f25e2df9d95bfbd72a3539dd06874bff02"
 dependencies = [
  "arrow",
  "bevy",
@@ -1143,6 +1143,8 @@ dependencies = [
  "parquet",
  "serde",
  "serde_json",
+ "strum 0.25.0",
+ "strum_macros 0.25.2",
 ]
 
 [[package]]

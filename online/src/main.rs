@@ -22,19 +22,19 @@ fn main() {
     println!("{lonlatname}");
 
     let k = geodesic_to_coord(Coord { x: lon, y: lat });
-    let center: [f64; 2] = [lon * k, -lat * k]; // Yto-Z
+    let center_xz: [f64; 2] = [lon * k[0], -lat * k[1]]; // Yto-Z
 
     let segments = query_transportation(TransportationQueryParams {
         from_string: format!("read_parquet('parquet/{lonlatname}_transportation.parquet')"),
         limit: None,
         k,
-        center,
+        center: center_xz,
     });
     let buildings = query_buildings(BuildingsQueryParams {
         from_string: format!("read_parquet('parquet/{lonlatname}_building.parquet')"),
         limit: None,
         k,
-        center,
+        center: center_xz,
     });
     App::new()
         .insert_resource(Buildings { buildings })
@@ -47,6 +47,10 @@ fn main() {
             },
             ..default()
         })
+        .insert_resource(CarRes {
+            show_rays: true,
+            ..default()
+        })
         .add_plugins((
             DefaultPlugins,
             RapierPhysicsPlugin::<NoUserData>::default(),
@@ -54,10 +58,7 @@ fn main() {
             CarCameraPlugin,
             FrameTimeDiagnosticsPlugin::default(),
         ))
-        .insert_resource(CarRes {
-            show_rays: true,
-            ..default()
-        })
+        .init_resource::<MapMaterialHandle>()
         .add_systems(
             Startup,
             (
