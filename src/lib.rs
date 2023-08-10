@@ -7,7 +7,7 @@ pub mod esp;
 pub mod font;
 mod input;
 pub mod joystick;
-mod light;
+pub mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_garage_car::{car_start_system, CarRes, CarSet};
