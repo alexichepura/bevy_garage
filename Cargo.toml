@@ -20,6 +20,7 @@ members = [
     "ios",
     "track-convert",
     "overture_maps",
+    "renet",
 ]
 [profile.release]
 codegen-units = 1
