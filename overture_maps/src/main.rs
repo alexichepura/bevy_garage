@@ -142,7 +142,16 @@ fn plane_start(
     // });
 }
 
-fn input_system(input: Res<Input<KeyCode>>, mut cars: Query<&mut Car>) {
+fn input_system(
+    input: Res<Input<KeyCode>>,
+    mut cars: Query<&mut Car>,
+    mut car_res: ResMut<CarRes>,
+    mut debug_ctx: ResMut<bevy_rapier3d::render::DebugRenderContext>,
+) {
+    if input.just_pressed(KeyCode::R) {
+        debug_ctx.enabled = !debug_ctx.enabled;
+        car_res.show_rays = debug_ctx.enabled;
+    }
     for mut car in cars.iter_mut() {
         if input.pressed(KeyCode::Up) {
             car.gas = 1.;
