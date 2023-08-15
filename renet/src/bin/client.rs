@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{EguiContexts, EguiPlugin};
+use bevy_garage_car::{CarWheels, Wheel};
 use bevy_garage_renet::{
     connection_config, setup_level, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput,
     ServerChannel, ServerMessages, PROTOCOL_ID,
@@ -161,6 +162,8 @@ fn client_sync_players(
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
     car_res: Res<bevy_garage_car::CarRes>,
+    car_wheels: Query<&CarWheels>,
+    mut wheel_query: Query<&mut Transform, With<Wheel>>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -220,6 +223,18 @@ fn client_sync_players(
                     ..Default::default()
                 };
                 cmd.entity(*entity).insert(transform);
+
+                let translations = networked_entities.wheels_translations[i];
+
+                let rotations = networked_entities.wheels_rotations_y[i];
+                let car_wheels = car_wheels.get(*entity);
+                if let Ok(car_wheels) = car_wheels {
+                    for (i, e) in car_wheels.entities.iter().enumerate() {
+                        let mut wheel_transform = wheel_query.get_mut(*e).unwrap();
+                        wheel_transform.rotation.y = rotations[i];
+                        wheel_transform.translation = translations[i].into()
+                    }
+                }
             }
         }
     }

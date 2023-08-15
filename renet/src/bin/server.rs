@@ -1,11 +1,14 @@
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
+    window::WindowResolution,
 };
 use bevy_egui::{EguiContexts, EguiPlugin};
+use bevy_garage::esp::esp_system;
+use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes, CarWheels, Wheel};
 use bevy_garage_renet::{
-    connection_config, setup_level, ClientChannel, NetworkedEntities, Player, PlayerCommand,
-    PlayerInput, ServerChannel, ServerMessages, PROTOCOL_ID,
+    connection_config, rapier_config_start_system, setup_level, ClientChannel, NetworkedEntities,
+    Player, PlayerCommand, PlayerInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
@@ -48,7 +51,15 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
 fn main() {
     let mut app = App::new();
     app.add_plugins((
-        DefaultPlugins,
+        DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Bevy Garage renet server".to_string(),
+                resolution: WindowResolution::new(640., 240.),
+                canvas: Some("#bevy-garage".to_string()),
+                ..default()
+            }),
+            ..default()
+        }),
         RenetServerPlugin,
         NetcodeServerPlugin,
         RapierPhysicsPlugin::<NoUserData>::default(),
@@ -58,7 +69,7 @@ fn main() {
         EguiPlugin,
     ));
 
-    app.insert_resource(bevy_garage_car::CarRes {
+    app.insert_resource(CarRes {
         show_rays: true,
         ..default()
     })
@@ -84,17 +95,17 @@ fn main() {
             server_network_sync,
             move_players_system,
             update_visulizer_system,
-            bevy_garage::esp::esp_system.after(move_players_system),
+            esp_system.after(move_players_system),
         ),
     );
 
     app.add_systems(
         Startup,
         (
-            bevy_garage_renet::rapier_config_start_system,
+            rapier_config_start_system,
             setup_level,
             setup_simple_camera,
-            bevy_garage_car::car_start_system,
+            car_start_system,
         ),
     );
 
@@ -109,7 +120,7 @@ fn server_update_system(
     mut server: ResMut<RenetServer>,
     mut visualizer: ResMut<RenetServerVisualizer<200>>,
     players: Query<(Entity, &Player, &Transform)>,
-    car_res: Res<bevy_garage_car::CarRes>,
+    car_res: Res<CarRes>,
 ) {
     for event in server_events.iter() {
         match event {
@@ -135,7 +146,7 @@ fn server_update_system(
                     0.51,
                     (fastrand::f32() - 0.5) * 40.,
                 );
-                let player_entity = bevy_garage_car::spawn_car(
+                let player_entity = spawn_car(
                     &mut cmd,
                     &car_res.car_scene.as_ref().unwrap(),
                     &car_res.wheel_scene.as_ref().unwrap(),
@@ -204,21 +215,43 @@ fn update_visulizer_system(
 #[allow(clippy::type_complexity)]
 fn server_network_sync(
     mut server: ResMut<RenetServer>,
-    query: Query<(Entity, &Transform), With<Player>>,
+    mut tr_set: ParamSet<(
+        Query<(Entity, &Transform, &CarWheels), With<Player>>,
+        Query<&Transform, With<Wheel>>,
+    )>,
 ) {
     let mut networked_entities = NetworkedEntities::default();
-    for (entity, transform) in query.iter() {
+    let mut wheels_all: Vec<[Entity; 4]> = vec![];
+    for (entity, transform, wheels) in tr_set.p0().iter() {
         networked_entities.entities.push(entity);
         networked_entities
             .translations
             .push(transform.translation.into());
+
+        wheels_all.push(wheels.entities);
+    }
+
+    for wheels in wheels_all {
+        let r_0 = tr_set.p1().get(wheels[0]).unwrap().rotation.y;
+        let r_1 = tr_set.p1().get(wheels[1]).unwrap().rotation.y;
+        let r_2 = tr_set.p1().get(wheels[2]).unwrap().rotation.y;
+        let r_3 = tr_set.p1().get(wheels[3]).unwrap().rotation.y;
+        let m: [f32; 4] = [r_0, r_1, r_2, r_3];
+        networked_entities.wheels_rotations_y.push(m);
+
+        networked_entities.wheels_translations.push([
+            tr_set.p1().get(wheels[0]).unwrap().translation.into(),
+            tr_set.p1().get(wheels[1]).unwrap().translation.into(),
+            tr_set.p1().get(wheels[2]).unwrap().translation.into(),
+            tr_set.p1().get(wheels[3]).unwrap().translation.into(),
+        ]);
     }
 
     let sync_message = bincode::serialize(&networked_entities).unwrap();
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
 }
 
-fn move_players_system(mut query: Query<(&PlayerInput, &mut bevy_garage_car::Car)>) {
+fn move_players_system(mut query: Query<(&PlayerInput, &mut Car)>) {
     for (input, mut car) in query.iter_mut() {
         if input.up {
             car.gas = 1.;
