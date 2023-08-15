@@ -1,5 +1,3 @@
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
-
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::{shape::Icosphere, *},
@@ -20,6 +18,7 @@ use bevy_renet::{
 };
 use renet_visualizer::{RenetClientVisualizer, RenetVisualizerStyle};
 use smooth_bevy_cameras::{LookTransform, LookTransformBundle, LookTransformPlugin, Smoother};
+use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
 #[derive(Component)]
 struct ControlledPlayer;
@@ -61,16 +60,20 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins);
-    app.add_plugins(RenetClientPlugin);
-    app.add_plugins(NetcodeClientPlugin);
-    app.add_plugins(LookTransformPlugin);
-    app.add_plugins(FrameTimeDiagnosticsPlugin);
-    app.add_plugins(LogDiagnosticsPlugin::default());
-    app.add_plugins(EguiPlugin);
-
+    app.add_plugins((
+        DefaultPlugins,
+        RenetClientPlugin,
+        NetcodeClientPlugin,
+        LookTransformPlugin,
+        FrameTimeDiagnosticsPlugin,
+        LogDiagnosticsPlugin::default(),
+        EguiPlugin,
+    ));
     app.add_event::<PlayerCommand>();
-
+    app.insert_resource(bevy_garage_car::CarRes {
+        show_rays: true,
+        ..default()
+    });
     app.insert_resource(ClientLobby::default());
     app.insert_resource(PlayerInput::default());
     let (client, transport) = new_renet_client();
@@ -94,9 +97,16 @@ fn main() {
         RenetVisualizerStyle::default(),
     ));
 
-    app.add_systems(Startup, (setup_level, setup_camera, setup_target));
-    app.add_systems(Update, update_visulizer_system);
-    app.add_systems(Update, panic_on_error_system);
+    app.add_systems(
+        Startup,
+        (
+            setup_level,
+            setup_camera,
+            setup_target,
+            bevy_garage_car::car_start_system,
+        ),
+    );
+    app.add_systems(Update, (update_visulizer_system, panic_on_error_system));
 
     app.run();
 }

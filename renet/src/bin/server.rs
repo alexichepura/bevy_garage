@@ -26,9 +26,6 @@ pub struct ServerLobby {
 
 const PLAYER_MOVE_SPEED: f32 = 5.0;
 
-#[derive(Debug, Resource)]
-struct BotId(u64);
-
 fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
     let server = RenetServer::new(connection_config());
 
@@ -52,18 +49,22 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins);
+    app.add_plugins((
+        DefaultPlugins,
+        RenetServerPlugin,
+        NetcodeServerPlugin,
+        RapierPhysicsPlugin::<NoUserData>::default(),
+        RapierDebugRenderPlugin::default(),
+        FrameTimeDiagnosticsPlugin,
+        LogDiagnosticsPlugin::default(),
+        EguiPlugin,
+    ));
 
-    app.add_plugins(RenetServerPlugin);
-    app.add_plugins(NetcodeServerPlugin);
-    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
-    app.add_plugins(RapierDebugRenderPlugin::default());
-    app.add_plugins(FrameTimeDiagnosticsPlugin);
-    app.add_plugins(LogDiagnosticsPlugin::default());
-    app.add_plugins(EguiPlugin);
-
+    app.insert_resource(bevy_garage_car::CarRes {
+        show_rays: true,
+        ..default()
+    });
     app.insert_resource(ServerLobby::default());
-    app.insert_resource(BotId(0));
 
     let (server, transport) = new_renet_server();
     app.insert_resource(server);
@@ -81,7 +82,14 @@ fn main() {
         ),
     );
 
-    app.add_systems(Startup, (setup_level, setup_simple_camera));
+    app.add_systems(
+        Startup,
+        (
+            setup_level,
+            setup_simple_camera,
+            bevy_garage_car::car_start_system,
+        ),
+    );
 
     app.run();
 }
