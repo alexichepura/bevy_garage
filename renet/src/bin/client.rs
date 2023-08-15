@@ -227,14 +227,14 @@ fn client_sync_players(
                 cmd.entity(*entity).insert(transform);
 
                 let translations = networked_entities.wheels_translations[i];
+                let rotations = networked_entities.wheels_rotations[i];
 
-                let rotations = networked_entities.wheels_rotations_y[i];
                 let car_wheels = car_wheels.get(*entity);
                 if let Ok(car_wheels) = car_wheels {
                     for (i, e) in car_wheels.entities.iter().enumerate() {
                         let mut wheel_transform = wheel_query.get_mut(*e).unwrap();
-                        wheel_transform.rotation.y = rotations[i];
-                        wheel_transform.translation = translations[i].into()
+                        wheel_transform.translation = translations[i].into();
+                        wheel_transform.rotation = Quat::from_array(rotations[i]);
                     }
                 }
             }

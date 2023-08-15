@@ -233,18 +233,17 @@ fn server_network_sync(
     }
 
     for wheels in wheels_all {
-        let r_0 = tr_set.p1().get(wheels[0]).unwrap().rotation.y;
-        let r_1 = tr_set.p1().get(wheels[1]).unwrap().rotation.y;
-        let r_2 = tr_set.p1().get(wheels[2]).unwrap().rotation.y;
-        let r_3 = tr_set.p1().get(wheels[3]).unwrap().rotation.y;
-        let m: [f32; 4] = [r_0, r_1, r_2, r_3];
-        networked_entities.wheels_rotations_y.push(m);
-
         networked_entities.wheels_translations.push([
             tr_set.p1().get(wheels[0]).unwrap().translation.into(),
             tr_set.p1().get(wheels[1]).unwrap().translation.into(),
             tr_set.p1().get(wheels[2]).unwrap().translation.into(),
             tr_set.p1().get(wheels[3]).unwrap().translation.into(),
+        ]);
+        networked_entities.wheels_rotations.push([
+            tr_set.p1().get(wheels[0]).unwrap().rotation.into(),
+            tr_set.p1().get(wheels[1]).unwrap().rotation.into(),
+            tr_set.p1().get(wheels[2]).unwrap().rotation.into(),
+            tr_set.p1().get(wheels[3]).unwrap().rotation.into(),
         ]);
     }
 

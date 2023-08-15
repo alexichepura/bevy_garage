@@ -60,7 +60,7 @@ pub struct NetworkedEntities {
     pub translations: Vec<[f32; 3]>,
     pub rotations: Vec<[f32; 4]>,
     pub wheels_translations: Vec<[[f32; 3]; 4]>,
-    pub wheels_rotations_y: Vec<[f32; 4]>, // fl, fr, rl, rr
+    pub wheels_rotations: Vec<[[f32; 4]; 4]>,
 }
 
 impl From<ClientChannel> for u8 {
