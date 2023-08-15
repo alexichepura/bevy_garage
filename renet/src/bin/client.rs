@@ -86,7 +86,6 @@ fn main() {
         (
             player_input,
             camera_follow,
-            bevy_garage::esp::esp_system.after(player_input),
             (
                 client_send_input,
                 client_send_player_commands,

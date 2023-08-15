@@ -61,12 +61,19 @@ fn main() {
     app.insert_resource(bevy_garage_car::CarRes {
         show_rays: true,
         ..default()
+    })
+    .insert_resource(RapierConfiguration {
+        timestep_mode: TimestepMode::Variable {
+            max_dt: 1. / 60.,
+            time_scale: 1.,
+            substeps: 10,
+        },
+        ..default()
     });
     app.insert_resource(ServerLobby::default());
 
     let (server, transport) = new_renet_server();
-    app.insert_resource(server);
-    app.insert_resource(transport);
+    app.insert_resource(server).insert_resource(transport);
 
     app.insert_resource(RenetServerVisualizer::<200>::default());
 
@@ -84,6 +91,7 @@ fn main() {
     app.add_systems(
         Startup,
         (
+            bevy_garage_renet::rapier_config_start_system,
             setup_level,
             setup_simple_camera,
             bevy_garage_car::car_start_system,

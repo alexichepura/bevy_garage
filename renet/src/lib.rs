@@ -4,6 +4,13 @@ use bevy_renet::renet::{transport::NETCODE_KEY_BYTES, ChannelConfig, ConnectionC
 use serde::{Deserialize, Serialize};
 use std::{f32::consts::PI, time::Duration};
 
+pub fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
+    c.integration_parameters.max_velocity_iterations = 64;
+    c.integration_parameters.max_velocity_friction_iterations = 64;
+    c.integration_parameters.max_stabilization_iterations = 16;
+    c.integration_parameters.erp = 0.99;
+}
+
 pub const PRIVATE_KEY: &[u8; NETCODE_KEY_BYTES] = b"an example very very secret key."; // 32-bytes
 pub const PROTOCOL_ID: u64 = 7;
 
