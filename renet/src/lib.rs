@@ -1,9 +1,8 @@
-use std::{f32::consts::PI, time::Duration};
-
-use bevy::prelude::{shape::Icosphere, *};
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_renet::renet::{transport::NETCODE_KEY_BYTES, ChannelConfig, ConnectionConfig, SendType};
 use serde::{Deserialize, Serialize};
+use std::{f32::consts::PI, time::Duration};
 
 pub const PRIVATE_KEY: &[u8; NETCODE_KEY_BYTES] = b"an example very very secret key."; // 32-bytes
 pub const PROTOCOL_ID: u64 = 7;
@@ -38,10 +37,21 @@ pub enum ServerChannel {
 
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum ServerMessages {
-    PlayerCreate { entity: Entity, id: u64, translation: [f32; 3] },
-    PlayerRemove { id: u64 },
-    SpawnProjectile { entity: Entity, translation: [f32; 3] },
-    DespawnProjectile { entity: Entity },
+    PlayerCreate {
+        entity: Entity,
+        id: u64,
+        translation: [f32; 3],
+    },
+    PlayerRemove {
+        id: u64,
+    },
+    SpawnProjectile {
+        entity: Entity,
+        translation: [f32; 3],
+    },
+    DespawnProjectile {
+        entity: Entity,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -116,9 +126,11 @@ pub fn connection_config() -> ConnectionConfig {
     }
 }
 
-/// set up a simple 3D scene
-pub fn setup_level(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
-    // plane
+pub fn setup_level(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(40., 1., 40.))),
@@ -127,7 +139,6 @@ pub fn setup_level(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut
             ..Default::default()
         })
         .insert(Collider::cuboid(20., 0.5, 20.));
-    // light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             shadows_enabled: true,
@@ -140,43 +151,4 @@ pub fn setup_level(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut
         },
         ..default()
     });
-}
-
-#[derive(Debug, Component)]
-pub struct Projectile {
-    pub duration: Timer,
-}
-
-pub fn spawn_fireball(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    translation: Vec3,
-    mut direction: Vec3,
-) -> Entity {
-    if !direction.is_normalized() {
-        direction = Vec3::X;
-    }
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(
-                Mesh::try_from(Icosphere {
-                    radius: 0.1,
-                    subdivisions: 5,
-                })
-                .unwrap(),
-            ),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-            transform: Transform::from_translation(translation),
-            ..Default::default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
-        // .insert(Collider::ball(0.1))
-        .insert(Velocity::linear(direction * 10.))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Projectile {
-            duration: Timer::from_seconds(1.5, TimerMode::Once),
-        })
-        .id()
 }
