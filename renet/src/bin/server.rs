@@ -77,6 +77,7 @@ fn main() {
             server_network_sync,
             move_players_system,
             update_visulizer_system,
+            bevy_garage::esp::esp_system.after(move_players_system),
         ),
     );
 

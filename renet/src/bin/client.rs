@@ -1,7 +1,6 @@
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::{shape::Icosphere, *},
-    window::PrimaryWindow,
+    prelude::*,
 };
 use bevy_egui::{EguiContexts, EguiPlugin};
 use bevy_garage_renet::{
@@ -82,15 +81,19 @@ fn main() {
 
     app.insert_resource(NetworkMapping::default());
 
-    app.add_systems(Update, (player_input, camera_follow, update_target_system));
     app.add_systems(
         Update,
         (
-            client_send_input,
-            client_send_player_commands,
-            client_sync_players,
-        )
-            .run_if(bevy_renet::transport::client_connected()),
+            player_input,
+            camera_follow,
+            bevy_garage::esp::esp_system.after(player_input),
+            (
+                client_send_input,
+                client_send_player_commands,
+                client_sync_players,
+            )
+                .run_if(bevy_renet::transport::client_connected()),
+        ),
     );
 
     app.insert_resource(RenetClientVisualizer::<200>::new(
@@ -99,12 +102,7 @@ fn main() {
 
     app.add_systems(
         Startup,
-        (
-            setup_level,
-            setup_camera,
-            setup_target,
-            bevy_garage_car::car_start_system,
-        ),
+        (setup_level, setup_camera, bevy_garage_car::car_start_system),
     );
     app.add_systems(Update, (update_visulizer_system, panic_on_error_system));
 
@@ -134,30 +132,16 @@ fn update_visulizer_system(
     }
 }
 
-fn player_input(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut player_input: ResMut<PlayerInput>,
-    mouse_button_input: Res<Input<MouseButton>>,
-    target_query: Query<&Transform, With<Target>>,
-    mut player_commands: EventWriter<PlayerCommand>,
-) {
+fn player_input(keyboard_input: Res<Input<KeyCode>>, mut player_input: ResMut<PlayerInput>) {
     player_input.left = keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left);
     player_input.right =
         keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right);
     player_input.up = keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up);
     player_input.down = keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down);
-
-    if mouse_button_input.just_pressed(MouseButton::Left) {
-        let target_transform = target_query.single();
-        player_commands.send(PlayerCommand::BasicAttack {
-            cast_at: target_transform.translation,
-        });
-    }
 }
 
 fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
     let input_message = bincode::serialize(&*player_input).unwrap();
-
     client.send_message(ClientChannel::Input, input_message);
 }
 
@@ -242,25 +226,6 @@ fn client_sync_players(
     }
 }
 
-#[derive(Component)]
-struct Target;
-
-fn update_target_system(
-    primary_window: Query<&Window, With<PrimaryWindow>>,
-    mut target_query: Query<&mut Transform, With<Target>>,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
-) {
-    let (camera, camera_transform) = camera_query.single();
-    let mut target_transform = target_query.single_mut();
-    if let Some(cursor_pos) = primary_window.single().cursor_position() {
-        if let Some(ray) = camera.viewport_to_world(camera_transform, cursor_pos) {
-            if let Some(distance) = ray.intersect_plane(Vec3::Y, Vec3::Y) {
-                target_transform.translation = ray.direction * distance + ray.origin;
-            }
-        }
-    }
-}
-
 fn setup_camera(mut commands: Commands) {
     commands
         .spawn(LookTransformBundle {
@@ -276,27 +241,6 @@ fn setup_camera(mut commands: Commands) {
                 .looking_at(Vec3::new(0.0, 0.5, 0.0), Vec3::Y),
             ..default()
         });
-}
-
-fn setup_target(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(
-                Mesh::try_from(Icosphere {
-                    radius: 0.1,
-                    subdivisions: 5,
-                })
-                .unwrap(),
-            ),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-            transform: Transform::from_xyz(0.0, 0., 0.0),
-            ..Default::default()
-        })
-        .insert(Target);
 }
 
 fn camera_follow(
