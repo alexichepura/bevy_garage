@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{EguiContexts, EguiPlugin};
+use bevy_garage::camera::CarCameraPlugin;
 use bevy_garage_car::{CarWheels, Wheel};
 use bevy_garage_renet::{
     connection_config, setup_level, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput,
@@ -17,7 +18,6 @@ use bevy_renet::{
     RenetClientPlugin,
 };
 use renet_visualizer::{RenetClientVisualizer, RenetVisualizerStyle};
-use smooth_bevy_cameras::{LookTransform, LookTransformBundle, LookTransformPlugin, Smoother};
 use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
 #[derive(Component)]
@@ -60,20 +60,20 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins((
-        DefaultPlugins,
-        RenetClientPlugin,
-        NetcodeClientPlugin,
-        LookTransformPlugin,
-        FrameTimeDiagnosticsPlugin,
-        LogDiagnosticsPlugin::default(),
-        EguiPlugin,
-    ));
-    app.add_event::<PlayerCommand>();
     app.insert_resource(bevy_garage_car::CarRes {
         show_rays: true,
         ..default()
     });
+    app.add_plugins((
+        DefaultPlugins,
+        RenetClientPlugin,
+        NetcodeClientPlugin,
+        FrameTimeDiagnosticsPlugin,
+        LogDiagnosticsPlugin::default(),
+        EguiPlugin,
+        CarCameraPlugin,
+    ));
+    app.add_event::<PlayerCommand>();
     app.insert_resource(ClientLobby::default());
     app.insert_resource(PlayerInput::default());
     let (client, transport) = new_renet_client();
@@ -86,7 +86,6 @@ fn main() {
         Update,
         (
             player_input,
-            camera_follow,
             (
                 client_send_input,
                 client_send_player_commands,
@@ -100,10 +99,7 @@ fn main() {
         RenetVisualizerStyle::default(),
     ));
 
-    app.add_systems(
-        Startup,
-        (setup_level, setup_camera, bevy_garage_car::car_start_system),
-    );
+    app.add_systems(Startup, (setup_level, bevy_garage_car::car_start_system));
     app.add_systems(Update, (update_visulizer_system, panic_on_error_system));
 
     app.run();
@@ -183,7 +179,7 @@ fn client_sync_players(
                     &mut cmd,
                     &car_res.car_scene.as_ref().unwrap(),
                     &car_res.wheel_scene.as_ref().unwrap(),
-                    false,
+                    true,
                     transform,
                 );
 
@@ -239,34 +235,5 @@ fn client_sync_players(
                 }
             }
         }
-    }
-}
-
-fn setup_camera(mut commands: Commands) {
-    commands
-        .spawn(LookTransformBundle {
-            transform: LookTransform {
-                eye: Vec3::new(0.0, 8., 2.5),
-                target: Vec3::new(0.0, 0.5, 0.0),
-                up: Vec3::Y,
-            },
-            smoother: Smoother::new(0.9),
-        })
-        .insert(Camera3dBundle {
-            transform: Transform::from_xyz(0., 8.0, 2.5)
-                .looking_at(Vec3::new(0.0, 0.5, 0.0), Vec3::Y),
-            ..default()
-        });
-}
-
-fn camera_follow(
-    mut camera_query: Query<&mut LookTransform, (With<Camera>, Without<ControlledPlayer>)>,
-    player_query: Query<&Transform, With<ControlledPlayer>>,
-) {
-    let mut cam_transform = camera_query.single_mut();
-    if let Ok(player_transform) = player_query.get_single() {
-        cam_transform.eye.x = player_transform.translation.x;
-        cam_transform.eye.z = player_transform.translation.z + 2.5;
-        cam_transform.target = player_transform.translation;
     }
 }

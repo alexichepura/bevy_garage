@@ -134,14 +134,15 @@ pub fn setup_level(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let size = 1000.;
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(40., 1., 40.))),
+            mesh: meshes.add(Mesh::from(shape::Box::new(size, 1., size))),
             material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
             transform: Transform::from_xyz(0.0, -1.0, 0.0),
             ..Default::default()
         })
-        .insert(Collider::cuboid(20., 0.5, 20.));
+        .insert(Collider::cuboid(size / 2., 0.5, size / 2.));
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             shadows_enabled: true,
