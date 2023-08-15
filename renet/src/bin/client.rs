@@ -129,11 +129,10 @@ fn update_visulizer_system(
 }
 
 fn player_input(keyboard_input: Res<Input<KeyCode>>, mut player_input: ResMut<PlayerInput>) {
-    player_input.left = keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left);
-    player_input.right =
-        keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right);
-    player_input.up = keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up);
-    player_input.down = keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down);
+    player_input.left = keyboard_input.pressed(KeyCode::Left);
+    player_input.right = keyboard_input.pressed(KeyCode::Right);
+    player_input.up = keyboard_input.pressed(KeyCode::Up);
+    player_input.down = keyboard_input.pressed(KeyCode::Down);
 }
 
 fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
@@ -172,6 +171,8 @@ fn client_sync_players(
             } => {
                 println!("Player {} connected.", id);
 
+                let is_player = client_id == id;
+
                 // let transform: Transform = Transform::from_translation(translation);
                 let transform: Transform =
                     Transform::from_xyz(translation[0], translation[1], translation[2]);
@@ -179,11 +180,11 @@ fn client_sync_players(
                     &mut cmd,
                     &car_res.car_scene.as_ref().unwrap(),
                     &car_res.wheel_scene.as_ref().unwrap(),
-                    true,
+                    is_player,
                     transform,
                 );
 
-                if client_id == id {
+                if is_player {
                     cmd.entity(client_entity).insert(ControlledPlayer);
                 }
 
