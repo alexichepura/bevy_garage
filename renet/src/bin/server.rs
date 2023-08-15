@@ -227,6 +227,7 @@ fn server_network_sync(
         networked_entities
             .translations
             .push(transform.translation.into());
+        networked_entities.rotations.push(transform.rotation.into());
 
         wheels_all.push(wheels.entities);
     }

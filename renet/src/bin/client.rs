@@ -218,8 +218,10 @@ fn client_sync_players(
         for i in 0..networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
                 let translation = networked_entities.translations[i].into();
+                let rotation: Quat = Quat::from_array(networked_entities.rotations[i]);
                 let transform = Transform {
                     translation,
+                    rotation,
                     ..Default::default()
                 };
                 cmd.entity(*entity).insert(transform);
