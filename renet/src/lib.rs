@@ -45,13 +45,6 @@ pub enum ServerMessages {
     PlayerRemove {
         id: u64,
     },
-    SpawnProjectile {
-        entity: Entity,
-        translation: [f32; 3],
-    },
-    DespawnProjectile {
-        entity: Entity,
-    },
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]

@@ -172,13 +172,12 @@ fn client_send_player_commands(
 }
 
 fn client_sync_players(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut cmd: Commands,
     mut client: ResMut<RenetClient>,
     transport: Res<NetcodeClientTransport>,
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
+    car_res: Res<bevy_garage_car::CarRes>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -190,23 +189,28 @@ fn client_sync_players(
                 entity,
             } => {
                 println!("Player {} connected.", id);
-                let mut client_entity = commands.spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Capsule::default())),
-                    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                    transform: Transform::from_xyz(translation[0], translation[1], translation[2]),
-                    ..Default::default()
-                });
+
+                // let transform: Transform = Transform::from_translation(translation);
+                let transform: Transform =
+                    Transform::from_xyz(translation[0], translation[1], translation[2]);
+                let client_entity = bevy_garage_car::spawn_car(
+                    &mut cmd,
+                    &car_res.car_scene.as_ref().unwrap(),
+                    &car_res.wheel_scene.as_ref().unwrap(),
+                    false,
+                    transform,
+                );
 
                 if client_id == id {
-                    client_entity.insert(ControlledPlayer);
+                    cmd.entity(client_entity).insert(ControlledPlayer);
                 }
 
                 let player_info = PlayerInfo {
                     server_entity: entity,
-                    client_entity: client_entity.id(),
+                    client_entity,
                 };
                 lobby.players.insert(id, player_info);
-                network_mapping.0.insert(entity, client_entity.id());
+                network_mapping.0.insert(entity, client_entity);
             }
             ServerMessages::PlayerRemove { id } => {
                 println!("Player {} disconnected.", id);
@@ -215,31 +219,8 @@ fn client_sync_players(
                     client_entity,
                 }) = lobby.players.remove(&id)
                 {
-                    commands.entity(client_entity).despawn();
+                    cmd.entity(client_entity).despawn();
                     network_mapping.0.remove(&server_entity);
-                }
-            }
-            ServerMessages::SpawnProjectile {
-                entity,
-                translation,
-            } => {
-                let projectile_entity = commands.spawn(PbrBundle {
-                    mesh: meshes.add(
-                        Mesh::try_from(Icosphere {
-                            radius: 0.1,
-                            subdivisions: 5,
-                        })
-                        .unwrap(),
-                    ),
-                    material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-                    transform: Transform::from_translation(translation.into()),
-                    ..Default::default()
-                });
-                network_mapping.0.insert(entity, projectile_entity.id());
-            }
-            ServerMessages::DespawnProjectile { entity } => {
-                if let Some(entity) = network_mapping.0.remove(&entity) {
-                    commands.entity(entity).despawn();
                 }
             }
         }
@@ -255,7 +236,7 @@ fn client_sync_players(
                     translation,
                     ..Default::default()
                 };
-                commands.entity(*entity).insert(transform);
+                cmd.entity(*entity).insert(transform);
             }
         }
     }

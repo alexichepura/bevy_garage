@@ -24,8 +24,6 @@ pub struct ServerLobby {
     pub players: HashMap<u64, Entity>,
 }
 
-const PLAYER_MOVE_SPEED: f32 = 5.0;
-
 fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
     let server = RenetServer::new(connection_config());
 
@@ -97,13 +95,12 @@ fn main() {
 #[allow(clippy::too_many_arguments)]
 fn server_update_system(
     mut server_events: EventReader<ServerEvent>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut cmd: Commands,
     mut lobby: ResMut<ServerLobby>,
     mut server: ResMut<RenetServer>,
     mut visualizer: ResMut<RenetServerVisualizer<200>>,
     players: Query<(Entity, &Player, &Transform)>,
+    car_res: Res<bevy_garage_car::CarRes>,
 ) {
     for event in server_events.iter() {
         match event {
@@ -129,20 +126,16 @@ fn server_update_system(
                     0.51,
                     (fastrand::f32() - 0.5) * 40.,
                 );
-                let player_entity = commands
-                    .spawn(PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Capsule::default())),
-                        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                        transform,
-                        ..Default::default()
-                    })
-                    .insert(RigidBody::Dynamic)
-                    .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
-                    .insert(Collider::capsule_y(0.5, 0.5))
-                    .insert(PlayerInput::default())
-                    .insert(Velocity::default())
+                let player_entity = bevy_garage_car::spawn_car(
+                    &mut cmd,
+                    &car_res.car_scene.as_ref().unwrap(),
+                    &car_res.wheel_scene.as_ref().unwrap(),
+                    false,
+                    transform,
+                );
+                cmd.entity(player_entity)
                     .insert(Player { id: *client_id })
-                    .id();
+                    .insert(PlayerInput::default());
 
                 lobby.players.insert(*client_id, player_entity);
 
@@ -159,7 +152,7 @@ fn server_update_system(
                 println!("Player {} disconnected: {}", client_id, reason);
                 visualizer.remove_client(*client_id);
                 if let Some(player_entity) = lobby.players.remove(client_id) {
-                    commands.entity(player_entity).despawn();
+                    cmd.entity(player_entity).despawn();
                 }
 
                 let message =
@@ -184,7 +177,7 @@ fn server_update_system(
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
-                commands.entity(*player_entity).insert(input);
+                cmd.entity(*player_entity).insert(input);
             }
         }
     }
@@ -216,13 +209,27 @@ fn server_network_sync(
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
 }
 
-fn move_players_system(mut query: Query<(&mut Velocity, &PlayerInput)>) {
-    for (mut velocity, input) in query.iter_mut() {
-        let x = (input.right as i8 - input.left as i8) as f32;
-        let y = (input.down as i8 - input.up as i8) as f32;
-        let direction = Vec2::new(x, y).normalize_or_zero();
-        velocity.linvel.x = direction.x * PLAYER_MOVE_SPEED;
-        velocity.linvel.z = direction.y * PLAYER_MOVE_SPEED;
+fn move_players_system(mut query: Query<(&PlayerInput, &mut bevy_garage_car::Car)>) {
+    for (input, mut car) in query.iter_mut() {
+        if input.up {
+            car.gas = 1.;
+        } else {
+            car.gas = 0.;
+        }
+        if input.down {
+            car.brake = 1.;
+        } else {
+            car.brake = 0.;
+        }
+        if input.left {
+            car.steering = -1.;
+        }
+        if input.right {
+            car.steering = 1.;
+        }
+        if !input.left && !input.right {
+            car.steering = 0.;
+        }
     }
 }
 
