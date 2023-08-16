@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-bevy_garage_car = { workspace = true }
+bevy_garage_car = { workspace = true, features = ["graphics"] }
 bevy_rapier3d = { workspace = true }
