@@ -6,6 +6,7 @@ pub struct CarRes {
     pub wheel_scene: Option<Handle<Scene>>,
     pub show_rays: bool,
 }
+
 impl Default for CarRes {
     fn default() -> Self {
         Self {

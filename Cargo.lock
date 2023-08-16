@@ -955,6 +955,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_rapier3d",
+ "cfg-if",
 ]
 
 [[package]]
@@ -1005,6 +1006,7 @@ dependencies = [
  "bevy_garage_car",
  "bevy_rapier3d",
  "bevy_renet",
+ "bevy_time",
  "bincode",
  "fastrand 2.0.0",
  "renet_visualizer",

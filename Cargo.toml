@@ -33,12 +33,14 @@ default = []
 [workspace.dependencies]
 bevy = { version = "0.11", default-features = false }
 bevy_garage_camera = { path = "./camera" }
-bevy_garage_car = { path = "./car" }
+bevy_garage_car = { path = "./car", default-features = false }
 bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
 bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "a149ff5", features = [
     "serde-serialize",
-] }
+    "dim3",
+], default-features = false }
+cfg-if = "1.0.0"
 dfdx = "0.11"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = [
     "sqlite",
@@ -83,7 +85,7 @@ bevy = { workspace = true, features = [
     "webgl2",
 ] }
 bevy_garage_camera = { workspace = true }
-bevy_garage_car = { workspace = true }
+bevy_garage_car = { workspace = true, default-features = true }
 bevy_garage_nn = { workspace = true, optional = true }
 bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true }

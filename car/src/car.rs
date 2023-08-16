@@ -1,4 +1,4 @@
-use crate::{joint::build_joint, spawn_wheel, CarRes, CarSpec, WheelSpec};
+use crate::{joint::build_joint, spawn_wheel, CarSpec, WheelSpec};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -53,7 +53,9 @@ impl CarWheels {
 
 pub const STATIC_GROUP: Group = Group::GROUP_1;
 pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
-pub fn car_start_system(mut config: ResMut<CarRes>, asset_server: Res<AssetServer>) {
+
+#[cfg(feature = "graphics")]
+pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<AssetServer>) {
     let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
     config.wheel_scene = Some(wheel_gl.clone());
     let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
@@ -62,8 +64,8 @@ pub fn car_start_system(mut config: ResMut<CarRes>, asset_server: Res<AssetServe
 
 pub fn spawn_car(
     cmd: &mut Commands,
-    car_scene: &Handle<Scene>,
-    wheel_scene: &Handle<Scene>,
+    #[cfg(feature = "graphics")] car_scene: &Handle<Scene>,
+    #[cfg(feature = "graphics")] wheel_scene: &Handle<Scene>,
     player: bool,
     transform: Transform,
 ) -> Entity {
@@ -71,10 +73,17 @@ pub fn spawn_car(
     let wheel_spec = WheelSpec::new(spec.wheel_radius, spec.wheel_width);
     let mounts = spec.wheel_mount.clone();
 
+    #[cfg(feature = "graphics")]
     let car_id = spawn_car_body(cmd, car_scene, Car::new(transform), spec);
+    #[cfg(not(feature = "graphics"))]
+    let car_id = spawn_car_body(cmd, Car::new(transform), spec);
+
     let wheels = CarWheels::new(mounts.map(|mount| {
         let joint = ImpulseJoint::new(car_id, build_joint(mount.anchor, mount.left));
+        #[cfg(feature = "graphics")]
         let wheel_id = spawn_wheel(cmd, wheel_scene, &wheel_spec, &mount, transform, joint);
+        #[cfg(not(feature = "graphics"))]
+        let wheel_id = spawn_wheel(cmd, &wheel_spec, &mount, transform, joint);
         wheel_id
     }));
     cmd.entity(car_id).insert(wheels);
@@ -86,7 +95,7 @@ pub fn spawn_car(
 
 pub fn spawn_car_body(
     cmd: &mut Commands,
-    car_gl: &Handle<Scene>,
+    #[cfg(feature = "graphics")] car_gl: &Handle<Scene>,
     car: Car,
     spec: CarSpec,
 ) -> Entity {
@@ -98,16 +107,19 @@ pub fn spawn_car_body(
         spec.size.hl - car_border_radius,
         car_border_radius,
     );
-    let scene = SceneBundle {
-        scene: car_gl.clone(),
-        transform: car.spawn_transform,
-        ..default()
-    };
+    let transform = car.spawn_transform;
     cmd.spawn((
         Name::new("car"),
         car,
         spec,
-        scene,
+        #[cfg(feature = "graphics")]
+        SceneBundle {
+            scene: car_gl.clone(),
+            transform,
+            ..default()
+        },
+        #[cfg(not(feature = "graphics"))]
+        TransformBundle::from_transform(transform),
         (
             collider,
             ColliderMassProperties::MassProperties(MassProperties {

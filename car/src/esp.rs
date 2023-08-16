@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
-use crate::{Car, CarRes, CarSpec, CarWheels, Wheel};
+use crate::{Car, CarSpec, CarWheels, Wheel};
 
 pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
     for (velocity, transform, mut force) in car_query.iter_mut() {
@@ -39,8 +39,8 @@ pub fn esp_system(
         &Velocity,
         &mut ImpulseJoint,
     )>,
-    car_res: Res<CarRes>,
-    mut gizmos: Gizmos,
+    #[cfg(feature = "graphics")] car_res: Res<crate::CarRes>,
+    #[cfg(feature = "graphics")] mut gizmos: Gizmos,
 ) {
     let d_seconds = time.delta_seconds();
     for (mut car, spec, car_wheels, velocity, transform) in car_query.iter_mut() {
@@ -118,6 +118,7 @@ pub fn esp_system(
                 };
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
+                #[cfg(feature = "graphics")]
                 if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
@@ -139,6 +140,7 @@ pub fn esp_system(
                 };
                 f.torque = (transform.rotation.mul_vec3(wheel_torque)).into();
 
+                #[cfg(feature = "graphics")]
                 if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;

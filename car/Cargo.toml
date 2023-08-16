@@ -4,7 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+graphics = []
+default = ["graphics"]
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
 bevy_rapier3d = { workspace = true }
+cfg-if = { workspace = true }
