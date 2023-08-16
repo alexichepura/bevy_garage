@@ -11,5 +11,6 @@ name = "bevy_garage_ios"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-bevy = { workspace = true }
-bevy_garage = { path = "../" }
+bevy = { workspace = true, default-features = false }
+bevy_garage = { path = "../", features = ["virtual_joystick"] }
+bevy_garage_camera = { workspace = true }

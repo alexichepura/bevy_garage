@@ -1,7 +1,8 @@
 use bevy::prelude::*;
-use bevy_garage_car::{Car, CarRes, CarSpec, CarWheels, Wheel};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
+
+use crate::{Car, CarRes, CarSpec, CarWheels, Wheel};
 
 pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalForce), With<Car>>) {
     for (velocity, transform, mut force) in car_query.iter_mut() {

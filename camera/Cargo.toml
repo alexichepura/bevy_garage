@@ -1,5 +1,5 @@
 [package]
-name = "bevy_garage_car"
+name = "bevy_garage_camera"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
+bevy_garage_car = { workspace = true }
 bevy_rapier3d = { workspace = true }

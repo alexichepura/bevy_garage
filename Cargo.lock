@@ -931,12 +931,22 @@ name = "bevy_garage"
 version = "0.7.0"
 dependencies = [
  "bevy",
+ "bevy_garage_camera",
  "bevy_garage_car",
  "bevy_garage_nn",
  "bevy_garage_track",
  "bevy_rapier3d",
  "uuid",
  "virtual_joystick",
+]
+
+[[package]]
+name = "bevy_garage_camera"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage_car",
+ "bevy_rapier3d",
 ]
 
 [[package]]
@@ -953,6 +963,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_garage",
+ "bevy_garage_camera",
 ]
 
 [[package]]
@@ -978,6 +989,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_garage",
+ "bevy_garage_camera",
  "bevy_garage_car",
  "bevy_overture_maps",
  "bevy_rapier3d",
@@ -989,7 +1001,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "bevy_garage",
+ "bevy_garage_camera",
  "bevy_garage_car",
  "bevy_rapier3d",
  "bevy_renet",
@@ -997,7 +1009,6 @@ dependencies = [
  "fastrand 2.0.0",
  "renet_visualizer",
  "serde",
- "smooth-bevy-cameras",
 ]
 
 [[package]]
@@ -6427,16 +6438,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74212e6bbe9a4352329b2f68ba3130c15a3f26fe88ff22dbdc6cdd58fa85e99c"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "smooth-bevy-cameras"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "555d8849194527d0634400959632e3427249244c98811209fa6428a3fa63fd74"
-dependencies = [
- "approx",
- "bevy",
 ]
 
 [[package]]

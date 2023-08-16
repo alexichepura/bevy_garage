@@ -10,6 +10,7 @@ identifier = "io.github.alexichepura.bevy_garage"
 [workspace]
 resolver = "2"
 members = [
+    "camera",
     "car",
     "track",
     "nn",
@@ -27,9 +28,11 @@ codegen-units = 1
 [features]
 nn = ["dep:bevy_garage_nn"]
 nn_api = ["bevy_garage_nn?/api"]
+virtual_joystick = ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
-bevy = { version = "0.11", features = ["jpeg"] }
+bevy = { version = "0.11", default-features = false }
+bevy_garage_camera = { path = "./camera" }
 bevy_garage_car = { path = "./car" }
 bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
@@ -50,11 +53,40 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 [dependencies]
-bevy = { workspace = true }
+bevy = { workspace = true, features = [
+    "jpeg",
+    "animation",
+    "bevy_asset",
+    "bevy_audio",
+    "bevy_gilrs",
+    "bevy_scene",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_pbr",
+    "bevy_gltf",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "multi-threaded",
+    "png",
+    "hdr",
+    "ktx2",
+    "zstd",
+    "vorbis",
+    "x11",
+    "filesystem_watcher",
+    "bevy_gizmos",
+    "android_shared_stdcxx",
+    "tonemapping_luts",
+    "default_font",
+    "webgl2",
+] }
+bevy_garage_camera = { workspace = true }
 bevy_garage_car = { workspace = true }
 bevy_garage_nn = { workspace = true, optional = true }
 bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true }
 # bevy_fundsp = { git = "https://github.com/harudagondi/bevy_fundsp" }
 uuid = "1.3"
-virtual_joystick = "2.0.1"
+virtual_joystick = { version = "2.0.1", optional = true }

@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{EguiContexts, EguiPlugin};
-use bevy_garage::camera::CarCameraPlugin;
+use bevy_garage_camera::CarCameraPlugin;
 use bevy_garage_car::{CarWheels, Wheel};
 use bevy_garage_renet::{
     connection_config, setup_level, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput,
