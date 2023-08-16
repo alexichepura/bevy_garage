@@ -26,7 +26,15 @@ pub struct ServerLobby {
 fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
     let server = RenetServer::new(connection_config());
 
-    let public_addr = "127.0.0.1:5000".parse().unwrap();
+    let addr = if let Ok(addr) = std::env::var("RENET_SERVER_SOCKET") {
+        addr
+    } else {
+        let default = "127.0.0.1:5000".to_string();
+        println!("RENET_SERVER_SOCKET not set, setting default: {}", &default);
+        default
+    };
+
+    let public_addr = addr.parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();
     let current_time: std::time::Duration = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)

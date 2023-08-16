@@ -40,7 +40,15 @@ struct ClientLobby {
 fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
     let client = RenetClient::new(connection_config());
 
-    let server_addr = "127.0.0.1:5000".parse().unwrap();
+    let addr = if let Ok(addr) = std::env::var("RENET_SERVER_ADDR") {
+        addr
+    } else {
+        let default = "127.0.0.1:5000".to_string();
+        println!("RENET_SERVER_ADDR not set, setting default: {}", &default);
+        default
+    };
+
+    let server_addr = addr.parse().unwrap();
     let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
     let current_time = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
