@@ -1,0 +1,13 @@
+[package]
+name = "bevy_garage_dsp"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+[dependencies]
+bevy = { workspace = true, default-features = false, features = ["bevy_audio"] }
+bevy_fundsp = { version = "0.4" }
+bevy_garage_car = { workspace = true }
+bevy_rapier3d = { workspace = true }
+uuid = { workspace = true }

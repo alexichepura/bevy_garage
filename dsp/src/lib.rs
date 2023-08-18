@@ -35,11 +35,6 @@ impl CarSound {
     }
 }
 
-#[derive(Resource, Default)]
-pub struct Dsp {
-    pub engine_sink: Option<Handle<AudioSink>>,
-}
-
 const VELOCITY_PITCH_K: f32 = 30.;
 impl Plugin for EngineSoundPlugin {
     fn build(&self, app: &mut App) {
@@ -53,16 +48,12 @@ impl Plugin for EngineSoundPlugin {
         let piano_dsp = PianoDsp(piano.clone());
         let piano_id = piano_dsp.id();
 
-        app.add_dsp_source(piano_dsp, SourceType::Dynamic)
+        app.add_plugins((DspPlugin::default(),))
+            .add_dsp_source(piano_dsp, SourceType::Dynamic)
             .insert_resource(CarSound { pitch, vol })
             .insert_resource(PianoId(piano_id))
-            .insert_resource(Dsp::default())
-            .add_startup_system(engine_sound_start.in_base_set(StartupSet::PostStartup))
-            .add_systems((
-                engine_sound,
-                engine_sound_vol,
-                // engine_sound_switch
-            ));
+            .add_systems(PostStartup, engine_sound_start)
+            .add_systems(Update, (engine_sound, engine_sound_vol));
     }
 }
 
@@ -88,41 +79,19 @@ fn engine_sound_vol(input: Res<Input<KeyCode>>, car_sound: Res<CarSound>) {
         car_sound.set_vol(vol + 0.1);
     }
 }
-// fn engine_sound_switch(
-//     input: Res<Input<KeyCode>>,
-//     dsp_manager: Res<DspManager>,
-//     mut audio: ResMut<Audio<DspSource>>,
-//     mut dsp_assets: ResMut<Assets<DspSource>>,
-//     piano_id: Res<PianoId>,
-//     audio_sinks: Res<Assets<AudioSink>>,
-//     mut dsp: ResMut<Dsp>,
-// ) {
-//     if input.just_pressed(KeyCode::X) {
-//         if let Some(sink_handle) = &dsp.engine_sink {
-//             dbg!(sink_handle);
-//             // TODO investigate this doesn't work
-//             if let Some(sink) = audio_sinks.get(&sink_handle) {
-//                 dbg!(sink.volume());
-//             } else {
-//                 println!("no sink in audio_sinks");
-//             }
-//         } else {
-//             let source = dsp_manager
-//                 .get_graph_by_id(&piano_id.0)
-//                 .unwrap_or_else(|| panic!("DSP source not found!"));
-//             let sink = audio.play_dsp(dsp_assets.as_mut(), source);
-//             dsp.engine_sink = Some(sink);
-//         }
-//     }
-// }
 fn engine_sound_start(
+    mut cmd: Commands,
     mut assets: ResMut<Assets<DspSource>>,
     dsp_manager: Res<DspManager>,
-    mut audio: ResMut<Audio<DspSource>>,
     piano_id: Res<PianoId>,
 ) {
-    let source = dsp_manager
-        .get_graph_by_id(&piano_id.0)
-        .unwrap_or_else(|| panic!("DSP source not found!"));
-    audio.play_dsp(assets.as_mut(), source);
+    let source = assets.add(
+        dsp_manager
+            .get_graph_by_id(&piano_id.0)
+            .unwrap_or_else(|| panic!("DSP source not found!")),
+    );
+    cmd.spawn(AudioSourceBundle {
+        source,
+        ..default()
+    });
 }
