@@ -1,7 +1,6 @@
 #![feature(slice_flatten)]
 mod config;
 mod dash;
-// mod dsp;
 pub mod font;
 mod input;
 #[cfg(feature = "virtual_joystick")]
@@ -9,12 +8,12 @@ pub mod joystick;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
+use bevy_garage_dsp::EngineSoundPlugin;
 use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
-// use dsp::*;
 use font::*;
 use input::*;
 use spawn::*;
@@ -74,8 +73,7 @@ pub fn car_app(app: &mut App, physics_params: PhysicsParams) -> &mut App {
         .add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
             RapierPhysicsPlugin::<NoUserData>::default(),
-            // bevy_fundsp::DspPlugin::default(),
-            // EngineSoundPlugin,
+            EngineSoundPlugin,
             TrackPlugin,
             RapierDebugRenderPlugin {
                 enabled: false,
