@@ -10,7 +10,9 @@ use bevy_garage_renet::{
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
-        transport::{NetcodeServerTransport, ServerAuthentication, ServerConfig},
+        transport::{
+            NetcodeServerTransport, ServerAuthentication, ServerConfig, NETCODE_KEY_BYTES,
+        },
         RenetServer, ServerEvent,
     },
     transport::NetcodeServerPlugin,
@@ -34,6 +36,9 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
         default
     };
 
+    let private_key = b"an example very very secret key."; // 32-bytes
+    let private_key: [u8; NETCODE_KEY_BYTES] = *private_key;
+
     let public_addr = addr.parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();
     let current_time: std::time::Duration = SystemTime::now()
@@ -44,7 +49,8 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
         max_clients: 64,
         protocol_id: PROTOCOL_ID,
         public_addresses: vec![public_addr],
-        authentication: ServerAuthentication::Unsecure,
+        // authentication: ServerAuthentication::Unsecure,
+        authentication: ServerAuthentication::Secure { private_key },
     };
 
     let transport = NetcodeServerTransport::new(server_config, socket).unwrap();
