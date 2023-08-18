@@ -1,5 +1,6 @@
 use bevy::{prelude::*, window::WindowResolution};
-use bevy_garage::{camera::CarCameraPlugin, car_app, PhysicsParams};
+use bevy_garage::{car_app, PhysicsParams};
+use bevy_garage_camera::CarCameraPlugin;
 
 fn main() {
     let mut app = App::new();

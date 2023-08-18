@@ -37,7 +37,7 @@ impl Wheel {
 
 pub fn spawn_wheel(
     cmd: &mut Commands,
-    wheel_gl: &Handle<Scene>,
+    #[cfg(feature = "graphics")] wheel_gl: &Handle<Scene>,
     spec: &WheelSpec,
     mount: &WheelMount,
     car_transform: Transform,
@@ -61,11 +61,14 @@ pub fn spawn_wheel(
         Name::new("wheel"),
         wheel,
         joint,
+        #[cfg(feature = "graphics")]
         SceneBundle {
             scene: wheel_gl.clone(),
             transform,
             ..default()
         },
+        #[cfg(not(feature = "graphics"))]
+        transform,
         (
             collider,
             ColliderMassProperties::MassProperties(MassProperties {

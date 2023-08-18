@@ -1,5 +1,5 @@
-use crate::camera::CameraConfig;
 use bevy::prelude::*;
+use bevy_garage_camera::CameraConfig;
 use bevy_garage_car::{Car, CarRes, CarWheels, Player};
 use bevy_garage_track::SpawnCarOnTrackEvent;
 

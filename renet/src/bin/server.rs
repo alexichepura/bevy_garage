@@ -1,11 +1,8 @@
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
-    window::WindowResolution,
 };
-use bevy_egui::{EguiContexts, EguiPlugin};
-use bevy_garage::esp::esp_system;
-use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes, CarWheels, Wheel};
+use bevy_garage_car::{esp_system, spawn_car, Car, CarWheels, Wheel};
 use bevy_garage_renet::{
     connection_config, rapier_config_start_system, setup_level, ClientChannel, NetworkedEntities,
     Player, PlayerCommand, PlayerInput, ServerChannel, ServerMessages, PROTOCOL_ID,
@@ -19,7 +16,6 @@ use bevy_renet::{
     transport::NetcodeServerPlugin,
     RenetServerPlugin,
 };
-use renet_visualizer::RenetServerVisualizer;
 use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
 #[derive(Debug, Default, Resource)]
@@ -30,7 +26,15 @@ pub struct ServerLobby {
 fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
     let server = RenetServer::new(connection_config());
 
-    let public_addr = "127.0.0.1:5000".parse().unwrap();
+    let addr = if let Ok(addr) = std::env::var("RENET_SERVER_SOCKET") {
+        addr
+    } else {
+        let default = "127.0.0.1:5000".to_string();
+        println!("RENET_SERVER_SOCKET not set, setting default: {}", &default);
+        default
+    };
+
+    let public_addr = addr.parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();
     let current_time: std::time::Duration = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -50,30 +54,37 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
 
 fn main() {
     let mut app = App::new();
+    #[cfg(feature = "graphics")]
+    app.insert_resource(bevy_garage_car::CarRes {
+        show_rays: true,
+        ..default()
+    });
+    #[cfg(feature = "graphics")]
     app.add_plugins((
         DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Bevy Garage renet server".to_string(),
-                resolution: WindowResolution::new(640., 240.),
+                resolution: bevy::window::WindowResolution::new(640., 240.),
                 canvas: Some("#bevy-garage".to_string()),
                 ..default()
             }),
             ..default()
         }),
+        RapierDebugRenderPlugin::default(),
+        bevy_egui::EguiPlugin,
+    ));
+    #[cfg(not(feature = "graphics"))]
+    app.add_plugins(MinimalPlugins.set(bevy::app::ScheduleRunnerPlugin::default()));
+
+    app.add_plugins((
         RenetServerPlugin,
         NetcodeServerPlugin,
         RapierPhysicsPlugin::<NoUserData>::default(),
-        RapierDebugRenderPlugin::default(),
         FrameTimeDiagnosticsPlugin,
         LogDiagnosticsPlugin::default(),
-        EguiPlugin,
     ));
 
-    app.insert_resource(CarRes {
-        show_rays: true,
-        ..default()
-    })
-    .insert_resource(RapierConfiguration {
+    app.insert_resource(RapierConfiguration {
         timestep_mode: TimestepMode::Variable {
             max_dt: 1. / 60.,
             time_scale: 1.,
@@ -86,28 +97,27 @@ fn main() {
     let (server, transport) = new_renet_server();
     app.insert_resource(server).insert_resource(transport);
 
-    app.insert_resource(RenetServerVisualizer::<200>::default());
-
     app.add_systems(
         Update,
         (
             server_update_system,
             server_network_sync,
             move_players_system,
-            update_visulizer_system,
             esp_system.after(move_players_system),
         ),
     );
 
-    app.add_systems(
-        Startup,
-        (
-            rapier_config_start_system,
-            setup_level,
-            setup_simple_camera,
-            car_start_system,
-        ),
-    );
+    #[cfg(feature = "graphics")]
+    {
+        app.add_systems(
+            Startup,
+            (bevy_garage_car::car_start_system, setup_simple_camera),
+        );
+        app.add_systems(Update, (update_visulizer_system,));
+        app.insert_resource(renet_visualizer::RenetServerVisualizer::<200>::default());
+    }
+
+    app.add_systems(Startup, (rapier_config_start_system, setup_level));
 
     app.run();
 }
@@ -118,17 +128,19 @@ fn server_update_system(
     mut cmd: Commands,
     mut lobby: ResMut<ServerLobby>,
     mut server: ResMut<RenetServer>,
-    mut visualizer: ResMut<RenetServerVisualizer<200>>,
     players: Query<(Entity, &Player, &Transform)>,
-    car_res: Res<CarRes>,
+    #[cfg(feature = "graphics")] car_res: Res<bevy_garage_car::CarRes>,
+    #[cfg(feature = "graphics")] mut visualizer: ResMut<
+        renet_visualizer::RenetServerVisualizer<200>,
+    >,
 ) {
     for event in server_events.iter() {
         match event {
             ServerEvent::ClientConnected { client_id } => {
                 println!("Player {} connected.", client_id);
+                #[cfg(feature = "graphics")]
                 visualizer.add_client(*client_id);
 
-                // Initialize other players for this new client
                 for (entity, player, transform) in players.iter() {
                     let translation: [f32; 3] = transform.translation.into();
                     let message = bincode::serialize(&ServerMessages::PlayerCreate {
@@ -139,8 +151,6 @@ fn server_update_system(
                     .unwrap();
                     server.send_message(*client_id, ServerChannel::ServerMessages, message);
                 }
-
-                // Spawn new player
                 let transform = Transform::from_xyz(
                     (fastrand::f32() - 0.5) * 40.,
                     0.51,
@@ -148,7 +158,9 @@ fn server_update_system(
                 );
                 let player_entity = spawn_car(
                     &mut cmd,
+                    #[cfg(feature = "graphics")]
                     &car_res.car_scene.as_ref().unwrap(),
+                    #[cfg(feature = "graphics")]
                     &car_res.wheel_scene.as_ref().unwrap(),
                     false,
                     transform,
@@ -170,6 +182,7 @@ fn server_update_system(
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
                 println!("Player {} disconnected: {}", client_id, reason);
+                #[cfg(feature = "graphics")]
                 visualizer.remove_client(*client_id);
                 if let Some(player_entity) = lobby.players.remove(client_id) {
                     cmd.entity(player_entity).despawn();
@@ -203,9 +216,10 @@ fn server_update_system(
     }
 }
 
+#[cfg(feature = "graphics")]
 fn update_visulizer_system(
-    mut egui_contexts: EguiContexts,
-    mut visualizer: ResMut<RenetServerVisualizer<200>>,
+    mut egui_contexts: bevy_egui::EguiContexts,
+    mut visualizer: ResMut<renet_visualizer::RenetServerVisualizer<200>>,
     server: Res<RenetServer>,
 ) {
     visualizer.update(&server);
@@ -275,6 +289,7 @@ fn move_players_system(mut query: Query<(&PlayerInput, &mut Car)>) {
     }
 }
 
+#[cfg(feature = "graphics")]
 pub fn setup_simple_camera(mut commands: Commands) {
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(-20.5, 30.0, 20.5).looking_at(Vec3::ZERO, Vec3::Y),

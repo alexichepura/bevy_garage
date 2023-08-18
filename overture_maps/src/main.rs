@@ -1,10 +1,7 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-use bevy_garage::{
-    camera::CarCameraPlugin,
-    esp::esp_system,
-    light::{animate_light_direction, light_start_system},
-};
-use bevy_garage_car::{car_start_system, spawn_car, Car, CarRes};
+use bevy_garage_camera::CarCameraPlugin;
+use bevy_garage_car::{car_start_system, esp_system, spawn_car, Car, CarRes};
+use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_overture_maps::*;
 use bevy_rapier3d::prelude::*;
 

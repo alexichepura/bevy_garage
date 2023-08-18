@@ -1,25 +1,22 @@
 #![feature(slice_flatten)]
-pub mod camera;
 mod config;
 mod dash;
 // mod dsp;
-pub mod esp;
 pub mod font;
 mod input;
+#[cfg(feature = "virtual_joystick")]
 pub mod joystick;
-pub mod light;
 mod spawn;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
-use bevy_garage_car::{car_start_system, CarRes, CarSet};
+use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
+use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
 // use dsp::*;
-use esp::*;
 use font::*;
 use input::*;
-use light::*;
 use spawn::*;
 
 #[derive(Resource, Copy, Clone, Debug)]

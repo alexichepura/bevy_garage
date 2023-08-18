@@ -1,5 +1,6 @@
 use bevy::{prelude::*, window::WindowMode};
-use bevy_garage::{camera::CarCameraPlugin, car_app, joystick::CarJoystickPlugin, PhysicsParams};
+use bevy_garage::{car_app, joystick::CarJoystickPlugin, PhysicsParams};
+use bevy_garage_camera::CarCameraPlugin;
 
 #[bevy_main]
 fn main() {

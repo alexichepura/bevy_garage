@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::prelude::*;
 use bevy_renet::renet::{transport::NETCODE_KEY_BYTES, ChannelConfig, ConnectionConfig, SendType};
 use serde::{Deserialize, Serialize};
@@ -130,20 +131,34 @@ pub fn connection_config() -> ConnectionConfig {
 }
 
 pub fn setup_level(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut cmd: Commands,
+    #[cfg(feature = "graphics")] mut meshes: ResMut<Assets<Mesh>>,
+    #[cfg(feature = "graphics")] mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let size = 1000.;
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(size, 1., size))),
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-            transform: Transform::from_xyz(0.0, -1.0, 0.0),
-            ..Default::default()
-        })
-        .insert(Collider::cuboid(size / 2., 0.5, size / 2.));
-    commands.spawn(DirectionalLightBundle {
+    let cuboid = Collider::cuboid(size / 2., 0.5, size / 2.);
+    let transform = Transform::from_xyz(0.0, -1.0, 0.0);
+
+    let mut cuboid_cmd = cmd.spawn((
+        cuboid,
+        RigidBody::Fixed,
+        ColliderScale::Absolute(Vec3::ONE),
+        CollisionGroups::new(STATIC_GROUP, Group::ALL),
+        Friction::coefficient(3.),
+        Restitution::coefficient(0.),
+    ));
+    #[cfg(feature = "graphics")]
+    cuboid_cmd.insert(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Box::new(size, 1., size))),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        transform,
+        ..Default::default()
+    });
+    #[cfg(not(feature = "graphics"))]
+    cuboid_cmd.insert(TransformBundle::from_transform(transform));
+
+    #[cfg(feature = "graphics")]
+    cmd.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             shadows_enabled: true,
             ..default()
