@@ -933,6 +933,7 @@ dependencies = [
  "bevy",
  "bevy_garage_camera",
  "bevy_garage_car",
+ "bevy_garage_light",
  "bevy_garage_nn",
  "bevy_garage_track",
  "bevy_rapier3d",
@@ -968,6 +969,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_garage_light"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_garage_car",
+ "bevy_rapier3d",
+]
+
+[[package]]
 name = "bevy_garage_nn"
 version = "0.1.0"
 dependencies = [
@@ -989,9 +999,9 @@ name = "bevy_garage_overture_maps"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_garage",
  "bevy_garage_camera",
  "bevy_garage_car",
+ "bevy_garage_light",
  "bevy_overture_maps",
  "bevy_rapier3d",
 ]

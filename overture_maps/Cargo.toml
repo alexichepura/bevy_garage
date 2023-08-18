@@ -32,9 +32,10 @@ bevy = { workspace = true, features = [
     "default_font",
     "webgl2",
 ] }
-bevy_garage = { path = "../" }
+
 bevy_garage_camera = { workspace = true }
 bevy_garage_car = { workspace = true }
+bevy_garage_light = { workspace = true }
 bevy_rapier3d = { workspace = true, features = ["debug-render-3d"] }
 bevy_overture_maps = { git = "https://github.com/alexichepura/bevy_overture_maps", rev = "a662d12" }
 # bevy_overture_maps = { path = "../../bevy_overture" }
