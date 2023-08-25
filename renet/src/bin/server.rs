@@ -29,6 +29,7 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
     let server = RenetServer::new(connection_config());
 
     let addr = if let Ok(addr) = std::env::var("RENET_SERVER_SOCKET") {
+        println!("RENET_SERVER_SOCKET: {}", &addr);
         addr
     } else {
         let default = "127.0.0.1:5000".to_string();

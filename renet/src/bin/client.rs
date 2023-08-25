@@ -57,7 +57,8 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
     };
 
     let server_addr = addr.parse().unwrap();
-    let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+    // let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket.set_nonblocking(true).unwrap();
     let current_time = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -78,7 +79,6 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
         private_key,
     )
     .unwrap();
-    println!("{:?}", &connect_token.write(writer));
     let authentication = ClientAuthentication::Secure { connect_token };
     // let authentication = ClientAuthentication::Unsecure {
     //     client_id,
