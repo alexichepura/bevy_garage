@@ -11,9 +11,9 @@ pub const BATCH_SIZE: usize = 32;
 pub const BATCH_SIZE: usize = 256;
 
 #[cfg(target_arch = "wasm32")]
-pub const LEARNING_RATE: f32 = 0.01;
+pub const LEARNING_RATE: f64 = 0.01;
 #[cfg(not(target_arch = "wasm32"))]
-pub const LEARNING_RATE: f32 = 0.005;
+pub const LEARNING_RATE: f64 = 0.005;
 
 #[cfg(target_arch = "wasm32")]
 pub const STEP_DURATION: f64 = 1. / 10.;
