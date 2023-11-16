@@ -122,6 +122,20 @@ fn fragment(
         output_color = pbr_input.material.base_color;
     }
 
+    if i32(bump_distance) < 12 * material.quality {
+        var du: f32 = bump(x - bump_d, z, bump_distance) - height;
+        var dv: f32 = bump(x, z - bump_d, bump_distance) - height;
+        var Nt: vec3<f32> = vec3<f32>(du, dv, 0.1);
+        Nt = normalize(Nt);
+        Nt.y = -Nt.y;
+        var N: vec3<f32> = in.world_normal;
+        var T: vec3<f32> = in.world_tangent.xyz;
+        var B: vec3<f32> = in.world_tangent.w * cross(N, T);
+        N = Nt.x * T + Nt.y * B + Nt.z * N;
+        pbr_input.N = normalize(N);
+    } else {
+        pbr_input.N = in.world_normal;
+    }
 
     var out: FragmentOutput;
     out.color = apply_pbr_lighting(pbr_input);
