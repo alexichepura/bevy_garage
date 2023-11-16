@@ -33,14 +33,14 @@ nn_api = ["bevy_garage_nn?/api"]
 virtual_joystick = ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
-bevy = { version = "0.11", default-features = false }
+bevy = { version = "0.12", default-features = false }
 bevy_garage_camera = { path = "./camera" }
 bevy_garage_car = { path = "./car", default-features = false }
 bevy_garage_dsp = { path = "./dsp" }
 bevy_garage_light = { path = "./light" }
 bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "a149ff5", features = [
+bevy_rapier3d = { version = "0.23", features = [
     "serde-serialize",
     "dim3",
 ], default-features = false }
@@ -83,7 +83,6 @@ bevy = { workspace = true, features = [
     "zstd",
     "vorbis",
     "x11",
-    "filesystem_watcher",
     "bevy_gizmos",
     "android_shared_stdcxx",
     "tonemapping_luts",
