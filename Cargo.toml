@@ -13,34 +13,35 @@ members = [
     "light",
     "camera",
     "car",
-    "dsp",
+    # "dsp",
     "track",
     "nn",
     "prisma-cli",
     "api",
     "trainer",
     "db_client",
-    "ios",
+    # "ios",
     "track-convert",
-    "overture_maps",
-    "renet",
+    # "overture_maps",
+    # "renet",
 ]
 [profile.release]
 codegen-units = 1
 [features]
 nn = ["dep:bevy_garage_nn"]
 nn_api = ["bevy_garage_nn?/api"]
-virtual_joystick = ["dep:virtual_joystick"]
+dsp = [] # ["dep:bevy_garage_dsp"]
+virtual_joystick = [] # ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
-bevy = { version = "0.11", default-features = false }
+bevy = { version = "0.12", default-features = false }
 bevy_garage_camera = { path = "./camera" }
 bevy_garage_car = { path = "./car", default-features = false }
-bevy_garage_dsp = { path = "./dsp" }
+# bevy_garage_dsp = { path = "./dsp" }
 bevy_garage_light = { path = "./light" }
 bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
-bevy_rapier3d = { git = "https://github.com/dimforge/bevy_rapier", rev = "a149ff5", features = [
+bevy_rapier3d = { version = "0.23", features = [
     "serde-serialize",
     "dim3",
 ], default-features = false }
@@ -83,7 +84,6 @@ bevy = { workspace = true, features = [
     "zstd",
     "vorbis",
     "x11",
-    "filesystem_watcher",
     "bevy_gizmos",
     "android_shared_stdcxx",
     "tonemapping_luts",
@@ -91,11 +91,11 @@ bevy = { workspace = true, features = [
     "webgl2",
 ] }
 bevy_garage_camera = { workspace = true }
-bevy_garage_dsp = { workspace = true }
+# bevy_garage_dsp = { workspace = true, optional = true }
 bevy_garage_light = { workspace = true }
 bevy_garage_car = { workspace = true, default-features = true }
 bevy_garage_nn = { workspace = true, optional = true }
 bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true, features = ["debug-render-3d"] }
 uuid = { workspace = true }
-virtual_joystick = { version = "2.0.1", optional = true }
+# virtual_joystick = { version = "2.0.1", optional = true }

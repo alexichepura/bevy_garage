@@ -38,8 +38,8 @@ impl Plugin for TrackPlugin {
         app.insert_resource(TrackConfig::default())
             .add_plugins((
                 ShadersPlugin,
-                MaterialPlugin::<GroundMaterial>::default(),
-                MaterialPlugin::<AsphaltMaterial>::default(),
+                // MaterialPlugin::<GroundMaterial>::default(),
+                // MaterialPlugin::<AsphaltMaterial>::default(),
             ))
             .init_resource::<MaterialHandle>()
             .add_systems(

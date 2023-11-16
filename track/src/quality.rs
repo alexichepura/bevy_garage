@@ -19,7 +19,7 @@ pub fn far_culling(
             (
                 &Transform,
                 &mut Visibility,
-                &ComputedVisibility,
+                &InheritedVisibility,
                 Entity,
                 &mut GroundCell,
             ),
@@ -29,7 +29,7 @@ pub fn far_culling(
             (
                 &Transform,
                 &mut Visibility,
-                &ComputedVisibility,
+                &InheritedVisibility,
                 Entity,
                 &mut AsphaltCell,
             ),
@@ -39,7 +39,7 @@ pub fn far_culling(
 ) {
     let cam_translation = pset.p0().single().translation;
 
-    for (transform, mut cell_visibility, computed_visibility, entity, mut cell) in
+    for (transform, mut cell_visibility, inherited_visibility, entity, mut cell) in
         pset.p1().iter_mut()
     {
         let distance = (cam_translation - transform.translation).length();
@@ -58,14 +58,14 @@ pub fn far_culling(
             }
         }
         if distance > VISIBILITY {
-            if computed_visibility.is_visible_in_view() {
+            if inherited_visibility.get() {
                 *cell_visibility = Visibility::Hidden;
             }
         } else {
             *cell_visibility = Visibility::Inherited;
         }
     }
-    for (transform, mut cell_visibility, computed_visibility, entity, mut cell) in
+    for (transform, mut cell_visibility, inherited_visibility, entity, mut cell) in
         pset.p2().iter_mut()
     {
         let distance = (cam_translation - transform.translation).length();
@@ -84,7 +84,7 @@ pub fn far_culling(
             }
         }
         if distance > VISIBILITY {
-            if computed_visibility.is_visible_in_view() {
+            if inherited_visibility.get() {
                 *cell_visibility = Visibility::Hidden;
             }
         } else {

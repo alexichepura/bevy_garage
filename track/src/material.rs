@@ -1,24 +1,32 @@
-use super::{AsphaltMaterial, GroundMaterial};
+use crate::{AsphaltExtension, GroundExtension};
+
+use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
-use bevy::render::texture::ImageSampler;
-use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFormat};
+use bevy::render::texture::ImageAddressMode;
+use bevy::render::{
+    render_resource::{Extent3d, TextureDimension, TextureFormat},
+    texture::{ImageSampler, ImageSamplerDescriptor},
+};
+
+pub type ExtendedMaterialAsphalt = ExtendedMaterial<StandardMaterial, AsphaltExtension>;
+pub type ExtendedMaterialGround = ExtendedMaterial<StandardMaterial, GroundExtension>;
 
 pub type HandleStandard = Handle<StandardMaterial>;
-pub type HandleAsphalt = Handle<AsphaltMaterial>;
-pub type HandleGround = Handle<GroundMaterial>;
+pub type HandleAsphalt = Handle<ExtendedMaterialAsphalt>;
+pub type HandleGround = Handle<ExtendedMaterialGround>;
 
 #[derive(Resource)]
 pub struct MaterialHandle {
-    pub asphalt: Handle<AsphaltMaterial>,
-    pub ground: Handle<GroundMaterial>,
+    pub asphalt: Handle<ExtendedMaterialAsphalt>,
+    pub ground: Handle<ExtendedMaterialGround>,
     pub asphalt_color: Handle<StandardMaterial>,
     pub ground_color: Handle<StandardMaterial>,
     pub wall: Handle<StandardMaterial>,
     pub kerb: Handle<StandardMaterial>,
 }
 
-pub type AsphaltPbr = MaterialMeshBundle<AsphaltMaterial>;
-pub type GroundPbr = MaterialMeshBundle<GroundMaterial>;
+pub type AsphaltPbr = MaterialMeshBundle<ExtendedMaterialAsphalt>;
+pub type GroundPbr = MaterialMeshBundle<ExtendedMaterialGround>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
@@ -30,11 +38,14 @@ impl FromWorld for MaterialHandle {
         let quality = 10;
 
         let ground_color = Color::hex("6aa84f").unwrap();
-        let mut ground_materials = world.resource_mut::<Assets<GroundMaterial>>();
-        let ground_handle = ground_materials.add(GroundMaterial {
-            color: ground_color,
-            depth_bias: 0.,
-            quality,
+        let mut ground_materials = world.resource_mut::<Assets<ExtendedMaterialGround>>();
+        let ground_handle = ground_materials.add(ExtendedMaterial {
+            base: StandardMaterial {
+                base_color: ground_color,
+                depth_bias: 0.,
+                ..Default::default()
+            },
+            extension: GroundExtension { quality },
         });
 
         #[cfg(target_arch = "wasm32")]
@@ -43,11 +54,14 @@ impl FromWorld for MaterialHandle {
         let asphalt_depth_bias = 100.;
 
         let asphalt_color = Color::hex("333355").unwrap();
-        let mut asphalt_materials = world.resource_mut::<Assets<AsphaltMaterial>>();
-        let asphalt_handle = asphalt_materials.add(AsphaltMaterial {
-            color: asphalt_color,
-            depth_bias: asphalt_depth_bias,
-            quality,
+        let mut asphalt_materials = world.resource_mut::<Assets<ExtendedMaterialAsphalt>>();
+        let asphalt_handle = asphalt_materials.add(ExtendedMaterial {
+            base: StandardMaterial {
+                base_color: asphalt_color,
+                depth_bias: asphalt_depth_bias,
+                ..Default::default()
+            },
+            extension: AsphaltExtension { quality },
         });
 
         let mut images = world.resource_mut::<Assets<Image>>();
@@ -108,10 +122,10 @@ fn wall_texture() -> Image {
         TextureFormat::Rgba8UnormSrgb,
     );
 
-    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-        address_mode_u: AddressMode::Repeat,
-        address_mode_v: AddressMode::Repeat,
-        address_mode_w: AddressMode::Repeat,
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+        address_mode_u: ImageAddressMode::Repeat,
+        address_mode_v: ImageAddressMode::Repeat,
+        address_mode_w: ImageAddressMode::Repeat,
         ..Default::default()
     });
 
@@ -132,10 +146,10 @@ fn kerb_texture() -> Image {
         TextureFormat::Rgba8UnormSrgb,
     );
 
-    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-        address_mode_u: AddressMode::Repeat,
-        address_mode_v: AddressMode::Repeat,
-        address_mode_w: AddressMode::Repeat,
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+        address_mode_u: ImageAddressMode::Repeat,
+        address_mode_v: ImageAddressMode::Repeat,
+        address_mode_w: ImageAddressMode::Repeat,
         ..Default::default()
     });
 
