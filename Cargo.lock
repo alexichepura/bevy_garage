@@ -777,7 +777,6 @@ dependencies = [
  "bevy_rapier3d",
  "parry3d",
  "rand 0.8.5",
- "wgpu",
 ]
 
 [[package]]
@@ -3766,7 +3765,6 @@ dependencies = [
  "indexmap 1.9.3",
  "log",
  "num-traits",
- "petgraph 0.6.4",
  "pp-rs",
  "rustc-hash",
  "spirv",

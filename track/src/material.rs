@@ -2,11 +2,9 @@ use super::{AsphaltMaterial, GroundMaterial};
 use bevy::prelude::*;
 use bevy::render::texture::ImageAddressMode;
 use bevy::render::{
-    render_resource::{AsBindGroup, Extent3d, ShaderRef, TextureDimension, TextureFormat},
+    render_resource::{Extent3d, TextureDimension, TextureFormat},
     texture::{ImageSampler, ImageSamplerDescriptor},
-    view::ColorGrading,
 };
-use wgpu::AddressMode;
 
 pub type HandleStandard = Handle<StandardMaterial>;
 pub type HandleAsphalt = Handle<AsphaltMaterial>;
