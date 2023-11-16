@@ -1,7 +1,12 @@
 use super::{AsphaltMaterial, GroundMaterial};
 use bevy::prelude::*;
-use bevy::render::texture::ImageSampler;
-use wgpu::{AddressMode, Extent3d, SamplerDescriptor, TextureDimension, TextureFormat};
+use bevy::render::texture::ImageAddressMode;
+use bevy::render::{
+    render_resource::{AsBindGroup, Extent3d, ShaderRef, TextureDimension, TextureFormat},
+    texture::{ImageSampler, ImageSamplerDescriptor},
+    view::ColorGrading,
+};
+use wgpu::AddressMode;
 
 pub type HandleStandard = Handle<StandardMaterial>;
 pub type HandleAsphalt = Handle<AsphaltMaterial>;
@@ -108,10 +113,10 @@ fn wall_texture() -> Image {
         TextureFormat::Rgba8UnormSrgb,
     );
 
-    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-        address_mode_u: AddressMode::Repeat,
-        address_mode_v: AddressMode::Repeat,
-        address_mode_w: AddressMode::Repeat,
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+        address_mode_u: ImageAddressMode::Repeat,
+        address_mode_v: ImageAddressMode::Repeat,
+        address_mode_w: ImageAddressMode::Repeat,
         ..Default::default()
     });
 
@@ -132,10 +137,10 @@ fn kerb_texture() -> Image {
         TextureFormat::Rgba8UnormSrgb,
     );
 
-    image.sampler_descriptor = ImageSampler::Descriptor(SamplerDescriptor {
-        address_mode_u: AddressMode::Repeat,
-        address_mode_v: AddressMode::Repeat,
-        address_mode_w: AddressMode::Repeat,
+    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+        address_mode_u: ImageAddressMode::Repeat,
+        address_mode_v: ImageAddressMode::Repeat,
+        address_mode_w: ImageAddressMode::Repeat,
         ..Default::default()
     });
 

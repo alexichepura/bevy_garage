@@ -11,4 +11,4 @@ bevy_rapier3d = { workspace = true }
 bevy_garage_car = { workspace = true }
 parry3d = "0.13"
 rand = { workspace = true }
-wgpu = { version = "0.16", features = ["spirv"] }
+wgpu = { version = "0.17", features = ["spirv"] }
