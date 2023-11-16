@@ -20,16 +20,17 @@ members = [
     "api",
     "trainer",
     "db_client",
-    "ios",
+    # "ios",
     "track-convert",
-    "overture_maps",
-    "renet",
+    # "overture_maps",
+    # "renet",
 ]
 [profile.release]
 codegen-units = 1
 [features]
 nn = ["dep:bevy_garage_nn"]
 nn_api = ["bevy_garage_nn?/api"]
+dsp = ["dep:bevy_garage_dsp"]
 virtual_joystick = ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
@@ -90,7 +91,7 @@ bevy = { workspace = true, features = [
     "webgl2",
 ] }
 bevy_garage_camera = { workspace = true }
-bevy_garage_dsp = { workspace = true }
+bevy_garage_dsp = { workspace = true, optional = true }
 bevy_garage_light = { workspace = true }
 bevy_garage_car = { workspace = true, default-features = true }
 bevy_garage_nn = { workspace = true, optional = true }
