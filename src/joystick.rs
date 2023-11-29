@@ -22,54 +22,58 @@ impl Plugin for CarJoystickPlugin {
 const MARGIN: Val = Val::Px(35.);
 const KNOB_SIZE: Vec2 = Vec2::new(70., 70.);
 const AREA_SIZE: Val = Val::Px(150.);
-const BG: BackgroundColor = BackgroundColor(Color::rgba(1.0, 0.27, 0.0, 0.1));
+const BG: Color = Color::rgba(1.0, 0.27, 0.0, 0.1);
 
 pub fn joystick_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
-    cmd.spawn((
-        VirtualJoystickBundle::new(VirtualJoystickNode {
-            border_image: asset_server.load("joystick/Horizontal_Outline_Arrows.png"),
-            knob_image: asset_server.load("joystick/Outline.png"),
-            knob_size: KNOB_SIZE,
+    create_joystick(
+        &mut cmd,
+        asset_server.load("joystick/Outline.png"),
+        asset_server.load("joystick/Horizontal_Outline_Arrows.png"),
+        None,
+        None,
+        Some(BG),
+        KNOB_SIZE,
+        Vec2::new(150., 150.),
+        VirtualJoystickNode {
             dead_zone: 0.,
             id: JoystickTypeAxis::X,
             axis: VirtualJoystickAxis::Horizontal,
             behaviour: VirtualJoystickType::Fixed,
-        })
-        .set_color(TintColor(Color::WHITE))
-        .set_style(Style {
+        },
+        Style {
             width: AREA_SIZE,
             height: AREA_SIZE,
             position_type: PositionType::Absolute,
             left: MARGIN,
             bottom: MARGIN,
             ..default()
-        }),
-        BG,
-        VirtualJoystickInteractionArea,
-    ));
+        },
+    );
 
-    cmd.spawn((
-        VirtualJoystickBundle::new(VirtualJoystickNode {
-            border_image: asset_server.load("joystick/Vertical_Outline_Arrows.png"),
-            knob_image: asset_server.load("joystick/Outline.png"),
-            knob_size: KNOB_SIZE,
+    create_joystick(
+        &mut cmd,
+        asset_server.load("joystick/Outline.png"),
+        asset_server.load("joystick/Vertical_Outline_Arrows.png"),
+        None,
+        None,
+        Some(BG),
+        KNOB_SIZE,
+        Vec2::new(150., 150.),
+        VirtualJoystickNode {
             dead_zone: 0.,
             id: JoystickTypeAxis::Y,
             axis: VirtualJoystickAxis::Vertical,
             behaviour: VirtualJoystickType::Fixed,
-        })
-        .set_color(TintColor(Color::WHITE))
-        .set_style(Style {
+        },
+        Style {
             width: AREA_SIZE,
             height: AREA_SIZE,
             position_type: PositionType::Absolute,
             right: MARGIN,
             bottom: MARGIN,
             ..default()
-        }),
-        BG,
-        VirtualJoystickInteractionArea,
-    ));
+        },
+    );
 }
 
 fn update_joystick(

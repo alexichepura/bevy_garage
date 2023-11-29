@@ -20,7 +20,7 @@ members = [
     "api",
     "trainer",
     "db_client",
-    # "ios",
+    "ios",
     "track-convert",
     # "overture_maps",
     # "renet",
@@ -31,7 +31,7 @@ codegen-units = 1
 nn = ["dep:bevy_garage_nn"]
 nn_api = ["bevy_garage_nn?/api"]
 dsp = [] # ["dep:bevy_garage_dsp"]
-virtual_joystick = [] # ["dep:virtual_joystick"]
+virtual_joystick = ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
 bevy = { version = "0.12", default-features = false }
@@ -98,4 +98,4 @@ bevy_garage_nn = { workspace = true, optional = true }
 bevy_garage_track = { workspace = true }
 bevy_rapier3d = { workspace = true, features = ["debug-render-3d"] }
 uuid = { workspace = true }
-# virtual_joystick = { version = "2.0.1", optional = true }
+virtual_joystick = { version = "2.1.0", optional = true }
