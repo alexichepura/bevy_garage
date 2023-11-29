@@ -16,7 +16,7 @@ pub fn spawn_car_system(
     track_config: ResMut<TrackConfig>,
     car_res: ResMut<CarRes>,
 ) {
-    for spawn_event in events.iter() {
+    for spawn_event in events.read() {
         dbg!(spawn_event);
 
         let (transform, init_meters) = if let Some(init_meters) = spawn_event.position {

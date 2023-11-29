@@ -156,7 +156,7 @@ pub fn dqn_event_reader_system(
     mut reader: EventReader<DqnEvent>,
     mut cars_dqn: NonSendMut<CarsDqnResource>,
 ) {
-    for event in reader.iter() {
+    for event in reader.read() {
         // dbg!((&event.0.duration_string, &event.0.loss_string));
         println!(
             "dqn_event:{}:{}",

@@ -81,7 +81,7 @@ fn update_joystick(
     mut cars: Query<&mut Car, With<Player>>,
 ) {
     for mut car in cars.iter_mut() {
-        for j in virtual_joystick_events.iter() {
+        for j in virtual_joystick_events.read() {
             let Vec2 { x, y } = j.axis();
             // println!("x{x}, y{y}");
             match j.id() {
