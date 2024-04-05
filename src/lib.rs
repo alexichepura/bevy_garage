@@ -37,12 +37,12 @@ impl Default for PhysicsParams {
 }
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>, ph: Res<PhysicsParams>) {
-    c.integration_parameters.max_velocity_iterations = ph.max_velocity_iters;
-    c.integration_parameters.max_velocity_friction_iterations = ph.max_velocity_friction_iters;
-    c.integration_parameters.max_stabilization_iterations = ph.max_stabilization_iters;
+    // c.integration_parameters.max_velocity_iterations = ph.max_velocity_iters;
+    // c.integration_parameters.max_velocity_friction_iterations = ph.max_velocity_friction_iters;
+    // c.integration_parameters.max_stabilization_iterations = ph.max_stabilization_iters;
     // c.integration_parameters.max_ccd_substeps = 16;
     // c.integration_parameters.allowed_linear_error = 0.000001;
-    c.integration_parameters.erp = 0.99;
+    // c.integration_parameters.erp = 0.99;
     // c.integration_parameters.erp = 1.;
     // c.integration_parameters.max_penetration_correction = 0.0001;
     // c.integration_parameters.prediction_distance = 0.01;

@@ -45,24 +45,24 @@ const K: f32 = 2.;
 pub fn animate_light_direction(
     time: Res<Time>,
     mut query: Query<&mut Transform, With<DirectionalLight>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
-    if input.pressed(KeyCode::H) {
+    if input.pressed(KeyCode::KeyH) {
         for mut transform in &mut query {
             transform.rotate_y(time.delta_seconds() * K);
         }
     }
-    if input.pressed(KeyCode::L) {
+    if input.pressed(KeyCode::KeyL) {
         for mut transform in &mut query {
             transform.rotate_y(-time.delta_seconds() * K);
         }
     }
-    if input.pressed(KeyCode::J) {
+    if input.pressed(KeyCode::KeyJ) {
         for mut transform in &mut query {
             transform.rotate_x(time.delta_seconds() * K);
         }
     }
-    if input.pressed(KeyCode::K) {
+    if input.pressed(KeyCode::KeyK) {
         for mut transform in &mut query {
             transform.rotate_x(-time.delta_seconds() * K);
         }

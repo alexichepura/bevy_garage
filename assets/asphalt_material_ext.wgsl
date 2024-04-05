@@ -57,7 +57,7 @@ fn perlinNoise2(P: vec2<f32>) -> f32 {
 struct AsphaltMaterial {
     quality: i32 // 0-10
 };
-@group(1) @binding(100)
+@group(2) @binding(100)
 var<uniform> material: AsphaltMaterial;
 
 

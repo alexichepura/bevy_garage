@@ -29,7 +29,7 @@ pub fn dash_fps_system(
     mut query: Query<&mut Text, With<FpsText>>,
 ) {
     for mut text in query.iter_mut() {
-        if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+        if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
                 text.sections[0].value = format!("{:.0}fps", average);
             }
@@ -121,7 +121,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                             ..default()
                         },
                         text: Text {
-                            alignment: TextAlignment::Right,
+                            justify: JustifyText::Right,
                             sections: vec![TextSection {
                                 value: "".to_string(),
                                 style: TextStyle {
@@ -138,7 +138,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent
                     .spawn(TextBundle {
                         text: Text {
-                            alignment: TextAlignment::Right,
+                            justify: JustifyText::Right,
                             sections: vec![TextSection {
                                 value: "".to_string(),
                                 style: TextStyle {
@@ -155,7 +155,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent
                     .spawn(TextBundle {
                         text: Text {
-                            alignment: TextAlignment::Right,
+                            justify: JustifyText::Right,
                             sections: vec![TextSection {
                                 value: "".to_string(),
                                 style: TextStyle {
@@ -285,9 +285,9 @@ pub fn dash_speed_update_system(
         Query<&mut Text, With<RideDistanceText>>,
         Query<&mut Text, With<LapText>>,
     )>,
-    mut cars: Query<(&Velocity, &CarTrack, With<Player>)>,
+    mut cars: Query<(&Velocity, &CarTrack), With<Player>>,
 ) {
-    for (velocity, car_track, _) in cars.iter_mut() {
+    for (velocity, car_track) in cars.iter_mut() {
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
         texts.p0().single_mut().sections[0].value = format!("{:.1}m/s", mps);
