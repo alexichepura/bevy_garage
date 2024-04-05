@@ -17,12 +17,7 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
 }
 
 // Quat::from_axis_angle(-Vec3::Y, PI / 2.) = Quat(-0.0, -0.70710677, -0.0, 0.70710677);
-const WHEEL_RAY_END_QUAT: Quat = Quat::from_xyzw(
-    -0.0,
-    -0.70710677,
-    -0.0,
-    0.70710677,
-);
+const WHEEL_RAY_END_QUAT: Quat = Quat::from_xyzw(-0.0, -0.70710677, -0.0, 0.70710677);
 const WHEEL_RAY_SHIFT: Vec3 = Vec3 {
     x: 0.,
     y: 0.5,
