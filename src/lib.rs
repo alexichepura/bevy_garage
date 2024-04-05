@@ -20,11 +20,11 @@ use input::*;
 use spawn::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(8).unwrap();
-    c.integration_parameters.num_internal_pgs_iterations = 16;
-    c.integration_parameters.num_additional_friction_iterations = 8;
+    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(4).unwrap();
+    c.integration_parameters.num_internal_pgs_iterations = 48;
+    c.integration_parameters.num_additional_friction_iterations = 4;
     c.integration_parameters.erp = 0.99;
-    c.integration_parameters.joint_erp = 0.95;
+    // c.integration_parameters.joint_erp = 0.95;
     dbg!(c.integration_parameters);
 }
 
@@ -40,7 +40,7 @@ pub fn car_app(app: &mut App) -> &mut App {
             timestep_mode: TimestepMode::Variable {
                 max_dt: 1. / 60.,
                 time_scale: 1.,
-                substeps: 15,
+                substeps: 10,
             },
             ..default()
         })
