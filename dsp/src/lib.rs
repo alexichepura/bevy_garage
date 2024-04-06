@@ -68,12 +68,12 @@ fn engine_sound(mut car_query: Query<&Velocity, With<Car>>, car_sound: Res<CarSo
         car_sound.set_pitch(pitch);
     }
 }
-fn engine_sound_vol(input: Res<Input<KeyCode>>, car_sound: Res<CarSound>) {
-    if input.just_pressed(KeyCode::Z) {
+fn engine_sound_vol(input: Res<ButtonInput<KeyCode>>, car_sound: Res<CarSound>) {
+    if input.just_pressed(KeyCode::KeyZ) {
         let vol = car_sound.vol.value();
         println!("volume {vol:.1}-0.1");
         car_sound.set_vol(vol - 0.1);
-    } else if input.just_pressed(KeyCode::C) {
+    } else if input.just_pressed(KeyCode::KeyC) {
         let vol = car_sound.vol.value();
         println!("volume {vol:.1}+0.1");
         car_sound.set_vol(vol + 0.1);
