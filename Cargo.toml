@@ -13,7 +13,7 @@ members = [
     "light",
     "camera",
     "car",
-    # "dsp",
+    "dsp",
     "track",
     # "nn",
     # "prisma-cli",
