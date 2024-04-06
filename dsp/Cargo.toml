@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy = { workspace = true, default-features = false, features = ["bevy_audio"] }
-bevy_fundsp = { version = "0.4" }
+# bevy_fundsp = { version = "0.4" }
+bevy_fundsp = { git = "https://github.com/harudagondi/bevy_fundsp", rev = "ee393f1" }
 bevy_garage_car = { workspace = true }
 bevy_rapier3d = { workspace = true }
 uuid = { workspace = true }

@@ -1,15 +1,14 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::render::camera::Projection;
 use bevy::window::CursorGrabMode;
 use bevy_garage_car::Player;
 use bevy_rapier3d::prelude::PhysicsSet;
 
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
-    mouse: Res<Input<MouseButton>>,
-    key: Res<Input<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
+    key: Res<ButtonInput<KeyCode>>,
 ) {
     let mut window = windows.single_mut();
 
@@ -97,12 +96,12 @@ impl Default for CameraController {
         Self {
             enabled: true,
             sensitivity: 0.5,
-            key_forward: KeyCode::W,
-            key_back: KeyCode::S,
-            key_left: KeyCode::A,
-            key_right: KeyCode::D,
-            key_up: KeyCode::E,
-            key_down: KeyCode::Q,
+            key_forward: KeyCode::KeyW,
+            key_back: KeyCode::KeyS,
+            key_left: KeyCode::KeyA,
+            key_right: KeyCode::KeyD,
+            key_up: KeyCode::KeyE,
+            key_down: KeyCode::KeyQ,
             key_run: KeyCode::ShiftLeft,
             walk_speed: 2.0,
             run_speed: 100.0,
@@ -210,23 +209,23 @@ impl Default for CameraConfig {
         Self::from_view(CameraFollowView::Near)
     }
 }
-pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<Input<KeyCode>>) {
-    if input.just_pressed(KeyCode::Key1) {
+pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<ButtonInput<KeyCode>>) {
+    if input.just_pressed(KeyCode::Digit1) {
         config.driver();
     }
-    if input.just_pressed(KeyCode::Key2) {
+    if input.just_pressed(KeyCode::Digit2) {
         config.near();
     }
-    if input.just_pressed(KeyCode::Key3) {
+    if input.just_pressed(KeyCode::Digit3) {
         config.mid();
     }
-    if input.just_pressed(KeyCode::Key4) {
+    if input.just_pressed(KeyCode::Digit4) {
         config.far();
     }
-    if input.just_pressed(KeyCode::Key5) {
+    if input.just_pressed(KeyCode::Digit5) {
         config.wheel();
     }
-    if input.just_pressed(KeyCode::Key0) {
+    if input.just_pressed(KeyCode::Digit0) {
         config.free();
     }
 }
@@ -235,7 +234,7 @@ pub fn camera_controller_system(
     time: Res<Time>,
     config: Res<CameraConfig>,
     mut mouse_events: EventReader<MouseMotion>,
-    key_input: Res<Input<KeyCode>>,
+    key_input: Res<ButtonInput<KeyCode>>,
     mut pset: ParamSet<(
         Query<(&mut Transform, &mut CameraController), With<Camera>>,
         Query<&Transform, With<Player>>,
@@ -250,7 +249,7 @@ pub fn camera_controller_system(
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
                 // tf.rotate_local_y(std::f32::consts::PI);
-                tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), tf.local_y());
+                tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), *tf.local_y());
                 // tf.look_at(car_tf.translation + tf.rotation.mul_vec3(at), Vec3::Y);
                 Some(tf)
             } else {
@@ -316,8 +315,8 @@ pub fn camera_controller_system(
         }
 
         let mut tf = tf.clone();
-        let forward = tf.forward();
-        let right = tf.right();
+        let forward = *tf.forward();
+        let right = *tf.right();
         tf.translation += options.velocity.x * dt * right
             + options.velocity.y * dt * Vec3::Y
             + options.velocity.z * dt * forward;

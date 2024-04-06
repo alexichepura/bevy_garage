@@ -4,12 +4,12 @@ use bevy_garage_car::{Car, CarRes, CarWheels, Player};
 use bevy_garage_track::SpawnCarOnTrackEvent;
 
 pub fn input_system(
-    input: Res<Input<KeyCode>>,
-    buttons: Res<Input<GamepadButton>>,
+    input: Res<ButtonInput<KeyCode>>,
+    buttons: Res<ButtonInput<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
     gamepads: Res<Gamepads>,
     mut camera_config: ResMut<CameraConfig>,
-    mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform, With<Player>)>,
+    mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform), With<Player>>,
     mut cmd: Commands,
     mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
     mut debug_ctx: ResMut<bevy_rapier3d::render::DebugRenderContext>,
@@ -20,11 +20,11 @@ pub fn input_system(
     if input.just_pressed(KeyCode::N) {
         dqn.use_nn = !dqn.use_nn;
     }
-    if input.just_pressed(KeyCode::R) {
+    if input.just_pressed(KeyCode::KeyR) {
         debug_ctx.enabled = !debug_ctx.enabled;
         car_res.show_rays = debug_ctx.enabled;
     }
-    for (mut car, mut wheels, e, _transform, _hid) in cars.iter_mut() {
+    for (mut car, mut wheels, e, _transform) in cars.iter_mut() {
         for gamepad in gamepads.iter() {
             let left_stick_x = axes
                 .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
@@ -73,30 +73,30 @@ pub fn input_system(
                 position: None,
             });
         }
-        if input.pressed(KeyCode::Up) {
+        if input.pressed(KeyCode::ArrowUp) {
             car.gas = 1.;
         }
-        if input.just_released(KeyCode::Up) {
+        if input.just_released(KeyCode::ArrowUp) {
             car.gas = 0.;
         }
 
-        if input.pressed(KeyCode::Down) {
+        if input.pressed(KeyCode::ArrowDown) {
             car.brake = 1.;
         }
-        if input.just_released(KeyCode::Down) {
+        if input.just_released(KeyCode::ArrowDown) {
             car.brake = 0.;
         }
 
-        if input.pressed(KeyCode::Left) {
+        if input.pressed(KeyCode::ArrowLeft) {
             car.steering = -1.;
         }
-        if input.pressed(KeyCode::Right) {
+        if input.pressed(KeyCode::ArrowRight) {
             car.steering = 1.;
         }
-        if input.just_released(KeyCode::Left) {
+        if input.just_released(KeyCode::ArrowLeft) {
             car.steering = 0.;
         }
-        if input.just_released(KeyCode::Right) {
+        if input.just_released(KeyCode::ArrowRight) {
             car.steering = 0.;
         }
         // if input.just_released(KeyCode::Space) {

@@ -7,12 +7,12 @@ pub fn light_start_system(
 ) {
     cmd.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.9,
+        brightness: 80.,
     });
 
     cmd.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 40_000.,
+            illuminance: 10_000.,
             shadows_enabled: true,
             ..default()
         },
@@ -26,7 +26,8 @@ pub fn light_start_system(
 
     cmd.spawn((
         PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::default())),
+            // mesh: meshes.add(Mesh::from(shape::Box::default())),
+            mesh: meshes.add(Mesh::from(Cuboid::default())),
             material: materials.add(StandardMaterial {
                 base_color: Color::hex("888888").unwrap(),
                 unlit: true,
@@ -45,24 +46,24 @@ const K: f32 = 2.;
 pub fn animate_light_direction(
     time: Res<Time>,
     mut query: Query<&mut Transform, With<DirectionalLight>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
-    if input.pressed(KeyCode::H) {
+    if input.pressed(KeyCode::KeyH) {
         for mut transform in &mut query {
             transform.rotate_y(time.delta_seconds() * K);
         }
     }
-    if input.pressed(KeyCode::L) {
+    if input.pressed(KeyCode::KeyL) {
         for mut transform in &mut query {
             transform.rotate_y(-time.delta_seconds() * K);
         }
     }
-    if input.pressed(KeyCode::J) {
+    if input.pressed(KeyCode::KeyJ) {
         for mut transform in &mut query {
             transform.rotate_x(time.delta_seconds() * K);
         }
     }
-    if input.pressed(KeyCode::K) {
+    if input.pressed(KeyCode::KeyK) {
         for mut transform in &mut query {
             transform.rotate_x(-time.delta_seconds() * K);
         }

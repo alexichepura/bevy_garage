@@ -1,6 +1,10 @@
 use super::track::Track;
 use crate::material::MaterialHandle;
-use bevy::{pbr::NotShadowCaster, prelude::*, render::mesh::*};
+use bevy::{
+    pbr::NotShadowCaster,
+    prelude::*,
+    render::{mesh::*, render_asset::RenderAssetUsages},
+};
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::Sub;
@@ -37,14 +41,17 @@ pub fn spawn_kerb(
         normals.push(top_norm.to_array());
         len += diff;
     }
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::RENDER_WORLD,
+    );
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices.clone()),
     );
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
-    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+    mesh.insert_indices(Indices::U32(track.indices.clone()));
 
     cmd.spawn((
         PbrBundle {
@@ -91,14 +98,17 @@ pub fn spawn_kerb(
         normals.push(top_norm.to_array());
         len += diff;
     }
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::RENDER_WORLD,
+    );
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices.clone()),
     );
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
-    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+    mesh.insert_indices(Indices::U32(track.indices.clone()));
 
     cmd.spawn((
         PbrBundle {

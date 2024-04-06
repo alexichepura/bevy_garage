@@ -1,5 +1,8 @@
 use crate::material::MaterialHandle;
-use bevy::{prelude::*, render::mesh::*};
+use bevy::{
+    prelude::*,
+    render::{mesh::*, render_asset::RenderAssetUsages},
+};
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::Real, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::{Mul, Sub};
@@ -89,14 +92,17 @@ pub fn spawn_walls(
 
     let collider_indices: Vec<[u32; 3]> = indices.chunks(3).map(|i| [i[0], i[1], i[2]]).collect();
 
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::RENDER_WORLD,
+    );
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(vertices.clone()),
     );
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, VertexAttributeValues::from(normals));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, VertexAttributeValues::from(uvs));
-    mesh.set_indices(Some(Indices::U32(indices)));
+    mesh.insert_indices(Indices::U32(indices));
 
     cmd.spawn((
         PbrBundle {

@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::WindowResolution};
-use bevy_garage::{car_app, PhysicsParams};
+use bevy_garage::car_app;
 use bevy_garage_camera::CarCameraPlugin;
 
 fn main() {
@@ -21,22 +21,5 @@ fn main() {
         CarCameraPlugin,
     ));
 
-    #[cfg(target_arch = "wasm32")]
-    let physics_params = PhysicsParams {
-        max_velocity_iters: 32,
-        max_velocity_friction_iters: 32,
-        max_stabilization_iters: 16,
-        substeps: 8,
-        ..default()
-    };
-
-    #[cfg(not(target_arch = "wasm32"))]
-    let physics_params = PhysicsParams {
-        max_velocity_iters: 64,
-        max_velocity_friction_iters: 64,
-        max_stabilization_iters: 16,
-        substeps: 20,
-        ..default()
-    };
-    car_app(&mut app, physics_params).run();
+    car_app(&mut app).run();
 }

@@ -1,6 +1,12 @@
 # Changelog
 
-## Version 0.7.0 (2023-07-xx)
+## Version 0.9.0 (2024-04)
+- bevy 0.13
+
+## Version 0.8.0 (2023-11)
+- bevy 0.12
+
+## Version 0.7.0 (2023-07)
 - bevy 0.11
 
 ## Version 0.6.0 (2023-05-24)

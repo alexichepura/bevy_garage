@@ -2,6 +2,7 @@ use crate::{AsphaltExtension, GroundExtension};
 
 use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
+use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::texture::ImageAddressMode;
 use bevy::render::{
     render_resource::{Extent3d, TextureDimension, TextureFormat},
@@ -120,6 +121,7 @@ fn wall_texture() -> Image {
             128, 128, 128, 255, // dark
         ],
         TextureFormat::Rgba8UnormSrgb,
+        RenderAssetUsages::RENDER_WORLD,
     );
 
     image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
@@ -144,6 +146,7 @@ fn kerb_texture() -> Image {
             210, 210, 210, 255, // white
         ],
         TextureFormat::Rgba8UnormSrgb,
+        RenderAssetUsages::RENDER_WORLD,
     );
 
     image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {

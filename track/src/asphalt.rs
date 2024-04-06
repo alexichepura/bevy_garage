@@ -2,7 +2,7 @@ use super::{AsphaltPbr, MaterialHandle, Track, TrackRoad};
 use bevy::{
     pbr::NotShadowCaster,
     prelude::*,
-    render::{mesh::*, primitives::Aabb},
+    render::{mesh::*, primitives::Aabb, render_asset::RenderAssetUsages},
 };
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
@@ -80,7 +80,10 @@ pub fn spawn_road(
         });
     }
     for block in blocks.iter() {
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+        let mut mesh = Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::RENDER_WORLD,
+        );
         let tr: Vec3 = block.vertices[0].into();
         let vertices: Vec<[f32; 3]> = block
             .vertices
@@ -96,7 +99,7 @@ pub fn spawn_road(
             VertexAttributeValues::from(block.normals.clone()),
         );
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, block.uvs.clone());
-        mesh.set_indices(Some(Indices::U32(block.indices.clone())));
+        mesh.insert_indices(Indices::U32(block.indices.clone()));
         mesh.generate_tangents().unwrap();
 
         cmd.spawn((
@@ -120,7 +123,10 @@ pub fn spawn_road(
         uvs.push([right.x / x, right.z / x]);
     }
     let (track_vertices, track_normals) = track.road();
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::RENDER_WORLD,
+    );
     mesh.insert_attribute(
         Mesh::ATTRIBUTE_POSITION,
         VertexAttributeValues::from(track_vertices.clone()),
@@ -130,7 +136,7 @@ pub fn spawn_road(
         VertexAttributeValues::from(track_normals),
     );
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-    mesh.set_indices(Some(Indices::U32(track.indices.clone())));
+    mesh.insert_indices(Indices::U32(track.indices.clone()));
     mesh.generate_tangents().unwrap();
     let aabb = mesh.compute_aabb().unwrap();
 
