@@ -10,9 +10,10 @@ use bevy_garage_renet::{
     ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use bevy_renet::{
+    client_connected,
     renet::{
         transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
-        RenetClient,
+        ClientId, RenetClient,
     },
     transport::NetcodeClientPlugin,
     RenetClientPlugin,
@@ -34,7 +35,7 @@ struct PlayerInfo {
 
 #[derive(Debug, Default, Resource)]
 struct ClientLobby {
-    players: HashMap<u64, PlayerInfo>,
+    players: HashMap<ClientId, PlayerInfo>,
 }
 
 fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
@@ -100,7 +101,7 @@ fn main() {
                 client_send_player_commands,
                 client_sync_players,
             )
-                .run_if(bevy_renet::transport::client_connected()),
+                .run_if(client_connected),
         ),
     );
 
@@ -116,7 +117,7 @@ fn main() {
 
 // If any error is found we just panic
 fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
-    for e in renet_error.iter() {
+    for e in renet_error.read() {
         panic!("{}", e);
     }
 }
@@ -126,7 +127,7 @@ fn update_visulizer_system(
     mut visualizer: ResMut<RenetClientVisualizer<200>>,
     client: Res<RenetClient>,
     mut show_visualizer: Local<bool>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     visualizer.add_network_info(client.network_info());
     if keyboard_input.just_pressed(KeyCode::F1) {
@@ -137,11 +138,11 @@ fn update_visulizer_system(
     }
 }
 
-fn player_input(keyboard_input: Res<Input<KeyCode>>, mut player_input: ResMut<PlayerInput>) {
-    player_input.left = keyboard_input.pressed(KeyCode::Left);
-    player_input.right = keyboard_input.pressed(KeyCode::Right);
-    player_input.up = keyboard_input.pressed(KeyCode::Up);
-    player_input.down = keyboard_input.pressed(KeyCode::Down);
+fn player_input(keyboard_input: Res<ButtonInput<KeyCode>>, mut player_input: ResMut<PlayerInput>) {
+    player_input.left = keyboard_input.pressed(KeyCode::ArrowLeft);
+    player_input.right = keyboard_input.pressed(KeyCode::ArrowRight);
+    player_input.up = keyboard_input.pressed(KeyCode::ArrowUp);
+    player_input.down = keyboard_input.pressed(KeyCode::ArrowDown);
 }
 
 fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
@@ -153,7 +154,7 @@ fn client_send_player_commands(
     mut player_commands: EventReader<PlayerCommand>,
     mut client: ResMut<RenetClient>,
 ) {
-    for command in player_commands.iter() {
+    for command in player_commands.read() {
         let command_message = bincode::serialize(command).unwrap();
         client.send_message(ClientChannel::Command, command_message);
     }

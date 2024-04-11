@@ -23,16 +23,16 @@ members = [
     "ios",
     "track-convert",
     # "overture_maps",
-    # "renet",
+    "renet",
 ]
 [profile.release]
 codegen-units = 1
 [features]
+default = ["dsp"]
+dsp = ["dep:bevy_garage_dsp"]
 # nn = ["dep:bevy_garage_nn"]
 # nn_api = ["bevy_garage_nn?/api"]
-dsp = ["dep:bevy_garage_dsp"]
 virtual_joystick = ["dep:virtual_joystick"]
-default = ["dsp"]
 [workspace.dependencies]
 bevy = { version = "0.13.2", default-features = false }
 bevy_garage_camera = { path = "./camera" }
@@ -45,6 +45,7 @@ bevy_rapier3d = { version = "0.25", features = [
     "serde-serialize",
     "dim3",
 ], default-features = false }
+bevy_garage_renet = { path = "./renet" }
 cfg-if = "1.0.0"
 # dfdx = "0.13"
 # prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = [

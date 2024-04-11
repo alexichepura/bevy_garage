@@ -4,14 +4,14 @@ use bevy::{
 };
 use bevy_garage_car::{esp_system, spawn_car, Car, CarWheels, Wheel};
 use bevy_garage_renet::{
-    connection_config, rapier_config_start_system, setup_level, ClientChannel, NetworkedEntities,
-    Player, PlayerCommand, PlayerInput, ServerChannel, ServerMessages, PROTOCOL_ID,
+    connection_config, setup_level, ClientChannel, NetworkedEntities, Player, PlayerCommand,
+    PlayerInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
         transport::{NetcodeServerTransport, ServerAuthentication, ServerConfig},
-        RenetServer, ServerEvent,
+        ClientId, RenetServer, ServerEvent,
     },
     transport::NetcodeServerPlugin,
     RenetServerPlugin,
@@ -20,7 +20,7 @@ use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
-    pub players: HashMap<u64, Entity>,
+    pub players: HashMap<ClientId, Entity>,
 }
 
 fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
@@ -117,7 +117,7 @@ fn main() {
         app.insert_resource(renet_visualizer::RenetServerVisualizer::<200>::default());
     }
 
-    app.add_systems(Startup, (rapier_config_start_system, setup_level));
+    app.add_systems(Startup, (setup_level));
 
     app.run();
 }
@@ -134,12 +134,12 @@ fn server_update_system(
         renet_visualizer::RenetServerVisualizer<200>,
     >,
 ) {
-    for event in server_events.iter() {
+    for event in server_events.read() {
         match event {
             ServerEvent::ClientConnected { client_id } => {
                 println!("Player {} connected.", client_id);
                 #[cfg(feature = "graphics")]
-                visualizer.add_client(*client_id);
+                visualizer.add_client(client_id.to_owned());
 
                 for (entity, player, transform) in players.iter() {
                     let translation: [f32; 3] = transform.translation.into();
@@ -149,7 +149,11 @@ fn server_update_system(
                         translation,
                     })
                     .unwrap();
-                    server.send_message(*client_id, ServerChannel::ServerMessages, message);
+                    server.send_message(
+                        client_id.to_owned(),
+                        ServerChannel::ServerMessages,
+                        message,
+                    );
                 }
                 let transform = Transform::from_xyz(
                     (fastrand::f32() - 0.5) * 40.,
@@ -166,14 +170,16 @@ fn server_update_system(
                     transform,
                 );
                 cmd.entity(player_entity)
-                    .insert(Player { id: *client_id })
+                    .insert(Player {
+                        id: client_id.to_owned(),
+                    })
                     .insert(PlayerInput::default());
 
-                lobby.players.insert(*client_id, player_entity);
+                lobby.players.insert(client_id.to_owned(), player_entity);
 
                 let translation: [f32; 3] = transform.translation.into();
                 let message = bincode::serialize(&ServerMessages::PlayerCreate {
-                    id: *client_id,
+                    id: client_id.to_owned(),
                     entity: player_entity,
                     translation,
                 })
@@ -183,13 +189,15 @@ fn server_update_system(
             ServerEvent::ClientDisconnected { client_id, reason } => {
                 println!("Player {} disconnected: {}", client_id, reason);
                 #[cfg(feature = "graphics")]
-                visualizer.remove_client(*client_id);
-                if let Some(player_entity) = lobby.players.remove(client_id) {
+                visualizer.remove_client(client_id.to_owned());
+                if let Some(player_entity) = lobby.players.remove(&client_id) {
                     cmd.entity(player_entity).despawn();
                 }
 
-                let message =
-                    bincode::serialize(&ServerMessages::PlayerRemove { id: *client_id }).unwrap();
+                let message = bincode::serialize(&ServerMessages::PlayerRemove {
+                    id: client_id.to_owned(),
+                })
+                .unwrap();
                 server.broadcast_message(ServerChannel::ServerMessages, message);
             }
         }

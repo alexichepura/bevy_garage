@@ -1,23 +1,18 @@
 use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::prelude::*;
-use bevy_renet::renet::{transport::NETCODE_KEY_BYTES, ChannelConfig, ConnectionConfig, SendType};
+use bevy_renet::renet::{
+    transport::NETCODE_KEY_BYTES, ChannelConfig, ClientId, ConnectionConfig, SendType,
+};
 use serde::{Deserialize, Serialize};
 use std::{f32::consts::PI, time::Duration};
-
-pub fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 64;
-    c.integration_parameters.max_velocity_friction_iterations = 64;
-    c.integration_parameters.max_stabilization_iterations = 16;
-    c.integration_parameters.erp = 0.99;
-}
 
 pub const PRIVATE_KEY: &[u8; NETCODE_KEY_BYTES] = b"an example very very secret key."; // 32-bytes
 pub const PROTOCOL_ID: u64 = 7;
 
 #[derive(Debug, Component)]
 pub struct Player {
-    pub id: u64,
+    pub id: ClientId,
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
@@ -47,11 +42,11 @@ pub enum ServerChannel {
 pub enum ServerMessages {
     PlayerCreate {
         entity: Entity,
-        id: u64,
+        id: ClientId,
         translation: [f32; 3],
     },
     PlayerRemove {
-        id: u64,
+        id: ClientId,
     },
 }
 
@@ -150,7 +145,7 @@ pub fn setup_level(
     #[cfg(feature = "graphics")]
     cuboid_cmd.insert(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Box::new(size, 1., size))),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3)),
         transform,
         ..Default::default()
     });
