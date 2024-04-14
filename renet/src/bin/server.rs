@@ -111,15 +111,28 @@ fn main() {
     {
         app.add_systems(
             Startup,
-            (bevy_garage_car::car_start_system, setup_simple_camera),
+            (
+                rapier_config_start_system,
+                bevy_garage_car::car_start_system,
+                setup_simple_camera,
+            ),
         );
         app.add_systems(Update, (update_visulizer_system,));
         app.insert_resource(renet_visualizer::RenetServerVisualizer::<200>::default());
     }
 
-    app.add_systems(Startup, (setup_level));
+    app.add_systems(Startup, (setup_level,));
 
     app.run();
+}
+#[cfg(feature = "graphics")]
+fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
+    c.integration_parameters.num_solver_iterations = std::num::NonZeroUsize::new(4).unwrap();
+    c.integration_parameters.num_internal_pgs_iterations = 48;
+    c.integration_parameters.num_additional_friction_iterations = 4;
+    c.integration_parameters.erp = 0.99;
+    // c.integration_parameters.joint_erp = 0.95;
+    dbg!(c.integration_parameters);
 }
 
 #[allow(clippy::too_many_arguments)]

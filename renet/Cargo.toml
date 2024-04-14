@@ -14,6 +14,7 @@ graphics = [
     "dep:bevy_garage_camera",
     "bevy_garage_car/graphics",
     "bevy_rapier3d/debug-render-3d",
+    "bevy/pbr_transmission_textures",
     "bevy/animation",
     "bevy/bevy_asset",
     "bevy/bevy_audio",
@@ -29,6 +30,8 @@ graphics = [
     "bevy/bevy_ui",
     "bevy/multi-threaded",
     "bevy/png",
+    "bevy/jpeg",
+    "bevy/exr",
     "bevy/hdr",
     "bevy/ktx2",
     "bevy/zstd",
@@ -45,7 +48,6 @@ headless = ["bevy_rapier3d/headless"]
 
 [dependencies]
 bevy = { workspace = true }
-# bevy = { workspace = true, features = ["bevy_render"] }
 bevy_egui = { version = "0.26", optional = true }
 bevy_garage_camera = { workspace = true, optional = true }
 bevy_garage_car = { workspace = true, default-features = false }

@@ -129,40 +129,125 @@ pub fn setup_level(
     mut cmd: Commands,
     #[cfg(feature = "graphics")] mut meshes: ResMut<Assets<Mesh>>,
     #[cfg(feature = "graphics")] mut materials: ResMut<Assets<StandardMaterial>>,
+    #[cfg(feature = "graphics")] asset_server: Res<AssetServer>,
 ) {
     let size = 1000.;
     let cuboid = Collider::cuboid(size / 2., 0.5, size / 2.);
-    let transform = Transform::from_xyz(0.0, -1.0, 0.0);
-
-    let mut cuboid_cmd = cmd.spawn((
+    let t0 = Vec3::new(0., 0., 0.);
+    cmd.spawn((
         cuboid,
         RigidBody::Fixed,
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Friction::coefficient(3.),
         Restitution::coefficient(0.),
+        TransformBundle::from_transform(Transform::from_translation(t0 + Vec3::new(0., -0.5, 0.))),
     ));
     #[cfg(feature = "graphics")]
-    cuboid_cmd.insert(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Box::new(size, 1., size))),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3)),
-        transform,
-        ..Default::default()
-    });
-    #[cfg(not(feature = "graphics"))]
-    cuboid_cmd.insert(TransformBundle::from_transform(transform));
+    {
+        use bevy::render::texture::{
+            ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor,
+        };
+        // let color_handle = asset_server.load("asphalt/asphalt_color.png");
+        // let rough_handle = asset_server.load("asphalt/asphalt_03_rough_4k.exr");
+        let repeat = |settings: &mut ImageLoaderSettings| {
+            settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+                address_mode_u: ImageAddressMode::Repeat,
+                address_mode_v: ImageAddressMode::Repeat,
+                address_mode_w: ImageAddressMode::Repeat,
+                ..Default::default()
+            });
+        };
+        let normal_handle =
+            asset_server.load_with_settings("asphalt/asphalt_03_nor_gl_4k.png", repeat);
+        // let depth_handle = asset_server.load("asphalt/asphalt_03_disp_4k.png");
+        let arm_handle = asset_server.load_with_settings("asphalt/asphalt_03_arm_4k.jpg", repeat);
+        let diff_handle = asset_server.load_with_settings("asphalt/asphalt_03_diff_4k.jpg", repeat);
+        let asphalt_material = materials.add(StandardMaterial {
+            base_color: Color::rgb(0.27, 0.25, 0.33),
+            normal_map_texture: Some(normal_handle),
+            // depth_map: Some(depth_handle),
+            metallic: 1.0,
+            perceptual_roughness: 1.0,
+            metallic_roughness_texture: Some(arm_handle),
+            diffuse_transmission_texture: Some(diff_handle),
+            ..default()
+        });
 
-    #[cfg(feature = "graphics")]
-    cmd.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            shadows_enabled: true,
+        let x = 10.;
+        let uvs = vec![[x, 0.0], [0.0, 0.0], [0.0, x], [x, x]];
+        let mesh = Mesh::from(Rectangle::new(size, size))
+            .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+        dbg!(mesh.indices());
+        let rotation = Quat::from_rotation_x(-PI / 2.);
+        let transform = Transform::from_translation(t0).with_rotation(rotation);
+        cmd.spawn(PbrBundle {
+            mesh: meshes.add(mesh),
+            material: asphalt_material,
+            transform,
+            ..Default::default()
+        });
+        cmd.spawn(DirectionalLightBundle {
+            directional_light: DirectionalLight {
+                shadows_enabled: true,
+                ..default()
+            },
+            transform: Transform {
+                translation: Vec3::new(0.0, 2.0, 0.0),
+                rotation: Quat::from_rotation_x(-PI / 4.),
+                ..default()
+            },
             ..default()
-        },
-        transform: Transform {
-            translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-PI / 4.),
-            ..default()
-        },
-        ..default()
-    });
+        });
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct QuadPlane {
+    pub size: Vec2,
+}
+
+impl Default for QuadPlane {
+    fn default() -> Self {
+        QuadPlane { size: Vec2::ONE }
+    }
+}
+
+impl QuadPlane {
+    pub fn new(size: Vec2) -> Self {
+        Self { size }
+    }
+}
+
+impl From<QuadPlane> for Mesh {
+    fn from(quad: QuadPlane) -> Self {
+        let extent_x = quad.size.x / 2.0;
+        let extent_z = quad.size.y / 2.0;
+
+        let x = 10.;
+        // let uvs = vec![[x, 0.], [0., 0.], [0., x], [x, x]];
+
+        let vertices = [
+            ([extent_x, 0.0, -extent_z], [0.0, 1.0, 0.0], [x, x]),
+            ([extent_x, 0.0, extent_z], [0.0, 1.0, 0.0], [x, 0.]),
+            ([-extent_x, 0.0, extent_z], [0.0, 1.0, 0.0], [0., 0.]),
+            ([-extent_x, 0.0, -extent_z], [0.0, 1.0, 0.0], [0., x]),
+        ];
+
+        let indices = bevy::render::mesh::Indices::U32(vec![0, 2, 1, 0, 3, 2]);
+
+        let positions: Vec<_> = vertices.iter().map(|(p, _, _)| *p).collect();
+        let normals: Vec<_> = vertices.iter().map(|(_, n, _)| *n).collect();
+        let uvs: Vec<_> = vertices.iter().map(|(_, _, uv)| *uv).collect();
+
+        let mut mesh = Mesh::new(
+            bevy::render::mesh::PrimitiveTopology::TriangleList,
+            bevy::render::render_asset::RenderAssetUsages::default(),
+        );
+        mesh.insert_indices(indices);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+        mesh
+    }
 }
