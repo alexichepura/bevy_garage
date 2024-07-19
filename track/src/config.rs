@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use parry3d::shape::Polyline;
+use bevy_rapier3d::parry::shape::Polyline;
 use rand::Rng;
 // use std::f32::consts::PI;
 

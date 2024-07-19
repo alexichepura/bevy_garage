@@ -9,5 +9,4 @@ edition = "2021"
 bevy = { workspace = true, default-features = false }
 bevy_rapier3d = { workspace = true }
 bevy_garage_car = { workspace = true }
-parry3d = "0.13"
 rand = { workspace = true }

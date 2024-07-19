@@ -2,10 +2,10 @@ use crate::car_track::CarTrack;
 use crate::{TrackConfig, TRACK_POSITIONS};
 use bevy::prelude::*;
 use bevy_garage_car::{CarRes, CAR_TRAINING_GROUP, STATIC_GROUP};
+use bevy_rapier3d::parry::query::PointQueryWithLocation;
+use bevy_rapier3d::parry::shape::{Polyline, SegmentPointLocation};
 use bevy_rapier3d::prelude::Real;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
-use parry3d::query::PointQueryWithLocation;
-use parry3d::shape::{Polyline, SegmentPointLocation};
 use std::cmp::Ordering;
 
 pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<TrackConfig>) {
