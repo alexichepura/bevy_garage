@@ -38,7 +38,7 @@ impl FromWorld for MaterialHandle {
         #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
         let quality = 10;
 
-        let ground_color = Color::hex("6aa84f").unwrap();
+        let ground_color: Color = Srgba::hex("6aa84f").unwrap().into();
         let mut ground_materials = world.resource_mut::<Assets<ExtendedMaterialGround>>();
         let ground_handle = ground_materials.add(ExtendedMaterial {
             base: StandardMaterial {
@@ -54,7 +54,7 @@ impl FromWorld for MaterialHandle {
         #[cfg(not(target_arch = "wasm32"))]
         let asphalt_depth_bias = 100.;
 
-        let asphalt_color = Color::hex("333355").unwrap();
+        let asphalt_color: Color = Srgba::hex("333355").unwrap().into();
         let mut asphalt_materials = world.resource_mut::<Assets<ExtendedMaterialAsphalt>>();
         let asphalt_handle = asphalt_materials.add(ExtendedMaterial {
             base: StandardMaterial {

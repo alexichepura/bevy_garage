@@ -38,7 +38,7 @@ impl Plugin for CarCameraPlugin {
 }
 
 pub fn camera_start_system(mut cmd: Commands) {
-    let sky_blue = Color::hex("87CEEB").unwrap();
+    let sky_blue: Color = Srgba::hex("87CEEB").unwrap().into();
     cmd.spawn((
         Camera3dBundle {
             #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
@@ -60,12 +60,12 @@ pub fn camera_start_system(mut cmd: Commands) {
         },
         FogSettings {
             color: sky_blue, // Color::rgba(0.1, 0.2, 0.4, 1.0),
-            directional_light_color: Color::rgba(1.0, 0.95, 0.75, 1.),
+            directional_light_color: Color::srgba(1.0, 0.95, 0.75, 1.),
             directional_light_exponent: 200.0,
             falloff: FogFalloff::from_visibility_colors(
                 5000.,
-                Color::rgb(0.35, 0.5, 0.66),
-                Color::rgb(0.8, 0.844, 1.0),
+                Color::srgb(0.35, 0.5, 0.66),
+                Color::srgb(0.8, 0.844, 1.0),
             ),
         },
         CameraController::default(),

@@ -94,7 +94,7 @@ pub fn sensor_system(
                 if toi > 0. {
                     inputs[i] = 1. - toi / car.max_toi;
                     if config.show_rays {
-                        gizmos.line(ray_pos, hit_points[i], Color::rgba(0.5, 0.3, 0.3, 0.5));
+                        gizmos.line(ray_pos, hit_points[i], Color::srgba(0.5, 0.3, 0.3, 0.5));
                     }
                 } else {
                     inputs[i] = 0.;

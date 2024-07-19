@@ -6,7 +6,7 @@ pub fn light_start_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     cmd.insert_resource(AmbientLight {
-        color: Color::rgb_u8(210, 220, 240),
+        color: Color::srgb_u8(210, 220, 240),
         brightness: 80.,
     });
 
@@ -29,7 +29,7 @@ pub fn light_start_system(
             // mesh: meshes.add(Mesh::from(shape::Box::default())),
             mesh: meshes.add(Mesh::from(Cuboid::default())),
             material: materials.add(StandardMaterial {
-                base_color: Color::hex("888888").unwrap(),
+                base_color: Srgba::hex("888888").unwrap().into(),
                 unlit: true,
                 cull_mode: None,
                 ..default()

@@ -117,7 +117,7 @@ pub fn progress_system(
             gizmos.line(
                 h + tr.translation,
                 h + car.line_pos + Vec3::Y * tr.translation.y,
-                Color::rgba(0.5, 0.5, 0.5, 0.5),
+                Color::srgba(0.5, 0.5, 0.5, 0.5),
             );
         }
         board.push((e, track_position));

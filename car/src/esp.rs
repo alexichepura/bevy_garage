@@ -117,10 +117,10 @@ pub fn esp_system(
                 if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
-                    gizmos.line(start, end, Color::VIOLET);
+                    gizmos.line(start, end, Color::BLACK);
                 }
 
-                j.data.set_local_basis1(quat);
+                j.data.as_mut().set_local_basis1(quat);
             } else {
                 let max_slip = 5.;
                 let slip_sq_x: f32 = match slip_sq / max_slip {
@@ -139,7 +139,7 @@ pub fn esp_system(
                 if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
-                    gizmos.line(start, end, Color::VIOLET);
+                    gizmos.line(start, end, Color::BLACK);
                 }
             }
         }
