@@ -9,5 +9,5 @@ default = ["graphics"]
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-bevy_rapier3d = { workspace = true }
+bevy_rapier3d = { workspace = true, default-features = false }
 cfg-if = { workspace = true }

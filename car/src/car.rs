@@ -72,18 +72,24 @@ pub fn spawn_car(
     let spec = CarSpec::default();
     let wheel_spec = WheelSpec::new(spec.wheel_radius, spec.wheel_width);
     let mounts = spec.wheel_mount.clone();
-
-    #[cfg(feature = "graphics")]
-    let car_id = spawn_car_body(cmd, car_scene, Car::new(transform), spec);
-    #[cfg(not(feature = "graphics"))]
-    let car_id = spawn_car_body(cmd, Car::new(transform), spec);
-
+    let car_id = spawn_car_body(
+        cmd,
+        #[cfg(feature = "graphics")]
+        car_scene,
+        Car::new(transform),
+        spec,
+    );
     let wheels = CarWheels::new(mounts.map(|mount| {
         let joint = ImpulseJoint::new(car_id, build_joint(mount.anchor, mount.left));
-        #[cfg(feature = "graphics")]
-        let wheel_id = spawn_wheel(cmd, wheel_scene, &wheel_spec, &mount, transform, joint);
-        #[cfg(not(feature = "graphics"))]
-        let wheel_id = spawn_wheel(cmd, &wheel_spec, &mount, transform, joint);
+        let wheel_id = spawn_wheel(
+            cmd,
+            #[cfg(feature = "graphics")]
+            wheel_scene,
+            &wheel_spec,
+            &mount,
+            transform,
+            joint,
+        );
         wheel_id
     }));
     cmd.entity(car_id).insert(wheels);
