@@ -3,15 +3,14 @@ use bevy_garage_car::{car_start_system, esp_system, spawn_car, Car, CarRes};
 use bevy_rapier3d::prelude::*;
 
 fn main() {
+    let mut rapier_config = RapierConfiguration::new(1.);
+    rapier_config.timestep_mode = TimestepMode::Variable {
+        max_dt: 1. / 60.,
+        time_scale: 1.,
+        substeps: 5,
+    };
     App::new()
-        .insert_resource(RapierConfiguration {
-            timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 60.,
-                time_scale: 1.,
-                substeps: 10,
-            },
-            ..default()
-        })
+        .insert_resource(rapier_config)
         .add_plugins((
             DefaultPlugins,
             RapierPhysicsPlugin::<NoUserData>::default(),
@@ -35,10 +34,10 @@ fn main() {
 }
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.max_velocity_iterations = 64;
-    c.integration_parameters.max_velocity_friction_iterations = 64;
-    c.integration_parameters.max_stabilization_iterations = 16;
-    c.integration_parameters.erp = 0.99;
+    // c.integration_parameters.max_velocity_iterations = 64;
+    // c.integration_parameters.max_velocity_friction_iterations = 64;
+    // c.integration_parameters.max_stabilization_iterations = 16;
+    // c.integration_parameters.erp = 0.99;
 }
 
 fn spawn_car_system(mut cmd: Commands, car_res: Res<CarRes>) {
@@ -62,10 +61,11 @@ fn plane_start(
 ) {
     let size = 100.;
     let (cols, rows) = (10, 10);
+
     cmd.spawn((
         PbrBundle {
-            mesh: meshes.add(shape::Plane::from_size(size).into()),
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+            mesh: meshes.add(Plane3d::default().mesh().size(size, size)),
+            material: materials.add(Color::srgb(0.3, 0.5, 0.3)),
             ..default()
         },
         RigidBody::Fixed,
@@ -91,32 +91,32 @@ fn plane_start(
     });
 }
 
-fn input_system(input: Res<Input<KeyCode>>, mut cars: Query<&mut Car>) {
+fn input_system(input: Res<ButtonInput<KeyCode>>, mut cars: Query<&mut Car>) {
     for mut car in cars.iter_mut() {
-        if input.pressed(KeyCode::Up) {
+        if input.pressed(KeyCode::ArrowUp) {
             car.gas = 1.;
         }
-        if input.just_released(KeyCode::Up) {
+        if input.just_released(KeyCode::ArrowUp) {
             car.gas = 0.;
         }
 
-        if input.pressed(KeyCode::Down) {
+        if input.pressed(KeyCode::ArrowDown) {
             car.brake = 1.;
         }
-        if input.just_released(KeyCode::Down) {
+        if input.just_released(KeyCode::ArrowDown) {
             car.brake = 0.;
         }
 
-        if input.pressed(KeyCode::Left) {
+        if input.pressed(KeyCode::ArrowLeft) {
             car.steering = -1.;
         }
-        if input.pressed(KeyCode::Right) {
+        if input.pressed(KeyCode::ArrowRight) {
             car.steering = 1.;
         }
-        if input.just_released(KeyCode::Left) {
+        if input.just_released(KeyCode::ArrowLeft) {
             car.steering = 0.;
         }
-        if input.just_released(KeyCode::Right) {
+        if input.just_released(KeyCode::ArrowRight) {
             car.steering = 0.;
         }
     }

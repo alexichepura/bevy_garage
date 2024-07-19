@@ -1,4 +1,5 @@
 use bevy::{
+    color::palettes::css,
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
@@ -52,7 +53,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
         ..default()
     })
     .with_children(|parent| {
-        let background_color: BackgroundColor = Color::rgba(0.15, 0.15, 0.15, 0.5).into();
+        let background_color: BackgroundColor = Color::srgba(0.15, 0.15, 0.15, 0.5).into();
         parent
             .spawn(NodeBundle {
                 background_color,
@@ -82,7 +83,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                 style: TextStyle {
                                     font: medium.clone(),
                                     font_size: 16.0,
-                                    color: Color::YELLOW_GREEN,
+                                    color: css::YELLOW_GREEN.into(),
                                 },
                             }],
                             ..default()
@@ -104,7 +105,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                 style: TextStyle {
                                     font: medium.clone(),
                                     font_size: 18.0,
-                                    color: Color::SALMON,
+                                    color: css::SALMON.into(),
                                 },
                             }],
                             ..default()
@@ -127,7 +128,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                 style: TextStyle {
                                     font: medium.clone(),
                                     font_size: 16.0,
-                                    color: Color::YELLOW,
+                                    color: css::YELLOW.into(),
                                 },
                             }],
                             ..default()
@@ -144,7 +145,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                 style: TextStyle {
                                     font: medium.clone(),
                                     font_size: 18.0,
-                                    color: Color::YELLOW,
+                                    color: css::YELLOW.into(),
                                 },
                             }],
                             ..default()
@@ -161,7 +162,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                 style: TextStyle {
                                     font: medium.clone(),
                                     font_size: 24.0,
-                                    color: Color::YELLOW_GREEN,
+                                    color: css::YELLOW_GREEN.into(),
                                 },
                             }],
                             ..default()
@@ -177,7 +178,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                                 style: TextStyle {
                                     font: medium.clone(),
                                     font_size: 24.0,
-                                    color: Color::YELLOW,
+                                    color: css::YELLOW.into(),
                                 },
                             }],
                             ..default()

@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css, prelude::*};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
@@ -117,7 +117,7 @@ pub fn esp_system(
                 if car_res.show_rays {
                     let start = transform.translation + WHEEL_RAY_SHIFT;
                     let end = start + WHEEL_RAY_END_QUAT.mul_vec3(f.torque) / 200.;
-                    gizmos.line(start, end, Color::BLACK);
+                    gizmos.line(start, end, css::VIOLET);
                 }
 
                 j.data.as_mut().set_local_basis1(quat);

@@ -23,7 +23,8 @@ fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
     c.integration_parameters.num_solver_iterations = NonZeroUsize::new(4).unwrap();
     c.integration_parameters.num_internal_pgs_iterations = 48;
     c.integration_parameters.num_additional_friction_iterations = 4;
-    c.integration_parameters.erp = 0.99;
+    // c.integration_parameters.erp = 0.99;
+    // c.integration_parameters.joint_natural_frequency
     // c.integration_parameters.joint_erp = 0.95;
     dbg!(c.integration_parameters);
 }
@@ -34,16 +35,14 @@ pub fn car_app(app: &mut App) -> &mut App {
     #[cfg(not(feature = "nn"))]
     let esp_run_after: CarSet = CarSet::Input;
 
+    let mut rapier_config = RapierConfiguration::new(1.);
+    rapier_config.timestep_mode = TimestepMode::Variable {
+        max_dt: 1. / 60.,
+        time_scale: 1.,
+        substeps: 5,
+    };
     app.init_resource::<FontHandle>()
-        .insert_resource(RapierConfiguration {
-            // https://github.com/dimforge/bevy_rapier/pull/474
-            timestep_mode: TimestepMode::Variable {
-                max_dt: 1. / 60.,
-                time_scale: 1.,
-                substeps: 5,
-            },
-            ..default()
-        })
+        .insert_resource(rapier_config)
         .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
         .insert_resource(CarRes::default())
