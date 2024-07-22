@@ -8,7 +8,10 @@ pub mod joystick;
 mod spawn;
 use std::num::NonZeroUsize;
 
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, pbr::DirectionalLightShadowMap, prelude::*};
+use bevy::{
+    diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam,
+    pbr::DirectionalLightShadowMap, prelude::*,
+};
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
 use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
@@ -20,12 +23,12 @@ use input::*;
 use spawn::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(4).unwrap();
-    c.integration_parameters.num_internal_pgs_iterations = 48;
-    c.integration_parameters.num_additional_friction_iterations = 4;
-    // c.integration_parameters.erp = 0.99;
-    // c.integration_parameters.joint_natural_frequency
-    // c.integration_parameters.joint_erp = 0.95;
+    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
+    c.integration_parameters.warmstart_coefficient = 0.;
+    c.integration_parameters.contact_natural_frequency = 50.;
+    c.integration_parameters.contact_damping_ratio = 50.;
+    // c.integration_parameters.num_internal_pgs_iterations = 16;
+    // c.integration_parameters.num_additional_friction_iterations = 8;
     dbg!(c.integration_parameters);
 }
 
@@ -49,7 +52,7 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(DirectionalLightShadowMap::default())
         .add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
-            RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierPhysicsPlugin::<MyPhysicsHooks>::default(),
             TrackPlugin,
             RapierDebugRenderPlugin {
                 enabled: false,
@@ -99,4 +102,39 @@ pub fn car_app(app: &mut App) -> &mut App {
     }
 
     app
+}
+
+#[derive(SystemParam)]
+struct MyPhysicsHooks;
+
+impl BevyPhysicsHooks for MyPhysicsHooks {
+    fn modify_solver_contacts(&self, context: ContactModificationContextView) {
+        // *context.raw.normal = -*context.raw.normal;
+        // println!("normal {:?}", context.raw.bodies);
+        // if !context.raw.solver_contacts.is_empty() {
+        //     context.raw.solver_contacts.swap_remove(0);
+        // }
+        // let manifold = context.raw.manifold;
+        // manifold.data;
+        // println!("solver_contacts={:?}", &context.raw.solver_contacts);
+        for solver_contact in &mut *context.raw.solver_contacts {
+            // println!("solver {:?}", solver_contact.tangent_velocity);
+            // solver_contact.warmstart_impulse = 0.0;
+            // solver_contact.warmstart_tangent_impulse =
+            // bevy_rapier3d::rapier::math::TangentImpulse::zeros();
+
+            // solver_contact.friction = 0.3;
+            // solver_contact.restitution = 0.1;
+            // solver_contact.tangent_velocity.x = 10.0;
+        }
+
+        // Use the persistent user-data to count the number of times
+        // contact modification was called for this contact manifold
+        // since its creation.
+        // *context.raw.user_data += 1;
+        // println!(
+        //     "Contact manifold has been modified {} times since its creation.",
+        //     *context.raw.user_data
+        // );
+    }
 }

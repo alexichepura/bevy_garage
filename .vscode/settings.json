@@ -3,7 +3,7 @@
         "RUSTFLAGS": "-Ctarget-feature=+nn"
     },
     "rust-analyzer.cargo.features": [
-        "nn",
-        "nn_api",
+        // "nn",
+        // "nn_api",
     ],
 }

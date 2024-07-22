@@ -71,6 +71,7 @@ pub fn spawn_wheel(
         transform,
         (
             collider,
+            ActiveHooks::MODIFY_SOLVER_CONTACTS,
             ColliderMassProperties::MassProperties(MassProperties {
                 local_center_of_mass: Vec3::ZERO,
                 mass: 15.,
@@ -87,6 +88,7 @@ pub fn spawn_wheel(
                 coefficient: 5.0,
                 ..default()
             },
+            // Restitution::coefficient(0.7),
             Restitution::coefficient(0.),
         ),
         (

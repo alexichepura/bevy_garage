@@ -156,7 +156,7 @@ pub fn spawn_road(
             coefficient: 5.,
             ..default()
         },
-        Restitution::coefficient(0.),
+        Restitution::coefficient(0.1),
     ));
     aabb
 }

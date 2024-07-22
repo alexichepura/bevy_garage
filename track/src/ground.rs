@@ -54,6 +54,7 @@ pub fn spawn_ground_heightfield(
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Friction::coefficient(3.),
+        // Restitution::coefficient(0.05),
         Restitution::coefficient(0.),
         Collider::heightfield(
             vec![0.; rows * cols],
