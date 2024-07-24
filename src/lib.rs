@@ -23,10 +23,12 @@ use input::*;
 use spawn::*;
 
 fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
+    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(8).unwrap();
     c.integration_parameters.warmstart_coefficient = 0.;
     c.integration_parameters.contact_natural_frequency = 50.;
     c.integration_parameters.contact_damping_ratio = 50.;
+    // c.integration_parameters.joint_damping_ratio = 0.1;
+    // c.integration_parameters.joint_natural_frequency = 1e6;
     // c.integration_parameters.num_internal_pgs_iterations = 16;
     // c.integration_parameters.num_additional_friction_iterations = 8;
     dbg!(c.integration_parameters);
