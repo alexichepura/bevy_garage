@@ -8,6 +8,8 @@ use bevy_rapier3d::{
     rapier::prelude::{JointAxesMask, JointAxis},
 };
 
+const SUSPENSION_HEIGHT: f32 = 0.08;
+
 pub fn build_suspension_joint(anchor: Vec3) -> TypedJoint {
     // let mut joint = PrismaticJointBuilder::new(Vec3::Y)
     //     // .local_anchor1(Vec3::ZERO)
@@ -60,8 +62,6 @@ pub fn build_suspension_joint(anchor: Vec3) -> TypedJoint {
     // TypedJoint::SpringJoint(joint)
 
     let mut joint = GenericJointBuilder::new(
-        // JointAxesMask::empty(),
-        // JointAxesMask::LOCKED_FIXED_AXES,
         JointAxesMask::ANG_X
             | JointAxesMask::ANG_Y
             | JointAxesMask::ANG_Z
@@ -69,13 +69,19 @@ pub fn build_suspension_joint(anchor: Vec3) -> TypedJoint {
             | JointAxesMask::LIN_Y
             | JointAxesMask::LIN_Z,
     )
-    // .coupled_axes(JointAxesMask::LIN_Y)
     // .coupled_axes(JointAxesMask::LIN_AXES)
-    .motor_position(JointAxis::LinX, -0.05, 1., 0.1)
-    // .motor_model(JointAxis::LinY, MotorModel::ForceBased)
+    // .motor_position(JointAxis::LinX, 0., 0.01, 0.01)
+    // .motor_position(JointAxis::LinX, 0., 1e6, 1e5)
+    .motor_position(JointAxis::LinX, 0., 1e4, 1e3)
+    // .motor_position(JointAxis::LinX, 0., 1e2, 1e1)
+    .limits(
+        JointAxis::LinX,
+        [-SUSPENSION_HEIGHT / 2., SUSPENSION_HEIGHT / 2.],
+    )
+    // .motor_model(JointAxis::LinX, MotorModel::ForceBased)
     .local_axis1(Vec3::Y)
     .local_axis2(Vec3::Y)
-    .local_anchor1(anchor)
+    .local_anchor1(anchor + Vec3::new(0., -SUSPENSION_HEIGHT, 0.))
     .local_anchor2(Vec3::ZERO)
     .build();
     joint.set_contacts_enabled(false);
