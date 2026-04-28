@@ -14,6 +14,7 @@ use bevy::{
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
 use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
+use bevy_rapier3d::plugin::{ReadDefaultRapierContext, WriteDefaultRapierContext};
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -21,18 +22,29 @@ use font::*;
 use input::*;
 use spawn::*;
 
-fn rapier_config_start_system(mut c: Query<&mut RapierContext>) {
-    let Ok(mut context) = c.get_single_mut() else {
-        return;
-    };
-    let context = context.into_inner();
-    context.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
-    context.integration_parameters.warmstart_coefficient = 0.;
-    context.integration_parameters.contact_natural_frequency = 50.;
-    context.integration_parameters.contact_damping_ratio = 50.;
-    // context.integration_parameters.num_internal_pgs_iterations = 16;
-    // context.integration_parameters.num_additional_friction_iterations = 8;
-    // dbg!(context.integration_parameters);
+fn rapier_config_start_system(
+    mut c: WriteDefaultRapierContext,
+    mut config_query: Query<&mut RapierConfiguration>,
+    mut simulation_query: Query<&mut SimulationToRenderTime>,
+) {
+    // Configure RapierContext integration parameters
+    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
+    c.integration_parameters.warmstart_coefficient = 0.;
+    c.integration_parameters.contact_natural_frequency = 50.;
+    c.integration_parameters.contact_damping_ratio = 50.;
+    // c.integration_parameters.num_internal_pgs_iterations = 16;
+    // c.integration_parameters.num_additional_friction_iterations = 8;
+    // dbg!(c.integration_parameters);
+
+    // Configure RapierConfiguration on the same entity as RapierContext
+    // Note: timestep_mode was removed in bevy_rapier3d 0.28
+    if let Ok(mut rapier_config) = config_query.get_single_mut() {
+        // rapier_config
+        // You can configure gravity or other RapierConfiguration fields here
+        // rapier_config.gravity =Vect::Y * -9.81;
+        // rapier_config.physics_pipeline_active = true;
+        // rapier_config.query_pipeline_active = true;
+    }
 }
 
 pub fn car_app(app: &mut App) -> &mut App {
