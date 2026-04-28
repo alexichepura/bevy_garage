@@ -1,4 +1,4 @@
-use super::{GroundPbr, MaterialHandle};
+use super::MaterialHandle;
 use crate::mesh::QuadPlane;
 use bevy::{pbr::NotShadowCaster, prelude::*, render::primitives::Aabb};
 use bevy_garage_car::STATIC_GROUP;
@@ -29,16 +29,13 @@ pub fn spawn_ground_heightfield(
     for x in -meshes_n_half..meshes_n_half {
         for z in -meshes_n_half..meshes_n_half {
             cmd.spawn((
-                GroundPbr {
-                    mesh: mesh_handle.clone(),
-                    material: handled_materials.ground.clone(),
-                    transform: Transform::from_translation(Vec3::new(
-                        aabb_center.x + x as f32 * size_s.x + size_s.x / 2.,
-                        0.,
-                        aabb_center.z + z as f32 * size_s.y + size_s.y / 2.,
-                    )),
-                    ..default()
-                },
+                Mesh3d(mesh_handle.clone()),
+                MeshMaterial3d(handled_materials.ground.clone()),
+                Transform::from_translation(Vec3::new(
+                    aabb_center.x + x as f32 * size_s.x + size_s.x / 2.,
+                    0.,
+                    aabb_center.z + z as f32 * size_s.y + size_s.y / 2.,
+                )),
                 NotShadowCaster,
                 GroundCell {
                     // mesh_handle,
@@ -62,6 +59,6 @@ pub fn spawn_ground_heightfield(
             cols,
             Vec3::new(size.x, 0., size.y),
         ),
-        TransformBundle::from_transform(Transform::from_translation(aabb_center)),
+        Transform::from_translation(aabb_center),
     ));
 }

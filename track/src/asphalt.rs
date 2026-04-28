@@ -1,4 +1,4 @@
-use super::{AsphaltPbr, MaterialHandle, Track, TrackRoad};
+use super::{MaterialHandle, Track, TrackRoad};
 use bevy::{
     pbr::NotShadowCaster,
     prelude::*,
@@ -103,14 +103,11 @@ pub fn spawn_road(
         mesh.generate_tangents().unwrap();
 
         cmd.spawn((
-            AsphaltCell { is_color: false },
-            AsphaltPbr {
-                mesh: meshes.add(mesh.clone()),
-                material: handled_materials.asphalt.clone(),
-                transform: Transform::from_translation(tr),
-                ..default()
-            },
+            Mesh3d(meshes.add(mesh.clone())),
+            MeshMaterial3d(handled_materials.asphalt.clone()),
+            Transform::from_translation(tr),
             NotShadowCaster,
+            AsphaltCell { is_color: false },
         ));
     }
 

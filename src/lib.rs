@@ -22,14 +22,18 @@ use font::*;
 use input::*;
 use spawn::*;
 
-fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
-    c.integration_parameters.warmstart_coefficient = 0.;
-    c.integration_parameters.contact_natural_frequency = 50.;
-    c.integration_parameters.contact_damping_ratio = 50.;
-    // c.integration_parameters.num_internal_pgs_iterations = 16;
-    // c.integration_parameters.num_additional_friction_iterations = 8;
-    dbg!(c.integration_parameters);
+fn rapier_config_start_system(mut c: Query<&mut RapierContext>) {
+    let Ok(mut context) = c.get_single_mut() else {
+        return;
+    };
+    let context = context.into_inner();
+    context.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
+    context.integration_parameters.warmstart_coefficient = 0.;
+    context.integration_parameters.contact_natural_frequency = 50.;
+    context.integration_parameters.contact_damping_ratio = 50.;
+    // context.integration_parameters.num_internal_pgs_iterations = 16;
+    // context.integration_parameters.num_additional_friction_iterations = 8;
+    // dbg!(context.integration_parameters);
 }
 
 pub fn car_app(app: &mut App) -> &mut App {
@@ -38,15 +42,7 @@ pub fn car_app(app: &mut App) -> &mut App {
     #[cfg(not(feature = "nn"))]
     let esp_run_after: CarSet = CarSet::Input;
 
-    let mut rapier_config = RapierConfiguration::new(1.);
-    rapier_config.timestep_mode = TimestepMode::Variable {
-        max_dt: 1. / 60.,
-        time_scale: 1.,
-        substeps: 5,
-    };
     app.init_resource::<FontHandle>()
-        .insert_resource(rapier_config)
-        .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
         .insert_resource(CarRes::default())
         .insert_resource(DirectionalLightShadowMap::default())

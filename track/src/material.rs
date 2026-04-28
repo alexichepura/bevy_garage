@@ -1,13 +1,11 @@
 use crate::{AsphaltExtension, GroundExtension};
 
+use bevy::image::ImageAddressMode;
+use bevy::image::ImageSampler;
 use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssetUsages;
-use bevy::render::texture::ImageAddressMode;
-use bevy::render::{
-    render_resource::{Extent3d, TextureDimension, TextureFormat},
-    texture::{ImageSampler, ImageSamplerDescriptor},
-};
+use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 pub type ExtendedMaterialAsphalt = ExtendedMaterial<StandardMaterial, AsphaltExtension>;
 pub type ExtendedMaterialGround = ExtendedMaterial<StandardMaterial, GroundExtension>;
@@ -25,9 +23,6 @@ pub struct MaterialHandle {
     pub wall: Handle<StandardMaterial>,
     pub kerb: Handle<StandardMaterial>,
 }
-
-pub type AsphaltPbr = MaterialMeshBundle<ExtendedMaterialAsphalt>;
-pub type GroundPbr = MaterialMeshBundle<ExtendedMaterialGround>;
 
 impl FromWorld for MaterialHandle {
     fn from_world(world: &mut World) -> Self {
@@ -124,7 +119,7 @@ fn wall_texture() -> Image {
         RenderAssetUsages::RENDER_WORLD,
     );
 
-    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+    image.sampler = ImageSampler::Descriptor(bevy::image::ImageSamplerDescriptor {
         address_mode_u: ImageAddressMode::Repeat,
         address_mode_v: ImageAddressMode::Repeat,
         address_mode_w: ImageAddressMode::Repeat,
@@ -149,7 +144,7 @@ fn kerb_texture() -> Image {
         RenderAssetUsages::RENDER_WORLD,
     );
 
-    image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+    image.sampler = ImageSampler::Descriptor(bevy::image::ImageSamplerDescriptor {
         address_mode_u: ImageAddressMode::Repeat,
         address_mode_v: ImageAddressMode::Repeat,
         address_mode_w: ImageAddressMode::Repeat,

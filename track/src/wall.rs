@@ -105,12 +105,9 @@ pub fn spawn_walls(
     mesh.insert_indices(Indices::U32(indices));
 
     cmd.spawn((
-        PbrBundle {
-            mesh: meshes.add(mesh),
-            material: handled_materials.wall.clone(),
-            transform: Transform::from_xyz(0., 0., 0.),
-            ..Default::default()
-        },
+        Mesh3d(meshes.add(mesh)),
+        MeshMaterial3d(handled_materials.wall.clone()),
+        Transform::from_xyz(0., 0., 0.),
         Friction {
             combine_rule: CoefficientCombineRule::Min,
             coefficient: 0.1,

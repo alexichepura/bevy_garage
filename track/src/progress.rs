@@ -54,7 +54,7 @@ pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<T
         RigidBody::Fixed,
         Sensor,
         CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
-        TransformBundle::from_transform(Transform::from_xyz(0., 1., 0.)),
+        Transform::from_xyz(0., 1., 0.),
     ));
 }
 

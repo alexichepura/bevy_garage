@@ -1,4 +1,7 @@
-use crate::{AsphaltCell, GroundCell, HandleAsphalt, HandleGround, HandleStandard, MaterialHandle};
+use crate::{
+    AsphaltCell, ExtendedMaterialAsphalt, ExtendedMaterialGround, GroundCell, MaterialHandle,
+};
+use bevy::pbr::MeshMaterial3d;
 use bevy::prelude::*;
 
 #[cfg(any(target_os = "ios", target_os = "android"))]
@@ -45,15 +48,18 @@ pub fn far_culling(
         let distance = (cam_translation - transform.translation).length();
         if distance > VISIBILITY_COLOR {
             if !cell.is_color {
-                cmd.entity(entity).remove::<HandleGround>();
                 cmd.entity(entity)
-                    .insert(handled_materials.ground_color.clone());
+                    .remove::<MeshMaterial3d<ExtendedMaterialGround>>();
+                cmd.entity(entity)
+                    .insert(MeshMaterial3d(handled_materials.ground_color.clone()));
                 cell.is_color = true;
             }
         } else {
             if cell.is_color {
-                cmd.entity(entity).remove::<HandleStandard>();
-                cmd.entity(entity).insert(handled_materials.ground.clone());
+                cmd.entity(entity)
+                    .remove::<MeshMaterial3d<StandardMaterial>>();
+                cmd.entity(entity)
+                    .insert(MeshMaterial3d(handled_materials.ground.clone()));
                 cell.is_color = false;
             }
         }
@@ -71,15 +77,18 @@ pub fn far_culling(
         let distance = (cam_translation - transform.translation).length();
         if distance > VISIBILITY_COLOR {
             if !cell.is_color {
-                cmd.entity(entity).remove::<HandleAsphalt>();
                 cmd.entity(entity)
-                    .insert(handled_materials.asphalt_color.clone());
+                    .remove::<MeshMaterial3d<ExtendedMaterialAsphalt>>();
+                cmd.entity(entity)
+                    .insert(MeshMaterial3d(handled_materials.asphalt_color.clone()));
                 cell.is_color = true;
             }
         } else {
             if cell.is_color {
-                cmd.entity(entity).remove::<HandleStandard>();
-                cmd.entity(entity).insert(handled_materials.asphalt.clone());
+                cmd.entity(entity)
+                    .remove::<MeshMaterial3d<StandardMaterial>>();
+                cmd.entity(entity)
+                    .insert(MeshMaterial3d(handled_materials.asphalt.clone()));
                 cell.is_color = false;
             }
         }
