@@ -34,14 +34,14 @@ codegen-units = 1
 # virtual_joystick = ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
-bevy = { version = "0.15", default-features = false }
+bevy = { version = "0.16", default-features = false }
 bevy_garage_camera = { path = "./camera" }
 bevy_garage_car = { path = "./car", default-features = false }
 # bevy_garage_dsp = { path = "./dsp" }
 bevy_garage_light = { path = "./light" }
 # bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
-bevy_rapier3d = { version = "0.28", features = [
+bevy_rapier3d = { version = "0.30", features = [
   "serde-serialize",
   "dim3",
 ], default-features = false }

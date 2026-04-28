@@ -40,7 +40,7 @@ pub fn far_culling(
         >,
     )>,
 ) {
-    let cam_translation = pset.p0().single().translation;
+    let cam_translation = pset.p0().single().unwrap().translation;
 
     for (transform, mut cell_visibility, inherited_visibility, entity, mut cell) in
         pset.p1().iter_mut()

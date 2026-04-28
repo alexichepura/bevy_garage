@@ -46,7 +46,7 @@ impl CarWheels {
     }
     pub fn despawn(&mut self, cmd: &mut Commands) {
         for e in self.entities.iter() {
-            cmd.entity(*e).despawn_recursive();
+            cmd.entity(*e).despawn();
         }
     }
 }

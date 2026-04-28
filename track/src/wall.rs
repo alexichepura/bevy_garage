@@ -113,7 +113,7 @@ pub fn spawn_walls(
             coefficient: 0.1,
             ..default()
         },
-        Collider::from(ColliderShape::trimesh(collider_vertices, collider_indices)),
+        Collider::from(ColliderShape::trimesh(collider_vertices, collider_indices).unwrap()),
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Restitution::coefficient(0.),
