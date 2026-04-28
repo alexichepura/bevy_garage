@@ -10,33 +10,28 @@ pub fn light_start_system(
         brightness: 80.,
     });
 
-    cmd.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
+    cmd.spawn((
+        DirectionalLight {
             illuminance: 10_000.,
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform {
+        Transform {
             translation: Vec3::new(0., 0., 0.),
             rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_8),
             ..default()
         },
-        ..default()
-    });
+    ));
 
     cmd.spawn((
-        PbrBundle {
-            // mesh: meshes.add(Mesh::from(shape::Box::default())),
-            mesh: meshes.add(Mesh::from(Cuboid::default())),
-            material: materials.add(StandardMaterial {
-                base_color: Srgba::hex("888888").unwrap().into(),
-                unlit: true,
-                cull_mode: None,
-                ..default()
-            }),
-            transform: Transform::from_scale(Vec3::splat(10000.0)),
+        Mesh3d(meshes.add(Mesh::from(Cuboid::default()))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Srgba::hex("888888").unwrap().into(),
+            unlit: true,
+            cull_mode: None,
             ..default()
-        },
+        })),
+        Transform::from_scale(Vec3::splat(10000.0)),
         NotShadowCaster,
     ));
 }
@@ -50,22 +45,22 @@ pub fn animate_light_direction(
 ) {
     if input.pressed(KeyCode::KeyH) {
         for mut transform in &mut query {
-            transform.rotate_y(time.delta_seconds() * K);
+            transform.rotate_y(time.delta_secs() * K);
         }
     }
     if input.pressed(KeyCode::KeyL) {
         for mut transform in &mut query {
-            transform.rotate_y(-time.delta_seconds() * K);
+            transform.rotate_y(-time.delta_secs() * K);
         }
     }
     if input.pressed(KeyCode::KeyJ) {
         for mut transform in &mut query {
-            transform.rotate_x(time.delta_seconds() * K);
+            transform.rotate_x(time.delta_secs() * K);
         }
     }
     if input.pressed(KeyCode::KeyK) {
         for mut transform in &mut query {
-            transform.rotate_x(-time.delta_seconds() * K);
+            transform.rotate_x(-time.delta_secs() * K);
         }
     }
 }

@@ -18,16 +18,11 @@ Wasm demo <https://alexi.chepura.space/bevy-garage>
 
 ## Run
 
-```sh
-brew install llvm # macos
-sudo apt-get install lld # ubuntu
-sudo pacman -S lld # arch
-```
+bevy fast compile guide: https://bevy.org/learn/quick-start/getting-started/setup/#enable-fast-compiles-optional\
+fast builds cargo config example https://github.com/bevyengine/bevy/blob/main/.cargo/config_fast_builds.toml
 
 ```sh
 cargo run --release
-# or faster compile
-cargo run --release --features bevy/dynamic_linking
 ```
 
 <https://bevyengine.org/learn/book/getting-started/setup/>

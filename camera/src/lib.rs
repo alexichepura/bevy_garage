@@ -13,13 +13,13 @@ pub fn grab_mouse(
     let mut window = windows.single_mut();
 
     if mouse.just_pressed(MouseButton::Left) {
-        window.cursor.visible = false;
-        window.cursor.grab_mode = CursorGrabMode::Locked;
+        window.cursor_options.visible = false;
+        window.cursor_options.grab_mode = CursorGrabMode::Locked;
     }
 
     if key.just_pressed(KeyCode::Escape) {
-        window.cursor.visible = true;
-        window.cursor.grab_mode = CursorGrabMode::None;
+        window.cursor_options.visible = true;
+        window.cursor_options.grab_mode = CursorGrabMode::None;
     }
 }
 
@@ -40,25 +40,20 @@ impl Plugin for CarCameraPlugin {
 pub fn camera_start_system(mut cmd: Commands) {
     let sky_blue: Color = Srgba::hex("87CEEB").unwrap().into();
     cmd.spawn((
-        Camera3dBundle {
+        Camera3d::default(),
+        Projection::Perspective(PerspectiveProjection {
             #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
-            projection: Projection::from(PerspectiveProjection {
-                far: 5000.,
-                near: 0.01,
-                ..default()
-            }),
+            far: 5000.,
             #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
-            projection: Projection::from(PerspectiveProjection {
-                far: 50.,
-                near: 0.1,
-                ..default()
-            }),
-            #[cfg(any(target_os = "ios"))]
-            dither: bevy::core_pipeline::tonemapping::DebandDither::Disabled,
-            tonemapping: Tonemapping::TonyMcMapface,
+            far: 50.,
+            #[cfg(any(target_arch = "wasm32", target_os = "ios", target_os = "android"))]
+            near: 0.1,
+            #[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "android")))]
+            near: 0.01,
             ..default()
-        },
-        FogSettings {
+        }),
+        Tonemapping::TonyMcMapface,
+        DistanceFog {
             color: sky_blue, // Color::rgba(0.1, 0.2, 0.4, 1.0),
             directional_light_color: Color::srgba(1.0, 0.95, 0.75, 1.),
             directional_light_exponent: 200.0,
@@ -266,10 +261,10 @@ pub fn camera_controller_system(
         tf
     } else {
         let window = windows.single();
-        if window.cursor.grab_mode == CursorGrabMode::None {
+        if window.cursor_options.grab_mode == CursorGrabMode::None {
             return;
         }
-        let dt = time.delta_seconds();
+        let dt = time.delta_secs();
 
         let mut mouse_delta = Vec2::ZERO;
         for mouse_event in mouse_events.read() {

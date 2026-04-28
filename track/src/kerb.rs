@@ -54,12 +54,9 @@ pub fn spawn_kerb(
     mesh.insert_indices(Indices::U32(track.indices.clone()));
 
     cmd.spawn((
-        PbrBundle {
-            mesh: meshes.add(mesh),
-            material: handled_materials.kerb.clone(),
-            transform: Transform::from_xyz(0., kerb_height, 0.),
-            ..Default::default()
-        },
+        Mesh3d(meshes.add(mesh.clone())),
+        MeshMaterial3d(handled_materials.kerb.clone()),
+        Transform::from_xyz(0., kerb_height, 0.),
         Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()
@@ -111,12 +108,9 @@ pub fn spawn_kerb(
     mesh.insert_indices(Indices::U32(track.indices.clone()));
 
     cmd.spawn((
-        PbrBundle {
-            mesh: meshes.add(mesh),
-            material: handled_materials.kerb.clone(),
-            transform: Transform::from_xyz(0., kerb_height, 0.),
-            ..Default::default()
-        },
+        Mesh3d(meshes.add(mesh)),
+        MeshMaterial3d(handled_materials.kerb.clone()),
+        Transform::from_xyz(0., kerb_height, 0.),
         Collider::from(ColliderShape::trimesh(
             vertices
                 .iter()

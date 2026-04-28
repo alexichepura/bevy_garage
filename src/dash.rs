@@ -32,7 +32,7 @@ pub fn dash_fps_system(
     for mut text in query.iter_mut() {
         if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(average) = fps.average() {
-                text.sections[0].value = format!("{:.0}fps", average);
+                text.0 = format!("{:.0}fps", average);
             }
         }
     }
@@ -42,22 +42,19 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
     let medium: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
     let height = Val::Px(90.);
     let width = Val::Px(150.);
-    cmd.spawn(NodeBundle {
-        style: Style {
-            width: Val::Percent(100.),
-            height: height.clone(),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        },
+
+    cmd.spawn(Node {
+        width: Val::Percent(100.),
+        height: height.clone(),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
         ..default()
     })
     .with_children(|parent| {
         let background_color: BackgroundColor = Color::srgba(0.15, 0.15, 0.15, 0.5).into();
         parent
-            .spawn(NodeBundle {
-                background_color,
-                style: Style {
+            .spawn((
+                Node {
                     width,
                     height: height.clone(),
                     padding: UiRect::all(Val::Px(4.0)),
@@ -66,126 +63,88 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     flex_direction: FlexDirection::Column,
                     ..default()
                 },
-                ..default()
-            })
+                background_color,
+            ))
             .with_children(|parent| {
-                parent
-                    .spawn(TextBundle {
-                        style: Style {
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(4.),
-                            left: Val::Px(4.),
-                            ..default()
-                        },
-                        text: Text {
-                            sections: vec![TextSection {
-                                value: "".to_string(),
-                                style: TextStyle {
-                                    font: medium.clone(),
-                                    font_size: 16.0,
-                                    color: css::YELLOW_GREEN.into(),
-                                },
-                            }],
-                            ..default()
-                        },
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 16.0,
                         ..default()
-                    })
-                    .insert(FpsText);
-                parent
-                    .spawn(TextBundle {
-                        style: Style {
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(20.),
-                            left: Val::Px(4.),
-                            ..default()
-                        },
-                        text: Text {
-                            sections: vec![TextSection {
-                                value: "".to_string(),
-                                style: TextStyle {
-                                    font: medium.clone(),
-                                    font_size: 18.0,
-                                    color: css::SALMON.into(),
-                                },
-                            }],
-                            ..default()
-                        },
+                    },
+                    TextColor(css::YELLOW_GREEN.into()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(4.),
+                        left: Val::Px(4.),
                         ..default()
-                    })
-                    .insert(LapText);
-                parent
-                    .spawn(TextBundle {
-                        style: Style {
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(4.),
-                            right: Val::Px(4.),
-                            ..default()
-                        },
-                        text: Text {
-                            justify: JustifyText::Right,
-                            sections: vec![TextSection {
-                                value: "".to_string(),
-                                style: TextStyle {
-                                    font: medium.clone(),
-                                    font_size: 16.0,
-                                    color: css::YELLOW.into(),
-                                },
-                            }],
-                            ..default()
-                        },
+                    },
+                    FpsText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
                         ..default()
-                    })
-                    .insert(TrackPositionText);
-                parent
-                    .spawn(TextBundle {
-                        text: Text {
-                            justify: JustifyText::Right,
-                            sections: vec![TextSection {
-                                value: "".to_string(),
-                                style: TextStyle {
-                                    font: medium.clone(),
-                                    font_size: 18.0,
-                                    color: css::YELLOW.into(),
-                                },
-                            }],
-                            ..default()
-                        },
+                    },
+                    TextColor(css::SALMON.into()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(20.),
+                        left: Val::Px(4.),
                         ..default()
-                    })
-                    .insert(RideDistanceText);
-                parent
-                    .spawn(TextBundle {
-                        text: Text {
-                            justify: JustifyText::Right,
-                            sections: vec![TextSection {
-                                value: "".to_string(),
-                                style: TextStyle {
-                                    font: medium.clone(),
-                                    font_size: 24.0,
-                                    color: css::YELLOW_GREEN.into(),
-                                },
-                            }],
-                            ..default()
-                        },
+                    },
+                    LapText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 16.0,
                         ..default()
-                    })
-                    .insert(MpsText);
-                parent
-                    .spawn(TextBundle {
-                        text: Text {
-                            sections: vec![TextSection {
-                                value: "".to_string(),
-                                style: TextStyle {
-                                    font: medium.clone(),
-                                    font_size: 24.0,
-                                    color: css::YELLOW.into(),
-                                },
-                            }],
-                            ..default()
-                        },
+                    },
+                    TextColor(css::YELLOW.into()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(4.),
+                        right: Val::Px(4.),
                         ..default()
-                    })
-                    .insert(KmphText);
+                    },
+                    TrackPositionText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW.into()),
+                    RideDistanceText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW_GREEN.into()),
+                    TextLayout::new_with_justify(JustifyText::Right),
+                    MpsText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW.into()),
+                    KmphText,
+                ));
 
                 #[cfg(feature = "nn")]
                 {
@@ -279,6 +238,13 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
 }
 
 pub fn dash_speed_update_system(
+    // mut texts: ParamSet<(
+    //     Query<&mut Text, With<LapText>>,
+    //     Query<&mut Text, With<TrackPositionText>>,
+    //     Query<&mut Text, With<RideDistanceText>>,
+    //     Query<&mut Text, With<MpsText>>,
+    //     Query<&mut Text, With<KmphText>>,
+    // )>,
     mut texts: ParamSet<(
         Query<&mut Text, With<MpsText>>,
         Query<&mut Text, With<KmphText>>,
@@ -291,19 +257,39 @@ pub fn dash_speed_update_system(
     for (velocity, car_track) in cars.iter_mut() {
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
-        texts.p0().single_mut().sections[0].value = format!("{:.1}m/s", mps);
-        texts.p1().single_mut().sections[0].value = format!("{:.1}km/h", kmph);
 
-        texts.p2().single_mut().sections[0].value = format!("{:.1}m", car_track.track_position);
+        texts.p0().single_mut().0 = format!("{:.1}m/s", mps);
+        texts.p1().single_mut().0 = format!("{:.1}km/h", kmph);
+
+        texts.p2().single_mut().0 = format!("{:.1}m", car_track.track_position);
 
         let sign: &str = if car_track.ride_distance.is_sign_negative() {
             "-"
         } else {
             "+"
         };
-        texts.p3().single_mut().sections[0].value =
-            format!("{sign}{:.1}m", car_track.ride_distance.abs());
+        texts.p3().single_mut().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
 
-        texts.p4().single_mut().sections[0].value = format!("lap {}", car_track.lap);
+        texts.p4().single_mut().0 = format!("lap {}", car_track.lap);
+
+        // // Lap text
+        // texts.p0().single_mut().0 = format!("lap {}", car_track.lap);
+
+        // // Track position
+        // texts.p1().single_mut().0 = format!("{:.1}m", car_track.track_position);
+
+        // // Ride distance
+        // let sign: &str = if car_track.ride_distance.is_sign_negative() {
+        //     "-"
+        // } else {
+        //     "+"
+        // };
+        // texts.p2().single_mut().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+
+        // // MPS (meters per second)
+        // texts.p3().single_mut().0 = format!("{:.1}m/s", mps);
+
+        // // KMPH (kilometers per hour)
+        // texts.p4().single_mut().0 = format!("{:.1}km/h", kmph);
     }
 }

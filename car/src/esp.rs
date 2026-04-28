@@ -37,7 +37,7 @@ pub fn esp_system(
     #[cfg(feature = "graphics")] car_res: Res<crate::CarRes>,
     #[cfg(feature = "graphics")] mut gizmos: Gizmos,
 ) {
-    let d_seconds = time.delta_seconds();
+    let d_seconds = time.delta_secs();
     for (mut car, spec, car_wheels, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();

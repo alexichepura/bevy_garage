@@ -1,4 +1,3 @@
-#![feature(slice_flatten)]
 mod config;
 mod dash;
 pub mod font;
@@ -15,6 +14,7 @@ use bevy::{
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
 use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
+use bevy_rapier3d::plugin::WriteDefaultRapierContext;
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -22,14 +22,15 @@ use font::*;
 use input::*;
 use spawn::*;
 
-fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
+fn rapier_config_start_system(mut c: WriteDefaultRapierContext) {
+    // Configure RapierContext integration parameters
     c.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
     c.integration_parameters.warmstart_coefficient = 0.;
     c.integration_parameters.contact_natural_frequency = 50.;
     c.integration_parameters.contact_damping_ratio = 50.;
     // c.integration_parameters.num_internal_pgs_iterations = 16;
     // c.integration_parameters.num_additional_friction_iterations = 8;
-    dbg!(c.integration_parameters);
+    // dbg!(c.integration_parameters);
 }
 
 pub fn car_app(app: &mut App) -> &mut App {
@@ -38,18 +39,24 @@ pub fn car_app(app: &mut App) -> &mut App {
     #[cfg(not(feature = "nn"))]
     let esp_run_after: CarSet = CarSet::Input;
 
-    let mut rapier_config = RapierConfiguration::new(1.);
-    rapier_config.timestep_mode = TimestepMode::Variable {
-        max_dt: 1. / 60.,
-        time_scale: 1.,
-        substeps: 5,
-    };
     app.init_resource::<FontHandle>()
-        .insert_resource(rapier_config)
-        .insert_resource(Msaa::Sample4)
         .insert_resource(Config::default())
         .insert_resource(CarRes::default())
         .insert_resource(DirectionalLightShadowMap::default())
+        // .insert_resource(TimestepMode::Variable {
+        //     max_dt: 1. / 60.,
+        //     time_scale: 1.,
+        //     substeps: 20,
+        // })
+        // .insert_resource(TimestepMode::Fixed {
+        //     dt: 1. / 60.,
+        //     substeps: 20,
+        // })
+        .insert_resource(TimestepMode::Interpolated {
+            dt: 1. / 60.,
+            time_scale: 1.,
+            substeps: 20,
+        })
         .add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
             RapierPhysicsPlugin::<MyPhysicsHooks>::default(),

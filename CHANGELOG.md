@@ -1,5 +1,8 @@
 # Changelog
 
+## (2026-04)
+- bevy 0.15
+
 ## Version 0.9.0 (2024-04)
 - bevy 0.13
 

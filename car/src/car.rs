@@ -119,11 +119,7 @@ pub fn spawn_car_body(
         car,
         spec,
         #[cfg(feature = "graphics")]
-        SceneBundle {
-            scene: car_gl.clone(),
-            transform,
-            ..default()
-        },
+        (SceneRoot(car_gl.clone()), transform),
         #[cfg(not(feature = "graphics"))]
         TransformBundle::from_transform(transform),
         (

@@ -62,11 +62,7 @@ pub fn spawn_wheel(
         wheel,
         joint,
         #[cfg(feature = "graphics")]
-        SceneBundle {
-            scene: wheel_gl.clone(),
-            transform,
-            ..default()
-        },
+        (SceneRoot(wheel_gl.clone()), transform),
         #[cfg(not(feature = "graphics"))]
         transform,
         (

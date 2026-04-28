@@ -1,5 +1,6 @@
 use crate::{CarRes, CarSize};
 use bevy::prelude::*;
+use bevy_rapier3d::plugin::RapierContextAccess;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
@@ -62,7 +63,7 @@ impl CarSensors {
 }
 
 pub fn sensor_system(
-    rapier_context: Res<RapierContext>,
+    rapier_context: RapierContextAccess,
     config: Res<CarRes>,
     mut q_car: Query<(&mut CarSensors, &Transform)>,
     mut gizmos: Gizmos,
