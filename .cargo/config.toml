@@ -1,8 +1,8 @@
 [alias]
 prisma = "run -p prisma-cli --bin prisma --"
 
-# Adapted from https://github.com/bevyengine/bevy/blob/main/.cargo/config_fast_builds
-# bevy fast compile guide: https://bevyengine.org/learn/book/getting-started/setup/#enable-fast-compiles-optional
+# bevy fast compile guide: https://bevy.org/learn/quick-start/getting-started/setup/#enable-fast-compiles-optional
+# example https://github.com/bevyengine/bevy/blob/main/.cargo/config_fast_builds.toml
 
 # NOTE: For maximum performance, build using a nightly compiler
 # If you are using rust stable, remove the "-Zshare-generics=y" below.
