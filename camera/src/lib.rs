@@ -53,6 +53,16 @@ pub fn camera_start_system(mut cmd: Commands) {
             ..default()
         }),
         Tonemapping::TonyMcMapface,
+        DistanceFog {
+            color: sky_blue, // Color::rgba(0.1, 0.2, 0.4, 1.0),
+            directional_light_color: Color::srgba(1.0, 0.95, 0.75, 1.),
+            directional_light_exponent: 200.0,
+            falloff: FogFalloff::from_visibility_colors(
+                5000.,
+                Color::srgb(0.35, 0.5, 0.66),
+                Color::srgb(0.8, 0.844, 1.0),
+            ),
+        },
         CameraController::default(),
     ));
 }
