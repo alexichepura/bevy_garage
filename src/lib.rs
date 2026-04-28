@@ -1,4 +1,3 @@
-#![feature(slice_flatten)]
 mod config;
 mod dash;
 pub mod font;
