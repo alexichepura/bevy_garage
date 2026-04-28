@@ -43,111 +43,208 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
     let height = Val::Px(90.);
     let width = Val::Px(150.);
 
-    cmd.spawn((Node {
+    cmd.spawn(Node {
         width: Val::Percent(100.),
         height: height.clone(),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
-    },))
-        .with_children(|parent| {
-            let background_color: BackgroundColor = Color::srgba(0.15, 0.15, 0.15, 0.5).into();
-            parent
-                .spawn((
-                    Node {
-                        width,
-                        height: height.clone(),
-                        padding: UiRect::all(Val::Px(4.0)),
-                        justify_content: JustifyContent::End,
-                        align_items: AlignItems::End,
-                        flex_direction: FlexDirection::Column,
+    })
+    .with_children(|parent| {
+        let background_color: BackgroundColor = Color::srgba(0.15, 0.15, 0.15, 0.5).into();
+        parent
+            .spawn((
+                Node {
+                    width,
+                    height: height.clone(),
+                    padding: UiRect::all(Val::Px(4.0)),
+                    justify_content: JustifyContent::End,
+                    align_items: AlignItems::End,
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+                background_color,
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 16.0,
                         ..default()
                     },
-                    background_color,
-                ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("".to_string()),
-                        TextFont {
-                            font: medium.clone(),
-                            font_size: 16.0,
+                    TextColor(css::YELLOW_GREEN.into()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(4.),
+                        left: Val::Px(4.),
+                        ..default()
+                    },
+                    FpsText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::SALMON.into()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(20.),
+                        left: Val::Px(4.),
+                        ..default()
+                    },
+                    LapText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 16.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW.into()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(4.),
+                        right: Val::Px(4.),
+                        ..default()
+                    },
+                    TrackPositionText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW.into()),
+                    RideDistanceText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW_GREEN.into()),
+                    TextLayout::new_with_justify(JustifyText::Right),
+                    MpsText,
+                ));
+                parent.spawn((
+                    Text::new(""),
+                    TextFont {
+                        font: medium.clone(),
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(css::YELLOW.into()),
+                    KmphText,
+                ));
+
+                #[cfg(feature = "nn")]
+                {
+                    use bevy_garage_nn::dash::{
+                        TrainerEpsilonText, TrainerGenerationText, TrainerRewardsText,
+                    };
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                top: Val::Px(4.),
+                                left: Val::Percent(100.),
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 14.0,
+                                        color: Color::BLACK,
+                                    },
+                                }],
+                                ..default()
+                            },
                             ..default()
-                        },
-                        TextColor(css::YELLOW_GREEN.into()),
-                        Node {
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(4.),
-                            left: Val::Px(4.),
+                        })
+                        .insert(TrainerGenerationText);
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                top: Val::Px(20.),
+                                left: Val::Percent(100.),
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 14.0,
+                                        color: Color::DARK_GRAY,
+                                    },
+                                }],
+                                ..default()
+                            },
                             ..default()
-                        },
-                        FpsText,
-                    ));
-                    parent.spawn((
-                        Text::new("".to_string()),
-                        TextFont {
-                            font: medium.clone(),
-                            font_size: 18.0,
+                        })
+                        .insert(TrainerEpsilonText);
+                    parent
+                        .spawn(TextBundle {
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                margin: UiRect {
+                                    left: Val::Px(4.),
+                                    ..default()
+                                },
+                                top: Val::Px(36.),
+                                left: Val::Percent(100.),
+                                ..default()
+                            },
+                            text: Text {
+                                alignment: TextAlignment::Right,
+                                sections: vec![TextSection {
+                                    value: "".to_string(),
+                                    style: TextStyle {
+                                        font: medium.clone(),
+                                        font_size: 14.0,
+                                        color: Color::DARK_GRAY,
+                                    },
+                                }],
+                                ..default()
+                            },
                             ..default()
-                        },
-                        TextColor(css::SALMON.into()),
-                        Node {
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(20.),
-                            left: Val::Px(4.),
-                            ..default()
-                        },
-                        MpsText,
-                    ));
-                    parent.spawn((
-                        Text::new("".to_string()),
-                        TextFont {
-                            font: medium.clone(),
-                            font_size: 16.0,
-                            ..default()
-                        },
-                        TextColor(css::YELLOW.into()),
-                        Node {
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(4.),
-                            ..default()
-                        },
-                        KmphText,
-                    ));
-                    parent.spawn((
-                        Text::new("".to_string()),
-                        TextFont {
-                            font: medium.clone(),
-                            font_size: 18.0,
-                            ..default()
-                        },
-                        TextColor(css::YELLOW.into()),
-                        LapText,
-                    ));
-                    parent.spawn((
-                        Text::new("".to_string()),
-                        TextFont {
-                            font: medium.clone(),
-                            font_size: 24.0,
-                            ..default()
-                        },
-                        TextColor(css::YELLOW_GREEN.into()),
-                        TrackPositionText,
-                    ));
-                    parent.spawn((
-                        Text::new("".to_string()),
-                        TextFont {
-                            font: medium.clone(),
-                            font_size: 24.0,
-                            ..default()
-                        },
-                        TextColor(css::YELLOW.into()),
-                        RideDistanceText,
-                    ));
-                });
-        });
+                        })
+                        .insert(TrainerRewardsText);
+                }
+            });
+    });
 }
 
 pub fn dash_speed_update_system(
+    // mut texts: ParamSet<(
+    //     Query<&mut Text, With<LapText>>,
+    //     Query<&mut Text, With<TrackPositionText>>,
+    //     Query<&mut Text, With<RideDistanceText>>,
+    //     Query<&mut Text, With<MpsText>>,
+    //     Query<&mut Text, With<KmphText>>,
+    // )>,
     mut texts: ParamSet<(
         Query<&mut Text, With<MpsText>>,
         Query<&mut Text, With<KmphText>>,
@@ -160,6 +257,7 @@ pub fn dash_speed_update_system(
     for (velocity, car_track) in cars.iter_mut() {
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
+
         texts.p0().single_mut().0 = format!("{:.1}m/s", mps);
         texts.p1().single_mut().0 = format!("{:.1}km/h", kmph);
 
@@ -173,5 +271,25 @@ pub fn dash_speed_update_system(
         texts.p3().single_mut().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
 
         texts.p4().single_mut().0 = format!("lap {}", car_track.lap);
+
+        // // Lap text
+        // texts.p0().single_mut().0 = format!("lap {}", car_track.lap);
+
+        // // Track position
+        // texts.p1().single_mut().0 = format!("{:.1}m", car_track.track_position);
+
+        // // Ride distance
+        // let sign: &str = if car_track.ride_distance.is_sign_negative() {
+        //     "-"
+        // } else {
+        //     "+"
+        // };
+        // texts.p2().single_mut().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+
+        // // MPS (meters per second)
+        // texts.p3().single_mut().0 = format!("{:.1}m/s", mps);
+
+        // // KMPH (kilometers per hour)
+        // texts.p4().single_mut().0 = format!("{:.1}km/h", kmph);
     }
 }
