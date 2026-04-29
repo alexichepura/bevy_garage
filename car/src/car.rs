@@ -2,10 +2,12 @@ use crate::{joint::build_joint, spawn_wheel, CarSpec, WheelSpec};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Player;
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
+#[reflect(Component)]
 pub struct Car {
     pub gas: f32,
     pub brake: f32,
@@ -36,7 +38,8 @@ impl Car {
         }
     }
 }
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
+#[reflect(Component)]
 pub struct CarWheels {
     pub entities: [Entity; 4],
 }

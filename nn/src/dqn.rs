@@ -43,7 +43,7 @@ pub fn dqn_system(
     )>,
     q_colliding_entities: Query<&CollidingEntities, With<CollidingEntities>>,
     mut cmd: Commands,
-    mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
+    mut car_spawn_events: MessageWriter<SpawnCarOnTrackEvent>,
     #[cfg(feature = "api")] api: Res<crate::api_client::ApiClient>,
 ) {
     let seconds = time.elapsed_seconds_f64();

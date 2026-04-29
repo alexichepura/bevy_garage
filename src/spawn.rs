@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_garage_car::CarRes;
 use bevy_garage_track::{spawn_car_on_track, SpawnCarOnTrackEvent, TrackConfig};
 
-pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>) {
+pub fn spawn_car_start_system(mut car_spawn_events: MessageWriter<SpawnCarOnTrackEvent>) {
     car_spawn_events.write(SpawnCarOnTrackEvent {
         player: true,
         index: 0,
@@ -11,7 +11,7 @@ pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackE
 }
 
 pub fn spawn_car_system(
-    mut events: EventReader<SpawnCarOnTrackEvent>,
+    mut events: MessageReader<SpawnCarOnTrackEvent>,
     mut cmd: Commands,
     track_config: ResMut<TrackConfig>,
     car_res: ResMut<CarRes>,

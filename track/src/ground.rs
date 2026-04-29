@@ -1,6 +1,8 @@
 use super::MaterialHandle;
 use crate::mesh::QuadPlane;
-use bevy::{pbr::NotShadowCaster, prelude::*, render::primitives::Aabb};
+use bevy::camera::primitives::Aabb;
+use bevy::light::NotShadowCaster;
+use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::prelude::*;
 

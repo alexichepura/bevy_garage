@@ -82,7 +82,7 @@ fn main() {
         EguiPlugin,
         CarCameraPlugin,
     ));
-    app.add_event::<PlayerCommand>();
+    app.add_message::<PlayerCommand>();
     app.insert_resource(ClientLobby::default());
     app.insert_resource(PlayerInput::default());
     let (client, transport) = new_renet_client();

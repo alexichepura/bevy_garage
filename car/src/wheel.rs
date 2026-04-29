@@ -3,18 +3,21 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
+#[reflect(Component)]
 pub struct WheelSpec {
     pub radius: f32,
     pub width: f32,
 }
+
 impl WheelSpec {
     pub fn new(radius: f32, width: f32) -> Self {
         Self { radius, width }
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Wheel {
     pub radius: f32,
     pub width: f32,

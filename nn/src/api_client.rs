@@ -101,7 +101,7 @@ impl ApiClient {
 pub struct StreamReceiver(Receiver<String>);
 #[derive(Resource, Deref)]
 pub struct StreamSender(Sender<String>);
-#[derive(Event)]
+#[derive(Message)]
 pub struct StreamEvent(String);
 
 pub fn api_start_system(mut cmd: Commands) {
@@ -120,13 +120,13 @@ pub fn api_start_system(mut cmd: Commands) {
 // }
 pub fn api_read_stream_event_writer_system(
     receiver: Res<StreamReceiver>,
-    mut events: EventWriter<StreamEvent>,
+    mut events: MessageWriter<StreamEvent>,
 ) {
         for from_stream in receiver.try_iter() {
             events.write(StreamEvent(from_stream));
         }
 }
-pub fn api_event_reader_system(mut reader: EventReader<StreamEvent>) {
+pub fn api_event_reader_system(mut reader: MessageReader<StreamEvent>) {
     for event in reader.read() {
         dbg!(&event.0);
     }

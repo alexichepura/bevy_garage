@@ -1,10 +1,11 @@
 use crate::{AsphaltExtension, GroundExtension};
 
+use bevy::asset::RenderAssetUsages;
 use bevy::image::ImageAddressMode;
 use bevy::image::ImageSampler;
 use bevy::pbr::ExtendedMaterial;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
-use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 pub type ExtendedMaterialAsphalt = ExtendedMaterial<StandardMaterial, AsphaltExtension>;

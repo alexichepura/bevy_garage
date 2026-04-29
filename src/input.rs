@@ -8,7 +8,7 @@ pub fn input_system(
     mut camera_config: ResMut<CameraConfig>,
     mut cars: Query<(&mut Car, &mut CarWheels, Entity, &Transform), With<Player>>,
     mut cmd: Commands,
-    mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>,
+    mut car_spawn_events: MessageWriter<SpawnCarOnTrackEvent>,
     mut debug_ctx: ResMut<bevy_rapier3d::render::DebugRenderContext>,
     mut car_res: ResMut<CarRes>,
     #[cfg(feature = "nn")] mut dqn: ResMut<bevy_garage_nn::DqnResource>,

@@ -1,9 +1,9 @@
 use super::{MaterialHandle, Track, TrackRoad};
-use bevy::{
-    pbr::NotShadowCaster,
-    prelude::*,
-    render::{mesh::*, primitives::Aabb, render_asset::RenderAssetUsages},
-};
+use bevy::asset::RenderAssetUsages;
+use bevy::camera::primitives::{Aabb, MeshAabb};
+use bevy::light::NotShadowCaster;
+use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
+use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 
@@ -139,13 +139,16 @@ pub fn spawn_road(
 
     cmd.spawn((
         TrackRoad,
-        Collider::from(ColliderShape::trimesh(
-            track_vertices
-                .iter()
-                .map(|v| Point3::new(v[0], v[1], v[2]))
-                .collect(),
-            track.collider_indices.clone(),
-        ).unwrap()),
+        Collider::from(
+            ColliderShape::trimesh(
+                track_vertices
+                    .iter()
+                    .map(|v| Point3::new(v[0], v[1], v[2]))
+                    .collect(),
+                track.collider_indices.clone(),
+            )
+            .unwrap(),
+        ),
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Friction {

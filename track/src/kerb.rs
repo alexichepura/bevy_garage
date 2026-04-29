@@ -1,10 +1,9 @@
 use super::track::Track;
 use crate::material::MaterialHandle;
-use bevy::{
-    pbr::NotShadowCaster,
-    prelude::*,
-    render::{mesh::*, render_asset::RenderAssetUsages},
-};
+use bevy::asset::RenderAssetUsages;
+use bevy::light::NotShadowCaster;
+use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
+use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::Sub;
@@ -57,13 +56,16 @@ pub fn spawn_kerb(
         Mesh3d(meshes.add(mesh.clone())),
         MeshMaterial3d(handled_materials.kerb.clone()),
         Transform::from_xyz(0., kerb_height, 0.),
-        Collider::from(ColliderShape::trimesh(
-            vertices
-                .iter()
-                .map(|v| Point3::new(v[0], v[1], v[2]))
-                .collect(),
-            track.collider_indices.clone(),
-        ).unwrap()),
+        Collider::from(
+            ColliderShape::trimesh(
+                vertices
+                    .iter()
+                    .map(|v| Point3::new(v[0], v[1], v[2]))
+                    .collect(),
+                track.collider_indices.clone(),
+            )
+            .unwrap(),
+        ),
         Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 3.,
@@ -111,13 +113,16 @@ pub fn spawn_kerb(
         Mesh3d(meshes.add(mesh)),
         MeshMaterial3d(handled_materials.kerb.clone()),
         Transform::from_xyz(0., kerb_height, 0.),
-        Collider::from(ColliderShape::trimesh(
-            vertices
-                .iter()
-                .map(|v| Point3::new(v[0], v[1], v[2]))
-                .collect(),
-            track.collider_indices.clone(),
-        ).unwrap()),
+        Collider::from(
+            ColliderShape::trimesh(
+                vertices
+                    .iter()
+                    .map(|v| Point3::new(v[0], v[1], v[2]))
+                    .collect(),
+                track.collider_indices.clone(),
+            )
+            .unwrap(),
+        ),
         Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 3.,
