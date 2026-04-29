@@ -258,19 +258,29 @@ pub fn dash_speed_update_system(
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
 
-        texts.p0().single_mut().unwrap().0 = format!("{:.1}m/s", mps);
-        texts.p1().single_mut().unwrap().0 = format!("{:.1}km/h", kmph);
+        if let Ok(mut text) = texts.p0().single_mut() {
+            text.0 = format!("{:.1}m/s", mps);
+        }
+        if let Ok(mut text) = texts.p1().single_mut() {
+            text.0 = format!("{:.1}km/h", kmph);
+        }
 
-        texts.p2().single_mut().unwrap().0 = format!("{:.1}m", car_track.track_position);
+        if let Ok(mut text) = texts.p2().single_mut() {
+            text.0 = format!("{:.1}m", car_track.track_position);
+        }
 
         let sign: &str = if car_track.ride_distance.is_sign_negative() {
             "-"
         } else {
             "+"
         };
-        texts.p3().single_mut().unwrap().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+        if let Ok(mut text) = texts.p3().single_mut() {
+            text.0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+        }
 
-        texts.p4().single_mut().unwrap().0 = format!("lap {}", car_track.lap);
+        if let Ok(mut text) = texts.p4().single_mut() {
+            text.0 = format!("lap {}", car_track.lap);
+        }
 
         // // Lap text
         // texts.p0().single_mut().unwrap().0 = format!("lap {}", car_track.lap);

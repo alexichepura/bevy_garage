@@ -68,7 +68,9 @@ pub fn sensor_system(
     mut q_car: Query<(&mut CarSensors, &Transform)>,
     mut gizmos: Gizmos,
 ) {
-    let ctx = rapier_context.single().unwrap();
+    let Ok(ctx) = rapier_context.single() else {
+        return;
+    };
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     for (mut car, t) in q_car.iter_mut() {
         let dir = Vec3::Z * car.max_toi;

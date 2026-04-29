@@ -24,7 +24,9 @@ use spawn::*;
 
 fn rapier_config_start_system(mut c: WriteRapierContext) {
     // Configure RapierContext integration parameters
-    let mut ctx = c.single_mut().unwrap();
+    let Ok(mut ctx) = c.single_mut() else {
+        return;
+    };
     ctx.simulation.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
     ctx.simulation.integration_parameters.warmstart_coefficient = 0.;
     ctx.simulation.integration_parameters.contact_natural_frequency = 50.;

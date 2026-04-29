@@ -10,7 +10,9 @@ pub fn grab_mouse(
     mouse: Res<ButtonInput<MouseButton>>,
     key: Res<ButtonInput<KeyCode>>,
 ) {
-    let mut window = windows.single_mut().unwrap();
+    let Ok(mut window) = windows.single_mut() else {
+        return;
+    };
 
     if mouse.just_pressed(MouseButton::Left) {
         window.cursor_options.visible = false;
@@ -254,13 +256,17 @@ pub fn camera_controller_system(
     };
     let tf: Transform = if let Some(tf) = follow_option {
         let mut p0 = pset.p0();
-        let (_, mut options) = p0.single_mut().unwrap();
+        let Ok((_, mut options)) = p0.single_mut() else {
+            return;
+        };
         let (yaw, pitch, _roll) = tf.rotation.to_euler(EulerRot::YXZ);
         options.pitch = pitch;
         options.yaw = yaw;
         tf
     } else {
-        let window = windows.single().unwrap();
+        let Ok(window) = windows.single() else {
+            return;
+        };
         if window.cursor_options.grab_mode == CursorGrabMode::None {
             return;
         }
@@ -272,7 +278,9 @@ pub fn camera_controller_system(
         }
 
         let mut p0 = pset.p0();
-        let (tf, mut options) = p0.single_mut().unwrap();
+        let Ok((tf, mut options)) = p0.single_mut() else {
+            return;
+        };
 
         let mut axis_input = Vec3::ZERO;
         if key_input.pressed(options.key_forward) {
@@ -331,7 +339,8 @@ pub fn camera_controller_system(
         tf
     };
     let mut p0 = pset.p0();
-    let (mut camera_tf, _) = p0.single_mut().unwrap();
-    camera_tf.translation = tf.translation;
-    camera_tf.rotation = tf.rotation;
+    if let Ok((mut camera_tf, _)) = p0.single_mut() {
+        camera_tf.translation = tf.translation;
+        camera_tf.rotation = tf.rotation;
+    }
 }
