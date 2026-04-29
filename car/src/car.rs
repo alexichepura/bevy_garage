@@ -59,16 +59,17 @@ pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 
 #[cfg(feature = "graphics")]
 pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<AssetServer>) {
-    let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
-    config.wheel_scene = Some(wheel_gl.clone());
-    let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
-    config.car_scene = Some(car_gl.clone());
+    // Temporarily disabled - scenes need to be re-exported for Bevy 0.17
+    // let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
+    // config.wheel_scene = Some(wheel_gl.clone());
+    // let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
+    // config.car_scene = Some(car_gl.clone());
 }
 
 pub fn spawn_car(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] car_scene: &Handle<Scene>,
-    #[cfg(feature = "graphics")] wheel_scene: &Handle<Scene>,
+    #[cfg(feature = "graphics")] car_scene: &Option<Handle<Scene>>,
+    #[cfg(feature = "graphics")] wheel_scene: &Option<Handle<Scene>>,
     player: bool,
     transform: Transform,
 ) -> Entity {
@@ -104,7 +105,7 @@ pub fn spawn_car(
 
 pub fn spawn_car_body(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] car_gl: &Handle<Scene>,
+    #[cfg(feature = "graphics")] car_gl: &Option<Handle<Scene>>,
     car: Car,
     spec: CarSpec,
 ) -> Entity {
@@ -121,10 +122,12 @@ pub fn spawn_car_body(
         Name::new("car"),
         car,
         spec,
-        #[cfg(feature = "graphics")]
-        (SceneRoot(car_gl.clone()), transform),
-        #[cfg(not(feature = "graphics"))]
-        TransformBundle::from_transform(transform),
+        transform,
+        // Scene loading disabled for Bevy 0.17 compatibility
+        // #[cfg(feature = "graphics")]
+        // (SceneRoot(car_gl.clone()), transform),
+        // #[cfg(not(feature = "graphics"))]
+        // TransformBundle::from_transform(transform),
         (
             collider,
             ColliderMassProperties::MassProperties(MassProperties {

@@ -27,14 +27,16 @@ pub fn spawn_car_system(
             track_config.get_transform_random()
         };
 
-        spawn_car_on_track(
-            &mut cmd,
-            &car_res.car_scene.as_ref().unwrap(),
-            &car_res.wheel_scene.as_ref().unwrap(),
-            spawn_event.player,
-            transform,
-            spawn_event.index,
-            init_meters,
-        );
+    // Scenes are currently disabled for Bevy 0.17 compatibility
+    // Pass None/Option instead of unwrapping
+    spawn_car_on_track(
+        &mut cmd,
+        &None, // car_scene temporarily disabled
+        &None, // wheel_scene temporarily disabled
+        spawn_event.player,
+        transform,
+        spawn_event.index,
+        init_meters,
+    );
     }
 }
