@@ -8,6 +8,7 @@ pub fn light_start_system(
     cmd.insert_resource(AmbientLight {
         color: Color::srgb_u8(210, 220, 240),
         brightness: 80.,
+        affects_lightmapped_meshes: true,
     });
 
     cmd.spawn((

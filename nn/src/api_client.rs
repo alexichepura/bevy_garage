@@ -122,9 +122,9 @@ pub fn api_read_stream_event_writer_system(
     receiver: Res<StreamReceiver>,
     mut events: EventWriter<StreamEvent>,
 ) {
-    for from_stream in receiver.try_iter() {
-        events.send(StreamEvent(from_stream));
-    }
+        for from_stream in receiver.try_iter() {
+            events.write(StreamEvent(from_stream));
+        }
 }
 pub fn api_event_reader_system(mut reader: EventReader<StreamEvent>) {
     for event in reader.read() {

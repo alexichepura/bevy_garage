@@ -145,7 +145,7 @@ pub fn spawn_road(
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
             track.collider_indices.clone(),
-        )),
+        ).unwrap()),
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Friction {

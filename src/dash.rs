@@ -239,11 +239,11 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
 pub fn dash_speed_update_system(
     // mut texts: ParamSet<(
-    //     Query<&mut Text, With<LapText>>,
-    //     Query<&mut Text, With<TrackPositionText>>,
-    //     Query<&mut Text, With<RideDistanceText>>,
-    //     Query<&mut Text, With<MpsText>>,
-    //     Query<&mut Text, With<KmphText>>,
+    //     Query<Query<&mut Text,mut Text, With<LapText>>,
+    //     Query<Query<&mut Text,mut Text, With<TrackPositionText>>,
+    //     Query<Query<&mut Text,mut Text, With<RideDistanceText>>,
+    //     Query<Query<&mut Text,mut Text, With<MpsText>>,
+    //     Query<Query<&mut Text,mut Text, With<KmphText>>,
     // )>,
     mut texts: ParamSet<(
         Query<&mut Text, With<MpsText>>,
@@ -258,25 +258,35 @@ pub fn dash_speed_update_system(
         let mps = velocity.linvel.length();
         let kmph = mps * 3.6;
 
-        texts.p0().single_mut().0 = format!("{:.1}m/s", mps);
-        texts.p1().single_mut().0 = format!("{:.1}km/h", kmph);
+        if let Ok(mut text) = texts.p0().single_mut() {
+            text.0 = format!("{:.1}m/s", mps);
+        }
+        if let Ok(mut text) = texts.p1().single_mut() {
+            text.0 = format!("{:.1}km/h", kmph);
+        }
 
-        texts.p2().single_mut().0 = format!("{:.1}m", car_track.track_position);
+        if let Ok(mut text) = texts.p2().single_mut() {
+            text.0 = format!("{:.1}m", car_track.track_position);
+        }
 
         let sign: &str = if car_track.ride_distance.is_sign_negative() {
             "-"
         } else {
             "+"
         };
-        texts.p3().single_mut().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+        if let Ok(mut text) = texts.p3().single_mut() {
+            text.0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+        }
 
-        texts.p4().single_mut().0 = format!("lap {}", car_track.lap);
+        if let Ok(mut text) = texts.p4().single_mut() {
+            text.0 = format!("lap {}", car_track.lap);
+        }
 
         // // Lap text
-        // texts.p0().single_mut().0 = format!("lap {}", car_track.lap);
+        // texts.p0().single_mut().unwrap().0 = format!("lap {}", car_track.lap);
 
         // // Track position
-        // texts.p1().single_mut().0 = format!("{:.1}m", car_track.track_position);
+        // texts.p1().single_mut().unwrap().0 = format!("{:.1}m", car_track.track_position);
 
         // // Ride distance
         // let sign: &str = if car_track.ride_distance.is_sign_negative() {
@@ -284,12 +294,12 @@ pub fn dash_speed_update_system(
         // } else {
         //     "+"
         // };
-        // texts.p2().single_mut().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
+        // texts.p2().single_mut().unwrap().0 = format!("{sign}{:.1}m", car_track.ride_distance.abs());
 
         // // MPS (meters per second)
-        // texts.p3().single_mut().0 = format!("{:.1}m/s", mps);
+        // texts.p3().single_mut().unwrap().0 = format!("{:.1}m/s", mps);
 
         // // KMPH (kilometers per hour)
-        // texts.p4().single_mut().0 = format!("{:.1}km/h", kmph);
+        // texts.p4().single_mut().unwrap().0 = format!("{:.1}km/h", kmph);
     }
 }

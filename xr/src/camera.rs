@@ -21,7 +21,7 @@ pub fn camera_controller_system(
     let follow_option: Option<Transform> = match config.mode {
         CameraMode::Free => None,
         CameraMode::Follow(_, from, at) => {
-            if let Ok(car_tf) = pset.p1().get_single() {
+            if let Ok(car_tf) = pset.p1().single() {
                 let mut tf = car_tf.clone();
                 tf.translation += tf.rotation.mul_vec3(from);
                 tf.rotate(Quat::from_rotation_y(-PI));

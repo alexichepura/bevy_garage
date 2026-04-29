@@ -63,7 +63,7 @@ pub fn spawn_kerb(
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
             track.collider_indices.clone(),
-        )),
+        ).unwrap()),
         Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 3.,
@@ -117,7 +117,7 @@ pub fn spawn_kerb(
                 .map(|v| Point3::new(v[0], v[1], v[2]))
                 .collect(),
             track.collider_indices.clone(),
-        )),
+        ).unwrap()),
         Friction {
             combine_rule: CoefficientCombineRule::Average,
             coefficient: 3.,

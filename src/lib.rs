@@ -14,7 +14,7 @@ use bevy::{
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
 use bevy_garage_light::{animate_light_direction, light_start_system};
 use bevy_garage_track::{track_polyline_start_system, SpawnCarOnTrackEvent, TrackPlugin};
-use bevy_rapier3d::plugin::WriteDefaultRapierContext;
+use bevy_rapier3d::plugin::WriteRapierContext;
 use bevy_rapier3d::prelude::*;
 use config::*;
 use dash::*;
@@ -22,12 +22,15 @@ use font::*;
 use input::*;
 use spawn::*;
 
-fn rapier_config_start_system(mut c: WriteDefaultRapierContext) {
+fn rapier_config_start_system(mut c: WriteRapierContext) {
     // Configure RapierContext integration parameters
-    c.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
-    c.integration_parameters.warmstart_coefficient = 0.;
-    c.integration_parameters.contact_natural_frequency = 50.;
-    c.integration_parameters.contact_damping_ratio = 50.;
+    let Ok(mut ctx) = c.single_mut() else {
+        return;
+    };
+    ctx.simulation.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
+    ctx.simulation.integration_parameters.warmstart_coefficient = 0.;
+    ctx.simulation.integration_parameters.contact_natural_frequency = 50.;
+    ctx.simulation.integration_parameters.contact_damping_ratio = 50.;
     // c.integration_parameters.num_internal_pgs_iterations = 16;
     // c.integration_parameters.num_additional_friction_iterations = 8;
     // dbg!(c.integration_parameters);

@@ -1,6 +1,6 @@
 use crate::{CarRes, CarSize};
 use bevy::prelude::*;
-use bevy_rapier3d::plugin::RapierContextAccess;
+use bevy_rapier3d::plugin::ReadRapierContext;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
@@ -63,11 +63,14 @@ impl CarSensors {
 }
 
 pub fn sensor_system(
-    rapier_context: RapierContextAccess,
+    rapier_context: ReadRapierContext,
     config: Res<CarRes>,
     mut q_car: Query<(&mut CarSensors, &Transform)>,
     mut gizmos: Gizmos,
 ) {
+    let Ok(ctx) = rapier_context.single() else {
+        return;
+    };
     let sensor_filter = QueryFilter::<'_>::exclude_dynamic().exclude_sensors();
     for (mut car, t) in q_car.iter_mut() {
         let dir = Vec3::Z * car.max_toi;
@@ -89,7 +92,7 @@ pub fn sensor_system(
             let ray_dir = (ray_dir_pos - ray_pos).normalize();
 
             if let Some((_e, toi)) =
-                rapier_context.cast_ray(ray_pos, ray_dir, car.max_toi, false, sensor_filter)
+                ctx.cast_ray(ray_pos, ray_dir, car.max_toi, false, sensor_filter)
             {
                 hit_points[i] = ray_pos + ray_dir * toi;
                 if toi > 0. {

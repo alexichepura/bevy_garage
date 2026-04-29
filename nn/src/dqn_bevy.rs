@@ -149,7 +149,7 @@ pub fn dqn_x_start_system(mut cmd: Commands) {
 }
 pub fn dqn_rx_to_bevy_event_system(receiver: Res<DqnRx>, mut events: EventWriter<DqnEvent>) {
     for from_stream in receiver.try_iter() {
-        events.send(DqnEvent(from_stream));
+        events.write(DqnEvent(from_stream));
     }
 }
 pub fn dqn_event_reader_system(
