@@ -37,7 +37,7 @@ fn xr_startup(mut xr_system: ResMut<XrSystem>, mut app_exit_events: EventWriter<
         xr_system.request_session_mode(XrSessionMode::ImmersiveVR);
     } else {
         bevy::log::error!("The XR device does not support immersive VR mode");
-        app_exit_events.send(AppExit)
+        app_exit_events.write(AppExit)
     }
 
     println!("startup done");
@@ -70,9 +70,8 @@ fn interaction(
     if tracking_source.reference_space_type() != XrReferenceSpaceType::Stage {
         tracking_source.set_reference_space_type(XrReferenceSpaceType::Stage);
     }
-    let pawn = match pawn.get_single() {
-        Ok(pawn) => pawn,
-        Err(_) => return,
+    let Ok(pawn) = pawn.single() else {
+        return;
     };
 
     for (hand, button, squeeze) in [
@@ -93,7 +92,7 @@ fn interaction(
         };
         if action_set.button_just_pressed(&button) {
             println!("Short haptic click");
-            vibration_events.send(XrVibrationEvent {
+            vibration_events.write(XrVibrationEvent {
                 hand,
                 command: XrVibrationEventType::Apply {
                     duration: Duration::from_millis(2),

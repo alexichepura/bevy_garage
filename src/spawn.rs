@@ -3,7 +3,7 @@ use bevy_garage_car::CarRes;
 use bevy_garage_track::{spawn_car_on_track, SpawnCarOnTrackEvent, TrackConfig};
 
 pub fn spawn_car_start_system(mut car_spawn_events: EventWriter<SpawnCarOnTrackEvent>) {
-    car_spawn_events.send(SpawnCarOnTrackEvent {
+    car_spawn_events.write(SpawnCarOnTrackEvent {
         player: true,
         index: 0,
         position: Some(0.),

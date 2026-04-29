@@ -23,10 +23,10 @@ pub fn input_system(
     }
     for (mut car, mut wheels, e, _transform) in cars.iter_mut() {
         if input.just_pressed(KeyCode::Space) && input.pressed(KeyCode::ShiftLeft) {
-            cmd.entity(e).despawn_recursive();
+            cmd.entity(e).despawn();
             wheels.despawn(&mut cmd);
 
-            car_spawn_events.send(SpawnCarOnTrackEvent {
+            car_spawn_events.write(SpawnCarOnTrackEvent {
                 player: true,
                 index: 0,
                 position: None,

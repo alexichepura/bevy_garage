@@ -48,7 +48,7 @@ pub fn dqn_system(
 ) {
     let seconds = time.elapsed_seconds_f64();
     if dqn.respawn_in > 0. && seconds > dqn.respawn_in {
-        car_spawn_events.send(SpawnCarOnTrackEvent {
+        car_spawn_events.write(SpawnCarOnTrackEvent {
             player: dqn.respawn_player,
             index: dqn.respawn_index,
             position: None,
@@ -155,7 +155,7 @@ pub fn dqn_system(
             dqn.respawn_in = seconds;
             dqn.respawn_player = player;
             dqn.respawn_index = car_track.index;
-            cmd.entity(e).despawn_recursive();
+            cmd.entity(e).despawn();
             wheels.despawn(&mut cmd);
             dqn.use_nn = false;
         }
