@@ -60,18 +60,18 @@ pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 #[cfg(feature = "graphics")]
 pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<AssetServer>) {
     use bevy::gltf::GltfAssetLabel;
-
+    
     let wheel_scene = asset_server.load(GltfAssetLabel::Scene(0).from_asset("wheelRacing.glb"));
     let car_scene = asset_server.load(GltfAssetLabel::Scene(0).from_asset("car-race.glb"));
-
+    
     config.wheel_scene = Some(wheel_scene);
     config.car_scene = Some(car_scene);
 }
 
 pub fn spawn_car(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] car_scene: &Option<Handle<Scene>>,
-    #[cfg(feature = "graphics")] wheel_scene: &Option<Handle<Scene>>,
+    #[cfg(feature = "graphics")] car_scene: &Handle<Scene>,
+    #[cfg(feature = "graphics")] wheel_scene: &Handle<Scene>,
     player: bool,
     transform: Transform,
 ) -> Entity {
@@ -107,7 +107,7 @@ pub fn spawn_car(
 
 pub fn spawn_car_body(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] car_gl: &Option<Handle<Scene>>,
+    #[cfg(feature = "graphics")] car_gl: &Handle<Scene>,
     car: Car,
     spec: CarSpec,
 ) -> Entity {
@@ -124,12 +124,10 @@ pub fn spawn_car_body(
         Name::new("car"),
         car,
         spec,
+        #[cfg(feature = "graphics")]
+        (SceneRoot(car_gl.clone()), transform),
+        #[cfg(not(feature = "graphics"))]
         transform,
-        // Scene loading disabled for Bevy 0.17 compatibility
-        // #[cfg(feature = "graphics")]
-        // (SceneRoot(car_gl.clone()), transform),
-        // #[cfg(not(feature = "graphics"))]
-        // TransformBundle::from_transform(transform),
         (
             collider,
             ColliderMassProperties::MassProperties(MassProperties {

@@ -36,8 +36,8 @@ impl Default for CarTrack {
 
 pub fn spawn_car_on_track(
     cmd: &mut Commands,
-    car_gl: &Option<Handle<Scene>>,
-    wheel_gl: &Option<Handle<Scene>>,
+    car_gl: &Handle<Scene>,
+    wheel_gl: &Handle<Scene>,
     player: bool,
     transform: Transform,
     index: usize,

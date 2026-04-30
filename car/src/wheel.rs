@@ -40,7 +40,7 @@ impl Wheel {
 
 pub fn spawn_wheel(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] wheel_gl: &Option<Handle<Scene>>,
+    #[cfg(feature = "graphics")] wheel_gl: &Handle<Scene>,
     spec: &WheelSpec,
     mount: &WheelMount,
     car_transform: Transform,
@@ -64,12 +64,10 @@ pub fn spawn_wheel(
         Name::new("wheel"),
         wheel,
         joint,
+        #[cfg(feature = "graphics")]
+        (SceneRoot(wheel_gl.clone()), transform),
+        #[cfg(not(feature = "graphics"))]
         transform,
-        // Scene loading disabled for Bevy 0.17 compatibility
-        // #[cfg(feature = "graphics")]
-        // (SceneRoot(wheel_gl.clone()), transform),
-        // #[cfg(not(feature = "graphics"))]
-        // transform,
         (
             collider,
             ActiveHooks::MODIFY_SOLVER_CONTACTS,
