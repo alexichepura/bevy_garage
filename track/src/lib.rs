@@ -36,21 +36,17 @@ pub struct TrackPlugin;
 impl Plugin for TrackPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrackConfig::default())
-            // Temporarily disabled - materials causing wgpu errors in Bevy 0.17
-            // .add_plugins((
-            //     ShadersPlugin,
-            // ))
-            // .init_resource::<MaterialHandle>()
+            .add_plugins(ShadersPlugin)
+            .init_resource::<MaterialHandle>()
             .add_systems(
                 Startup,
                 (
                     track_polyline_start_system,
-                    // track_start_system, // Disabled - creates materials
+                    track_start_system,
                     track_decorations_start_system.after(track_polyline_start_system),
                 ),
-            );
-            // Disabled Update systems that use MaterialHandle
-            // .add_systems(Update, (far_culling, progress_system.in_set(CarSet::Input)));
+            )
+            .add_systems(Update, (far_culling, progress_system.in_set(CarSet::Input)));
     }
 }
 
