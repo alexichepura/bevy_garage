@@ -1,4 +1,5 @@
-use bevy::{pbr::NotShadowCaster, prelude::*};
+use bevy::light::NotShadowCaster;
+use bevy::prelude::*;
 
 pub fn light_start_system(
     mut cmd: Commands,

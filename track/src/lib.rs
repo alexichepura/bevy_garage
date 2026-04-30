@@ -36,11 +36,7 @@ pub struct TrackPlugin;
 impl Plugin for TrackPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrackConfig::default())
-            .add_plugins((
-                ShadersPlugin,
-                // MaterialPlugin::<GroundMaterial>::default(),
-                // MaterialPlugin::<AsphaltMaterial>::default(),
-            ))
+            .add_plugins(ShadersPlugin)
             .init_resource::<MaterialHandle>()
             .add_systems(
                 Startup,

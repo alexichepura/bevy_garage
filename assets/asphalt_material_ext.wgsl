@@ -16,7 +16,6 @@
 }
 #endif
 
-
 // TODO
 // #import shaders::perlin_noise_2d
 // MIT License. © Stefan Gustavson, Munrocket
@@ -55,11 +54,10 @@ fn perlinNoise2(P: vec2<f32>) -> f32 {
 }
 
 struct AsphaltMaterial {
-    quality: i32 // 0-10
+    quality: i32// 0-10
 };
-@group(2) @binding(100)
+@group(#{MATERIAL_BIND_GROUP}) @binding(100)
 var<uniform> material: AsphaltMaterial;
-
 
 const coeff_l: f32 = 0.035;
 const coeff_m: f32 = 0.35;

@@ -1,6 +1,7 @@
-use bevy::pbr::{prelude::*, MaterialExtension};
+use bevy::pbr::MaterialExtension;
 use bevy::prelude::*;
-use bevy::render::render_resource::{AsBindGroup, ShaderRef};
+use bevy::render::render_resource::AsBindGroup;
+use bevy::shader::ShaderRef;
 
 use crate::{ExtendedMaterialAsphalt, ExtendedMaterialGround};
 

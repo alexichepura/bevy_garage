@@ -1,27 +1,27 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::window::CursorGrabMode;
+use bevy::window::{CursorGrabMode, CursorOptions};
 use bevy_garage_car::Player;
 use bevy_rapier3d::prelude::PhysicsSet;
 
 pub fn grab_mouse(
-    mut windows: Query<&mut Window>,
+    mut cursor_options: Query<&mut CursorOptions>,
     mouse: Res<ButtonInput<MouseButton>>,
     key: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok(mut window) = windows.single_mut() else {
+    let Ok(mut cursor_options) = cursor_options.single_mut() else {
         return;
     };
 
     if mouse.just_pressed(MouseButton::Left) {
-        window.cursor_options.visible = false;
-        window.cursor_options.grab_mode = CursorGrabMode::Locked;
+        cursor_options.visible = false;
+        cursor_options.grab_mode = CursorGrabMode::Locked;
     }
 
     if key.just_pressed(KeyCode::Escape) {
-        window.cursor_options.visible = true;
-        window.cursor_options.grab_mode = CursorGrabMode::None;
+        cursor_options.visible = true;
+        cursor_options.grab_mode = CursorGrabMode::None;
     }
 }
 
@@ -69,7 +69,8 @@ pub fn camera_start_system(mut cmd: Commands) {
     ));
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct CameraController {
     pub enabled: bool,
     pub sensitivity: f32,
@@ -237,7 +238,7 @@ pub fn camera_controller_system(
         Query<&Transform, With<Player>>,
         Query<&mut Transform, With<DirectionalLight>>,
     )>,
-    windows: Query<&Window>,
+    cursor_options: Query<&CursorOptions>,
 ) {
     let follow_option: Option<Transform> = match config.mode {
         CameraMode::Free => None,
@@ -264,10 +265,10 @@ pub fn camera_controller_system(
         options.yaw = yaw;
         tf
     } else {
-        let Ok(window) = windows.single() else {
+        let Ok(cursor_options) = cursor_options.single() else {
             return;
         };
-        if window.cursor_options.grab_mode == CursorGrabMode::None {
+        if cursor_options.grab_mode == CursorGrabMode::None {
             return;
         }
         let dt = time.delta_secs();

@@ -1,11 +1,6 @@
-use bevy::{
-    prelude::{Mesh, Vec2},
-    render::{
-        mesh::{Indices, VertexAttributeValues},
-        render_asset::RenderAssetUsages,
-        render_resource::PrimitiveTopology,
-    },
-};
+use bevy::asset::RenderAssetUsages;
+use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
+use bevy::prelude::{Mesh, Vec2};
 use bevy_rapier3d::{na::Point3, prelude::Real};
 
 pub fn _bevy_mesh(buffers: (Vec<Point3<Real>>, Vec<[u32; 3]>)) -> Mesh {

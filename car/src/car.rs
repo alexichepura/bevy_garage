@@ -2,10 +2,12 @@ use crate::{joint::build_joint, spawn_wheel, CarSpec, WheelSpec};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Player;
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
+#[reflect(Component)]
 pub struct Car {
     pub gas: f32,
     pub brake: f32,
@@ -36,7 +38,8 @@ impl Car {
         }
     }
 }
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
+#[reflect(Component)]
 pub struct CarWheels {
     pub entities: [Entity; 4],
 }
@@ -56,10 +59,13 @@ pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 
 #[cfg(feature = "graphics")]
 pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<AssetServer>) {
-    let wheel_gl: Handle<Scene> = asset_server.load("wheelRacing.glb#Scene0");
-    config.wheel_scene = Some(wheel_gl.clone());
-    let car_gl: Handle<Scene> = asset_server.load("car-race.glb#Scene0");
-    config.car_scene = Some(car_gl.clone());
+    use bevy::gltf::GltfAssetLabel;
+    
+    let wheel_scene = asset_server.load(GltfAssetLabel::Scene(0).from_asset("wheelRacing.glb"));
+    let car_scene = asset_server.load(GltfAssetLabel::Scene(0).from_asset("car-race.glb"));
+    
+    config.wheel_scene = Some(wheel_scene);
+    config.car_scene = Some(car_scene);
 }
 
 pub fn spawn_car(
@@ -121,7 +127,7 @@ pub fn spawn_car_body(
         #[cfg(feature = "graphics")]
         (SceneRoot(car_gl.clone()), transform),
         #[cfg(not(feature = "graphics"))]
-        TransformBundle::from_transform(transform),
+        transform,
         (
             collider,
             ColliderMassProperties::MassProperties(MassProperties {

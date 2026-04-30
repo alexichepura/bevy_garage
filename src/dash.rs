@@ -7,22 +7,28 @@ use bevy_garage_car::Player;
 use bevy_garage_track::CarTrack;
 use bevy_rapier3d::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct FpsText;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct MpsText;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct KmphText;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct LapText;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct TrackPositionText;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct RideDistanceText;
 
 pub fn dash_fps_system(
@@ -132,7 +138,7 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                         ..default()
                     },
                     TextColor(css::YELLOW_GREEN.into()),
-                    TextLayout::new_with_justify(JustifyText::Right),
+                    TextLayout::new_with_justify(Justify::Right),
                     MpsText,
                 ));
                 parent.spawn((

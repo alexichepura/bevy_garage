@@ -22,7 +22,7 @@ pub struct NeuralNetworkPlugin;
 impl Plugin for NeuralNetworkPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DqnResource::default())
-            .add_event::<DqnEvent>()
+            .add_message::<DqnEvent>()
             .add_systems(Startup, (dqn_start_system, dqn_x_start_system))
             .add_systems(
                 Update,
@@ -41,7 +41,7 @@ impl Plugin for NeuralNetworkPlugin {
         #[cfg(feature = "api")]
         {
             use crate::api_client::*;
-            app.add_event::<StreamEvent>()
+            app.add_message::<StreamEvent>()
                 .add_systems(Startup, api_start_system)
                 .add_systems(
                     Update,

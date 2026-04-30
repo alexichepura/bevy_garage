@@ -9,7 +9,7 @@ use std::num::NonZeroUsize;
 
 use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam,
-    pbr::DirectionalLightShadowMap, prelude::*,
+    light::DirectionalLightShadowMap, prelude::*,
 };
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
 use bevy_garage_light::{animate_light_direction, light_start_system};
@@ -27,10 +27,16 @@ fn rapier_config_start_system(mut c: WriteRapierContext) {
     let Ok(mut ctx) = c.single_mut() else {
         return;
     };
-    ctx.simulation.integration_parameters.num_solver_iterations = NonZeroUsize::new(6).unwrap();
+    ctx.simulation.integration_parameters.num_solver_iterations = 6;
     ctx.simulation.integration_parameters.warmstart_coefficient = 0.;
-    ctx.simulation.integration_parameters.contact_natural_frequency = 50.;
-    ctx.simulation.integration_parameters.contact_damping_ratio = 50.;
+    ctx.simulation
+        .integration_parameters
+        .contact_softness
+        .natural_frequency = 50.;
+    ctx.simulation
+        .integration_parameters
+        .contact_softness
+        .damping_ratio = 50.;
     // c.integration_parameters.num_internal_pgs_iterations = 16;
     // c.integration_parameters.num_additional_friction_iterations = 8;
     // dbg!(c.integration_parameters);
@@ -78,7 +84,7 @@ pub fn car_app(app: &mut App) -> &mut App {
                 ..default()
             },
         ))
-        .add_event::<SpawnCarOnTrackEvent>()
+        .add_message::<SpawnCarOnTrackEvent>()
         .add_systems(
             Startup,
             (

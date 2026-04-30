@@ -132,7 +132,7 @@ pub struct DqnX {
 pub struct DqnRx(Receiver<DqnX>);
 #[derive(Resource, Deref)]
 pub struct DqnTx(Sender<DqnX>);
-#[derive(Event)]
+#[derive(Message)]
 pub struct DqnEvent(DqnX);
 
 pub fn dqn_start_system(world: &mut World) {
@@ -147,13 +147,13 @@ pub fn dqn_x_start_system(mut cmd: Commands) {
     cmd.insert_resource(DqnRx(rx));
     cmd.insert_resource(DqnTx(tx));
 }
-pub fn dqn_rx_to_bevy_event_system(receiver: Res<DqnRx>, mut events: EventWriter<DqnEvent>) {
+pub fn dqn_rx_to_bevy_event_system(receiver: Res<DqnRx>, mut events: MessageWriter<DqnEvent>) {
     for from_stream in receiver.try_iter() {
         events.write(DqnEvent(from_stream));
     }
 }
 pub fn dqn_event_reader_system(
-    mut reader: EventReader<DqnEvent>,
+    mut reader: MessageReader<DqnEvent>,
     mut cars_dqn: NonSendMut<CarsDqnResource>,
 ) {
     for event in reader.read() {

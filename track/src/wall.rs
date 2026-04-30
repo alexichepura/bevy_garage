@@ -1,8 +1,7 @@
 use crate::material::MaterialHandle;
-use bevy::{
-    prelude::*,
-    render::{mesh::*, render_asset::RenderAssetUsages},
-};
+use bevy::asset::RenderAssetUsages;
+use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
+use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
 use bevy_rapier3d::{na::Point3, prelude::Real, prelude::*, rapier::prelude::ColliderShape};
 use std::ops::{Mul, Sub};
