@@ -63,11 +63,11 @@ uuid = "1.3"
 
 [dependencies]
 bevy = { workspace = true, features = [
-# "debug",
-"reflect_auto_register",
-"jpeg",
-"gltf_animation",
-"bevy_asset",
+ # "debug",
+ "reflect_auto_register",
+ "jpeg",
+ "gltf_animation",
+ "bevy_asset",
  "bevy_audio",
  "bevy_gilrs",
  "bevy_scene",
@@ -87,6 +87,7 @@ bevy = { workspace = true, features = [
  "vorbis",
  "x11",
  "bevy_gizmos",
+ "bevy_gizmos_render",
  "android_shared_stdcxx",
  "tonemapping_luts",
  "default_font",
