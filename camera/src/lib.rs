@@ -231,7 +231,7 @@ pub fn camera_switch_system(mut config: ResMut<CameraConfig>, input: Res<ButtonI
 pub fn camera_controller_system(
     time: Res<Time>,
     config: Res<CameraConfig>,
-    mut mouse_events: EventReader<MouseMotion>,
+    mut mouse_events: MessageReader<MouseMotion>,
     key_input: Res<ButtonInput<KeyCode>>,
     mut pset: ParamSet<(
         Query<(&mut Transform, &mut CameraController), With<Camera>>,

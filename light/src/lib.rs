@@ -1,4 +1,4 @@
-use bevy::light::NotShadowCaster;
+use bevy::light::{GlobalAmbientLight, NotShadowCaster};
 use bevy::prelude::*;
 
 pub fn light_start_system(
@@ -6,7 +6,7 @@ pub fn light_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    cmd.insert_resource(AmbientLight {
+    cmd.insert_resource(GlobalAmbientLight {
         color: Color::srgb_u8(210, 220, 240),
         brightness: 80.,
         affects_lightmapped_meshes: true,
