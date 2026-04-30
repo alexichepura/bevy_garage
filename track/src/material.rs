@@ -4,7 +4,6 @@ use bevy::asset::RenderAssetUsages;
 use bevy::image::ImageAddressMode;
 use bevy::image::ImageSampler;
 use bevy::pbr::ExtendedMaterial;
-use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 

@@ -34,16 +34,16 @@ codegen-units = 1
 # virtual_joystick = ["dep:virtual_joystick"]
 default = []
 [workspace.dependencies]
- bevy = { version = "0.17", default-features = false }
+ bevy = { version = "0.18", default-features = false }
 bevy_garage_camera = { path = "./camera" }
 bevy_garage_car = { path = "./car", default-features = false }
 # bevy_garage_dsp = { path = "./dsp" }
 bevy_garage_light = { path = "./light" }
 # bevy_garage_nn = { path = "./nn" }
 bevy_garage_track = { path = "./track" }
-bevy_rapier3d = { version = "0.32", features = [
- "serde-serialize",
- "dim3",
+bevy_rapier3d = { version = "0.33", features = [
+  "serde-serialize",
+  "dim3",
 ], default-features = false }
 cfg-if = "1.0.0"
 # dfdx = "0.13"
@@ -62,12 +62,12 @@ tokio = { version = "1", features = ["full"] }
 uuid = "1.3"
 
 [dependencies]
- bevy = { workspace = true, features = [
- # "debug",
- "reflect_auto_register",
- "jpeg",
- "animation",
- "bevy_asset",
+bevy = { workspace = true, features = [
+# "debug",
+"reflect_auto_register",
+"jpeg",
+"gltf_animation",
+"bevy_asset",
  "bevy_audio",
  "bevy_gilrs",
  "bevy_scene",
