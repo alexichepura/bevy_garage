@@ -4,21 +4,21 @@ use bevy::prelude::*;
 use bevy_garage_car::{CarRes, CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy_rapier3d::parry::query::PointQueryWithLocation;
 use bevy_rapier3d::parry::shape::{Polyline, SegmentPointLocation};
-use bevy_rapier3d::prelude::Real;
-use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
+use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::rapier::prelude::ColliderShape;
 use std::cmp::Ordering;
 
 pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<TrackConfig>) {
     let positions = TRACK_POSITIONS;
 
-    let vertices: Vec<Point3<Real>> = positions
+    let vertices: Vec<Vec3> = positions
         .iter()
-        .map(|pos| Point3::new(pos.0, pos.1, pos.2))
+        .map(|pos| Vec3::new(pos.0, pos.1, pos.2))
         .collect();
 
     let polyline = Polyline::new(vertices.clone(), None);
-    let initial_point = Point3::from(Vec3::ZERO);
-    let point_location = polyline.project_local_point_and_get_location(&initial_point, true);
+    let initial_point = Vec3::ZERO;
+    let point_location = polyline.project_local_point_and_get_location(initial_point, true);
     let (segment_i, segment_location) = point_location.1;
     let segment = polyline.segment(segment_i);
     track_config.polyline = Some(polyline.clone());
@@ -67,8 +67,8 @@ pub fn progress_system(
     let polyline = track_config.polyline.as_ref().unwrap();
     let mut board: Vec<(Entity, f32)> = Vec::new();
     for (tr, mut car, e) in cars.iter_mut() {
-        let point: Point3<Real> = Point3::from(tr.translation);
-        let point_location = polyline.project_local_point_and_get_location(&point, true);
+        let point = tr.translation;
+        let point_location = polyline.project_local_point_and_get_location(point, true);
         let (segment_i, segment_location) = point_location.1;
         let segment = polyline.segment(segment_i);
         let segment_progress = match segment_location {
@@ -93,7 +93,6 @@ pub fn progress_system(
         };
         let half = track_config.track_length / 2.;
         if ride_distance - car.ride_distance > half {
-            // prevent increasing distance by going backward
             ride_distance = ride_distance - track_config.track_length;
         }
         if ride_distance.is_sign_positive() && car.ride_distance.is_sign_negative()
@@ -109,9 +108,9 @@ pub fn progress_system(
         car.track_position = track_position;
         car.ride_distance = ride_distance;
 
-        let dir = Vec3::from(segment.direction().unwrap());
+        let dir = segment.direction().unwrap();
         car.line_dir = dir;
-        car.line_pos = Vec3::from(segment.a) + dir * segment_progress;
+        car.line_pos = segment.a + dir * segment_progress;
         if car_res.show_rays {
             let h = Vec3::Y * 0.6;
             gizmos.line(

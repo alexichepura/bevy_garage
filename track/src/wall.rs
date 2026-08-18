@@ -84,9 +84,9 @@ pub fn spawn_walls(
     indices.extend(indices_input.iter().map(|ind| ind + points_len * 2));
     indices.extend(indices_input.iter().map(|ind| ind + points_len * 4));
 
-    let collider_vertices: Vec<Point3<Real>> = vertices
+    let collider_vertices: Vec<Vec3> = vertices
         .iter()
-        .map(|v| Point3::new(v[0], v[1], v[2]))
+        .map(|v| Vec3::new(v[0], v[1], v[2]))
         .collect();
 
     let collider_indices: Vec<[u32; 3]> = indices.chunks(3).map(|i| [i[0], i[1], i[2]]).collect();

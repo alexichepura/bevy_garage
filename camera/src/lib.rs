@@ -3,25 +3,24 @@ use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, CursorOptions};
 use bevy_garage_car::Player;
-use bevy_rapier3d::prelude::PhysicsSet;
 
 pub fn grab_mouse(
-    mut cursor_options: Query<&mut CursorOptions>,
+    mut cursor: Query<&mut CursorOptions>,
     mouse: Res<ButtonInput<MouseButton>>,
     key: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok(mut cursor_options) = cursor_options.single_mut() else {
+    let Ok(mut cursor) = cursor.single_mut() else {
         return;
     };
 
     if mouse.just_pressed(MouseButton::Left) {
-        cursor_options.visible = false;
-        cursor_options.grab_mode = CursorGrabMode::Locked;
+        cursor.visible = false;
+        cursor.grab_mode = CursorGrabMode::Locked;
     }
 
     if key.just_pressed(KeyCode::Escape) {
-        cursor_options.visible = true;
-        cursor_options.grab_mode = CursorGrabMode::None;
+        cursor.visible = true;
+        cursor.grab_mode = CursorGrabMode::None;
     }
 }
 
@@ -32,10 +31,7 @@ impl Plugin for CarCameraPlugin {
         app.insert_resource(CameraConfig::default())
             .add_systems(PostStartup, camera_start_system)
             .add_systems(Update, (grab_mouse, camera_switch_system))
-            .add_systems(
-                PostUpdate,
-                camera_controller_system.after(PhysicsSet::StepSimulation),
-            );
+            .add_systems(PostUpdate, camera_controller_system);
     }
 }
 
@@ -238,7 +234,7 @@ pub fn camera_controller_system(
         Query<&Transform, With<Player>>,
         Query<&mut Transform, With<DirectionalLight>>,
     )>,
-    cursor_options: Query<&CursorOptions>,
+    cursor: Query<&CursorOptions>,
 ) {
     let follow_option: Option<Transform> = match config.mode {
         CameraMode::Free => None,
@@ -265,10 +261,10 @@ pub fn camera_controller_system(
         options.yaw = yaw;
         tf
     } else {
-        let Ok(cursor_options) = cursor_options.single() else {
+        let Ok(cursor) = cursor.single() else {
             return;
         };
-        if cursor_options.grab_mode == CursorGrabMode::None {
+        if cursor.grab_mode == CursorGrabMode::None {
             return;
         }
         let dt = time.delta_secs();

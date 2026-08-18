@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 #[derive(Resource)]
 pub struct CarRes {
-    pub car_scene: Option<Handle<Scene>>,
-    pub wheel_scene: Option<Handle<Scene>>,
+    pub car_scene: Option<Handle<WorldAsset>>,
+    pub wheel_scene: Option<Handle<WorldAsset>>,
     pub show_rays: bool,
 }
 

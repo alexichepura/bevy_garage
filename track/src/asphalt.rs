@@ -5,7 +5,7 @@ use bevy::light::NotShadowCaster;
 use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
-use bevy_rapier3d::{na::Point3, prelude::*, rapier::prelude::ColliderShape};
+use bevy_rapier3d::{prelude::*, rapier::prelude::ColliderShape};
 
 #[derive(Component, Debug)]
 pub struct AsphaltCell {
@@ -143,7 +143,7 @@ pub fn spawn_road(
             ColliderShape::trimesh(
                 track_vertices
                     .iter()
-                    .map(|v| Point3::new(v[0], v[1], v[2]))
+                    .map(|v| Vec3::new(v[0], v[1], v[2]))
                     .collect(),
                 track.collider_indices.clone(),
             )

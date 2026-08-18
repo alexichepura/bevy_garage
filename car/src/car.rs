@@ -59,10 +59,8 @@ pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 
 #[cfg(feature = "graphics")]
 pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<AssetServer>) {
-    use bevy::gltf::GltfAssetLabel;
-    
-    let wheel_scene = asset_server.load(GltfAssetLabel::Scene(0).from_asset("wheelRacing.glb"));
-    let car_scene = asset_server.load(GltfAssetLabel::Scene(0).from_asset("car-race.glb"));
+    let wheel_scene: Handle<WorldAsset> = asset_server.load("wheelRacing.glb#Scene0");
+    let car_scene: Handle<WorldAsset> = asset_server.load("car-race.glb#Scene0");
     
     config.wheel_scene = Some(wheel_scene);
     config.car_scene = Some(car_scene);
@@ -70,8 +68,8 @@ pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<Ass
 
 pub fn spawn_car(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] car_scene: &Handle<Scene>,
-    #[cfg(feature = "graphics")] wheel_scene: &Handle<Scene>,
+    #[cfg(feature = "graphics")] car_scene: &Handle<WorldAsset>,
+    #[cfg(feature = "graphics")] wheel_scene: &Handle<WorldAsset>,
     player: bool,
     transform: Transform,
 ) -> Entity {
@@ -107,7 +105,7 @@ pub fn spawn_car(
 
 pub fn spawn_car_body(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] car_gl: &Handle<Scene>,
+    #[cfg(feature = "graphics")] car_gl: &Handle<WorldAsset>,
     car: Car,
     spec: CarSpec,
 ) -> Entity {
@@ -125,7 +123,7 @@ pub fn spawn_car_body(
         car,
         spec,
         #[cfg(feature = "graphics")]
-        (SceneRoot(car_gl.clone()), transform),
+        (WorldAssetRoot(car_gl.clone()), transform),
         #[cfg(not(feature = "graphics"))]
         transform,
         (
@@ -148,7 +146,6 @@ pub fn spawn_car_body(
         ),
         (
             Ccd::enabled(),
-            CollidingEntities::default(),
             ColliderScale::Absolute(Vec3::ONE),
             ExternalForce::default(),
             ReadMassProperties::default(),
