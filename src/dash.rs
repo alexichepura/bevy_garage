@@ -158,72 +158,69 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     use bevy_garage_nn::dash::{
                         TrainerEpsilonText, TrainerGenerationText, TrainerRewardsText,
                     };
-                    parent
-                        .spawn((
-                            Text::new(""),
-                            TextFont {
-                                font: medium.clone().into(),
-                                font_size: FontSize::Px(14.0),
+                    parent.spawn((
+                        Text::new(""),
+                        TextFont {
+                            font: medium.clone().into(),
+                            font_size: FontSize::Px(14.0),
+                            ..default()
+                        },
+                        TextColor(Color::BLACK),
+                        TextLayout::justify(Justify::Right),
+                        Node {
+                            position_type: PositionType::Absolute,
+                            margin: UiRect {
+                                left: Val::Px(4.),
                                 ..default()
                             },
-                            TextColor(Color::BLACK),
-                            TextLayout::justify(Justify::Right),
-                            Node {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                top: Val::Px(4.),
-                                left: Val::Percent(100.),
+                            top: Val::Px(4.),
+                            left: Val::Percent(100.),
+                            ..default()
+                        },
+                        TrainerGenerationText,
+                    ));
+                    parent.spawn((
+                        Text::new(""),
+                        TextFont {
+                            font: medium.clone().into(),
+                            font_size: FontSize::Px(14.0),
+                            ..default()
+                        },
+                        TextColor(Color::DARK_GRAY),
+                        TextLayout::justify(Justify::Right),
+                        Node {
+                            position_type: PositionType::Absolute,
+                            margin: UiRect {
+                                left: Val::Px(4.),
                                 ..default()
                             },
-                            TrainerGenerationText,
-                        ));
-                    parent
-                        .spawn((
-                            Text::new(""),
-                            TextFont {
-                                font: medium.clone().into(),
-                                font_size: FontSize::Px(14.0),
+                            top: Val::Px(20.),
+                            left: Val::Percent(100.),
+                            ..default()
+                        },
+                        TrainerEpsilonText,
+                    ));
+                    parent.spawn((
+                        Text::new(""),
+                        TextFont {
+                            font: medium.clone().into(),
+                            font_size: FontSize::Px(14.0),
+                            ..default()
+                        },
+                        TextColor(Color::DARK_GRAY),
+                        TextLayout::justify(Justify::Right),
+                        Node {
+                            position_type: PositionType::Absolute,
+                            margin: UiRect {
+                                left: Val::Px(4.),
                                 ..default()
                             },
-                            TextColor(Color::DARK_GRAY),
-                            TextLayout::justify(Justify::Right),
-                            Node {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                top: Val::Px(20.),
-                                left: Val::Percent(100.),
-                                ..default()
-                            },
-                            TrainerEpsilonText,
-                        ));
-                    parent
-                        .spawn((
-                            Text::new(""),
-                            TextFont {
-                                font: medium.clone().into(),
-                                font_size: FontSize::Px(14.0),
-                                ..default()
-                            },
-                            TextColor(Color::DARK_GRAY),
-                            TextLayout::justify(Justify::Right),
-                            Node {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                top: Val::Px(36.),
-                                left: Val::Percent(100.),
-                                ..default()
-                            },
-                            TrainerRewardsText,
-                        ));
+                            top: Val::Px(36.),
+                            left: Val::Percent(100.),
+                            ..default()
+                        },
+                        TrainerRewardsText,
+                    ));
                 }
             });
     });

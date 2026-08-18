@@ -61,7 +61,7 @@ pub const CAR_TRAINING_GROUP: Group = Group::GROUP_10;
 pub fn car_start_system(mut config: ResMut<crate::CarRes>, asset_server: Res<AssetServer>) {
     let wheel_scene: Handle<WorldAsset> = asset_server.load("wheelRacing.glb#Scene0");
     let car_scene: Handle<WorldAsset> = asset_server.load("car-race.glb#Scene0");
-    
+
     config.wheel_scene = Some(wheel_scene);
     config.car_scene = Some(car_scene);
 }

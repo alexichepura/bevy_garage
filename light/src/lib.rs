@@ -6,13 +6,11 @@ pub fn light_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    cmd.spawn((
-        AmbientLight {
-            color: Color::srgb_u8(210, 220, 240),
-            brightness: 80.,
-            affects_lightmapped_meshes: false,
-        },
-    ));
+    cmd.spawn((AmbientLight {
+        color: Color::srgb_u8(210, 220, 240),
+        brightness: 80.,
+        affects_lightmapped_meshes: false,
+    },));
 
     cmd.spawn((
         DirectionalLight {

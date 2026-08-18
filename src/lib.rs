@@ -9,7 +9,7 @@ use std::num::NonZeroUsize;
 
 use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam,
-    light::DirectionalLightShadowMap, prelude::*, time::TimeUpdateStrategy,
+    light::DirectionalLightShadowMap, prelude::*,
 };
 use bevy_garage_car::{aero_system, car_start_system, esp_system, CarRes, CarSet};
 use bevy_garage_light::{animate_light_direction, light_start_system};
@@ -52,16 +52,11 @@ pub fn car_app(app: &mut App) -> &mut App {
         .insert_resource(Config::default())
         .insert_resource(CarRes::default())
         .insert_resource(DirectionalLightShadowMap::default())
-        // .insert_resource(TimestepMode::Variable {
-        //     max_dt: 1. / 60.,
-        //     time_scale: 1.,
-        //     substeps: 20,
-        // })
-        // .insert_resource(TimestepMode::Fixed {
-        //     dt: 1. / 60.,
-        //     substeps: 20,
-        // })
-        .insert_resource(TimeUpdateStrategy::default())
+        .insert_resource(TimestepMode::Interpolated {
+            dt: 1. / 60.,
+            time_scale: 1.,
+            substeps: 20,
+        })
         .add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
             RapierPhysicsPlugin::<MyPhysicsHooks>::default(),

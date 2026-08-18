@@ -3,6 +3,7 @@ use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, CursorOptions};
 use bevy_garage_car::Player;
+use bevy_rapier3d::prelude::PhysicsSet;
 
 pub fn grab_mouse(
     mut cursor: Query<&mut CursorOptions>,
@@ -31,7 +32,10 @@ impl Plugin for CarCameraPlugin {
         app.insert_resource(CameraConfig::default())
             .add_systems(PostStartup, camera_start_system)
             .add_systems(Update, (grab_mouse, camera_switch_system))
-            .add_systems(PostUpdate, camera_controller_system);
+            .add_systems(
+                PostUpdate,
+                camera_controller_system.after(PhysicsSet::StepSimulation),
+            );
     }
 }
 

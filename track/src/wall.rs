@@ -3,7 +3,7 @@ use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
-use bevy_rapier3d::{na::Point3, prelude::Real, prelude::*, rapier::prelude::ColliderShape};
+use bevy_rapier3d::prelude::*;
 use std::ops::{Mul, Sub};
 
 pub fn spawn_walls(
@@ -112,7 +112,7 @@ pub fn spawn_walls(
             coefficient: 0.1,
             ..default()
         },
-        Collider::from(ColliderShape::trimesh(collider_vertices, collider_indices).unwrap()),
+        Collider::trimesh(collider_vertices, collider_indices).unwrap(),
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Restitution::coefficient(0.),

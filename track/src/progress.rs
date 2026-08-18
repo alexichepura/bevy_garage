@@ -5,7 +5,6 @@ use bevy_garage_car::{CarRes, CAR_TRAINING_GROUP, STATIC_GROUP};
 use bevy_rapier3d::parry::query::PointQueryWithLocation;
 use bevy_rapier3d::parry::shape::{Polyline, SegmentPointLocation};
 use bevy_rapier3d::prelude::*;
-use bevy_rapier3d::rapier::prelude::ColliderShape;
 use std::cmp::Ordering;
 
 pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<TrackConfig>) {
@@ -50,7 +49,7 @@ pub fn track_polyline_start_system(mut cmd: Commands, mut track_config: ResMut<T
 
     cmd.spawn((
         Name::new("Track polyline"),
-        Collider::from(ColliderShape::polyline(vertices, None)),
+        Collider::polyline(vertices, None),
         RigidBody::Fixed,
         Sensor,
         CollisionGroups::new(CAR_TRAINING_GROUP, STATIC_GROUP),
