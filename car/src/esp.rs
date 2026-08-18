@@ -8,7 +8,7 @@ pub fn aero_system(mut car_query: Query<(&Velocity, &Transform, &mut ExternalFor
     for (velocity, transform, mut force) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();
-        let car_mps = velocity.linvel.length();
+        let car_mps = velocity.linear.length();
         let f_drag = 1. / 2. * 1.2 * car_mps.powi(2) * 0.2 * 1.5;
         let f_down = car_mps.powi(2) * 2.;
         // println!("drag:{f_drag:.1} down:{f_down:.1}");
@@ -41,14 +41,14 @@ pub fn esp_system(
     for (mut car, spec, car_wheels, velocity, transform) in car_query.iter_mut() {
         let car_vector = transform.rotation.mul_vec3(Vec3::Z);
         let car_vector_norm = car_vector.normalize();
-        let delta = velocity.linvel.normalize() - car_vector_norm;
+        let delta = velocity.linear.normalize() - car_vector_norm;
         let car_angle_slip_rad = Vec3::new(delta.x, 0., delta.z).length();
         let moving_forward: bool = car_angle_slip_rad < PI / 2.;
         let braking = match moving_forward {
             true => car.brake > 0.,
             false => car.gas > 0.,
         };
-        let linvel = velocity.linvel.length();
+        let linvel = velocity.linear.length();
         let torque_speed_x: f32 = match braking {
             true => 2.,
             _ => match linvel / spec.max_speed {
@@ -58,9 +58,8 @@ pub fn esp_system(
         };
         let steering_speed_x: f32 = match linvel / spec.max_steering_speed {
             x if x >= 1. => 0.,
-            x => 1. - x,
-        }
-        .powi(2);
+            x => (1. - x).powi(2),
+        };
         let pedal = if moving_forward {
             if braking {
                 -car.brake
@@ -96,8 +95,8 @@ pub fn esp_system(
 
         for wheel_entity in car_wheels.entities.iter() {
             let (wheel, mut f, transform, v, mut j) = wheels_query.get_mut(*wheel_entity).unwrap();
-            let radius_vel = v.angvel * wheel.radius;
-            let velocity_slip = (radius_vel[0] - v.linvel[2], radius_vel[2] + v.linvel[0]);
+            let radius_vel = v.angular * wheel.radius;
+            let velocity_slip = (radius_vel[0] - v.linear[2], radius_vel[2] + v.linear[0]);
             let slip_sq = (velocity_slip.0.powi(2) + velocity_slip.1.powi(2)).sqrt();
             if wheel.front {
                 let max_slip = 50.;

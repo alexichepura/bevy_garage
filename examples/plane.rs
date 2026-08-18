@@ -3,14 +3,7 @@ use bevy_garage_car::{car_start_system, esp_system, spawn_car, Car, CarRes};
 use bevy_rapier3d::prelude::*;
 
 fn main() {
-    let mut rapier_config = RapierConfiguration::new(1.);
-    rapier_config.timestep_mode = TimestepMode::Variable {
-        max_dt: 1. / 60.,
-        time_scale: 1.,
-        substeps: 5,
-    };
     App::new()
-        .insert_resource(rapier_config)
         .add_plugins((
             DefaultPlugins,
             RapierPhysicsPlugin::<NoUserData>::default(),
@@ -33,11 +26,11 @@ fn main() {
         .run();
 }
 
-fn rapier_config_start_system(mut c: ResMut<RapierContext>) {
-    // c.integration_parameters.max_velocity_iterations = 64;
-    // c.integration_parameters.max_velocity_friction_iterations = 64;
-    // c.integration_parameters.max_stabilization_iterations = 16;
-    // c.integration_parameters.erp = 0.99;
+fn rapier_config_start_system(mut c: WriteRapierContext) {
+    let Ok(mut ctx) = c.single_mut() else {
+        return;
+    };
+    ctx.simulation.integration_parameters.num_solver_iterations = 64;
 }
 
 fn spawn_car_system(mut cmd: Commands, car_res: Res<CarRes>) {
@@ -63,11 +56,8 @@ fn plane_start(
     let (cols, rows) = (10, 10);
 
     cmd.spawn((
-        PbrBundle {
-            mesh: meshes.add(Plane3d::default().mesh().size(size, size)),
-            material: materials.add(Color::srgb(0.3, 0.5, 0.3)),
-            ..default()
-        },
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(size, size))),
+        MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
         RigidBody::Fixed,
         ColliderScale::Absolute(Vec3::ONE),
         Friction::coefficient(3.),
@@ -75,20 +65,19 @@ fn plane_start(
         Collider::heightfield(vec![0.; rows * cols], rows, cols, Vec3::new(size, 0., size)),
     ));
 
-    cmd.spawn(PointLightBundle {
-        point_light: PointLight {
+    cmd.spawn((
+        PointLight {
             intensity: 1500.0,
-            shadows_enabled: true,
+            shadow_maps_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..default()
-    });
+        Transform::from_xyz(4.0, 8.0, 4.0),
+    ));
 
-    cmd.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 10., 20.).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    cmd.spawn((
+        Camera3d::default(),
+        Transform::from_xyz(0., 10., 20.).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
 }
 
 fn input_system(input: Res<ButtonInput<KeyCode>>, mut cars: Query<&mut Car>) {

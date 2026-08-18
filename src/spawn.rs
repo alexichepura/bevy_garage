@@ -27,14 +27,14 @@ pub fn spawn_car_system(
             track_config.get_transform_random()
         };
 
-    spawn_car_on_track(
-        &mut cmd,
-        &car_res.car_scene.as_ref().unwrap(),
-        &car_res.wheel_scene.as_ref().unwrap(),
-        spawn_event.player,
-        transform,
-        spawn_event.index,
-        init_meters,
-    );
+        spawn_car_on_track(
+            &mut cmd,
+            &car_res.car_scene.as_ref().unwrap(),
+            &car_res.wheel_scene.as_ref().unwrap(),
+            spawn_event.player,
+            transform,
+            spawn_event.index,
+            init_meters,
+        );
     }
 }

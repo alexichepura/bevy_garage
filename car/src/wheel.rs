@@ -40,7 +40,7 @@ impl Wheel {
 
 pub fn spawn_wheel(
     cmd: &mut Commands,
-    #[cfg(feature = "graphics")] wheel_gl: &Handle<Scene>,
+    #[cfg(feature = "graphics")] wheel_gl: &Handle<WorldAsset>,
     spec: &WheelSpec,
     mount: &WheelMount,
     car_transform: Transform,
@@ -65,7 +65,7 @@ pub fn spawn_wheel(
         wheel,
         joint,
         #[cfg(feature = "graphics")]
-        (SceneRoot(wheel_gl.clone()), transform),
+        (WorldAssetRoot(wheel_gl.clone()), transform),
         #[cfg(not(feature = "graphics"))]
         transform,
         (

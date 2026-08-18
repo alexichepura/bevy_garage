@@ -3,7 +3,7 @@ use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 use bevy::prelude::*;
 use bevy_garage_car::STATIC_GROUP;
-use bevy_rapier3d::{na::Point3, prelude::Real, prelude::*, rapier::prelude::ColliderShape};
+use bevy_rapier3d::prelude::*;
 use std::ops::{Mul, Sub};
 
 pub fn spawn_walls(
@@ -84,9 +84,9 @@ pub fn spawn_walls(
     indices.extend(indices_input.iter().map(|ind| ind + points_len * 2));
     indices.extend(indices_input.iter().map(|ind| ind + points_len * 4));
 
-    let collider_vertices: Vec<Point3<Real>> = vertices
+    let collider_vertices: Vec<Vec3> = vertices
         .iter()
-        .map(|v| Point3::new(v[0], v[1], v[2]))
+        .map(|v| Vec3::new(v[0], v[1], v[2]))
         .collect();
 
     let collider_indices: Vec<[u32; 3]> = indices.chunks(3).map(|i| [i[0], i[1], i[2]]).collect();
@@ -112,7 +112,7 @@ pub fn spawn_walls(
             coefficient: 0.1,
             ..default()
         },
-        Collider::from(ColliderShape::trimesh(collider_vertices, collider_indices).unwrap()),
+        Collider::trimesh(collider_vertices, collider_indices).unwrap(),
         ColliderScale::Absolute(Vec3::ONE),
         CollisionGroups::new(STATIC_GROUP, Group::ALL),
         Restitution::coefficient(0.),

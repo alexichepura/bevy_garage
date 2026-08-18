@@ -2,6 +2,7 @@ use bevy::{
     color::palettes::css,
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
+    text::{FontSize, Justify},
 };
 use bevy_garage_car::Player;
 use bevy_garage_track::CarTrack;
@@ -75,8 +76,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent.spawn((
                     Text::new(""),
                     TextFont {
-                        font: medium.clone(),
-                        font_size: 16.0,
+                        font: medium.clone().into(),
+                        font_size: FontSize::Px(16.0),
                         ..default()
                     },
                     TextColor(css::YELLOW_GREEN.into()),
@@ -91,8 +92,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent.spawn((
                     Text::new(""),
                     TextFont {
-                        font: medium.clone(),
-                        font_size: 18.0,
+                        font: medium.clone().into(),
+                        font_size: FontSize::Px(18.0),
                         ..default()
                     },
                     TextColor(css::SALMON.into()),
@@ -107,8 +108,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent.spawn((
                     Text::new(""),
                     TextFont {
-                        font: medium.clone(),
-                        font_size: 16.0,
+                        font: medium.clone().into(),
+                        font_size: FontSize::Px(16.0),
                         ..default()
                     },
                     TextColor(css::YELLOW.into()),
@@ -123,8 +124,8 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent.spawn((
                     Text::new(""),
                     TextFont {
-                        font: medium.clone(),
-                        font_size: 18.0,
+                        font: medium.clone().into(),
+                        font_size: FontSize::Px(18.0),
                         ..default()
                     },
                     TextColor(css::YELLOW.into()),
@@ -133,19 +134,19 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 parent.spawn((
                     Text::new(""),
                     TextFont {
-                        font: medium.clone(),
-                        font_size: 18.0,
+                        font: medium.clone().into(),
+                        font_size: FontSize::Px(18.0),
                         ..default()
                     },
                     TextColor(css::YELLOW_GREEN.into()),
-                    TextLayout::new_with_justify(Justify::Right),
+                    TextLayout::justify(Justify::Right),
                     MpsText,
                 ));
                 parent.spawn((
                     Text::new(""),
                     TextFont {
-                        font: medium.clone(),
-                        font_size: 18.0,
+                        font: medium.clone().into(),
+                        font_size: FontSize::Px(18.0),
                         ..default()
                     },
                     TextColor(css::YELLOW.into()),
@@ -157,87 +158,69 @@ pub fn dash_start_system(mut cmd: Commands, asset_server: Res<AssetServer>) {
                     use bevy_garage_nn::dash::{
                         TrainerEpsilonText, TrainerGenerationText, TrainerRewardsText,
                     };
-                    parent
-                        .spawn(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                top: Val::Px(4.),
-                                left: Val::Percent(100.),
-                                ..default()
-                            },
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 14.0,
-                                        color: Color::BLACK,
-                                    },
-                                }],
-                                ..default()
-                            },
+                    parent.spawn((
+                        Text::new(""),
+                        TextFont {
+                            font: medium.clone().into(),
+                            font_size: FontSize::Px(14.0),
                             ..default()
-                        })
-                        .insert(TrainerGenerationText);
-                    parent
-                        .spawn(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                top: Val::Px(20.),
-                                left: Val::Percent(100.),
+                        },
+                        TextColor(Color::BLACK),
+                        TextLayout::justify(Justify::Right),
+                        Node {
+                            position_type: PositionType::Absolute,
+                            margin: UiRect {
+                                left: Val::Px(4.),
                                 ..default()
                             },
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 14.0,
-                                        color: Color::DARK_GRAY,
-                                    },
-                                }],
-                                ..default()
-                            },
+                            top: Val::Px(4.),
+                            left: Val::Percent(100.),
                             ..default()
-                        })
-                        .insert(TrainerEpsilonText);
-                    parent
-                        .spawn(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Absolute,
-                                margin: UiRect {
-                                    left: Val::Px(4.),
-                                    ..default()
-                                },
-                                top: Val::Px(36.),
-                                left: Val::Percent(100.),
-                                ..default()
-                            },
-                            text: Text {
-                                alignment: TextAlignment::Right,
-                                sections: vec![TextSection {
-                                    value: "".to_string(),
-                                    style: TextStyle {
-                                        font: medium.clone(),
-                                        font_size: 14.0,
-                                        color: Color::DARK_GRAY,
-                                    },
-                                }],
-                                ..default()
-                            },
+                        },
+                        TrainerGenerationText,
+                    ));
+                    parent.spawn((
+                        Text::new(""),
+                        TextFont {
+                            font: medium.clone().into(),
+                            font_size: FontSize::Px(14.0),
                             ..default()
-                        })
-                        .insert(TrainerRewardsText);
+                        },
+                        TextColor(Color::DARK_GRAY),
+                        TextLayout::justify(Justify::Right),
+                        Node {
+                            position_type: PositionType::Absolute,
+                            margin: UiRect {
+                                left: Val::Px(4.),
+                                ..default()
+                            },
+                            top: Val::Px(20.),
+                            left: Val::Percent(100.),
+                            ..default()
+                        },
+                        TrainerEpsilonText,
+                    ));
+                    parent.spawn((
+                        Text::new(""),
+                        TextFont {
+                            font: medium.clone().into(),
+                            font_size: FontSize::Px(14.0),
+                            ..default()
+                        },
+                        TextColor(Color::DARK_GRAY),
+                        TextLayout::justify(Justify::Right),
+                        Node {
+                            position_type: PositionType::Absolute,
+                            margin: UiRect {
+                                left: Val::Px(4.),
+                                ..default()
+                            },
+                            top: Val::Px(36.),
+                            left: Val::Percent(100.),
+                            ..default()
+                        },
+                        TrainerRewardsText,
+                    ));
                 }
             });
     });
@@ -261,7 +244,7 @@ pub fn dash_speed_update_system(
     mut cars: Query<(&Velocity, &CarTrack), With<Player>>,
 ) {
     for (velocity, car_track) in cars.iter_mut() {
-        let mps = velocity.linvel.length();
+        let mps = velocity.linear.length();
         let kmph = mps * 3.6;
 
         if let Ok(mut text) = texts.p0().single_mut() {
