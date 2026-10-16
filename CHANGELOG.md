@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.11.0 (2026-08)
+- bevy 0.19, bevy_rapier3d 0.36
+
 ## Version 0.10.0 (2026-04)
 - bevy 0.18
 
