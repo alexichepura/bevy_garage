@@ -1,4 +1,4 @@
-use bevy::light::NotShadowCaster;
+use bevy::light::{GlobalAmbientLight, NotShadowCaster};
 use bevy::prelude::*;
 
 pub fn light_start_system(
@@ -6,11 +6,14 @@ pub fn light_start_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    cmd.spawn((AmbientLight {
+    // In Bevy 0.20 `AmbientLight` is a per-camera override and requires a `Camera`.
+    // Spawning it standalone created a second (graphless) camera, which broke UI
+    // camera selection. Use the global ambient light resource instead.
+    cmd.insert_resource(GlobalAmbientLight {
         color: Color::srgb_u8(210, 220, 240),
         brightness: 80.,
         affects_lightmapped_meshes: false,
-    },));
+    });
 
     cmd.spawn((
         DirectionalLight {
