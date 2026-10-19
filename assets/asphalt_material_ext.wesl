@@ -1,20 +1,19 @@
-#import bevy_pbr::{
+import bevy_pbr::render::{
     mesh_view_bindings::view,
     pbr_fragment::pbr_input_from_standard_material,
     pbr_functions::alpha_discard,
-}
+};
 
-#ifdef PREPASS_PIPELINE
-#import bevy_pbr::{
-    prepass_io::{VertexOutput, FragmentOutput},
-    pbr_deferred_functions::deferred_output,
-}
-#else
-#import bevy_pbr::{
+@if(PREPASS_PIPELINE)
+import bevy_pbr::{
+    prepass::io::{VertexOutput, FragmentOutput},
+    deferred::functions::deferred_output,
+};
+@else
+import bevy_pbr::render::{
     forward_io::{VertexOutput, FragmentOutput},
     pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
-}
-#endif
+};
 
 // TODO
 // #import shaders::perlin_noise_2d
@@ -56,7 +55,7 @@ fn perlinNoise2(P: vec2<f32>) -> f32 {
 struct AsphaltMaterial {
     quality: i32// 0-10
 };
-@group(#{MATERIAL_BIND_GROUP}) @binding(100)
+@group(constants::MATERIAL_BIND_GROUP) @binding(100)
 var<uniform> material: AsphaltMaterial;
 
 const coeff_l: f32 = 0.035;

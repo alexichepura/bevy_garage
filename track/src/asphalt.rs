@@ -135,7 +135,7 @@ pub fn spawn_road(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_indices(Indices::U32(track.indices.clone()));
     mesh.generate_tangents().unwrap();
-    let aabb = mesh.compute_aabb().unwrap();
+    let aabb = mesh.get_aabb().unwrap();
 
     cmd.spawn((
         TrackRoad,

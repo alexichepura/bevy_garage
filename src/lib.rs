@@ -116,15 +116,18 @@ struct MyPhysicsHooks;
 
 impl BevyPhysicsHooks for MyPhysicsHooks {
     fn modify_solver_contacts(&self, context: ContactModificationContextView) {
-        // *context.raw.normal = -*context.raw.normal;
+        let Some(manifold) = context.raw.rigid_mut() else {
+            return;
+        };
+        // *manifold.normal = -*manifold.normal;
         // println!("normal {:?}", context.raw.bodies);
-        // if !context.raw.solver_contacts.is_empty() {
-        //     context.raw.solver_contacts.swap_remove(0);
+        // if !manifold.solver_contacts.is_empty() {
+        //     manifold.solver_contacts.swap_remove(0);
         // }
-        // let manifold = context.raw.manifold;
+        // let manifold = manifold.manifold;
         // manifold.data;
-        // println!("solver_contacts={:?}", &context.raw.solver_contacts);
-        for solver_contact in &mut *context.raw.solver_contacts {
+        // println!("solver_contacts={:?}", &manifold.solver_contacts);
+        for solver_contact in &mut *manifold.solver_contacts {
             // println!("solver {:?}", solver_contact.tangent_velocity);
             // solver_contact.warmstart_impulse = 0.0;
             // solver_contact.warmstart_tangent_impulse =
