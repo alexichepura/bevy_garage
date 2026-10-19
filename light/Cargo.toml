@@ -6,4 +6,7 @@ edition = "2021"
 [features]
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
+bevy = { workspace = true, default-features = false, features = [
+    "bevy_mesh",
+    "bevy_pbr",
+] }
