@@ -7,7 +7,7 @@ fn main() {
     #[cfg(not(target_arch = "wasm32"))]
     let res = WindowResolution::default();
     #[cfg(target_arch = "wasm32")]
-    let res = WindowResolution::new(720., 360.);
+    let res = WindowResolution::new(720, 360);
     app.add_plugins((
         DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
