@@ -863,8 +863,6 @@ name = "bevy_garage_light"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_garage_car",
- "bevy_rapier3d",
 ]
 
 [[package]]

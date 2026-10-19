@@ -6,7 +6,10 @@ edition = "2021"
 [features]
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
+bevy = { workspace = true, default-features = false, features = [
+    "bevy_mesh",
+    "bevy_pbr",
+] }
 bevy_rapier3d = { workspace = true }
-bevy_garage_car = { workspace = true }
+bevy_garage_car = { workspace = true, features = ["graphics"] }
 rand = { workspace = true }
