@@ -66,6 +66,9 @@ pub fn camera_start_system(mut cmd: Commands) {
             ),
         },
         CameraController::default(),
+        // Make the game camera the default target for UI, so the HUD does not
+        // depend on which camera happens to have the highest entity id.
+        IsDefaultUiCamera,
     ));
 }
 
