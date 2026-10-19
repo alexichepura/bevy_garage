@@ -1,0 +1,22 @@
+{
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        // Share the regular cargo `target` directory instead of using
+        // `target/rust-analyzer`, so CLI builds and editor checks reuse artifacts.
+        "rust": {
+          "analyzerTargetDir": "target"
+        },
+        // Saving runs `cargo check --workspace`, not `--all-targets`.
+        // Full `cargo check --workspace --all-targets` is available as a task/CI step
+        // and avoids re-checking examples/tests/benches on every save.
+        "cargo": {
+          "allTargets": false
+        },
+        "check": {
+          "workspace": true
+        }
+      }
+    }
+  }
+}

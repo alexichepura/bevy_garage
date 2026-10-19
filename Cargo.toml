@@ -26,11 +26,36 @@ members = [
     # "renet",
 ]
 
+# Dev profile tuned for Bevy. Iteration stays fast, while the game runs well
+# without paying for a full release build.
 [profile.dev]
-debug = true
+# Line tables only for workspace crates: useful backtraces and breakpoints,
+# much smaller than full debug info.
+debug = 1
+# A little optimization for our own code. Dependencies are optimized fully below.
+opt-level = 1
+
+# Dependencies (Bevy, wgpu, naga, rapier, parry, ...) are compiled optimized but
+# without debug info. This is the standard Bevy dev setup: playable runtime and a
+# much smaller target directory than `debug = true` for every crate.
+[profile.dev.package."*"]
+debug = false
+opt-level = 3
+
+# Build scripts and proc-macros run at build time, so optimize them as well.
+[profile.dev.build-override]
+debug = false
+opt-level = 3
+
 [profile.release]
 codegen-units = 1
-# debug = true
+debug = false
+strip = "debuginfo"
+
+# Same for release build scripts/proc-macros.
+[profile.release.build-override]
+debug = false
+opt-level = 3
 
 [features]
 # nn = ["dep:bevy_garage_nn"]
