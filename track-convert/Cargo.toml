@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-obj-rs = { version = "0.7.0", default-features = false }
-ron = { version = "*" }
+obj-rs = { version = "0.7.4", default-features = false }
+ron = { version = "0.12" }

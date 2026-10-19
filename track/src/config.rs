@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::parry::shape::Polyline;
-use rand::Rng;
+use rand::RngExt;
 // use std::f32::consts::PI;
 
 #[derive(Resource)]
@@ -32,8 +32,8 @@ impl TrackConfig {
     //     return (transform, meters);
     // }
     pub fn get_transform_random(&self) -> (Transform, f32) {
-        let mut rng = rand::thread_rng();
-        let meters = rng.gen_range(0.0..self.track_length);
+        let mut rng = rand::rng();
+        let meters = rng.random_range(0.0..self.track_length);
         let (translate, quat) = self.get_transform_by_meter(meters);
         let transform = Transform::from_translation(translate).with_rotation(quat);
         return (transform, meters);
