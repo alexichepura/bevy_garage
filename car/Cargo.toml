@@ -8,6 +8,11 @@ graphics = []
 default = ["graphics"]
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
+bevy = { workspace = true, default-features = false, features = [
+    "bevy_asset",
+    "bevy_color",
+    "bevy_gizmos",
+    "bevy_world_serialization",
+] }
 bevy_rapier3d = { workspace = true, default-features = false }
 cfg-if = { workspace = true }

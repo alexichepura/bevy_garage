@@ -31,7 +31,7 @@ pub struct GroundExtension {
 }
 impl MaterialExtension for GroundExtension {
     fn fragment_shader() -> ShaderRef {
-        "ground_material_ext.wgsl".into()
+        "ground_material_ext.wesl".into()
     }
 }
 
@@ -42,6 +42,6 @@ pub struct AsphaltExtension {
 }
 impl MaterialExtension for AsphaltExtension {
     fn fragment_shader() -> ShaderRef {
-        "asphalt_material_ext.wgsl".into()
+        "asphalt_material_ext.wesl".into()
     }
 }
