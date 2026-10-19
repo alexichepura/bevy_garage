@@ -83,8 +83,8 @@ impl Dqn {
 //         );
 
 //         let start = Instant::now();
-//         let mut rng = rand::thread_rng();
-//         let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..rb.len()));
+//         let mut rng = rand::rng();
+//         let batch_indexes = [(); BATCH_SIZE].map(|_| rng.random_range(0..rb.len()));
 //         let (s, a, r, sn, done) = rb.get_batch_tensors(batch_indexes);
 //         let mut loss_string: String = String::from("");
 //         for _i_epoch in 0..EPOCHS {

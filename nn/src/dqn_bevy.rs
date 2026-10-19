@@ -8,7 +8,7 @@ use crate::{
 use bevy::prelude::*;
 use crossbeam_channel::{bounded, Receiver, Sender};
 use dfdx::{optim::Sgd, prelude::*};
-use rand::Rng;
+use rand::RngExt;
 
 #[derive(Component, Debug)]
 pub struct CarDqn {
@@ -41,12 +41,12 @@ impl CarsDqnResource {
         let obs_state_tensor = self
             .device
             .tensor_from_vec(obs.to_vec(), (Const::<STATE_SIZE>,));
-        let mut rng = rand::thread_rng();
-        let random_number = rng.gen_range(0.0..1.0);
+        let mut rng = rand::rng();
+        let random_number = rng.random_range(0.0..1.0);
         let exploration = random_number < epsilon;
 
         let action: usize = if exploration {
-            rng.gen_range(0..ACTIONS - 1)
+            rng.random_range(0..ACTIONS - 1)
         } else {
             let q_values = self.qn.forward(obs_state_tensor.clone());
             let max_q_value = q_values.clone().max::<Rank0, _>();

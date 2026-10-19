@@ -7,7 +7,7 @@ use bevy_garage_car::{
 use bevy_garage_track::{CarTrack, SpawnCarOnTrackEvent};
 use bevy_rapier3d::prelude::*;
 use dfdx::prelude::*;
-use rand::Rng;
+use rand::RngExt;
 
 #[cfg(target_arch = "wasm32")]
 pub type QNetwork = (
@@ -169,8 +169,8 @@ pub fn dqn_system(
                 log_action_reward(car_dqn.prev_action, reward);
             } else if !cars_dqn.processing {
                 cars_dqn.processing = true;
-                let mut rng = rand::thread_rng();
-                let batch_indexes = [(); BATCH_SIZE].map(|_| rng.gen_range(0..dqn.rb.len()));
+                let mut rng = rand::rng();
+                let batch_indexes = [(); BATCH_SIZE].map(|_| rng.random_range(0..dqn.rb.len()));
                 let (s, a, r, sn, done) = dqn
                     .rb
                     .get_batch_tensors(batch_indexes, cars_dqn.device.clone());

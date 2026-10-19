@@ -14,7 +14,7 @@ bevy_rapier3d = { workspace = true }
 bevy_garage_car = { workspace = true, features = ["graphics"] }
 rand = { workspace = true }
 
-# getrandom 0.2 (pulled in by rand 0.8) needs the `js` feature to build for
-# wasm32-unknown-unknown: https://docs.rs/getrandom/#webassembly-support
+# getrandom 0.4 (pulled in by rand 0.10) needs the `wasm_js` feature to build
+# for wasm32-unknown-unknown: https://docs.rs/getrandom/#webassembly-support
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "0.4", features = ["wasm_js"] }
