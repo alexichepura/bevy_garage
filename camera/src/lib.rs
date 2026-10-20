@@ -1,6 +1,7 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
+use bevy::transform::TransformSystems;
 use bevy::window::{CursorGrabMode, CursorOptions};
 use bevy_garage_car::Player;
 use bevy_rapier3d::prelude::PhysicsSet;
@@ -34,7 +35,12 @@ impl Plugin for CarCameraPlugin {
             .add_systems(Update, (grab_mouse, camera_switch_system))
             .add_systems(
                 PostUpdate,
-                camera_controller_system.after(PhysicsSet::StepSimulation),
+                camera_controller_system
+                    // Read the interpolated car transform written back by Rapier,
+                    // and write the camera transform before Bevy propagates global
+                    // transforms, so both are in sync in the same frame.
+                    .after(PhysicsSet::Writeback)
+                    .before(TransformSystems::Propagate),
             );
     }
 }
