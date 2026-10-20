@@ -18,12 +18,25 @@ Wasm demo <https://alexi.chepura.space/bevy-garage>
 
 ## Run
 
-bevy fast compile guide: https://bevy.org/learn/quick-start/getting-started/setup/#enable-fast-compiles-optional\
-fast builds cargo config example https://github.com/bevyengine/bevy/blob/main/.cargo/config_fast_builds.toml
-
 ```sh
-cargo run --release
+cargo run
 ```
+
+The `dev` profile keeps iteration fast while compiling dependencies (Bevy, wgpu,
+rapier, ...) optimized, so the game is playable without a release build. Use
+`cargo run --release` only when you need maximum performance.
+
+Build profiles are defined in `Cargo.toml`:
+- `dev`: workspace crates use `debug = 1` (line tables), dependencies use
+  `opt-level = 3` with no debug info.
+- `release`: `codegen-units = 1`.
+
+Editor configs (`.zed/settings.json`, `.vscode/settings.json`) make rust-analyzer
+share the same `target` directory as the CLI. If `target/` has grown from older
+profile settings, reclaim the space once with `cargo clean`.
+
+bevy fast compile guide: https://bevy.org/learn/quick-start/getting-started/setup/#enable-fast-compiles-optional\
+fast builds cargo config example: https://github.com/bevyengine/bevy/blob/main/.cargo/config_fast_builds.toml
 
 <https://bevyengine.org/learn/book/getting-started/setup/>
 

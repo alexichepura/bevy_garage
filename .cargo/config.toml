@@ -1,6 +1,13 @@
 [alias]
 prisma = "run -p prisma-cli --bin prisma --"
 
+# Build profiles are defined in Cargo.toml:
+# - `dev`: dependencies are optimized (`opt-level = 3`, no debug info), workspace
+#   crates use `debug = 1`, so iteration stays fast and the game is playable.
+# - `release`: `codegen-units = 1`.
+# Editor configs (`.zed/settings.json`, `.vscode/settings.json`) point
+# rust-analyzer at the same `target` directory as the CLI so artifacts are shared.
+
 # bevy fast compile guide: https://bevy.org/learn/quick-start/getting-started/setup/#enable-fast-compiles-optional
 # example https://github.com/bevyengine/bevy/blob/main/.cargo/config_fast_builds.toml
 
